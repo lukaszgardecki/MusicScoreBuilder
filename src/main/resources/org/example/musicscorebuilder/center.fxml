@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.StackPane?>
+
+<ScrollPane xmlns:fx="http://javafx.com/fxml"
+            fx:id="scrollPane"
+            fitToWidth="true"
+            fitToHeight="true"
+            pannable="false"
+            fx:controller="org.example.musicscorebuilder.PageAreaController"
+>
+    <StackPane fx:id="pageContainer" alignment="CENTER">
+        <StackPane fx:id="page" styleClass="page-a4"/>
+    </StackPane>
+</ScrollPane>
+
