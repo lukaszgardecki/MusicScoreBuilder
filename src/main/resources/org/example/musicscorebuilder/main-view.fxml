@@ -41,7 +41,7 @@
 
     <!-- LEFT: Paleta -->
     <left>
-        <VBox prefWidth="200" spacing="10" style="-fx-padding: 10;">
+        <VBox prefWidth="300" spacing="10" style="-fx-padding: 10;">
             <Label style="-fx-font-size: 16; -fx-font-weight: bold;" text="Paleta" />
             <TitledPane text="Nuty" expanded="false">
                 <VBox spacing="5" style="-fx-padding: 5;">
