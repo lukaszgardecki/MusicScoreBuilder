@@ -4,19 +4,19 @@ import javafx.fxml.FXML;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
 import org.example.musicscorebuilder.components.music.Page;
 import org.example.musicscorebuilder.components.music.Part;
 import org.example.musicscorebuilder.components.music.Score;
 import org.example.musicscorebuilder.components.music.Staff;
+import org.example.musicscorebuilder.components.views.PageView;
+import org.example.musicscorebuilder.components.views.ScoreView;
 
 
 public class PageAreaController {
     @FXML private ScrollPane scrollPane;
     @FXML private HBox pageContainer;
-    @FXML private Pane page;
-    @FXML private Pane contentArea;
+    private PageView pageView;
 
     private double lastX;
     private double lastY;
@@ -28,10 +28,11 @@ public class PageAreaController {
         enableDrag();
         enableZoom();
         Page page = new Page();
-        contentArea.setLayoutX(page.getMarginLeft());
-        contentArea.setLayoutY(page.getMarginTop());
-        contentArea.setPrefSize(page.getEffectiveWidth(), page.getEffectiveHeight());
-//        contentArea.setBackground(Background.fill(Color.RED));
+
+        pageView = new PageView();
+        ScoreView contentArea = new ScoreView(page);
+        pageView.getChildren().add(contentArea);
+        pageContainer.getChildren().add(pageView);
 
         ScoreLayout scoreLayout = new LayoutEngine(page).computeLayout(createScore());
         new ScoreRenderer(contentArea).render(scoreLayout);
@@ -70,8 +71,8 @@ public class PageAreaController {
             // ograniczenia
             zoom = Math.max(0.2, Math.min(zoom, 5.0));
 
-            page.setScaleX(zoom);
-            page.setScaleY(zoom);
+            pageView.setScaleX(zoom);
+            pageView.setScaleY(zoom);
 
             e.consume();
         });
@@ -80,13 +81,13 @@ public class PageAreaController {
     private Score createScore() {
         Score score = new Score("Utwór", "Kompozytor");
         Part piano = new Part("Piano1");
-        piano.add(new Staff(5));
-        piano.add(new Staff(5));
+        piano.add(new Staff());
+        piano.add(new Staff());
 
         Part piano2 = new Part("Piano2");
-        piano2.add(new Staff(2));
-        piano2.add(new Staff(3));
-        piano2.add(new Staff(4));
+        piano2.add(new Staff());
+        piano2.add(new Staff());
+        piano2.add(new Staff());
 
         score.add(piano);
         score.add(piano2);

@@ -2,7 +2,6 @@
 
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Pane?>
 <ScrollPane xmlns:fx="http://javafx.com/fxml"
             fx:id="scrollPane"
             fitToWidth="true"
@@ -10,10 +9,6 @@
             pannable="false"
             fx:controller="org.example.musicscorebuilder.PageAreaController"
 >
-    <HBox fx:id="pageContainer" spacing="40" alignment="CENTER">
-        <Pane fx:id="page" styleClass="page-a4">
-            <Pane fx:id="contentArea"/>
-        </Pane>
-    </HBox>
+    <HBox fx:id="pageContainer" spacing="40" alignment="CENTER" />
 </ScrollPane>
 

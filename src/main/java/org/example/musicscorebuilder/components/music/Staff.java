@@ -7,6 +7,10 @@ public class Staff {
 //    private List<ClefChange> clefChanges = new ArrayList<>();
     double lineSpacing = 7;
 
+    public Staff() {
+        this.linesNumber = 5;
+    }
+
     public Staff(int linesNumber) {
         this.linesNumber = linesNumber;
     }
