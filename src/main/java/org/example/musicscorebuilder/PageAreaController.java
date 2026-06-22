@@ -1,7 +1,6 @@
 package org.example.musicscorebuilder;
 
 import javafx.fxml.FXML;
-import javafx.scene.Group;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.HBox;
@@ -16,10 +15,7 @@ public class PageAreaController {
     @FXML private ScrollPane scrollPane;
     @FXML private HBox pageContainer;
     @FXML private Pane page;
-    @FXML private Group staffLayer;
-
-    private LayoutEngine layoutEngine = new LayoutEngine();
-    private ScoreRenderer renderer;
+    @FXML private Pane contentArea;
 
     private double lastX;
     private double lastY;
@@ -30,11 +26,14 @@ public class PageAreaController {
         scrollPane.setPannable(false);
         enableDrag();
         enableZoom();
+        Page page = new Page();
+        contentArea.setLayoutX(page.getMarginLeft());
+        contentArea.setLayoutY(page.getMarginTop());
+        contentArea.setPrefSize(page.getEffectiveWidth(), page.getEffectiveHeight());
+//        contentArea.setBackground(Background.fill(Color.RED));
 
-        renderer = new ScoreRenderer(staffLayer);
-        Score score = createScore();
-        ScoreLayout scoreLayout = layoutEngine.computeLayout(score, new Page());
-        renderer.render(scoreLayout);
+        ScoreLayout scoreLayout = new LayoutEngine(page).computeLayout(createScore());
+        new ScoreRenderer(contentArea).render(scoreLayout);
     }
 
     private void enableDrag() {
@@ -57,8 +56,6 @@ public class PageAreaController {
 
     private void enableZoom() {
         scrollPane.addEventFilter(ScrollEvent.SCROLL, e -> {
-
-            // Zoom tylko gdy CTRL wciśnięty
             if (!e.isControlDown()) return;
 
             double zoomFactor = 1.1;

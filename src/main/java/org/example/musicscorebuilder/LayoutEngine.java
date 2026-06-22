@@ -9,14 +9,19 @@ import org.example.musicscorebuilder.components.music.Staff;
 import java.util.List;
 
 public class LayoutEngine {
+    private final Page page;
 
-    public ScoreLayout computeLayout(Score score, Page page) {
+    public LayoutEngine(Page page) {
+        this.page = page;
+    }
+
+    public ScoreLayout computeLayout(Score score) {
         ScoreLayout layout = new ScoreLayout();
         List<Staff> staves = score.getStaves();
-        double currentY = page.getMarginLeft();
+        double currentY = 0;
 
         for (Staff staff : staves) {
-            StaffLayout sl = new StaffLayout(staff, page.getMarginLeft(), currentY, page.getEffectiveWidth());
+            StaffLayout sl = new StaffLayout(staff, 0, currentY, page.getEffectiveWidth());
             layout.add(sl);
 
             // odległość między pięcioliniami

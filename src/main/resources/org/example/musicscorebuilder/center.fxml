@@ -13,7 +13,7 @@
 >
     <HBox fx:id="pageContainer" spacing="40" alignment="CENTER">
         <Pane fx:id="page" styleClass="page-a4">
-            <Group fx:id="staffLayer"/>
+            <Pane fx:id="contentArea"/>
         </Pane>
     </HBox>
 </ScrollPane>
