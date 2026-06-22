@@ -1,15 +1,25 @@
 package org.example.musicscorebuilder;
 
 import javafx.fxml.FXML;
+import javafx.scene.Group;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import org.example.musicscorebuilder.components.layout.ScoreLayout;
+import org.example.musicscorebuilder.components.music.Page;
+import org.example.musicscorebuilder.components.music.Score;
+import org.example.musicscorebuilder.components.music.Staff;
 
 
 public class PageAreaController {
     @FXML private ScrollPane scrollPane;
-    @FXML private StackPane pageContainer;
-    @FXML private StackPane page;
+    @FXML private HBox pageContainer;
+    @FXML private Pane page;
+    @FXML private Group staffLayer;
+
+    private LayoutEngine layoutEngine = new LayoutEngine();
+    private ScoreRenderer renderer;
 
     private double lastX;
     private double lastY;
@@ -20,6 +30,11 @@ public class PageAreaController {
         scrollPane.setPannable(false);
         enableDrag();
         enableZoom();
+
+        renderer = new ScoreRenderer(staffLayer);
+        Score score = createScore();
+        ScoreLayout scoreLayout = layoutEngine.computeLayout(score, new Page());
+        renderer.render(scoreLayout);
     }
 
     private void enableDrag() {
@@ -64,4 +79,10 @@ public class PageAreaController {
         });
     }
 
+    private Score createScore() {
+        Score score = new Score();
+        score.add(new Staff());
+        score.add(new Staff());
+        return score;
+    }
 }

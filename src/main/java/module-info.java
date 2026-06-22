@@ -5,7 +5,10 @@ module org.example.musicscorebuilder {
     requires org.controlsfx.controls;
     requires com.dlsc.formsfx;
     requires net.synedra.validatorfx;
+    requires javafx.graphics;
 
     opens org.example.musicscorebuilder to javafx.fxml;
     exports org.example.musicscorebuilder;
+    exports org.example.musicscorebuilder.components.music;
+    opens org.example.musicscorebuilder.components.music to javafx.fxml;
 }
