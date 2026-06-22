@@ -1,12 +1,12 @@
 package org.example.musicscorebuilder;
 
+import org.example.musicscorebuilder.components.layout.PartLayout;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
 import org.example.musicscorebuilder.components.layout.StaffLayout;
 import org.example.musicscorebuilder.components.music.Page;
+import org.example.musicscorebuilder.components.music.Part;
 import org.example.musicscorebuilder.components.music.Score;
 import org.example.musicscorebuilder.components.music.Staff;
-
-import java.util.List;
 
 public class LayoutEngine {
     private final Page page;
@@ -17,15 +17,28 @@ public class LayoutEngine {
 
     public ScoreLayout computeLayout(Score score) {
         ScoreLayout layout = new ScoreLayout();
-        List<Staff> staves = score.getStaves();
-        double currentY = 0;
+        double localY = layout.getY();
 
-        for (Staff staff : staves) {
-            StaffLayout sl = new StaffLayout(staff, 0, currentY, page.getEffectiveWidth());
+        for (Part part : score.getParts()) {
+            PartLayout sl = computeLayout(part, localY);
+            layout.add(sl);
+
+            // odległość między systemami
+            localY += sl.getHeight() + score.getPartSpacing();
+        }
+        return layout;
+    }
+
+    private PartLayout computeLayout(Part part, double yStart) {
+        PartLayout layout = new PartLayout(part, 0, yStart);
+        double localY = 0;
+
+        for (Staff staff : part.getStaves()) {
+            StaffLayout sl = new StaffLayout(staff, 0, localY, page.getEffectiveWidth());
             layout.add(sl);
 
             // odległość między pięcioliniami
-            currentY += 100;
+            localY += sl.getHeight() + part.getStaffSpacing();
         }
         return layout;
     }

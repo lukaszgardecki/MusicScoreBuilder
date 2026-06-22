@@ -8,7 +8,10 @@ module org.example.musicscorebuilder {
     requires javafx.graphics;
 
     opens org.example.musicscorebuilder to javafx.fxml;
+    opens org.example.musicscorebuilder.components.music to javafx.fxml;
+    opens org.example.musicscorebuilder.components.views to javafx.fxml;
+
     exports org.example.musicscorebuilder;
     exports org.example.musicscorebuilder.components.music;
-    opens org.example.musicscorebuilder.components.music to javafx.fxml;
+    exports org.example.musicscorebuilder.components.views;
 }

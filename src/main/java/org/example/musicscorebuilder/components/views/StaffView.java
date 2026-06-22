@@ -1,7 +1,8 @@
-package org.example.musicscorebuilder.components.layout;
+package org.example.musicscorebuilder.components.views;
 
 import javafx.scene.Group;
 import javafx.scene.shape.Line;
+import org.example.musicscorebuilder.components.layout.StaffLayout;
 
 public class StaffView extends Group {
 

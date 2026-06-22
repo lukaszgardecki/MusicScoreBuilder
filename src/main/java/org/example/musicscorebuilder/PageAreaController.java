@@ -7,6 +7,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
 import org.example.musicscorebuilder.components.music.Page;
+import org.example.musicscorebuilder.components.music.Part;
 import org.example.musicscorebuilder.components.music.Score;
 import org.example.musicscorebuilder.components.music.Staff;
 
@@ -77,9 +78,18 @@ public class PageAreaController {
     }
 
     private Score createScore() {
-        Score score = new Score();
-        score.add(new Staff());
-        score.add(new Staff());
+        Score score = new Score("Utwór", "Kompozytor");
+        Part piano = new Part("Piano1");
+        piano.add(new Staff(5));
+        piano.add(new Staff(5));
+
+        Part piano2 = new Part("Piano2");
+        piano2.add(new Staff(2));
+        piano2.add(new Staff(3));
+        piano2.add(new Staff(4));
+
+        score.add(piano);
+        score.add(piano2);
         return score;
     }
 }

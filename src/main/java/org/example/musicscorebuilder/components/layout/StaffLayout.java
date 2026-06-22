@@ -28,4 +28,8 @@ public class StaffLayout {
     public double getWidth() {
         return width;
     }
+
+    public double getHeight() {
+        return staff.getHeight();
+    }
 }
