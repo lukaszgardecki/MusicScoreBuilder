@@ -59,9 +59,9 @@ public class PageAreaController {
         scrollPane.addEventFilter(ScrollEvent.SCROLL, e -> {
 
             // Zoom tylko gdy CTRL wciśnięty
-//            if (!e.isControlDown()) return;
+            if (!e.isControlDown()) return;
 
-            double zoomFactor = 1.05;
+            double zoomFactor = 1.1;
 
             if (e.getDeltaY() > 0) {
                 zoom *= zoomFactor;
