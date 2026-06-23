@@ -22,6 +22,11 @@ public class Score {
         parts.add(part);
     }
 
+    public void removeLast() {
+        if (parts.isEmpty()) return;
+        parts.removeLast();
+    }
+
     public double getPartSpacing() {
         return partSpacing;
     }

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<ToolBar
+    xmlns="http://javafx.com/javafx"
+    xmlns:fx="http://javafx.com/fxml"
+    fx:controller="org.example.musicscorebuilder.ToolbarController"
+    styleClass="main-toolbar"
+>
+    <Button styleClass="toolbar-btn" text="64" />
+    <Button styleClass="toolbar-btn" text="32" />
+    <Button styleClass="toolbar-btn" text="16" />
+    <Button styleClass="toolbar-btn" text="8" />
+    <Button styleClass="toolbar-btn" text="4" />
+    <Button styleClass="toolbar-btn" text="2" />
+    <Button styleClass="toolbar-btn" text="1" />
+    <Separator />
+    <Button styleClass="toolbar-btn" text="p1" />
+    <Button styleClass="toolbar-btn" text="p2" />
+    <Button styleClass="toolbar-btn" text="p3" />
+    <Separator />
+    <Button fx:id="addStaff" styleClass="toolbar-btn" text="+" onAction="#addStaff"/>
+    <Button fx:id="removeStaff" styleClass="toolbar-btn" text="-" onAction="#removeStaff"/>
+</ToolBar>

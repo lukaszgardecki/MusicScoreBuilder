@@ -6,9 +6,6 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.HBox;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
 import org.example.musicscorebuilder.components.music.Page;
-import org.example.musicscorebuilder.components.music.Part;
-import org.example.musicscorebuilder.components.music.Score;
-import org.example.musicscorebuilder.components.music.Staff;
 import org.example.musicscorebuilder.components.views.PageView;
 import org.example.musicscorebuilder.components.views.ScoreView;
 
@@ -17,6 +14,8 @@ public class PageAreaController {
     @FXML private ScrollPane scrollPane;
     @FXML private HBox pageContainer;
     private PageView pageView;
+    private ScoreView contentArea;
+    private Page page;
 
     private double lastX;
     private double lastY;
@@ -27,15 +26,14 @@ public class PageAreaController {
         scrollPane.setPannable(false);
         enableDrag();
         enableZoom();
-        Page page = new Page();
-
+        page = new Page();
         pageView = new PageView();
-        ScoreView contentArea = new ScoreView(page);
+        contentArea = new ScoreView(page);
         pageView.getChildren().add(contentArea);
         pageContainer.getChildren().add(pageView);
 
-        ScoreLayout scoreLayout = new LayoutEngine(page).computeLayout(createScore());
-        new ScoreRenderer(contentArea).render(scoreLayout);
+        ScoreService.getInstance().addListener(this::refreshView);
+        refreshView();
     }
 
     private void enableDrag() {
@@ -78,19 +76,9 @@ public class PageAreaController {
         });
     }
 
-    private Score createScore() {
-        Score score = new Score("Utwór", "Kompozytor");
-        Part piano = new Part("Piano1");
-        piano.add(new Staff());
-        piano.add(new Staff());
-
-        Part piano2 = new Part("Piano2");
-        piano2.add(new Staff());
-        piano2.add(new Staff());
-        piano2.add(new Staff());
-
-        score.add(piano);
-        score.add(piano2);
-        return score;
+    private void refreshView() {
+        contentArea.getChildren().clear();
+        ScoreLayout scoreLayout = new LayoutEngine(page).computeLayout(ScoreService.getInstance().getScore());
+        new ScoreRenderer(contentArea).render(scoreLayout);
     }
 }

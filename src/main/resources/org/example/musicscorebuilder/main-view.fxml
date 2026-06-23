@@ -23,19 +23,7 @@
                 <Menu text="Pomoc"/>
             </MenuBar>
 
-            <ToolBar styleClass="main-toolbar">
-                <Button styleClass="toolbar-btn" text="64" />
-                <Button styleClass="toolbar-btn" text="32" />
-                <Button styleClass="toolbar-btn" text="16" />
-                <Button styleClass="toolbar-btn" text="8" />
-                <Button styleClass="toolbar-btn" text="4" />
-                <Button styleClass="toolbar-btn" text="2" />
-                <Button styleClass="toolbar-btn" text="1" />
-                <Separator />
-                <Button styleClass="toolbar-btn" text="p1" />
-                <Button styleClass="toolbar-btn" text="p2" />
-                <Button styleClass="toolbar-btn" text="p3" />
-            </ToolBar>
+            <fx:include source="toolbar.fxml"/>
         </VBox>
     </top>
 
