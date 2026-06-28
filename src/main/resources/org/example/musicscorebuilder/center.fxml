@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.layout.HBox?>
+<?import org.example.musicscorebuilder.components.views.BackgroundView?>
 <ScrollPane xmlns:fx="http://javafx.com/fxml"
             fx:id="scrollPane"
-            fitToWidth="true"
-            fitToHeight="true"
-            pannable="false"
+            fitToWidth="false"
+            fitToHeight="false"
             fx:controller="org.example.musicscorebuilder.PageAreaController"
 >
-    <HBox fx:id="pageContainer" spacing="40" alignment="CENTER" />
+    <BackgroundView fx:id="container"/>
 </ScrollPane>
 

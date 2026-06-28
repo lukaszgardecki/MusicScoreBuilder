@@ -4,18 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ScoreLayout {
-    private final List<PartLayout> parts = new ArrayList<>();
-    private double y = 0;
+    private final List<PageLayout> pages = new ArrayList<>();
 
-    public void add(PartLayout stave) {
-        parts.add(stave);
+    public void addPageLayout(PageLayout pageLayout) {
+        pages.add(pageLayout);
     }
 
-    public List<PartLayout> getParts() {
-        return parts;
-    }
-
-    public double getY() {
-        return y;
+    public List<PageLayout> getPages() {
+        return pages;
     }
 }

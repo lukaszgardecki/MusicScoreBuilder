@@ -1,14 +1,18 @@
 package org.example.musicscorebuilder.components.views;
 
-import javafx.scene.layout.Pane;
-import org.example.musicscorebuilder.components.music.Page;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
+import org.example.musicscorebuilder.components.layout.ScoreLayout;
 
-public class ScoreView extends Pane {
+public class ScoreView extends HBox {
 
-    public ScoreView(Page page) {
-        setLayoutX(page.getMarginLeft());
-        setLayoutY(page.getMarginTop());
-        setPrefSize(page.getEffectiveWidth(), page.getEffectiveHeight());
-//        setBackground(Background.fill(Color.RED));
+    public ScoreView(ScoreLayout scoreLayout) {
+        this.setSpacing(20);
+        this.setFillHeight(false);
+        this.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+
+        scoreLayout.getPages().stream()
+                .map(PageView::new)
+                .forEach(this.getChildren()::add);
     }
 }

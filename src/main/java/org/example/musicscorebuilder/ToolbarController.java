@@ -17,12 +17,12 @@ public class ToolbarController {
         part.add(new Staff(3));
         part.add(new Staff(3));
         scoreService.getScore().add(part);
-        ScoreService.getInstance().notifyListeners();
+        scoreService.notifyListeners();
     }
 
     @FXML
     private void removeStaff() {
         scoreService.getScore().removeLast();
-        ScoreService.getInstance().notifyListeners();
+        scoreService.notifyListeners();
     }
 }

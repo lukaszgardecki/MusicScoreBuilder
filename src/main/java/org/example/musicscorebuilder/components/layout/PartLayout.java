@@ -8,12 +8,10 @@ import java.util.List;
 public class PartLayout {
     private final Part part;
     private final List<StaffLayout> staffLayouts = new ArrayList<>();
-    private double x, y;
+    private double spacing = 0;
 
-    public PartLayout(Part part, double x, double y) {
+    public PartLayout(Part part) {
         this.part = part;
-        this.x = x;
-        this.y = y;
     }
 
     public void add(StaffLayout staffLayout) {
@@ -30,11 +28,7 @@ public class PartLayout {
         return sum + space;
     }
 
-    public double getX() {
-        return x;
-    }
-
-    public double getY() {
-        return y;
+    public double getSpacing() {
+        return spacing;
     }
 }
