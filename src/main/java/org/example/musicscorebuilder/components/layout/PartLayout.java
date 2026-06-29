@@ -8,7 +8,6 @@ import java.util.List;
 public class PartLayout {
     private final Part part;
     private final List<StaffLayout> staffLayouts = new ArrayList<>();
-    private double spacing = 0;
 
     public PartLayout(Part part) {
         this.part = part;
@@ -28,7 +27,7 @@ public class PartLayout {
         return sum + space;
     }
 
-    public double getSpacing() {
-        return spacing;
+    public double getStaffSpacing() {
+        return part.getStaffSpacing();
     }
 }

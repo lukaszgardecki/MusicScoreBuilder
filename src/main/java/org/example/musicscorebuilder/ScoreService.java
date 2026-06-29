@@ -31,8 +31,13 @@ public class ScoreService {
         piano2.add(new Staff());
         piano2.add(new Staff());
 
+        Part piano3 = new Part("Piano3");
+        piano3.add(new Staff());
+        piano3.add(new Staff());
+
         score.add(piano);
         score.add(piano2);
+        score.add(piano3);
 
         this.score = score;
         return score;

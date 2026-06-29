@@ -6,7 +6,7 @@ import org.example.musicscorebuilder.components.layout.SystemLayout;
 public class SystemView extends VBox {
 
     public SystemView(SystemLayout systemLayout) {
-        setSpacing(systemLayout.getSpacing());
+        setSpacing(systemLayout.getPartSpacing());
 
         systemLayout.getParts().stream()
                 .map(PartView::new)

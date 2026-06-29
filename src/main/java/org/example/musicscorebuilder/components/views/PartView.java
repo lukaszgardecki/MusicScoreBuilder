@@ -6,7 +6,9 @@ import org.example.musicscorebuilder.components.layout.PartLayout;
 public class PartView extends VBox {
 
     public PartView(PartLayout part) {
-        this.setSpacing(part.getSpacing());
+        this.setSpacing(part.getStaffSpacing());
+        this.setPrefHeight(part.getHeight());
+        this.setMinHeight(part.getHeight());
 
         part.getStaffLayouts().stream()
                 .map(StaffView::new)
