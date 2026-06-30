@@ -1,6 +1,7 @@
 package org.example.musicscorebuilder.components.layout;
 
 import org.example.musicscorebuilder.components.music.Part;
+import org.example.musicscorebuilder.components.music.Staff;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,10 +31,11 @@ public class PartLayout {
     public double getWidth() { return staffLayouts.stream().mapToDouble(StaffLayout::getOccupiedWidth).max().orElse(0); }
     public double getStaffSpacing() { return staffSpacing; }
 
-    public StaffLayout getOrCreateStaff(StaffLayout staffLayout) {
+    public StaffLayout getOrCreateStaff(Staff staff) {
         for (StaffLayout sl : this.getStaffLayouts()) {
-            if (sl.getStaff() == staffLayout.getStaff()) return sl;
+            if (sl.getStaff() == staff) return sl;
         }
+        StaffLayout staffLayout = new StaffLayout(staff);
         this.add(staffLayout);
         return staffLayout;
     }

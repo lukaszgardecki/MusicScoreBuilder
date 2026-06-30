@@ -24,7 +24,7 @@ public class ScoreService {
     public Score getScore() {
         if  (score != null) return score;
         Score score = new Score("Utwór", "Kompozytor");
-        IntStream.range(0, 42*3).forEach(i -> score.add(new Measure()));
+        IntStream.range(0, 10).forEach(i -> score.add(new Measure()));
 
         Part piano = new Part("Piano1");
         IntStream.range(0, 2).forEach(i -> piano.add(new Staff()));

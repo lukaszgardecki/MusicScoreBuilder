@@ -7,20 +7,14 @@ import java.util.List;
 
 public class StaffLayout {
     private final Staff staff;
-    private final double width;
     private final List<MeasureLayout> measures = new ArrayList<>();
 
-    public StaffLayout(Staff staff, double width) {
+    public StaffLayout(Staff staff) {
         this.staff = staff;
-        this.width = width;
     }
 
     public Staff getStaff() {
         return staff;
-    }
-
-    public double getWidth() {
-        return width;
     }
 
     public double getOccupiedWidth() {

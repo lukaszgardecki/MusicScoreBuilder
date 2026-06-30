@@ -38,7 +38,7 @@ public class LayoutEngine {
                 PartLayout pl = currentSystem.getOrCreatePart(part);
 
                 for (Staff staff : part.getStaves()) {
-                    StaffLayout sl = pl.getOrCreateStaff(new StaffLayout(staff, pageWidth));
+                    StaffLayout sl = pl.getOrCreateStaff(staff);
                     sl.add(new MeasureLayout(measure));
                 }
             }

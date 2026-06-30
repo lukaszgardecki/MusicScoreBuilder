@@ -24,9 +24,12 @@ public class StaffView extends Pane {
     private void drawStaffLines(StaffLayout sl) {
         for (int i = 0; i < sl.getStaff().getLinesNumber(); i++) {
             double lineY = i * sl.getStaff().getLineSpacing();
-            Line line = new Line(0, 0, sl.getWidth(), 0);
-            line.setStrokeWidth(sl.getStaff().getLineWidth());
+            Line line = new Line();
+            line.setStartY(0);
+            line.setEndY(0);
             line.setLayoutY(lineY);
+            line.setStrokeWidth(sl.getStaff().getLineWidth());
+            line.endXProperty().bind(this.widthProperty());
             this.getChildren().add(line);
         }
     }
