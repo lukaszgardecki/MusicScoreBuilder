@@ -2,7 +2,6 @@ package org.example.musicscorebuilder.components.views;
 
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import org.example.musicscorebuilder.components.layout.MeasureLayout;
 
@@ -17,10 +16,7 @@ public class MeasureView extends Pane {
         this.setPrefWidth(width);
 
         Rectangle bg = generateRectangle(width);
-        Line barLine = generateBarline(width);
-
         this.getChildren().add(bg);
-        this.getChildren().add(barLine);
     }
 
     private String getRandomHexColor() {
@@ -37,15 +33,5 @@ public class MeasureView extends Pane {
         bg.heightProperty().bind(this.heightProperty());
         bg.setFill(Color.valueOf(getRandomHexColor()));
         return bg;
-    }
-
-    private Line generateBarline(double xPos) {
-        Line barLine = new Line();
-        barLine.setStartX(xPos);
-        barLine.setEndX(xPos);
-        barLine.setStartY(0);
-        barLine.endYProperty().bind(this.heightProperty());
-        barLine.setStroke(Color.BLACK);
-        return barLine;
     }
 }
