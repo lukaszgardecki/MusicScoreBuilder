@@ -5,7 +5,6 @@ import java.util.List;
 
 public class Part {
     private String name;
-    private double staffSpacing = 40;
     private final List<Staff> staves = new ArrayList<>();
 
     public Part(String name) {
@@ -18,10 +17,6 @@ public class Part {
 
     public void add(Staff staff) {
         staves.add(staff);
-    }
-
-    public double getStaffSpacing() {
-        return staffSpacing;
     }
 
     public String getName() {

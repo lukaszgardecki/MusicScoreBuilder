@@ -16,7 +16,7 @@ public class PageLayout {
     private final double marginRight;
     private final double effectiveHeight;
     private final double effectiveWidth;
-    private double spacing = 0;
+    private final double systemSpacing = 70;
 
     public PageLayout(Page page) {
         this.page = page;
@@ -39,14 +39,14 @@ public class PageLayout {
     public double getEffectiveHeight() { return effectiveHeight; }
     public double getWidth() { return width; }
     public double getEffectiveWidth() { return effectiveWidth; }
-    public double getAvailableHeight() {
+    public double getOccupiedHeight() {
         return systems.stream()
                 .mapToDouble(SystemLayout::getHeight)
-                .sum() + (spacing * (systems.size()-1));
+                .sum() + (systemSpacing * (systems.size()-1));
     }
     public double getMarginTop() { return marginTop; }
     public double getMarginBottom() { return marginBottom; }
     public double getMarginLeft() { return marginLeft; }
     public double getMarginRight() { return marginRight; }
-    public double getSpacing() { return spacing; }
+    public double getSystemSpacing() { return systemSpacing; }
 }

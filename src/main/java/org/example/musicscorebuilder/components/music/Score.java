@@ -7,7 +7,7 @@ public class Score {
     private String title;
     private String composer;
     private final List<Part> parts = new ArrayList<>();
-    private double partSpacing = 60;
+    private final List<Measure> measures = new ArrayList<>();
 
     public Score(String title, String composer) {
         this.title = title;
@@ -18,17 +18,21 @@ public class Score {
         return parts;
     }
 
+    public List<Measure> getMeasures() {
+        return measures;
+    }
+
     public void add(Part part) {
         parts.add(part);
+    }
+
+    public void add(Measure measure) {
+        measures.add(measure);
     }
 
     public void removeLast() {
         if (parts.isEmpty()) return;
         parts.removeLast();
-    }
-
-    public double getPartSpacing() {
-        return partSpacing;
     }
 
     public String getTitle() {

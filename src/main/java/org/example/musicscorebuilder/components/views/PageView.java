@@ -16,12 +16,10 @@ public class PageView extends Pane {
 
     private class PageContentView extends VBox {
         public PageContentView(PageLayout page) {
-
+            setSpacing(page.getSystemSpacing());
             setLayoutX(page.getMarginLeft());
             setLayoutY(page.getMarginTop());
-
             setPrefSize(page.getEffectiveWidth(), page.getEffectiveHeight());
-//            setBackground(Background.fill(Color.AQUA));
 
             page.getSystems().stream()
                     .map(SystemView::new)
