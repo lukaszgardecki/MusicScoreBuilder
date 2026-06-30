@@ -30,9 +30,9 @@ public class Score {
         measures.add(measure);
     }
 
-    public void removeLast() {
-        if (parts.isEmpty()) return;
-        parts.removeLast();
+    public void removeLastMeasure() {
+        if (measures.isEmpty()) return;
+        measures.removeLast();
     }
 
     public String getTitle() {

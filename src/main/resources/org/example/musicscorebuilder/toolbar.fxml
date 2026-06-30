@@ -19,6 +19,6 @@
     <Button styleClass="toolbar-btn" text="p2" />
     <Button styleClass="toolbar-btn" text="p3" />
     <Separator />
-    <Button fx:id="addStaff" styleClass="toolbar-btn" text="+" onAction="#addStaff"/>
-    <Button fx:id="removeStaff" styleClass="toolbar-btn" text="-" onAction="#removeStaff"/>
+    <Button fx:id="addMeasure" styleClass="toolbar-btn" text="+" onAction="#addMeasure"/>
+    <Button fx:id="removeMeasure" styleClass="toolbar-btn" text="-" onAction="#removeMeasure"/>
 </ToolBar>
