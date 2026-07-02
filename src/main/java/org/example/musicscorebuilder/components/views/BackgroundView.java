@@ -4,8 +4,10 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.StackPane;
+import org.example.musicscorebuilder.components.layout.ScoreLayout;
 
 public class BackgroundView extends StackPane {
+    private ScoreView scoreView;
     private double lastX;
     private double lastY;
     private double zoom = 1.0;
@@ -16,9 +18,13 @@ public class BackgroundView extends StackPane {
         enableZoom();
     }
 
-    public void setContent(Node content) {
-        getChildren().clear();
-        getChildren().add(content);
+    public void updateContent(ScoreLayout newLayout) {
+        if (scoreView == null) {
+            scoreView = new ScoreView(newLayout);
+            getChildren().add(scoreView);
+        } else {
+            scoreView.update(newLayout);
+        }
     }
 
     private void enableDrag() {

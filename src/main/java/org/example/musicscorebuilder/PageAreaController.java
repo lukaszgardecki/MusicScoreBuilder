@@ -5,8 +5,6 @@ import javafx.scene.control.ScrollPane;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
 import org.example.musicscorebuilder.components.music.Page;
 import org.example.musicscorebuilder.components.views.BackgroundView;
-import org.example.musicscorebuilder.components.views.ScoreView;
-
 
 public class PageAreaController {
     @FXML private ScrollPane scrollPane;
@@ -22,7 +20,6 @@ public class PageAreaController {
 
     private void refreshView() {
         ScoreLayout layout = new LayoutEngine(new Page()).compute(ScoreService.getInstance().getScore());
-        ScoreView score = new ScoreRenderer().render(layout);
-        container.setContent(score);
+        container.updateContent(layout);
     }
 }

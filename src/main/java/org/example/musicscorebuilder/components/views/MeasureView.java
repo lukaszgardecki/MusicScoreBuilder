@@ -8,15 +8,21 @@ import org.example.musicscorebuilder.components.layout.MeasureLayout;
 import java.util.Random;
 
 public class MeasureView extends Pane {
-
+    private Rectangle background;
 
     public MeasureView(MeasureLayout measureLayout) {
         double width = measureLayout.getWidth();
         this.setMinWidth(width);
         this.setPrefWidth(width);
 
-        Rectangle bg = generateRectangle(width);
-        this.getChildren().add(bg);
+        this.background = generateRectangle(width);
+        this.getChildren().add(background);
+    }
+
+    public void update(MeasureLayout measureLayout) {
+        this.setMinWidth(measureLayout.getWidth());
+        this.setPrefWidth(measureLayout.getWidth());
+        this.background.setWidth(measureLayout.getWidth());
     }
 
     private String getRandomHexColor() {
