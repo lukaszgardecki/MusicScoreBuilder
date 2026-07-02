@@ -11,9 +11,12 @@ import org.example.musicscorebuilder.components.layout.MeasureLayout;
 import org.example.musicscorebuilder.components.layout.PartLayout;
 import org.example.musicscorebuilder.components.layout.StaffLayout;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class PartView extends StackPane {
+    private final List<Color> measureColors = new ArrayList<>();
     private final VBox stavesContainer;
     private final Pane barlineLayer;
 
@@ -27,7 +30,7 @@ public class PartView extends StackPane {
     private VBox createStavesContainer(PartLayout part) {
         VBox container = new VBox(part.getStaffSpacing());
         part.getStaffLayouts().stream()
-                .map(StaffView::new)
+                .map(sl -> new StaffView(sl, this::getColorForMeasure))
                 .forEach(container.getChildren()::add);
         return container;
     }
@@ -64,9 +67,9 @@ public class PartView extends StackPane {
 
         for (int i = 0; i < staffLayouts.size(); i++) {
             if (i < staffNodes.size()) {
-                ((StaffView) staffNodes.get(i)).update(staffLayouts.get(i));
+                ((StaffView) staffNodes.get(i)).update(staffLayouts.get(i), this::getColorForMeasure);
             } else {
-                stavesContainer.getChildren().add(new StaffView(staffLayouts.get(i)));
+                stavesContainer.getChildren().add(new StaffView(staffLayouts.get(i), this::getColorForMeasure));
             }
         }
         while (staffNodes.size() > staffLayouts.size()) {
@@ -95,5 +98,17 @@ public class PartView extends StackPane {
             barLine.setStroke(Color.BLACK);
             barlineLayer.getChildren().add(barLine);
         }
+    }
+
+    private Color getColorForMeasure(int index) {
+        while (measureColors.size() <= index) {
+            measureColors.add(generateRandomColor());
+        }
+        return measureColors.get(index);
+    }
+
+    private Color generateRandomColor() {
+        Random rand = new Random();
+        return Color.rgb(rand.nextInt(256), rand.nextInt(256), rand.nextInt(256), 0.2);
     }
 }
