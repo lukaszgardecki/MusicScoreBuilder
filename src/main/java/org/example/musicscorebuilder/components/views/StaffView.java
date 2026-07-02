@@ -4,36 +4,41 @@ import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import org.example.musicscorebuilder.components.layout.MeasureLayout;
 import org.example.musicscorebuilder.components.layout.StaffLayout;
 
 import java.util.List;
-import java.util.function.IntFunction;
 
 public class StaffView extends Pane {
     private final HBox measuresContainer;
 
-//    public StaffView(StaffLayout sl) {
-    public StaffView(StaffLayout sl, IntFunction<Color> colorSupplier) {
-        this.setPrefHeight(sl.getHeight());
-        drawStaffLines(sl);
-
+    public StaffView(StaffLayout staffLayout) {
         measuresContainer = new HBox();
         measuresContainer.setFillHeight(true);
-        measuresContainer.setPrefHeight(sl.getHeight());
+        measuresContainer.setPrefHeight(staffLayout.getHeight());
 
-//        sl.getMeasures().stream()
-//                .map(MeasureView::new)
-//                .forEach(this::addMeasure);
+        this.setPrefHeight(staffLayout.getHeight());
+        this.getChildren().add(measuresContainer);
+        drawStaffLines(staffLayout);
+        update(staffLayout);
+    }
 
-        for (int i = 0; i < sl.getMeasures().size(); i++) {
-            MeasureView mv = new MeasureView(sl.getMeasures().get(i), colorSupplier.apply(i));
-            measuresContainer.getChildren().add(mv);
+    public void update(StaffLayout staffLayout) {
+        List<MeasureLayout> measures = staffLayout.getMeasures();
+        ObservableList<Node> measureNodes = measuresContainer.getChildren();
+
+        while (measureNodes.size() > measures.size()) {
+            measureNodes.removeLast();
         }
 
-        this.getChildren().add(measuresContainer);
+        for (int i = 0; i < measures.size(); i++) {
+            if (i < measureNodes.size()) {
+                ((MeasureView) measureNodes.get(i)).update(measures.get(i));
+            } else {
+                measuresContainer.getChildren().add(new MeasureView(measures.get(i)));
+            }
+        }
     }
 
     private void drawStaffLines(StaffLayout sl) {
@@ -44,29 +49,8 @@ public class StaffView extends Pane {
             line.setEndY(0);
             line.setLayoutY(lineY);
             line.setStrokeWidth(sl.getStaff().getLineWidth());
-            line.endXProperty().bind(this.widthProperty());
+            line.endXProperty().bind(measuresContainer.widthProperty());
             this.getChildren().add(line);
-        }
-    }
-
-    public void addMeasure(MeasureView measureView) {
-        measuresContainer.getChildren().add(measureView);
-    }
-
-    public void update(StaffLayout staffLayout, IntFunction<Color> colorSupplier) {
-        List<MeasureLayout> measures = staffLayout.getMeasures();
-        ObservableList<Node> measureNodes = measuresContainer.getChildren();
-
-        for (int i = 0; i < measures.size(); i++) {
-            if (i < measureNodes.size()) {
-                ((MeasureView) measureNodes.get(i)).update(measures.get(i), colorSupplier.apply(i));
-            } else {
-                measureNodes.add(new MeasureView(measures.get(i), colorSupplier.apply(i)));
-            }
-        }
-
-        while (measureNodes.size() > measures.size()) {
-            measureNodes.removeLast();
         }
     }
 }

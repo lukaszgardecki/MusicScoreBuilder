@@ -35,11 +35,11 @@ public class LayoutEngine {
             }
 
             for (Part part : score.getParts()) {
-                PartLayout pl = currentSystem.getOrCreatePart(part);
+                PartLayout partLayout = currentSystem.getOrCreatePart(part);
 
                 for (Staff staff : part.getStaves()) {
-                    StaffLayout sl = pl.getOrCreateStaff(staff);
-                    sl.add(new MeasureLayout(measure));
+                    StaffLayout staffLayout = partLayout.getOrCreateStaff(staff);
+                    staffLayout.add(ml);
                 }
             }
         }

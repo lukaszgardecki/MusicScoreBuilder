@@ -22,21 +22,19 @@ public class PageView extends Pane {
     }
 
     public void update(PageLayout pageLayout) {
-        setPrefSize(pageLayout.getWidth(), pageLayout.getHeight());
-
         List<SystemLayout> systems = pageLayout.getSystems();
         ObservableList<Node> systemNodes = pageContentView.getChildren();
+
+        while (systemNodes.size() > systems.size()) {
+            systemNodes.removeLast();
+        }
 
         for (int i = 0; i < systems.size(); i++) {
             if (i < systemNodes.size()) {
                 ((SystemView) systemNodes.get(i)).update(systems.get(i));
             } else {
-                pageContentView.getChildren().add(new SystemView(systems.get(i)));
+                systemNodes.add(new SystemView(systems.get(i)));
             }
-        }
-
-        while (systemNodes.size() > systems.size()) {
-            systemNodes.removeLast();
         }
     }
 

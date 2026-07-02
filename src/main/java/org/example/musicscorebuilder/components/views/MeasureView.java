@@ -8,22 +8,21 @@ import org.example.musicscorebuilder.components.layout.MeasureLayout;
 public class MeasureView extends Pane {
     private Rectangle background;
 
-    public MeasureView(MeasureLayout measureLayout, Color color) {
+    public MeasureView(MeasureLayout measureLayout) {
         double width = measureLayout.getWidth();
         this.setMinWidth(width);
+        this.setMaxWidth(width);
         this.setPrefWidth(width);
 
         this.background = new Rectangle();
         this.background.widthProperty().bind(this.widthProperty());
         this.background.heightProperty().bind(this.heightProperty());
-        this.background.setFill(color);
+        this.background.setFill(Color.TRANSPARENT);
 
         this.getChildren().add(background);
     }
 
-    public void update(MeasureLayout measureLayout, Color color) {
-        this.setMinWidth(measureLayout.getWidth());
-        this.setPrefWidth(measureLayout.getWidth());
-        this.background.setFill(color);
+    public void update(MeasureLayout measureLayout) {
+
     }
 }

@@ -1,5 +1,8 @@
 package org.example.musicscorebuilder.components.views;
 
+import javafx.collections.ObservableList;
+import javafx.scene.Node;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import org.example.musicscorebuilder.components.layout.PartLayout;
 import org.example.musicscorebuilder.components.layout.SystemLayout;
@@ -10,6 +13,8 @@ public class SystemView extends VBox {
 
     public SystemView(SystemLayout systemLayout) {
         setSpacing(systemLayout.getPartSpacing());
+        this.setMaxWidth(Region.USE_PREF_SIZE);
+        setFillWidth(false);
 
         systemLayout.getParts().stream()
                 .map(PartView::new)
@@ -18,17 +23,18 @@ public class SystemView extends VBox {
 
     public void update(SystemLayout systemLayout) {
         List<PartLayout> systems = systemLayout.getParts();
+        ObservableList<Node> children = this.getChildren();
 
-        for (int i = this.getChildren().size(); i < systems.size(); i++) {
-            this.getChildren().add(new PartView(systems.get(i)));
+        while (children.size() > systems.size()) {
+            children.removeLast();
         }
 
-        while (this.getChildren().size() > systems.size()) {
-            this.getChildren().removeLast();
-        }
-
-        for (int i = 0; i < this.getChildren().size(); i++) {
-            ((PartView) this.getChildren().get(i)).update(systems.get(i));
+        for (int i = 0; i < systems.size(); i++) {
+            if (i < children.size()) {
+                ((PartView) children.get(i)).update(systems.get(i));
+            } else {
+                children.add(new PartView(systems.get(i)));
+            }
         }
     }
 }

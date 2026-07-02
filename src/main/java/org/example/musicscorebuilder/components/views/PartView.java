@@ -2,113 +2,79 @@ package org.example.musicscorebuilder.components.views;
 
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
 import org.example.musicscorebuilder.components.layout.MeasureLayout;
 import org.example.musicscorebuilder.components.layout.PartLayout;
 import org.example.musicscorebuilder.components.layout.StaffLayout;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class PartView extends StackPane {
-    private final List<Color> measureColors = new ArrayList<>();
-    private final VBox stavesContainer;
-    private final Pane barlineLayer;
+    private final StavesContainer stavesContainer;
+    private final BarlinesContainer barlineLayer;
 
-    public PartView(PartLayout part) {
-        this.stavesContainer = createStavesContainer(part);
-        this.barlineLayer = createBarlineLayer(part);
+    public PartView(PartLayout partLayout) {
+        this.stavesContainer = new StavesContainer(partLayout.getStaffSpacing());
+        this.barlineLayer = new BarlinesContainer();
 
         this.getChildren().addAll(stavesContainer, barlineLayer);
+        update(partLayout);
     }
 
-    private VBox createStavesContainer(PartLayout part) {
-        VBox container = new VBox(part.getStaffSpacing());
-        part.getStaffLayouts().stream()
-                .map(sl -> new StaffView(sl, this::getColorForMeasure))
-                .forEach(container.getChildren()::add);
-        return container;
+    public void update(PartLayout partLayout) {
+        stavesContainer.update(partLayout);
+        barlineLayer.update(partLayout);
+        stavesContainer.layout();
+        barlineLayer.layout();
     }
+}
 
-    private Pane createBarlineLayer(PartLayout part) {
-        Pane layer = new Pane();
-        layer.setMouseTransparent(true);
-
-        layer.prefWidthProperty().bind(this.widthProperty());
-        layer.prefHeightProperty().bind(this.heightProperty());
-
-        addBarlinesToLayer(layer, part);
-        return layer;
-    }
-
-    private void addBarlinesToLayer(Pane layer, PartLayout part) {
-        double currentX = 0;
-        for (MeasureLayout ml : part.getStaffLayouts().getFirst().getMeasures()) {
-            currentX += ml.getWidth();
-            layer.getChildren().add(createBarline(currentX, layer));
-        }
-    }
-
-    private Line createBarline(double x, Pane layer) {
-        Line barLine = new Line(x, 0, x, 0);
-        barLine.setStroke(Color.BLACK);
-        barLine.endYProperty().bind(layer.heightProperty());
-        return barLine;
+class StavesContainer extends VBox {
+    public StavesContainer(double spacing) {
+        super(spacing);
     }
 
     public void update(PartLayout partLayout) {
         List<StaffLayout> staffLayouts = partLayout.getStaffLayouts();
-        ObservableList<Node> staffNodes = stavesContainer.getChildren();
+        ObservableList<Node> staffNodes = this.getChildren();
 
-        for (int i = 0; i < staffLayouts.size(); i++) {
-            if (i < staffNodes.size()) {
-                ((StaffView) staffNodes.get(i)).update(staffLayouts.get(i), this::getColorForMeasure);
-            } else {
-                stavesContainer.getChildren().add(new StaffView(staffLayouts.get(i), this::getColorForMeasure));
-            }
-        }
         while (staffNodes.size() > staffLayouts.size()) {
             staffNodes.removeLast();
         }
 
-        syncSystemBarlines(partLayout);
+        for (int i = 0; i < staffLayouts.size(); i++) {
+            if (i < staffNodes.size()) {
+                ((StaffView) staffNodes.get(i)).update(staffLayouts.get(i));
+            } else {
+                staffNodes.add(new StaffView(staffLayouts.get(i)));
+            }
+        }
     }
+}
 
-    private void syncSystemBarlines(PartLayout part) {
-        barlineLayer.getChildren().clear();
-        double currentX = 0;
+class BarlinesContainer extends HBox {
 
+    public void update(PartLayout part) {
         List<MeasureLayout> measures = part.getStaffLayouts().get(0).getMeasures();
+        ObservableList<Node> barlineNodes = this.getChildren();
 
-        for (MeasureLayout ml : measures) {
-            currentX += ml.getWidth();
-
-            Line barLine = new Line();
-            barLine.setStartX(currentX);
-            barLine.setEndX(currentX);
-            barLine.setStartY(0);
-
-            barLine.endYProperty().bind(stavesContainer.heightProperty());
-
-            barLine.setStroke(Color.BLACK);
-            barlineLayer.getChildren().add(barLine);
+        while (barlineNodes.size() > measures.size()) {
+            barlineNodes.removeLast();
         }
-    }
 
-    private Color getColorForMeasure(int index) {
-        while (measureColors.size() <= index) {
-            measureColors.add(generateRandomColor());
+        for (int i = 0; i < measures.size(); i++) {
+            MeasureLayout ml = measures.get(i);
+            if (i >= barlineNodes.size()) {
+                Pane measureContainer = new Pane();
+                measureContainer.setPrefWidth(ml.getWidth());
+                BarlineView barLine = new BarlineView(ml.getBarlineLayout());
+                barLine.endYProperty().bind(this.heightProperty());
+                measureContainer.getChildren().add(barLine);
+                this.getChildren().add(measureContainer);
+            }
         }
-        return measureColors.get(index);
-    }
-
-    private Color generateRandomColor() {
-        Random rand = new Random();
-        return Color.rgb(rand.nextInt(256), rand.nextInt(256), rand.nextInt(256), 0.2);
     }
 }
