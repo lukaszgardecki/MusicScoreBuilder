@@ -17,6 +17,7 @@ public class PageView extends Pane {
         setPrefSize(page.getWidth(), page.getHeight());
         setMinSize(page.getWidth(), page.getHeight());
         setMaxSize(page.getWidth(), page.getHeight());
+        setSnapToPixel(false);
         this.pageContentView = new PageContentView(page);
         this.getChildren().add(pageContentView);
     }
@@ -44,6 +45,7 @@ public class PageView extends Pane {
             setLayoutX(page.getMarginLeft());
             setLayoutY(page.getMarginTop());
             setPrefSize(page.getEffectiveWidth(), page.getEffectiveHeight());
+            setSnapToPixel(false);
 
             page.getSystems().stream()
                     .map(SystemView::new)

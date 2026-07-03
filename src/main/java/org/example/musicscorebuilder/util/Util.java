@@ -6,8 +6,13 @@ import java.util.Random;
 
 public class Util {
 
+    public static Color generateRandomColor(float alpha) {
+        Random rand = new Random();
+        return Color.rgb(rand.nextInt(256), rand.nextInt(256), rand.nextInt(256), alpha);
+    }
+
     public static Color generateRandomColor() {
         Random rand = new Random();
-        return Color.rgb(rand.nextInt(256), rand.nextInt(256), rand.nextInt(256), 0.2);
+        return Color.rgb(rand.nextInt(256), rand.nextInt(256), rand.nextInt(256), 1.0);
     }
 }

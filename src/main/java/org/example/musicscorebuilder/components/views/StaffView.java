@@ -17,6 +17,7 @@ public class StaffView extends Pane {
         measuresContainer = new HBox();
         measuresContainer.setFillHeight(true);
         measuresContainer.setPrefHeight(staffLayout.getHeight());
+        measuresContainer.setSnapToPixel(false);
 
         this.setPrefHeight(staffLayout.getHeight());
         this.getChildren().add(measuresContainer);
@@ -44,12 +45,14 @@ public class StaffView extends Pane {
     private void drawStaffLines(StaffLayout sl) {
         for (int i = 0; i < sl.getStaff().getLinesNumber(); i++) {
             double lineY = i * sl.getStaff().getLineSpacing();
+            double lineWidth = sl.getStaff().getLineWidth();
             Line line = new Line();
             line.setStartY(0);
             line.setEndY(0);
+            line.setLayoutX(lineWidth/2);
             line.setLayoutY(lineY);
-            line.setStrokeWidth(sl.getStaff().getLineWidth());
-            line.endXProperty().bind(measuresContainer.widthProperty());
+            line.setStrokeWidth(lineWidth);
+            line.endXProperty().bind(measuresContainer.widthProperty().subtract(lineWidth));
             this.getChildren().add(line);
         }
     }

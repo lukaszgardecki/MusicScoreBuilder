@@ -15,6 +15,7 @@ public class SystemView extends VBox {
         setSpacing(systemLayout.getPartSpacing());
         this.setMaxWidth(Region.USE_PREF_SIZE);
         setFillWidth(false);
+        setSnapToPixel(false);
 
         systemLayout.getParts().stream()
                 .map(PartView::new)

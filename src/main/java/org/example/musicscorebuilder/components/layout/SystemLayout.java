@@ -9,10 +9,6 @@ public class SystemLayout {
     private final List<PartLayout> parts = new ArrayList<>();
     private double partSpacing = 60;
 
-    public void add(PartLayout part) {
-        parts.add(part);
-    }
-
     public List<PartLayout> getParts() {
         return parts;
     }
@@ -26,7 +22,7 @@ public class SystemLayout {
             if (pl.getPart() == part) return pl;
         }
         PartLayout newPl = new PartLayout(part);
-        this.add(newPl);
+        parts.add(newPl);
         return newPl;
     }
 }

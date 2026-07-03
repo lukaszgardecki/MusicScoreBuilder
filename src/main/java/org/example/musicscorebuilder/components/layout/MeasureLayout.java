@@ -6,14 +6,21 @@ public class MeasureLayout {
     private static final double PIXELS_PER_DURATION = 20.0;
     private final Measure measure;
     private final BarlineLayout barlineLayout;
-    private final double width;
+    private final double minWidth;
+    private double finalWidth;
 
     public MeasureLayout(Measure measure) {
         this.measure = measure;
-        this.width = measure.getDuration() * PIXELS_PER_DURATION;
-        this.barlineLayout = new BarlineLayout(width);
+        this.minWidth = measure.getDuration() * PIXELS_PER_DURATION;
+        this.finalWidth = minWidth;
+        this.barlineLayout = new BarlineLayout(finalWidth);
     }
 
-    public double getWidth() { return width; }
+    public double getMinWidth() { return minWidth; }
+    public double getFinalWidth() { return finalWidth; }
+    public void setFinalWidth(double w) {
+        this.finalWidth = w;
+        barlineLayout.setX(w);
+    }
     public BarlineLayout getBarlineLayout() { return barlineLayout; }
 }

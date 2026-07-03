@@ -15,10 +15,6 @@ public class PartLayout {
         this.part = part;
     }
 
-    public void add(StaffLayout staffLayout) {
-        staffLayouts.add(staffLayout);
-    }
-
     public Part getPart() { return part; }
     public List<StaffLayout> getStaffLayouts() { return staffLayouts; }
 
@@ -36,7 +32,7 @@ public class PartLayout {
             if (sl.getStaff() == staff) return sl;
         }
         StaffLayout staffLayout = new StaffLayout(staff);
-        this.add(staffLayout);
+        staffLayouts.add(staffLayout);
         return staffLayout;
     }
 }

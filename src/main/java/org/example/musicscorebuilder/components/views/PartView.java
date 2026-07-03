@@ -35,6 +35,7 @@ public class PartView extends StackPane {
 class StavesContainer extends VBox {
     public StavesContainer(double spacing) {
         super(spacing);
+        setSnapToPixel(false);
     }
 
     public void update(PartLayout partLayout) {
@@ -57,6 +58,10 @@ class StavesContainer extends VBox {
 
 class BarlinesContainer extends HBox {
 
+    BarlinesContainer() {
+        setSnapToPixel(false);
+    }
+
     public void update(PartLayout part) {
         List<MeasureLayout> measures = part.getStaffLayouts().get(0).getMeasures();
         ObservableList<Node> barlineNodes = this.getChildren();
@@ -67,9 +72,15 @@ class BarlinesContainer extends HBox {
 
         for (int i = 0; i < measures.size(); i++) {
             MeasureLayout ml = measures.get(i);
-            if (i >= barlineNodes.size()) {
+
+            if (i < barlineNodes.size()) {
+                Pane measureContainer = (Pane) barlineNodes.get(i);
+                measureContainer.setPrefWidth(ml.getFinalWidth());
+                BarlineView barlineView = (BarlineView) measureContainer.getChildren().get(0);
+                barlineView.update(ml.getBarlineLayout());
+            } else {
                 Pane measureContainer = new Pane();
-                measureContainer.setPrefWidth(ml.getWidth());
+                measureContainer.setPrefWidth(ml.getFinalWidth());
                 BarlineView barLine = new BarlineView(ml.getBarlineLayout());
                 barLine.endYProperty().bind(this.heightProperty());
                 measureContainer.getChildren().add(barLine);

@@ -7,10 +7,14 @@ import org.example.musicscorebuilder.components.layout.BarlineLayout;
 public class BarlineView extends Line {
 
     public BarlineView(BarlineLayout barlineLayout) {
-        setStartX(barlineLayout.getX());
-        setEndX(barlineLayout.getX());
         setStartY(0);
         setManaged(false);
         setStroke(Color.BLACK);
+        update(barlineLayout);
+    }
+
+    public void update(BarlineLayout barlineLayout) {
+        setStartX(barlineLayout.getX());
+        setEndX(barlineLayout.getX());
     }
 }
