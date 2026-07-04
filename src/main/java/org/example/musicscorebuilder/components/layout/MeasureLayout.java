@@ -5,7 +5,7 @@ import org.example.musicscorebuilder.components.music.Measure;
 public class MeasureLayout {
     private static final double PIXELS_PER_DURATION = 20.0;
     private final Measure measure;
-    private final BarlineLayout barlineLayout;
+    private final BarlineLayout rightBarline;
     private final double minWidth;
     private double finalWidth;
 
@@ -13,14 +13,14 @@ public class MeasureLayout {
         this.measure = measure;
         this.minWidth = measure.getDuration() * PIXELS_PER_DURATION;
         this.finalWidth = minWidth;
-        this.barlineLayout = new BarlineLayout(finalWidth);
+        this.rightBarline = new BarlineLayout(finalWidth);
     }
 
     public double getMinWidth() { return minWidth; }
     public double getFinalWidth() { return finalWidth; }
     public void setFinalWidth(double w) {
         this.finalWidth = w;
-        barlineLayout.setX(w);
+        rightBarline.setX(w);
     }
-    public BarlineLayout getBarlineLayout() { return barlineLayout; }
+    public BarlineLayout getRightBarline() { return rightBarline; }
 }

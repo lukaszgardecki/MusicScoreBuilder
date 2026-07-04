@@ -77,13 +77,13 @@ class BarlinesContainer extends HBox {
                 Pane measureContainer = (Pane) barlineNodes.get(i);
                 measureContainer.setPrefWidth(ml.getFinalWidth());
                 BarlineView barlineView = (BarlineView) measureContainer.getChildren().get(0);
-                barlineView.update(ml.getBarlineLayout());
+                barlineView.update(ml.getRightBarline());
             } else {
                 Pane measureContainer = new Pane();
                 measureContainer.setPrefWidth(ml.getFinalWidth());
-                BarlineView barLine = new BarlineView(ml.getBarlineLayout());
-                barLine.endYProperty().bind(this.heightProperty());
-                measureContainer.getChildren().add(barLine);
+                BarlineView rightBarline = new BarlineView(ml.getRightBarline());
+                rightBarline.endYProperty().bind(this.heightProperty());
+                measureContainer.getChildren().add(rightBarline);
                 this.getChildren().add(measureContainer);
             }
         }

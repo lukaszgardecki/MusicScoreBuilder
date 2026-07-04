@@ -52,14 +52,14 @@ public class LayoutEngine {
                 }
             }
         }
-
         justifySystem(currentSystemMeasures);
-
         return scoreLayout;
     }
 
     private void justifySystem(List<MeasureLayout> measures) {
+        double MIN_FULLNESS_RATIO = 0.4;
         double minWidthSum = measures.stream().mapToDouble(MeasureLayout::getMinWidth).sum();
+        if (minWidthSum < page.getEffectiveWidth() * MIN_FULLNESS_RATIO) return;
         double extraSpace = page.getEffectiveWidth() - minWidthSum;
 
         if (extraSpace > 0) {
