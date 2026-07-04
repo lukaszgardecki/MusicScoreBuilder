@@ -6,13 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SystemLayout {
+    private BarlineLayout startBarline = new BarlineLayout(0);
     private final List<PartLayout> parts = new ArrayList<>();
     private double partSpacing = 60;
 
-    public List<PartLayout> getParts() {
-        return parts;
-    }
-
+    public BarlineLayout getStartBarline() { return startBarline; }
+    public List<PartLayout> getParts() { return parts; }
     public double getHeight() { return parts.stream().mapToDouble(PartLayout::getHeight).sum() + partSpacing * (parts.size() - 1); }
     public double getOccupiedWidth() { return parts.stream().mapToDouble(PartLayout::getWidth).max().orElse(0); }
     public double getPartSpacing() { return partSpacing; }
