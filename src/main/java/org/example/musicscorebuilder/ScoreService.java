@@ -1,9 +1,6 @@
 package org.example.musicscorebuilder;
 
-import org.example.musicscorebuilder.components.music.Measure;
-import org.example.musicscorebuilder.components.music.Part;
-import org.example.musicscorebuilder.components.music.Score;
-import org.example.musicscorebuilder.components.music.Staff;
+import org.example.musicscorebuilder.components.music.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,18 +23,9 @@ public class ScoreService {
         Score score = new Score("Utwór", "Kompozytor");
         IntStream.range(0, 10).forEach(i -> score.add(new Measure()));
 
-        Part piano = new Part("Piano1");
-        IntStream.range(0, 2).forEach(i -> piano.add(new Staff()));
-
-        Part piano2 = new Part("Piano2");
-        IntStream.range(0, 3).forEach(i -> piano2.add(new Staff()));
-
-        Part piano3 = new Part("Piano3");
-        IntStream.range(0, 2).forEach(i -> piano3.add(new Staff()));
-
-        score.add(piano);
-        score.add(piano2);
-        score.add(piano3);
+        score.add(InstrumentFactory.createPiano());
+        score.add(InstrumentFactory.createPiano());
+        score.add(InstrumentFactory.createOrgan());
 
         this.score = score;
         return score;
