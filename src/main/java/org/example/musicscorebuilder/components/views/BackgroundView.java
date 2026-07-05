@@ -54,9 +54,10 @@ public class BackgroundView extends StackPane {
 
             if (getChildren().isEmpty()) return;
             Node scoreView = getChildren().get(0);
+            double maxZoom = 50.0;
             double delta = 1.1;
             double zoomFactor = (e.getDeltaY() > 0) ? delta : 1 / delta;
-            zoom = Math.max(0.2, Math.min(zoom * zoomFactor, 5.0));
+            zoom = Math.max(0.2, Math.min(zoom * zoomFactor, maxZoom));
 
             double beforeScaleMouseX = scoreView.sceneToLocal(e.getSceneX(), e.getSceneY()).getX();
             double beforeScaleMouseY = scoreView.sceneToLocal(e.getSceneX(), e.getSceneY()).getY();
