@@ -12,11 +12,30 @@ import org.example.musicscorebuilder.components.layout.StaffLayout;
 
 import java.util.List;
 
-public class PartView extends StackPane {
+public class PartView extends HBox {
+    private final BraceView braceView;
+    private final PartContainer partContainer;
+
+    public PartView(PartLayout partLayout) {
+        this.braceView = new BraceView(partLayout.getBraceLayout());
+        this.partContainer = new PartContainer(partLayout);
+
+        this.setSnapToPixel(false);
+        this.getChildren().addAll(braceView, partContainer);
+        update(partLayout);
+    }
+
+    public void update(PartLayout partLayout) {
+        partContainer.update(partLayout);
+        braceView.update(partLayout.getBraceLayout());
+    }
+}
+
+class PartContainer extends StackPane {
     private final StavesContainer stavesContainer;
     private final BarlinesContainer barlineLayer;
 
-    public PartView(PartLayout partLayout) {
+    public PartContainer(PartLayout partLayout) {
         this.stavesContainer = new StavesContainer(partLayout.getStaffSpacing());
         this.barlineLayer = new BarlinesContainer();
 
@@ -27,6 +46,19 @@ public class PartView extends StackPane {
     public void update(PartLayout partLayout) {
         stavesContainer.update(partLayout);
         barlineLayer.update(partLayout);
+
+        double preciseWidth = partLayout.getStaffLayouts().get(0).getMeasures().stream()
+                .mapToDouble(MeasureLayout::getFinalWidth)
+                .sum();
+
+        this.setMinWidth(preciseWidth);
+        this.setPrefWidth(preciseWidth);
+        this.setMaxWidth(preciseWidth);
+
+        stavesContainer.setMinWidth(preciseWidth);
+        stavesContainer.setPrefWidth(preciseWidth);
+        stavesContainer.setMaxWidth(preciseWidth);
+
         stavesContainer.layout();
         barlineLayer.layout();
     }

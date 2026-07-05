@@ -2,7 +2,7 @@ package org.example.musicscorebuilder.components.views;
 
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import org.example.musicscorebuilder.components.layout.PartLayout;
@@ -10,24 +10,27 @@ import org.example.musicscorebuilder.components.layout.SystemLayout;
 
 import java.util.List;
 
-public class SystemView extends HBox {
+public class SystemView extends Pane {
     private final BarlineView startBarline;
-    private final PartsContainer partsContainer;
+    private final SystemContainer systemContainer;
 
     public SystemView(SystemLayout systemLayout) {
-        startBarline = new BarlineView(systemLayout.getStartBarline());
-        startBarline.setEndY(systemLayout.getHeight());
-        partsContainer = new PartsContainer(systemLayout);
+        this.startBarline = new BarlineView(systemLayout.getStartBarline());
+        this.systemContainer = new SystemContainer(systemLayout);
         this.setSnapToPixel(false);
-        this.getChildren().addAll(startBarline, partsContainer);
+        this.getChildren().addAll(startBarline, systemContainer);
+        update(systemLayout);
     }
 
     public void update(SystemLayout systemLayout) {
+        systemContainer.update(systemLayout.getParts());
+        startBarline.update(systemLayout.getStartBarline());
         startBarline.setEndY(systemLayout.getHeight());
-        partsContainer.update(systemLayout.getParts());
+        startBarline.setViewOrder(-1);
+        startBarline.setLayoutX(systemLayout.getBraceWidth());
 
         List<PartLayout> parts = systemLayout.getParts();
-        ObservableList<Node> children = partsContainer.getChildren();
+        ObservableList<Node> children = systemContainer.getChildren();
 
         while (children.size() > parts.size()) {
             children.removeLast();
@@ -43,9 +46,11 @@ public class SystemView extends HBox {
     }
 }
 
-class PartsContainer extends VBox {
 
-    public PartsContainer(SystemLayout systemLayout) {
+
+class SystemContainer extends VBox {
+
+    public SystemContainer(SystemLayout systemLayout) {
         setSpacing(systemLayout.getPartSpacing());
         setMaxWidth(Region.USE_PREF_SIZE);
         setFillWidth(false);

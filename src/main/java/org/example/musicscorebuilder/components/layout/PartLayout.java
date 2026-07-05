@@ -8,6 +8,7 @@ import java.util.List;
 
 public class PartLayout {
     private final Part part;
+    private final BraceLayout braceLayout = new BraceLayout();;
     private final List<StaffLayout> staffLayouts = new ArrayList<>();
     private double staffSpacing = 40;
 
@@ -16,6 +17,7 @@ public class PartLayout {
     }
 
     public Part getPart() { return part; }
+    public BraceLayout getBraceLayout() { return braceLayout; }
     public List<StaffLayout> getStaffLayouts() { return staffLayouts; }
 
     public double getHeight() {
@@ -24,8 +26,13 @@ public class PartLayout {
         return sum + space;
     }
 
-    public double getWidth() { return staffLayouts.stream().mapToDouble(StaffLayout::getOccupiedWidth).max().orElse(0); }
+    public double getWidth() {
+        double staves = staffLayouts.stream().mapToDouble(StaffLayout::getOccupiedWidth).max().orElse(0);
+        double braceWidth = braceLayout.getWidth();
+        return staves + braceWidth;
+    }
     public double getStaffSpacing() { return staffSpacing; }
+    public double getBraceWidth() { return braceLayout.getWidth(); }
 
     public StaffLayout getOrCreateStaff(Staff staff) {
         for (StaffLayout sl : this.getStaffLayouts()) {
@@ -33,6 +40,7 @@ public class PartLayout {
         }
         StaffLayout staffLayout = new StaffLayout(staff);
         staffLayouts.add(staffLayout);
+        braceLayout.setHeight(getHeight());
         return staffLayout;
     }
 }

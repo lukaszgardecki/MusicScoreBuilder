@@ -3,7 +3,6 @@ package org.example.musicscorebuilder;
 import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.music.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class LayoutEngine {
@@ -21,7 +20,6 @@ public class LayoutEngine {
 
         SystemLayout currentSystem = new SystemLayout();
         currentPage.addSystem(currentSystem);
-        List<MeasureLayout> currentSystemMeasures = new ArrayList<>();
 
         for (Measure measure : score.getMeasures()) {
             MeasureLayout ml = new MeasureLayout(measure);
@@ -29,7 +27,7 @@ public class LayoutEngine {
             boolean noSpaceForNextSystem = currentPage.getOccupiedHeight() + currentSystem.getHeight() > page.getEffectiveHeight();
 
             if (noSpaceForNextMeasure) {
-                justifySystem(currentSystemMeasures);
+                justifySystem(currentSystem);
 
                 if (noSpaceForNextSystem) {
                     currentPage = new PageLayout(page);
@@ -38,33 +36,35 @@ public class LayoutEngine {
 
                 currentSystem = new SystemLayout();
                 currentPage.addSystem(currentSystem);
-                currentSystemMeasures.clear();
             }
-
-            currentSystemMeasures.add(ml);
 
             for (Part part : score.getParts()) {
                 PartLayout partLayout = currentSystem.getOrCreatePart(part);
-
                 for (Staff staff : part.getStaves()) {
                     StaffLayout staffLayout = partLayout.getOrCreateStaff(staff);
                     staffLayout.add(ml);
                 }
             }
         }
-        justifySystem(currentSystemMeasures);
+
+        justifySystem(currentSystem);
         return scoreLayout;
     }
 
-    private void justifySystem(List<MeasureLayout> measures) {
-        double MIN_FULLNESS_RATIO = 0.4;
-        double minWidthSum = measures.stream().mapToDouble(MeasureLayout::getMinWidth).sum();
-        if (minWidthSum < page.getEffectiveWidth() * MIN_FULLNESS_RATIO) return;
-        double extraSpace = page.getEffectiveWidth() - minWidthSum;
+    private void justifySystem(SystemLayout system) {
+        List<MeasureLayout> measures = system.getMeasures();
+        if (measures.isEmpty()) return;
 
-        if (extraSpace > 0) {
+        double MIN_FULLNESS_RATIO = 0.5;
+        double measuresMinWidthSum = measures.stream().mapToDouble(MeasureLayout::getMinWidth).sum();
+        double totalSystemMinWidth = measuresMinWidthSum + system.getBraceWidth();
+        if (totalSystemMinWidth < page.getEffectiveWidth() * MIN_FULLNESS_RATIO) return;
+        double extraSpace = page.getEffectiveWidth() - totalSystemMinWidth;
+
+        if (extraSpace > 0 && measuresMinWidthSum > 0) {
             for (MeasureLayout m : measures) {
-                double newWidth = m.getMinWidth() + (extraSpace * (m.getMinWidth() / minWidthSum));
+                double share = m.getMinWidth() / measuresMinWidthSum;
+                double newWidth = m.getMinWidth() + (extraSpace * share);
                 m.setFinalWidth(newWidth);
             }
         }

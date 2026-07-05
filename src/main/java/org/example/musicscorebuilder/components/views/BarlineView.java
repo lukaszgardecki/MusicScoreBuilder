@@ -14,7 +14,6 @@ public class BarlineView extends Line {
     }
 
     public void update(BarlineLayout barlineLayout) {
-        setStartX(barlineLayout.getX());
-        setEndX(barlineLayout.getX());
+        setLayoutX(barlineLayout.getX());
     }
 }
