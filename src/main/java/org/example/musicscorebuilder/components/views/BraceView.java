@@ -2,39 +2,38 @@ package org.example.musicscorebuilder.components.views;
 
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.SVGPath;
-import javafx.scene.transform.Scale;
+import javafx.scene.text.Text;
+import org.example.musicscorebuilder.FontManager;
 import org.example.musicscorebuilder.components.layout.BraceLayout;
 
 public class BraceView extends Pane {
     private final BraceIcon braceIcon;
 
     public BraceView(BraceLayout braceLayout) {
-        this.braceIcon = new BraceIcon(braceLayout.getPath());
+        this.braceIcon = new BraceIcon(braceLayout.getCode());
         this.setSnapToPixel(false);
         this.getChildren().add(braceIcon);
         update(braceLayout);
     }
 
     public void update(BraceLayout braceLayout) {
-        this.setPrefHeight(braceLayout.getHeight());
-        this.setMaxHeight(braceLayout.getHeight());
-        this.setPrefWidth(braceLayout.getWidth());
-        braceIcon.applyScale(braceLayout.getScale());
+        double targetWidth = braceLayout.getWidth();
+        double targetHeight = braceLayout.getHeight();
+        this.setPrefWidth(targetWidth);
+        this.setPrefHeight(targetHeight);
+
+        braceIcon.setFont(FontManager.getBravura(targetHeight));
+
+        var bounds = braceIcon.getBoundsInLocal();
+        braceIcon.setLayoutX(-bounds.getMinX());
+        braceIcon.setLayoutY(-bounds.getMinY());
     }
 
-    private class BraceIcon extends SVGPath {
-
-        public BraceIcon(String path) {
-            this.setContent(path);
+    private static class BraceIcon extends Text {
+        public BraceIcon(String code) {
+            this.setText(code);
             this.setFill(Color.BLACK);
-        }
-
-        public void applyScale(double scale) {
-            this.getTransforms().clear();
-
-            Scale transform = new Scale(scale, scale, 0, 0);
-            this.getTransforms().add(transform);
+            this.setBoundsType(javafx.scene.text.TextBoundsType.VISUAL);
         }
     }
 }

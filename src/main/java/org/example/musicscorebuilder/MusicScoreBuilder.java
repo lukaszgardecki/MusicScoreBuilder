@@ -12,6 +12,7 @@ public class MusicScoreBuilder extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(MusicScoreBuilder.class.getResource("main-view.fxml"));
+        FontManager.loadFonts();
         Scene scene = new Scene(fxmlLoader.load());
         scene.getStylesheets().addAll(
                 Objects.requireNonNull(getClass().getResource("/styles/buttons.css")).toExternalForm(),
