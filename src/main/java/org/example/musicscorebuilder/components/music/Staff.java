@@ -2,10 +2,10 @@ package org.example.musicscorebuilder.components.music;
 
 public class Staff {
     private final int linesNumber;
-    private double lineWidth = 0.9;
+    private double lineWidth = 0.5;
     //    private List<Voice> voices = new ArrayList<>();
 //    private List<ClefChange> clefChanges = new ArrayList<>();
-    double lineSpacing = 7;
+    double lineSpacing = 5;
 
     public Staff() {
         this.linesNumber = 5;

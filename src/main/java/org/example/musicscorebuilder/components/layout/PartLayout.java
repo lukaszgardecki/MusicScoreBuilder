@@ -10,7 +10,7 @@ public class PartLayout {
     private final Part part;
     private final BraceLayout braceLayout = new BraceLayout();;
     private final List<StaffLayout> staffLayouts = new ArrayList<>();
-    private double staffSpacing = 40;
+    private double staffSpacing = 25;
 
     public PartLayout(Part part) {
         this.part = part;

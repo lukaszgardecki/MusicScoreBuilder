@@ -10,6 +10,7 @@ public class BarlineView extends Line {
         setStartY(0);
         setManaged(false);
         setStroke(Color.BLACK);
+        setStrokeWidth(barlineLayout.getWidth());
         update(barlineLayout);
     }
 

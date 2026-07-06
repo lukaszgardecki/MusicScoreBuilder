@@ -7,7 +7,7 @@ public class BraceLayout {
     private double height;
 
     public double getHeight() { return height; }
-    public double getWidth() { return height * fontData.getRatio() + 2.5; }
+    public double getWidth() { return height * fontData.getRatio() + 2.2; }
     public String getCode() { return fontData.getCode(); }
     public void setHeight(double height) { this.height = height; }
 }
