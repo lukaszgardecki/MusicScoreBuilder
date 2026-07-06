@@ -48,7 +48,7 @@ class PartContainer extends StackPane {
         barlineLayer.update(partLayout);
 
         double preciseWidth = partLayout.getStaffLayouts().get(0).getMeasures().stream()
-                .mapToDouble(MeasureLayout::getFinalWidth)
+                .mapToDouble(MeasureLayout::getWidth)
                 .sum();
 
         this.setMinWidth(preciseWidth);
@@ -107,12 +107,12 @@ class BarlinesContainer extends HBox {
 
             if (i < barlineNodes.size()) {
                 Pane measureContainer = (Pane) barlineNodes.get(i);
-                measureContainer.setPrefWidth(ml.getFinalWidth());
+                measureContainer.setPrefWidth(ml.getWidth());
                 BarlineView barlineView = (BarlineView) measureContainer.getChildren().get(0);
                 barlineView.update(ml.getRightBarline());
             } else {
                 Pane measureContainer = new Pane();
-                measureContainer.setPrefWidth(ml.getFinalWidth());
+                measureContainer.setPrefWidth(ml.getWidth());
                 BarlineView rightBarline = new BarlineView(ml.getRightBarline());
                 rightBarline.endYProperty().bind(this.heightProperty());
                 measureContainer.getChildren().add(rightBarline);

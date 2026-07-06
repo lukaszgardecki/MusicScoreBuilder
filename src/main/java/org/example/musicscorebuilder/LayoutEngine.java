@@ -65,7 +65,7 @@ public class LayoutEngine {
             for (MeasureLayout m : measures) {
                 double share = m.getMinWidth() / measuresMinWidthSum;
                 double newWidth = m.getMinWidth() + (extraSpace * share);
-                m.setFinalWidth(newWidth);
+                m.setWidth(newWidth);
             }
         }
     }

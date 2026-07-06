@@ -18,7 +18,7 @@ public class StaffLayout {
     }
 
     public double getOccupiedWidth() {
-        return measures.stream().mapToDouble(MeasureLayout::getFinalWidth).sum();
+        return measures.stream().mapToDouble(MeasureLayout::getWidth).sum();
     }
 
     public double getHeight() {
