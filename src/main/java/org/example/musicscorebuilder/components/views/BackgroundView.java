@@ -11,9 +11,11 @@ public class BackgroundView extends StackPane {
     private double lastX;
     private double lastY;
     private double zoom = 1.0;
+    private double offsetX = 0.0;
+    private double offsetY = 0.0;
 
     public BackgroundView(){
-        setAlignment(Pos.CENTER);
+//        setAlignment(Pos.CENTER);
         enableDrag();
         enableZoom();
     }
@@ -22,6 +24,14 @@ public class BackgroundView extends StackPane {
         if (scoreView == null) {
             scoreView = new ScoreView(newLayout);
             getChildren().add(scoreView);
+
+            // 1. Wiążemy wymiary
+            scoreView.widthProperty().bind(this.widthProperty());
+            scoreView.heightProperty().bind(this.heightProperty());
+
+            // 2. ROZWIĄZANIE: Synchronizujemy pozycję startową od razu na dzień dobry!
+            // Przekazujemy wartości 0.0 z BackgroundView, żeby ScoreView wiedział, od czego zacząć
+            scoreView.setViewportTransform(offsetX, offsetY, zoom);
         } else {
             scoreView.update(newLayout);
         }
@@ -37,13 +47,15 @@ public class BackgroundView extends StackPane {
             double dx = e.getSceneX() - lastX;
             double dy = e.getSceneY() - lastY;
 
-            if (getChildren().isEmpty()) return;
-            Node scoreView = getChildren().get(0);
-            scoreView.setTranslateX(scoreView.getTranslateX() + dx);
-            scoreView.setTranslateY(scoreView.getTranslateY() + dy);
+            offsetX += dx;
+            offsetY += dy;
 
             lastX = e.getSceneX();
             lastY = e.getSceneY();
+
+            if (scoreView != null) {
+                scoreView.setViewportTransform(offsetX, offsetY, zoom);
+            }
         });
     }
 
