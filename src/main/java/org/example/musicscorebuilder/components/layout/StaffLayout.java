@@ -30,6 +30,7 @@ public class StaffLayout {
     }
 
     public void add(MeasureLayout measureLayout) {
+        measureLayout.setFirstInSystem(measures.isEmpty());
         measures.add(measureLayout);
     }
 }

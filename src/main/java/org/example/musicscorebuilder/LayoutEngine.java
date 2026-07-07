@@ -36,6 +36,7 @@ public class LayoutEngine {
 
                 currentSystem = new SystemLayout();
                 currentPage.addSystem(currentSystem);
+                ml.setFirstInSystem(true);
             }
 
             for (Part part : score.getParts()) {

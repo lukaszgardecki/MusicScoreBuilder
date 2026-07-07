@@ -1,7 +1,6 @@
 package org.example.musicscorebuilder;
 
 import javafx.fxml.FXML;
-import org.example.musicscorebuilder.components.music.Measure;
 
 public class ToolbarController {
     private final ScoreService scoreService;
@@ -12,7 +11,7 @@ public class ToolbarController {
 
     @FXML
     private void addMeasure() {
-        scoreService.getScore().add(new Measure());
+        scoreService.getScore().addNewMeasure();
         scoreService.notifyListeners();
     }
 

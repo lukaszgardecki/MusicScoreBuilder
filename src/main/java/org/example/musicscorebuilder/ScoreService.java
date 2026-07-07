@@ -1,10 +1,10 @@
 package org.example.musicscorebuilder;
 
-import org.example.musicscorebuilder.components.music.*;
+import org.example.musicscorebuilder.components.music.InstrumentFactory;
+import org.example.musicscorebuilder.components.music.Score;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.IntStream;
 
 public class ScoreService {
     private List<ScoreChangeListener> listeners = new ArrayList<>();
@@ -21,11 +21,11 @@ public class ScoreService {
     public Score getScore() {
         if  (score != null) return score;
         Score score = new Score("Utwór", "Kompozytor");
-        IntStream.range(0, 10).forEach(i -> score.add(new Measure()));
 
         score.add(InstrumentFactory.createPiano());
         score.add(InstrumentFactory.createPiano());
         score.add(InstrumentFactory.createOrgan());
+        score.addMeasures(10);
 
         this.score = score;
         return score;

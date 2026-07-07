@@ -26,13 +26,10 @@ public class Score {
         parts.add(part);
     }
 
-    public void add(Measure measure) {
-        measures.add(measure);
-    }
-
     public void removeLastMeasure() {
         if (measures.isEmpty()) return;
         measures.removeLast();
+        parts.forEach(Part::removeLast);
     }
 
     public String getTitle() {
@@ -41,6 +38,25 @@ public class Score {
 
     public String getComposer() {
         return composer;
+    }
+
+    public void addNewMeasure() {
+        Measure measure;
+        if (measures.isEmpty()) {
+            measure = new Measure(1, new TimeSignature(4));
+        } else {
+            Measure last = measures.getLast();
+            measure = new Measure(last.getNumber() + 1, last.getTimeSignature());
+        }
+
+        measures.add(measure);
+        parts.forEach(part -> part.addMeasure(measure));
+    }
+
+    public void addMeasures(int count) {
+        for (int i = 0; i < count; i++) {
+            addNewMeasure();
+        }
     }
 }
 

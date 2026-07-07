@@ -19,7 +19,15 @@ public class Part {
         staves.add(staff);
     }
 
+    public void addMeasure(Measure measure) {
+        staves.forEach(staff -> staff.addNewMeasure(measure));
+    }
+
     public String getName() {
         return name;
+    }
+
+    public void removeLast() {
+        staves.forEach(Staff::removeLastMeasure);
     }
 }

@@ -4,21 +4,24 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
+import javafx.scene.paint.Color;
 import org.example.musicscorebuilder.components.layout.MeasureLayout;
+import org.example.musicscorebuilder.components.layout.SegmentLayout;
 import org.example.musicscorebuilder.util.Util;
-
-import java.util.stream.IntStream;
 
 public class MeasureView extends HBox {
 
     public MeasureView(MeasureLayout ml) {
         this.setSnapToPixel(false);
-        this.setBackground(Background.fill(Util.generateRandomColor(0.2f)));
-        IntStream.range(0, ml.getSegments()).forEach(i -> {
-            Segment segment = new Segment();
-            HBox.setHgrow(segment, Priority.ALWAYS);
-            this.getChildren().add(segment);
-        });
+//        this.setBackground(Background.fill(Util.generateRandomColor(0.2f)));
+
+        ml.getSegments().stream()
+                .filter(SegmentLayout::isGenerated)
+                .forEach(segment -> {
+                    SegmentView segmentView = new SegmentView(segment);
+                    HBox.setHgrow(segmentView, Priority.ALWAYS);
+                    this.getChildren().add(segmentView);
+                });
         update(ml);
     }
 
@@ -31,11 +34,20 @@ public class MeasureView extends HBox {
     }
 }
 
-class Segment extends Pane {
+class SegmentView extends Pane {
 
-    Segment() {
-//        this.setFill(Color.TRANSPARENT);
+    SegmentView(SegmentLayout segment) {
         this.setSnapToPixel(false);
-        this.setBackground(Background.fill(Util.generateRandomColor(0.3f)));
+
+        Color color = switch (segment.getType()) {
+            case CLEF -> Color.RED;
+            case KEY_SIG -> Util.generateRandomColor(0.3f);
+            case TIME_SIG -> Color.LIME;
+            case CHORD_REST -> Util.generateRandomColor(0.3f);
+            case BARLINE -> Util.generateRandomColor(0.3f);
+        };
+
+        this.setBackground(Background.fill(color));
+//        this.setBackground(Background.fill(Color.TRANSPARENT));
     }
 }
