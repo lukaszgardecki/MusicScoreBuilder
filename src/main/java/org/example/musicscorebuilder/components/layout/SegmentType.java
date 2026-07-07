@@ -1,4 +1,4 @@
-package org.example.musicscorebuilder.components.music;
+package org.example.musicscorebuilder.components.layout;
 
 public enum SegmentType {
     CLEF,

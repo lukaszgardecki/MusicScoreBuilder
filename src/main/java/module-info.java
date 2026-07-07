@@ -14,4 +14,6 @@ module org.example.musicscorebuilder {
     exports org.example.musicscorebuilder;
     exports org.example.musicscorebuilder.components.music;
     exports org.example.musicscorebuilder.components.views;
+    exports org.example.musicscorebuilder.components.layout;
+    opens org.example.musicscorebuilder.components.layout to javafx.fxml;
 }

@@ -1,7 +1,6 @@
 package org.example.musicscorebuilder.components.layout;
 
 import org.example.musicscorebuilder.components.music.Measure;
-import org.example.musicscorebuilder.components.music.SegmentType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,17 +19,29 @@ public class MeasureLayout {
         this.rightBarline = new BarlineLayout(getWidth());
     }
 
-    public double getMinWidth() { return segments.stream().filter(SegmentLayout::isGenerated).mapToDouble(SegmentLayout::getMinWidth).sum(); }
-    public double getWidth() { return segments.stream().filter(SegmentLayout::isGenerated).mapToDouble(SegmentLayout::getWidth).sum(); }
+    public double getMinWidth() { return getActiveSegments().stream().mapToDouble(SegmentLayout::getMinWidth).sum(); }
+    public double getWidth() { return getActiveSegments().stream().mapToDouble(SegmentLayout::getWidth).sum(); }
     public void setWidth(double w) {
-        var activeSegments = segments.stream().filter(SegmentLayout::isGenerated).toList();
-        if (activeSegments.isEmpty()) return;
-        double widthPerSegment = w / activeSegments.size();
-        activeSegments.forEach(segment -> segment.setWidth(widthPerSegment));
+        var chordRestSegments = getActiveSegments().stream()
+                .filter(s -> s.getType() == SegmentType.CHORD_REST)
+                .toList();
+        if (chordRestSegments.isEmpty()) return;
+
+        var staticSegments = getActiveSegments().stream()
+                .filter(SegmentLayout::hasStaticWidth)
+                .toList();
+
+        double staticWidthSum = staticSegments.stream().mapToDouble(SegmentLayout::getMinWidth).sum();
+        double remainingWidthForNotes = w - staticWidthSum;
+        if (remainingWidthForNotes < 0) remainingWidthForNotes = 0;
+
+        double widthPerNote = remainingWidthForNotes / chordRestSegments.size();
+        chordRestSegments.forEach(segment -> segment.setWidth(widthPerNote));
         rightBarline.setX(w);
     }
     public BarlineLayout getRightBarline() { return rightBarline; }
     public List<SegmentLayout> getSegments() { return segments; }
+    public List<SegmentLayout> getActiveSegments() { return segments.stream().filter(SegmentLayout::isGenerated).toList(); }
     public int getNumber() { return measure.getNumber(); }
 
     public void setFirstInSystem(boolean firstInSystem) {

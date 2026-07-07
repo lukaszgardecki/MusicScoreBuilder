@@ -63,8 +63,19 @@ public class LayoutEngine {
         double extraSpace = page.getEffectiveWidth() - totalSystemMinWidth;
 
         if (extraSpace > 0 && measuresMinWidthSum > 0) {
+            double totalNotesMinWidthSum = measures.stream()
+                    .mapToDouble(m -> m.getSegments().stream()
+                            .filter(SegmentLayout::hasDynamicWidth)
+                            .mapToDouble(SegmentLayout::getMinWidth)
+                            .sum())
+                    .sum();
+
             for (MeasureLayout m : measures) {
-                double share = m.getMinWidth() / measuresMinWidthSum;
+                double thisMeasureNotesMinWidth = m.getSegments().stream()
+                        .filter(SegmentLayout::hasDynamicWidth)
+                        .mapToDouble(SegmentLayout::getMinWidth)
+                        .sum();
+                double share = totalNotesMinWidthSum > 0 ? (thisMeasureNotesMinWidth / totalNotesMinWidthSum) : 0;
                 double newWidth = m.getMinWidth() + (extraSpace * share);
                 m.setWidth(newWidth);
             }

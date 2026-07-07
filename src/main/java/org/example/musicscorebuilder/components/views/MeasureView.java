@@ -3,7 +3,6 @@ package org.example.musicscorebuilder.components.views;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
 import javafx.scene.paint.Color;
 import org.example.musicscorebuilder.components.layout.MeasureLayout;
 import org.example.musicscorebuilder.components.layout.SegmentLayout;
@@ -15,13 +14,9 @@ public class MeasureView extends HBox {
         this.setSnapToPixel(false);
 //        this.setBackground(Background.fill(Util.generateRandomColor(0.2f)));
 
-        ml.getSegments().stream()
-                .filter(SegmentLayout::isGenerated)
-                .forEach(segment -> {
-                    SegmentView segmentView = new SegmentView(segment);
-                    HBox.setHgrow(segmentView, Priority.ALWAYS);
-                    this.getChildren().add(segmentView);
-                });
+        ml.getActiveSegments().stream()
+                .map(SegmentView::new)
+                .forEach(this.getChildren()::add);
         update(ml);
     }
 
@@ -30,6 +25,12 @@ public class MeasureView extends HBox {
         this.setMinWidth(w);
         this.setPrefWidth(w);
         this.setMaxWidth(w);
+
+        for (int i = 0; i < this.getChildren().size(); i++) {
+            SegmentView segmentView = (SegmentView) this.getChildren().get(i);
+            SegmentLayout segmentLayout = ml.getActiveSegments().get(i);
+            segmentView.update(segmentLayout);
+        }
         this.layout();
     }
 }
@@ -49,5 +50,14 @@ class SegmentView extends Pane {
 
         this.setBackground(Background.fill(color));
 //        this.setBackground(Background.fill(Color.TRANSPARENT));
+
+        update(segment);
+    }
+
+    public void update(SegmentLayout segment) {
+        double segWidth = segment.getWidth();
+        this.setMinWidth(segWidth);
+        this.setPrefWidth(segWidth);
+        this.setMaxWidth(segWidth);
     }
 }
