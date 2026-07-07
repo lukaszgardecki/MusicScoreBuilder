@@ -4,8 +4,10 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import org.example.musicscorebuilder.components.layout.ClefLayout;
 import org.example.musicscorebuilder.components.layout.MeasureLayout;
 import org.example.musicscorebuilder.components.layout.SegmentLayout;
+import org.example.musicscorebuilder.components.layout.SegmentType;
 import org.example.musicscorebuilder.util.Util;
 
 public class MeasureView extends HBox {
@@ -48,6 +50,9 @@ class SegmentView extends Pane {
             case BARLINE -> Util.generateRandomColor(0.3f);
         };
 
+        if (segment.getType() == SegmentType.CLEF) {
+            getChildren().add(new ClefView(new ClefLayout()));
+        }
         this.setBackground(Background.fill(color));
 //        this.setBackground(Background.fill(Color.TRANSPARENT));
 

@@ -1,7 +1,8 @@
 package org.example.musicscorebuilder.components.music;
 
 public enum Leland {
-    BRACE("\uE000", 0.248, 3.98, -0.002, 0.019);
+    BRACE("\uE000", 0.248, 3.98, -0.002, 0.019),
+    CLEF_G("\uE050", 2.56, 4.449, -0.0, -2.666);
 
     private final String code;
     private final double NEx;

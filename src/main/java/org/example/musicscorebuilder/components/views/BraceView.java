@@ -22,7 +22,7 @@ public class BraceView extends Pane {
         this.setPrefWidth(targetWidth);
         this.setPrefHeight(targetHeight);
 
-        braceIcon.setFont(FontManager.getBravura(targetHeight));
+        braceIcon.setFont(FontManager.getLelandFont(targetHeight));
 
         var bounds = braceIcon.getBoundsInLocal();
         braceIcon.setLayoutX(-bounds.getMinX());

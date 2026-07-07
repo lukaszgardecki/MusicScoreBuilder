@@ -23,8 +23,8 @@ public class ScoreService {
         Score score = new Score("Utwór", "Kompozytor");
 
         score.add(InstrumentFactory.createPiano());
-        score.add(InstrumentFactory.createPiano());
-        score.add(InstrumentFactory.createOrgan());
+//        score.add(InstrumentFactory.createPiano());
+//        score.add(InstrumentFactory.createOrgan());
         score.addMeasures(10);
 
         this.score = score;

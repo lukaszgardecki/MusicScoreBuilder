@@ -7,9 +7,12 @@ public class SegmentLayout {
     private boolean isGenerated = true;
 
     public SegmentLayout(SegmentType type) {
-        width = DEFAULT_WIDTH;
         this.type = type;
         isGenerated = type == SegmentType.CHORD_REST;
+        width = switch(type) {
+            case CLEF -> 15;
+            default -> DEFAULT_WIDTH;
+        };
     }
 
     public SegmentType getType() { return type; }

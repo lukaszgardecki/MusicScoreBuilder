@@ -19,7 +19,7 @@ public class FontManager {
         }
     }
 
-    public static Font getBravura(double size) {
+    public static Font getLelandFont(double size) {
         if (lelandFont == null) {
             loadFonts();
         }
