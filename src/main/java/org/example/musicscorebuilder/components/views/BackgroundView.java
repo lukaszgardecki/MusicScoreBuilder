@@ -1,12 +1,10 @@
 package org.example.musicscorebuilder.components.views;
 
-import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.Pane;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
 
-public class BackgroundView extends StackPane {
+public class BackgroundView extends Pane {
     private ScoreView scoreView;
     private double lastX;
     private double lastY;
@@ -15,7 +13,6 @@ public class BackgroundView extends StackPane {
     private double offsetY = 0.0;
 
     public BackgroundView(){
-//        setAlignment(Pos.CENTER);
         enableDrag();
         enableZoom();
     }
@@ -25,12 +22,9 @@ public class BackgroundView extends StackPane {
             scoreView = new ScoreView(newLayout);
             getChildren().add(scoreView);
 
-            // 1. Wiążemy wymiary
             scoreView.widthProperty().bind(this.widthProperty());
             scoreView.heightProperty().bind(this.heightProperty());
 
-            // 2. ROZWIĄZANIE: Synchronizujemy pozycję startową od razu na dzień dobry!
-            // Przekazujemy wartości 0.0 z BackgroundView, żeby ScoreView wiedział, od czego zacząć
             scoreView.setViewportTransform(offsetX, offsetY, zoom);
         } else {
             scoreView.update(newLayout);
@@ -64,24 +58,25 @@ public class BackgroundView extends StackPane {
             if (!e.isControlDown()) return;
             e.consume();
 
-            if (getChildren().isEmpty()) return;
-            Node scoreView = getChildren().get(0);
-            double maxZoom = 50.0;
+            if (scoreView == null) return;
+
+            double maxZoom = 15.0;
+            double minZoom = 0.1;
             double delta = 1.1;
             double zoomFactor = (e.getDeltaY() > 0) ? delta : 1 / delta;
-            zoom = Math.max(0.2, Math.min(zoom * zoomFactor, maxZoom));
 
-            double beforeScaleMouseX = scoreView.sceneToLocal(e.getSceneX(), e.getSceneY()).getX();
-            double beforeScaleMouseY = scoreView.sceneToLocal(e.getSceneX(), e.getSceneY()).getY();
+            double oldZoom = this.zoom;
+            this.zoom = Math.max(minZoom, Math.min(this.zoom * zoomFactor, maxZoom));
 
-            scoreView.setScaleX(zoom);
-            scoreView.setScaleY(zoom);
+            double actualFactor = this.zoom / oldZoom;
 
-            double afterScaleMouseX = scoreView.localToScene(beforeScaleMouseX, beforeScaleMouseY).getX();
-            double afterScaleMouseY = scoreView.localToScene(beforeScaleMouseX, beforeScaleMouseY).getY();
+            double mouseX = e.getX();
+            double mouseY = e.getY();
 
-            scoreView.setTranslateX(scoreView.getTranslateX() + (e.getSceneX() - afterScaleMouseX));
-            scoreView.setTranslateY(scoreView.getTranslateY() + (e.getSceneY() - afterScaleMouseY));
+            offsetX = mouseX - (mouseX - offsetX) * actualFactor;
+            offsetY = mouseY - (mouseY - offsetY) * actualFactor;
+
+            scoreView.setViewportTransform(offsetX, offsetY, zoom);
         });
     }
 }

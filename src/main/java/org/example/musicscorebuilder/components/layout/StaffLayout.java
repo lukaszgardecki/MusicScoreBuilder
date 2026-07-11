@@ -2,35 +2,21 @@ package org.example.musicscorebuilder.components.layout;
 
 import org.example.musicscorebuilder.components.music.Staff;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class StaffLayout {
+    private final SMeasureLayout parent;
     private final Staff staff;
-    private final List<MeasureLayout> measures = new ArrayList<>();
+    double lineSpacing = 1;
+    private double lineWidth = lineSpacing * 0.08;
 
-    public StaffLayout(Staff staff) {
+    public StaffLayout(Staff staff, SMeasureLayout parent) {
         this.staff = staff;
+        this.parent = parent;
     }
 
-    public Staff getStaff() {
-        return staff;
-    }
-
-    public double getOccupiedWidth() {
-        return measures.stream().mapToDouble(MeasureLayout::getWidth).sum();
-    }
-
-    public double getHeight() {
-        return staff.getHeight();
-    }
-
-    public List<MeasureLayout> getMeasures() {
-        return measures;
-    }
-
-    public void add(MeasureLayout measureLayout) {
-        measureLayout.setFirstInSystem(measures.isEmpty());
-        measures.add(measureLayout);
-    }
+    public Staff getStaff() { return staff; }
+    public double getHeight() { return (staff.getLinesNumber() - 1) * lineSpacing; }
+    public double getWidth() { return parent.getWidth(); }
+    public int getLinesNumber() { return staff.getLinesNumber(); }
+    public double getLineWidth() { return lineWidth; }
+    public double getLineSpacing() { return lineSpacing; }
 }

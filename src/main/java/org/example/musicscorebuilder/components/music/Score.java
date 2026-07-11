@@ -14,49 +14,63 @@ public class Score {
         this.composer = composer;
     }
 
-    public List<Part> getParts() {
-        return parts;
-    }
-
-    public List<Measure> getMeasures() {
-        return measures;
-    }
+    public List<Part> getParts() { return parts; }
+    public List<Measure> getMeasures() { return measures; }
+    public String getTitle() { return title; }
+    public String getComposer() { return composer; }
 
     public void add(Part part) {
         parts.add(part);
-    }
 
-    public void removeLastMeasure() {
-        if (measures.isEmpty()) return;
-        measures.removeLast();
-        parts.forEach(Part::removeLast);
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getComposer() {
-        return composer;
+        for (Measure measure : measures) {
+            measure.put(part, createPMeasure(part));
+        }
     }
 
     public void addNewMeasure() {
-        Measure measure;
-        if (measures.isEmpty()) {
-            measure = new Measure(1, new TimeSignature(4));
-        } else {
-            Measure last = measures.getLast();
-            measure = new Measure(last.getNumber() + 1, last.getTimeSignature());
-        }
-
-        measures.add(measure);
-        parts.forEach(part -> part.addMeasure(measure));
+        Measure measure = measures.isEmpty() ? createFirstMeasure() : createNextMeasure();
+        addMeasure(measure);
     }
 
     public void addMeasures(int count) {
         for (int i = 0; i < count; i++) {
             addNewMeasure();
         }
+    }
+
+    public void removeLastMeasure() {
+        if (measures.isEmpty()) return;
+        measures.removeLast();
+        if (measures.isEmpty()) return;
+        measures.getLast().setBarlineStyle(BarlineStyle.END);
+    }
+
+    private void addMeasure(Measure measure) {
+        measures.add(measure);
+        for (Part part : parts) {
+            measure.put(part, createPMeasure(part));
+        }
+    }
+
+    private Measure createFirstMeasure() {
+        return new Measure(1, new TimeSignature(4), BarlineStyle.END);
+    }
+
+    private Measure createNextMeasure() {
+        int nextMeasureNumber = measures.size() + 1;
+        Measure lastMeasure = measures.getLast();
+        Measure newMeasure = new Measure(nextMeasureNumber, lastMeasure.getTimeSignature(), lastMeasure.getBarlineStyle());
+        lastMeasure.setBarlineStyle(BarlineStyle.SINGLE);
+        return newMeasure;
+    }
+
+    private PMeasure createPMeasure(Part part) {
+        PMeasure pMeasure = new PMeasure();
+        for (Staff staff : part.getStaves()) {
+            SMeasure sMeasure = new SMeasure(staff.getDefaultClef());
+            pMeasure.add(sMeasure);
+        }
+        return pMeasure;
     }
 }
 

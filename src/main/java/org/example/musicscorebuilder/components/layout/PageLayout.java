@@ -10,43 +10,37 @@ public class PageLayout {
     private final List<SystemLayout> systems = new ArrayList<>();
     private final double height;
     private final double width;
-    private final double marginTop;
-    private final double marginBottom;
-    private final double marginLeft;
-    private final double marginRight;
     private final double effectiveHeight;
     private final double effectiveWidth;
-    private final double systemSpacing = 70;
+    private double x;
 
-    public PageLayout(Page page) {
-        this.page = page;
-        this.height = page.getHeight();
-        this.width = page.getWidth();
-        this.effectiveHeight = page.getEffectiveHeight();
-        this.effectiveWidth = page.getEffectiveWidth();
-        this.marginTop = page.getMarginTop();
-        this.marginBottom = page.getMarginBottom();
-        this.marginLeft = page.getMarginLeft();
-        this.marginRight = page.getMarginRight();
+    public PageLayout(double width, double height, double x, double effectiveWidth, double effectiveHeight) {
+        this.width = width;
+        this.height = height;
+        this.effectiveWidth = effectiveWidth;
+        this.effectiveHeight = effectiveHeight;
+        this.x = x;
     }
 
-    public void addSystem(SystemLayout system) {
+    public void add(SystemLayout system) {
         systems.add(system);
     }
 
     public List<SystemLayout> getSystems() { return systems; }
     public double getHeight() { return height; }
-    public double getEffectiveHeight() { return effectiveHeight; }
     public double getWidth() { return width; }
     public double getEffectiveWidth() { return effectiveWidth; }
+    public double getEffectiveHeight() { return effectiveHeight; }
+    public double getRemainingWidth() { return  effectiveWidth - getOccupiedWidth(); }
+    public double getRemainingHeight() { return effectiveHeight - getOccupiedHeight(); }
+    public double getOccupiedWidth() {
+        return systems.stream().mapToDouble(SystemLayout::getWidth).max().orElse(0.0);
+    }
     public double getOccupiedHeight() {
+        if (systems.isEmpty()) return 0.0;
         return systems.stream()
                 .mapToDouble(SystemLayout::getHeight)
-                .sum() + (systemSpacing * (systems.size()-1));
+                .sum();
     }
-    public double getMarginTop() { return marginTop; }
-    public double getMarginBottom() { return marginBottom; }
-    public double getMarginLeft() { return marginLeft; }
-    public double getMarginRight() { return marginRight; }
-    public double getSystemSpacing() { return systemSpacing; }
+    public double getX() { return x; }
 }

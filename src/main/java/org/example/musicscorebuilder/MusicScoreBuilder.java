@@ -27,6 +27,7 @@ public class MusicScoreBuilder extends Application {
         stage.setMinWidth(1500);
         stage.setMinHeight(800);
 
+        stage.setMaximized(true);
         stage.setScene(scene);
         stage.show();
     }

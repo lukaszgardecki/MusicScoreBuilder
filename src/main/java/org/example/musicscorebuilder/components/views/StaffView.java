@@ -1,59 +1,28 @@
 package org.example.musicscorebuilder.components.views;
 
-import javafx.collections.ObservableList;
-import javafx.scene.Node;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.shape.Line;
-import org.example.musicscorebuilder.components.layout.MeasureLayout;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.StrokeLineCap;
 import org.example.musicscorebuilder.components.layout.StaffLayout;
+import org.example.musicscorebuilder.util.Util;
 
-import java.util.List;
+public class StaffView extends ComponentView {
 
-public class StaffView extends Pane {
-    private final HBox measuresContainer;
+    public void draw(GraphicsContext gc, StaffLayout staff, double partX, double partY, double sp) {
+        double staffX = partX;
+        double staffY = partY;
+        double widthPx = staff.getWidth() * sp;
+        double heightPx = staff.getHeight() * sp;
 
-    public StaffView(StaffLayout staffLayout) {
-        measuresContainer = new HBox();
-        measuresContainer.setFillHeight(true);
-        measuresContainer.setPrefHeight(staffLayout.getHeight());
-        measuresContainer.setSnapToPixel(false);
+//        fillBackground(gc, Util.generateRandomColor(), staffX, staffY, widthPx, heightPx);
 
-        this.setPrefHeight(staffLayout.getHeight());
-        this.getChildren().add(measuresContainer);
-        drawStaffLines(staffLayout);
-        update(staffLayout);
-    }
+        gc.setStroke(Color.BLACK);
+        gc.setLineWidth(staff.getLineWidth() * sp);
+        gc.setLineCap(StrokeLineCap.BUTT);
 
-    public void update(StaffLayout staffLayout) {
-        List<MeasureLayout> measures = staffLayout.getMeasures();
-        ObservableList<Node> measureNodes = measuresContainer.getChildren();
-
-        while (measureNodes.size() > measures.size()) {
-            measureNodes.removeLast();
-        }
-
-        for (int i = 0; i < measures.size(); i++) {
-            if (i < measureNodes.size()) {
-                ((MeasureView) measureNodes.get(i)).update(measures.get(i));
-            } else {
-                measuresContainer.getChildren().add(new MeasureView(measures.get(i)));
-            }
-        }
-    }
-
-    private void drawStaffLines(StaffLayout sl) {
-        for (int i = 0; i < sl.getStaff().getLinesNumber(); i++) {
-            double lineY = i * sl.getStaff().getLineSpacing();
-            double lineWidth = sl.getStaff().getLineWidth();
-            Line line = new Line();
-            line.setStartY(0);
-            line.setEndY(0);
-            line.setLayoutX(lineWidth/2);
-            line.setLayoutY(lineY);
-            line.setStrokeWidth(lineWidth);
-            line.endXProperty().bind(measuresContainer.widthProperty().subtract(lineWidth));
-            this.getChildren().add(line);
+        for (int i = 0; i < staff.getLinesNumber(); i++) {
+            double currentLineY = staffY + (i * sp);
+            gc.strokeLine(staffX, currentLineY, staffX + widthPx, currentLineY);
         }
     }
 }

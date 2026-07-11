@@ -1,55 +1,31 @@
 package org.example.musicscorebuilder.components.views;
 
-import javafx.collections.ObservableList;
-import javafx.scene.Node;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 import org.example.musicscorebuilder.components.layout.PageLayout;
 import org.example.musicscorebuilder.components.layout.SystemLayout;
 
-import java.util.List;
+public class PageView {
+    private static final Color PAGE_BACKGROUND_COLOR = Color.WHITE;
+    private static final Color PAGE_BORDER_COLOR = Color.rgb(170, 170, 170);
+    private final SystemView systemView = new SystemView();
 
-public class PageView extends Pane {
-    private final PageContentView pageContentView;
+    public void draw(GraphicsContext gc, PageLayout page, double offsetX, double offsetY, double sp) {
+        double pageX = offsetX + page.getX() * sp;
+        double pageY = offsetY;
+        double cardWidthPx = page.getWidth() * sp;
+        double cardHeightPx = page.getHeight() * sp;
+        double cornerRadius = 0.1 * sp;
 
-    public PageView(PageLayout page) {
-        getStyleClass().add("page-a4");
-        setPrefSize(page.getWidth(), page.getHeight());
-        setMinSize(page.getWidth(), page.getHeight());
-        setMaxSize(page.getWidth(), page.getHeight());
-        setSnapToPixel(false);
-        this.pageContentView = new PageContentView(page);
-        this.getChildren().add(pageContentView);
-    }
+        gc.setFill(PAGE_BACKGROUND_COLOR);
+        gc.fillRoundRect(pageX, pageY, cardWidthPx, cardHeightPx, cornerRadius, cornerRadius);
 
-    public void update(PageLayout pageLayout) {
-        List<SystemLayout> systems = pageLayout.getSystems();
-        ObservableList<Node> systemNodes = pageContentView.getChildren();
+        gc.setStroke(PAGE_BORDER_COLOR);
+        gc.setLineWidth(0.1 * sp);
+        gc.strokeRoundRect(pageX, pageY, cardWidthPx, cardHeightPx, cornerRadius, cornerRadius);
 
-        while (systemNodes.size() > systems.size()) {
-            systemNodes.removeLast();
-        }
-
-        for (int i = 0; i < systems.size(); i++) {
-            if (i < systemNodes.size()) {
-                ((SystemView) systemNodes.get(i)).update(systems.get(i));
-            } else {
-                systemNodes.add(new SystemView(systems.get(i)));
-            }
-        }
-    }
-
-    private class PageContentView extends VBox {
-        public PageContentView(PageLayout page) {
-            setSpacing(page.getSystemSpacing());
-            setLayoutX(page.getMarginLeft());
-            setLayoutY(page.getMarginTop());
-            setPrefSize(page.getEffectiveWidth(), page.getEffectiveHeight());
-            setSnapToPixel(false);
-
-            page.getSystems().stream()
-                    .map(SystemView::new)
-                    .forEach(this.getChildren()::add);
+        for (SystemLayout system : page.getSystems()) {
+            systemView.draw(gc, system, pageX, pageY, sp);
         }
     }
 }

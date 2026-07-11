@@ -1,13 +1,24 @@
 package org.example.musicscorebuilder.components.layout;
 
+import org.example.musicscorebuilder.components.music.BraceType;
 import org.example.musicscorebuilder.components.music.Leland;
 
 public class BraceLayout {
-    private final Leland fontData = Leland.BRACE;
-    private double height;
+    private final Leland fontData;
+    private final PartLayout parent;
 
-    public double getHeight() { return height; }
-    public double getWidth() { return height * fontData.getRatio() + 2.2; }
+    public BraceLayout(BraceType braceType, PartLayout parent) {
+        fontData = switch (braceType) {
+            case NONE -> null;
+            case BRACE -> Leland.BRACE;
+            case BRACKET -> Leland.BRACKET;
+        };
+        this.parent = parent;
+    }
+
+    public double getHeight() { return parent.getHeight() - parent.getSpaceBelow(); }
+    public double getWidth() { return 1.5; }
     public String getCode() { return fontData.getCode(); }
-    public void setHeight(double height) { this.height = height; }
+    public double getX() { return 0; }
+    public double getY() { return 0; }
 }

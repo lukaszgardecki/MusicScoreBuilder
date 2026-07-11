@@ -1,46 +1,50 @@
 package org.example.musicscorebuilder.components.layout;
 
 import org.example.musicscorebuilder.components.music.Part;
-import org.example.musicscorebuilder.components.music.Staff;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class PartLayout {
-    private final Part part;
-    private final BraceLayout braceLayout = new BraceLayout();;
-    private final List<StaffLayout> staffLayouts = new ArrayList<>();
-    private double staffSpacing = 25;
+    private final double DEFAULT_SPACE_BELOW = 6;
 
-    public PartLayout(Part part) {
+    private final Part part;
+    private final BraceLayout braceLayout;
+    private double spaceBelow = DEFAULT_SPACE_BELOW;
+    private double x, y;
+    private final List<PMeasureLayout> partMeasures = new ArrayList<>();
+
+    public PartLayout(Part part, double x, double y) {
         this.part = part;
+        this.x = x;
+        this.y = y;
+        this.braceLayout = new BraceLayout(part.getBraceType(), this);
+    }
+
+    public void add(PMeasureLayout pMeasureLayout) { partMeasures.add(pMeasureLayout); }
+    public void removeLastPMeasureLayout() {
+        if (partMeasures.isEmpty()) return;
+        partMeasures.removeLast();
     }
 
     public Part getPart() { return part; }
     public BraceLayout getBraceLayout() { return braceLayout; }
-    public List<StaffLayout> getStaffLayouts() { return staffLayouts; }
+    public List<PMeasureLayout> getPartMeasures() { return partMeasures; }
 
     public double getHeight() {
-        double sum = staffLayouts.stream().mapToDouble(StaffLayout::getHeight).sum();
-        double space = staffSpacing * (staffLayouts.size() - 1);
-        return sum + space;
+        return partMeasures.stream().mapToDouble(PMeasureLayout::getHeight).max().orElse(0) + spaceBelow;
     }
 
     public double getWidth() {
-        double staves = staffLayouts.stream().mapToDouble(StaffLayout::getOccupiedWidth).max().orElse(0);
+        double measures = partMeasures.stream().mapToDouble(PMeasureLayout::getWidth).sum();
         double braceWidth = braceLayout.getWidth();
-        return staves + braceWidth;
+        return measures + braceWidth;
     }
-    public double getStaffSpacing() { return staffSpacing; }
+    public double getSpaceBelow() { return spaceBelow; }
     public double getBraceWidth() { return braceLayout.getWidth(); }
+    public double getX() { return x; }
+    public double getY() { return y; }
 
-    public StaffLayout getOrCreateStaff(Staff staff) {
-        for (StaffLayout sl : this.getStaffLayouts()) {
-            if (sl.getStaff() == staff) return sl;
-        }
-        StaffLayout staffLayout = new StaffLayout(staff);
-        staffLayouts.add(staffLayout);
-        braceLayout.setHeight(getHeight());
-        return staffLayout;
-    }
+    public void setDefaultSpaceBelow() { spaceBelow = DEFAULT_SPACE_BELOW; }
+    public void setSpaceBelow(double spaceBelow) { this.spaceBelow = spaceBelow; }
 }

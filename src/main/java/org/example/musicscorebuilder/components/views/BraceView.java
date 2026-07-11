@@ -1,39 +1,39 @@
 package org.example.musicscorebuilder.components.views;
 
-import javafx.scene.layout.Pane;
+import javafx.geometry.VPos;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 import org.example.musicscorebuilder.FontManager;
 import org.example.musicscorebuilder.components.layout.BraceLayout;
+import org.example.musicscorebuilder.util.Util;
 
-public class BraceView extends Pane {
-    private final BraceIcon braceIcon;
+public class BraceView extends ComponentView {
 
-    public BraceView(BraceLayout braceLayout) {
-        this.braceIcon = new BraceIcon(braceLayout.getCode());
-        this.setSnapToPixel(false);
-        this.getChildren().add(braceIcon);
-        update(braceLayout);
-    }
+    public void draw(GraphicsContext gc, BraceLayout braceLayout, double partX, double partY, double sp) {
+        double braceX = braceLayout.getX() * sp + partX;
+        double braceY = braceLayout.getY() * sp + partY;
+        double widthPx = braceLayout.getWidth() * sp;
+        double heightPx = braceLayout.getHeight() * sp;
 
-    public void update(BraceLayout braceLayout) {
-        double targetWidth = braceLayout.getWidth();
-        double targetHeight = braceLayout.getHeight();
-        this.setPrefWidth(targetWidth);
-        this.setPrefHeight(targetHeight);
+//        fillBackground(gc, Util.generateRandomColor(), braceX, braceY, widthPx, heightPx);
 
-        braceIcon.setFont(FontManager.getLelandFont(targetHeight));
+        Font oldFont = gc.getFont();
+        VPos oldBaseline = gc.getTextBaseline();
+        TextAlignment oldAlign = gc.getTextAlign();
 
-        var bounds = braceIcon.getBoundsInLocal();
-        braceIcon.setLayoutX(-bounds.getMinX());
-        braceIcon.setLayoutY(-bounds.getMinY());
-    }
+        gc.setFont(FontManager.getLelandFont(heightPx));
+        gc.setFill(Color.BLACK);
 
-    private static class BraceIcon extends Text {
-        public BraceIcon(String code) {
-            this.setText(code);
-            this.setFill(Color.BLACK);
-            this.setBoundsType(javafx.scene.text.TextBoundsType.VISUAL);
-        }
+        gc.setTextBaseline(VPos.BASELINE);
+        gc.setTextAlign(TextAlignment.LEFT);
+
+        double correctedY = braceY + heightPx;
+        gc.fillText(braceLayout.getCode(), braceX, correctedY);
+
+        gc.setFont(oldFont);
+        gc.setTextBaseline(oldBaseline);
+        gc.setTextAlign(oldAlign);
     }
 }
