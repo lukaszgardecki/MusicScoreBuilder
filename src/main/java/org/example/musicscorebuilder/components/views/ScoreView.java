@@ -53,4 +53,7 @@ public class ScoreView extends Canvas {
             pageView.draw(gc, page, offsetX, offsetY, sp);
         }
     }
+
+    public ScoreLayout getScoreLayout() { return scoreLayout; }
+    public double getBaseSpatiumPx() { return baseSpatiumPx; }
 }

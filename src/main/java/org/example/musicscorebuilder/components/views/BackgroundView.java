@@ -15,6 +15,7 @@ public class BackgroundView extends Pane {
     public BackgroundView(){
         enableDrag();
         enableZoom();
+        centerFirstPage();
     }
 
     public void updateContent(ScoreLayout newLayout) {
@@ -24,11 +25,32 @@ public class BackgroundView extends Pane {
 
             scoreView.widthProperty().bind(this.widthProperty());
             scoreView.heightProperty().bind(this.heightProperty());
+            scoreView.widthProperty().addListener((obs, oldVal, newVal) -> centerFirstPage());
+            scoreView.heightProperty().addListener((obs, oldVal, newVal) -> centerFirstPage());
 
             scoreView.setViewportTransform(offsetX, offsetY, zoom);
         } else {
             scoreView.update(newLayout);
         }
+    }
+
+    private void centerFirstPage() {
+        if (scoreView == null || scoreView.getScoreLayout() == null) return;
+        if (scoreView.getScoreLayout().getPages().isEmpty()) return;
+
+        var page = scoreView.getScoreLayout().getPages().getFirst();
+
+        double sp = zoom * scoreView.getBaseSpatiumPx();
+        double pageWidthPx = page.getWidth() * sp;
+        double pageHeightPx = page.getHeight() * sp;
+
+        double canvasWidth = scoreView.getWidth();
+        double canvasHeight = scoreView.getHeight();
+
+        offsetX = (canvasWidth - pageWidthPx) / 2.0;
+        offsetY = (canvasHeight - pageHeightPx) / 2.0;
+
+        scoreView.setViewportTransform(offsetX, offsetY, zoom);
     }
 
     private void enableDrag() {
