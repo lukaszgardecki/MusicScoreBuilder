@@ -6,11 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PartLayout {
-    private final double DEFAULT_SPACE_BELOW = 6;
-
     private final Part part;
     private final BraceLayout braceLayout;
-    private double spaceBelow = DEFAULT_SPACE_BELOW;
+    private double spaceBelow;
     private double x, y;
     private final List<PMeasureLayout> partMeasures = new ArrayList<>();
 
@@ -45,6 +43,5 @@ public class PartLayout {
     public double getX() { return x; }
     public double getY() { return y; }
 
-    public void setDefaultSpaceBelow() { spaceBelow = DEFAULT_SPACE_BELOW; }
     public void setSpaceBelow(double spaceBelow) { this.spaceBelow = spaceBelow; }
 }

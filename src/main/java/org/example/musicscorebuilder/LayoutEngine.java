@@ -6,11 +6,12 @@ import org.example.musicscorebuilder.components.music.*;
 import java.util.List;
 
 public class LayoutEngine {
-    private final double spatiumInMm = 1.75;
+    private final ScoreStyle style;
     private final Page page;
 
-    public LayoutEngine(Page page) {
+    public LayoutEngine(Page page, ScoreStyle style) {
         this.page = page;
+        this.style = style;
     }
 
     public ScoreLayout compute(Score score) {
@@ -45,7 +46,7 @@ public class LayoutEngine {
     }
 
     private void justify(SystemLayout system) {
-        double targetWidth = page.getEffectiveWidth() / spatiumInMm;
+        double targetWidth = system.getPageLayout().getEffectiveWidth();
         double MIN_FULLNESS_RATIO = 0.5;
         if (system.getParts().isEmpty() || system.getWidth() < targetWidth * MIN_FULLNESS_RATIO) return;
         double extraSpace = targetWidth - system.getWidth();
@@ -111,11 +112,8 @@ public class LayoutEngine {
     }
 
     private SystemLayout addNewSystemToPage(PageLayout pageLayout) {
-        if (!pageLayout.getSystems().isEmpty()) {
-            pageLayout.getSystems().getLast().setDefaultSpaceBelow();
-        }
-        var newSystem = createSystemLayout(pageLayout);
-        newSystem.setSpaceBelow(0);
+        pageLayout.setLastSystemSpaceBelow(style.getSystemSpacing());
+        var newSystem = new SystemLayout(pageLayout);
         pageLayout.add(newSystem);
         return newSystem;
     }
@@ -147,27 +145,13 @@ public class LayoutEngine {
     }
 
     private PageLayout createPageLayout(ScoreLayout scoreLayout) {
-        int size = scoreLayout.getPages().size();
-        double widthSp = page.getWidthMm() / spatiumInMm;
-        double heightSp = page.getHeightMm() / spatiumInMm;
-        double xSp = size * (page.getWidthMm() / spatiumInMm + scoreLayout.getSpacing());
-        double effectiveWidthSp = page.getEffectiveWidth() / spatiumInMm;
-        double effectiveHeightSp = page.getEffectiveHeight() / spatiumInMm;
-        return new PageLayout(widthSp, heightSp, xSp,  effectiveWidthSp, effectiveHeightSp);
-    }
-
-    private SystemLayout createSystemLayout(PageLayout pageLayout) {
-        double xSp = page.getMarginLeftMm() / spatiumInMm;
-        double ySp = page.getMarginTopMm() / spatiumInMm + pageLayout.getOccupiedHeight();
-        return new SystemLayout(xSp, ySp);
+        int pageIndex = scoreLayout.getPages().size();
+        return new PageLayout(page, style, pageIndex);
     }
 
     private PartLayout addNewPartToSystem(Part part, SystemLayout system) {
-        if (!system.getParts().isEmpty()) {
-            system.getParts().getLast().setDefaultSpaceBelow();
-        }
+        system.setLastPartSpaceBelow(style.getPartSpacing());
         PartLayout newPartLayout = new PartLayout(part, 0, system.getHeight());
-        newPartLayout.setSpaceBelow(0);
         system.add(newPartLayout);
         return newPartLayout;
     }
@@ -186,6 +170,7 @@ public class LayoutEngine {
     private SMeasureLayout createSMeasureLayout(PMeasureLayout pMeasure, Staff staff) {
         var measureTime = pMeasure.getMeasure().getTimeSignature().getValue();
         SMeasureLayout sMeasure = new SMeasureLayout(pMeasure, staff, 0, pMeasure.getHeight());
+        sMeasure.setSpaceBelow(style.getStaffSpacing());
         sMeasure.add(SegmentType.CLEF);
         sMeasure.add(SegmentType.KEY_SIG);
         sMeasure.add(SegmentType.TIME_SIG);

@@ -7,15 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SMeasureLayout {
-    private final double DEFAULT_SPACE_BELOW = 5;
-
     private PMeasureLayout parent;
     private boolean isVisible = true;
     private StaffLayout staffLayout;
     private BarlineLayout startBarline = null;
     private BarlineLayout endBarline;
     private double x, y;
-    private double spaceBelow = DEFAULT_SPACE_BELOW;
+    private double spaceBelow;
     private List<SegmentLayout> segments = new ArrayList<>();
 
     public SMeasureLayout(PMeasureLayout parent, Staff staff, double x, double y) {

@@ -12,14 +12,22 @@ public class PageLayout {
     private final double width;
     private final double effectiveHeight;
     private final double effectiveWidth;
+    private final double marginTop ;
+    private final double marginBottom;
+    private final double marginLeft;
+    private final double marginRight;
     private double x;
 
-    public PageLayout(double width, double height, double x, double effectiveWidth, double effectiveHeight) {
-        this.width = width;
-        this.height = height;
-        this.effectiveWidth = effectiveWidth;
-        this.effectiveHeight = effectiveHeight;
-        this.x = x;
+    public PageLayout(Page page, ScoreStyle style, int pageIndex) {
+        this.width = style.toSp(page.getWidthMm());
+        this.height = style.toSp(page.getHeightMm());
+        this.effectiveWidth = style.toSp(page.getEffectiveWidth());
+        this.effectiveHeight = style.toSp(page.getEffectiveHeight());
+        this.marginTop = style.toSp(page.getMarginTopMm());
+        this.marginBottom = style.toSp(page.getMarginBottomMm());
+        this.marginLeft = style.toSp(page.getMarginLeftMm());
+        this.marginRight = style.toSp(page.getMarginRightMm());
+        this.x = (width + style.getPageSpacing()) * pageIndex;
     }
 
     public void add(SystemLayout system) {
@@ -31,6 +39,10 @@ public class PageLayout {
     public double getWidth() { return width; }
     public double getEffectiveWidth() { return effectiveWidth; }
     public double getEffectiveHeight() { return effectiveHeight; }
+    public double getMarginTop() { return marginTop; }
+    public double getMarginBottom() { return marginBottom; }
+    public double getMarginLeft() { return marginLeft; }
+    public double getMarginRight() { return marginRight; }
     public double getRemainingWidth() { return  effectiveWidth - getOccupiedWidth(); }
     public double getRemainingHeight() { return effectiveHeight - getOccupiedHeight(); }
     public double getOccupiedWidth() {
@@ -43,4 +55,10 @@ public class PageLayout {
                 .sum();
     }
     public double getX() { return x; }
+
+    public void setLastSystemSpaceBelow(double spaceBelow) {
+        if (!getSystems().isEmpty()) {
+            getSystems().getLast().setSpaceBelow(spaceBelow);
+        }
+    }
 }

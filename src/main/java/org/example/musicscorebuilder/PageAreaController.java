@@ -3,6 +3,7 @@ package org.example.musicscorebuilder;
 import javafx.fxml.FXML;
 import javafx.scene.control.ScrollPane;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
+import org.example.musicscorebuilder.components.layout.ScoreStyle;
 import org.example.musicscorebuilder.components.music.Page;
 import org.example.musicscorebuilder.components.music.PageFormat;
 import org.example.musicscorebuilder.components.views.BackgroundView;
@@ -17,7 +18,10 @@ public class PageAreaController {
         container.prefWidthProperty().bind(scrollPane.widthProperty());
         container.prefHeightProperty().bind(scrollPane.heightProperty());
         ScoreService.getInstance().addListener(this::refreshView);
-        this.layoutEngine = new LayoutEngine(new Page(PageFormat.A4_V));
+        this.layoutEngine = new LayoutEngine(
+                new Page(PageFormat.A4_V),
+                new ScoreStyle()
+        );
         refreshView();
     }
 
