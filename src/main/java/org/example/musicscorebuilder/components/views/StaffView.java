@@ -13,6 +13,7 @@ public class StaffView extends ComponentView {
         double staffY = partY;
         double widthPx = staff.getWidth() * sp;
         double heightPx = staff.getHeight() * sp;
+        double lineSpacingPx = staff.getLineSpacing() * sp;
 
 //        fillBackground(gc, Util.generateRandomColor(), staffX, staffY, widthPx, heightPx);
 
@@ -21,7 +22,7 @@ public class StaffView extends ComponentView {
         gc.setLineCap(StrokeLineCap.BUTT);
 
         for (int i = 0; i < staff.getLinesNumber(); i++) {
-            double currentLineY = staffY + (i * sp);
+            double currentLineY = staffY + (i * lineSpacingPx);
             gc.strokeLine(staffX, currentLineY, staffX + widthPx, currentLineY);
         }
     }

@@ -42,7 +42,6 @@ public class PMeasureLayout {
                     if (i == 0 || i == 1 || i == 2) {
                         SegmentLayout segment = segments.get(i);
                         segment.setGenerated(true);
-
                     }
                     double segmentX = 0.0;
                     for (SegmentLayout segment : segments) {

@@ -5,25 +5,22 @@ public class SegmentLayout {
 
     private SegmentType type;
     private double width, height;
-    private double x, y;
+    private double x, y = 0;
     private boolean isGenerated = true;
 
-    public SegmentLayout(SegmentType type, double x, double y, double height) {
+    public SegmentLayout(SegmentType type, double x, double height) {
         this.type = type;
         isGenerated = type == SegmentType.CHORD_REST;
         width = switch(type) {
-            case CLEF -> 3.0;
             case KEY_SIG -> 4.0;
             case TIME_SIG -> 2.0;
             default -> DEFAULT_WIDTH;
         };
         this.height = height;
         this.x = x;
-        this.y = y;
     }
 
     public SegmentType getType() { return type; }
-    public double getMinWidth() { return isGenerated ? DEFAULT_WIDTH : 0; }
     public double getWidth() { return isGenerated ? width : 0; }
     public double getHeight() { return  isGenerated ? height : 0; }
 

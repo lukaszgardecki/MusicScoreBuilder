@@ -66,7 +66,7 @@ public class LayoutEngine {
                     double measureMinWidthSum = 0.0;
                     for (SegmentLayout segment : sMeasures.getFirst().getActiveSegments()) {
                         if (segment.hasDynamicWidth()) {
-                            measureMinWidthSum += segment.getMinWidth();
+                            measureMinWidthSum += segment.getWidth();
                         }
                     }
                     measuresMinWidths[i] = measureMinWidthSum;
@@ -99,7 +99,7 @@ public class LayoutEngine {
                     double segmentX = 0.0;
                     for (SegmentLayout segment : activeSegments) {
                         if (segment.hasDynamicWidth()) {
-                            segment.setWidth(segment.getMinWidth() + extraSpacePerSegment);
+                            segment.setWidth(segment.getWidth() + extraSpacePerSegment);
                         }
                         segment.setX(segmentX);
                         segmentX += segment.getWidth();
@@ -186,14 +186,12 @@ public class LayoutEngine {
     private SMeasureLayout createSMeasureLayout(PMeasureLayout pMeasure, Staff staff) {
         var measureTime = pMeasure.getMeasure().getTimeSignature().getValue();
         SMeasureLayout sMeasure = new SMeasureLayout(pMeasure, staff, 0, pMeasure.getHeight());
-        double height = staff.getLinesNumber() - 1;
-
-        sMeasure.add(SegmentType.CLEF, height);
-        sMeasure.add(SegmentType.KEY_SIG, height);
-        sMeasure.add(SegmentType.TIME_SIG, height);
+        sMeasure.add(SegmentType.CLEF);
+        sMeasure.add(SegmentType.KEY_SIG);
+        sMeasure.add(SegmentType.TIME_SIG);
 
         for (int i = 0; i < measureTime; i++) {
-            sMeasure.add(SegmentType.CHORD_REST, height);
+            sMeasure.add(SegmentType.CHORD_REST);
         }
         return sMeasure;
     }

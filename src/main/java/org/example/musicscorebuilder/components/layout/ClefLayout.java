@@ -3,19 +3,29 @@ package org.example.musicscorebuilder.components.layout;
 import org.example.musicscorebuilder.components.music.ClefType;
 import org.example.musicscorebuilder.components.music.Leland;
 
-public class ClefLayout {
+public class ClefLayout extends SegmentLayout {
     private final Leland fontData;
-    private double height = 7;
+    private double height;
+    private double offsetY;
 
-    public ClefLayout(ClefType clefType) {
-        fontData = switch (clefType) {
-            case G -> Leland.CLEF_G;
-            default -> null;
-        };
+    public ClefLayout(StaffLayout staffLayout, double x) {
+        super(SegmentType.CLEF, x, 0);
+        this.height = staffLayout.getHeight();
+        ClefType type = staffLayout.getStaff().getDefaultClef().getType();
+        fontData = type.getFontData();
+        offsetY = type.getOffsetY() * staffLayout.getLineSpacing();
     }
 
-    public double getHeight() { return height; }
-    public double getWidth() { return height * fontData.getRatio(); }
+    public double getFontSize() { return height; }
     public String getCode() { return fontData.getCode(); }
-    public void setHeight(double height) { this.height = height; }
+    public double boxY() { return getY() - fontData.getNEy(); }
+
+    @Override
+    public double getHeight() { return fontData.getHeight(); }
+
+    @Override
+    public double getWidth() { return getHeight() * fontData.getRatio(); }
+
+    @Override
+    public double getY() { return offsetY ; }
 }

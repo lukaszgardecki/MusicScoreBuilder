@@ -26,18 +26,15 @@ public class SMeasureLayout {
         this.y = y;
     }
 
-    public void add(SegmentType type, double height) {
-        double currentTailX = 0.0;
-        for (SegmentLayout segment : this.segments) {
-            currentTailX += segment.getWidth();
-        }
-        var newSegment = new SegmentLayout(type, currentTailX, 0, height);
-        this.segments.add(newSegment);
+    public void add(SegmentType type) {
+        this.segments.add(switch(type) {
+            case CLEF -> new ClefLayout(staffLayout, getNextSegmentX());
+            case KEY_SIG, TIME_SIG, CHORD_REST, BARLINE -> new SegmentLayout(type, getNextSegmentX(), staffLayout.getHeight());
+        });
     }
 
     public double getWidth() { return getActiveSegments().stream().mapToDouble(SegmentLayout::getWidth).sum(); }
     public double getHeight() { return staffLayout.getHeight() + spaceBelow; }
-    public double getMinWidth() { return segments.stream().mapToDouble(SegmentLayout::getMinWidth).sum(); }
     public double getX() { return x; }
     public double getY() { return y; }
     public StaffLayout getStaffLayout() { return staffLayout; }
@@ -51,4 +48,5 @@ public class SMeasureLayout {
         this.startBarline = new BarlineLayout(this, BarlineLayout.Type.START, BarlineStyle.SINGLE);
         this.startBarline.setHeightToPartBelow(spaceBelowPart);
     }
+    private double getNextSegmentX() {return this.getActiveSegments().stream().mapToDouble(SegmentLayout::getWidth).sum();}
 }

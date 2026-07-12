@@ -4,7 +4,9 @@ public enum Leland {
     BRACE("\uE000", 0.248, 3.98, -0.002, 0.019),
     BRACKET("\uE002", 2.111, 5.724, 0.0, -1.724),
 
-    CLEF_G("\uE050", 2.56, 4.449, -0.0, -2.666);
+    CLEF_G("\uE050", 2.56, 4.449, -0.0, -2.666),
+    CLEF_F("\uE062", 2.656, 1.004, 0.001, -2.468),
+    CLEF_C("\uE05C", 2.508, 1.928, 0.0, -1.92);
 
     private final String code;
     private final double NEx;
@@ -24,6 +26,9 @@ public enum Leland {
 
     public String getCode() { return code; }
     public double getRatio() { return ratio; }
-    private double getHeight() { return NEy - SWy; }
-    private double getWidth() { return NEx - SWx; }
+    public double getHeight() { return NEy - SWy; }
+    public double getWidth() { return NEx - SWx; }
+    public double getNEy() { return NEy; }
+    public double getSWx() { return SWx; }
+    public double getSWy() { return SWy; }
 }
