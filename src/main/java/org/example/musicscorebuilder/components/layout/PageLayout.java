@@ -57,8 +57,7 @@ public class PageLayout {
     public double getX() { return x; }
 
     public void setLastSystemSpaceBelow(double spaceBelow) {
-        if (!getSystems().isEmpty()) {
-            getSystems().getLast().setSpaceBelow(spaceBelow);
-        }
+        if (systems.isEmpty()) return;
+        systems.getLast().setSpaceBelow(spaceBelow);
     }
 }

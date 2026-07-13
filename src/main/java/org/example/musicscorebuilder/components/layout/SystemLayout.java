@@ -41,8 +41,7 @@ public class SystemLayout {
     }
     public void setSpaceBelow(double spaceBelow) { this.spaceBelow = spaceBelow; }
     public void setLastPartSpaceBelow(double spaceBelow) {
-        if (!getParts().isEmpty()) {
-            getParts().getLast().setSpaceBelow(spaceBelow);
-        }
+        if (parts.isEmpty()) return;
+        parts.getLast().setSpaceBelow(spaceBelow);
     }
 }

@@ -29,8 +29,6 @@ public class LayoutEngine {
 
                 removeLastMeasureFromSystem(oldSystem, score.getParts());
 
-                justify(oldSystem);
-
                 if (currentPage.getRemainingHeight() < oldSystem.getHeight()) {
                     currentPage = createPageLayout(scoreLayout);
                     scoreLayout.addPageLayout(currentPage);
@@ -38,6 +36,7 @@ public class LayoutEngine {
 
                 newSystem = addNewSystemToPage(currentPage);
                 addMeasureToAllParts(measure, score.getParts(), newSystem);
+                justify(oldSystem);
             }
         }
 
@@ -47,8 +46,7 @@ public class LayoutEngine {
 
     private void justify(SystemLayout system) {
         double targetWidth = system.getPageLayout().getEffectiveWidth();
-        double MIN_FULLNESS_RATIO = 0.5;
-        if (system.getParts().isEmpty() || system.getWidth() < targetWidth * MIN_FULLNESS_RATIO) return;
+        if (system.getParts().isEmpty() || system.getWidth() < targetWidth * style.getSystemMinFullnessRatio()) return;
         double extraSpace = targetWidth - system.getWidth();
         if (extraSpace <= 0) return;
 

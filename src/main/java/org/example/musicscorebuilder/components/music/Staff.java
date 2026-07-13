@@ -4,8 +4,8 @@ public class Staff {
     private final int linesNumber;
     private final Clef defaultClef;
 
-    public Staff(ClefType defaultClef) {
-        this.defaultClef = new Clef(defaultClef);
+    public Staff(ClefType clefType) {
+        this.defaultClef = new Clef(clefType);
         this.linesNumber = 5;
     }
 

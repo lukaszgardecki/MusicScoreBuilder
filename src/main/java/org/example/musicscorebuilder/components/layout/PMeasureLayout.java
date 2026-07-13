@@ -38,16 +38,14 @@ public class PMeasureLayout {
                 else sm.setSystemStartBarline(0);
 
                 var segments = sm.getSegments();
+                double segmentX = 0.0;
                 for (int i = 0; i < segments.size(); i++) {
+                    SegmentLayout segment = segments.get(i);
                     if (i == 0 || i == 1 || i == 2) {
-                        SegmentLayout segment = segments.get(i);
                         segment.setGenerated(true);
                     }
-                    double segmentX = 0.0;
-                    for (SegmentLayout segment : segments) {
-                        segment.setX(segmentX);
-                        segmentX += segment.getWidth();
-                    }
+                    segment.setX(segmentX);
+                    segmentX += segment.getWidth();
                 }
             });
         }
