@@ -10,7 +10,7 @@ public class ScoreView extends Canvas {
     GraphicsContext gc = getGraphicsContext2D();
     private final PageView pageView = new PageView();
     private ScoreLayout scoreLayout;
-    private final double baseSpatiumPx = 5.0;
+    private final double baseSpatiumPx = 10.0;
     private double offsetX = 0.0;
     private double offsetY = 0.0;
     private double zoom = 1.0;

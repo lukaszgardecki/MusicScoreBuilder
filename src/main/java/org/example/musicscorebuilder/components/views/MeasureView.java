@@ -16,7 +16,7 @@ public class MeasureView extends ComponentView {
         double widthPx = measure.getWidth() * sp;
         double heightPx = measure.getHeight() * sp;
 
-        fillBackground(gc, Util.generateRandomColor(), measureX, measureY, widthPx, heightPx);
+//        fillBackground(gc, Util.generateRandomColor(), measureX, measureY, widthPx, heightPx);
 
         for (StaffLayout staff : measure.getStaffs()) {
             staffView.draw(gc, staff, measureX, measureY, sp);

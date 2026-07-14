@@ -6,7 +6,10 @@ public enum Leland {
 
     CLEF_G("\uE050", 2.56, 4.449, -0.0, -2.666),
     CLEF_F("\uE062", 2.656, 1.004, 0.001, -2.468),
-    CLEF_C("\uE05C", 2.508, 1.928, 0.0, -1.92);
+    CLEF_C("\uE05C", 2.508, 1.928, 0.0, -1.92),
+
+    FLAT("\uE260", 0.812, 1.812, 0.0, -0.704),
+    SHARP("\uE262", 0.976, 1.336, 0.0, -1.332);
 
     private final String code;
     private final double NEx;

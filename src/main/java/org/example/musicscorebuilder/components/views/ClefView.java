@@ -8,7 +8,7 @@ import org.example.musicscorebuilder.components.layout.ClefLayout;
 public class ClefView extends ComponentView {
 
     public void draw(GraphicsContext gc, ClefLayout clef, double segmentX, double segmentY, double sp) {
-        double clefX = segmentX ;
+        double clefX = segmentX;
         double clefY = segmentY + clef.getY() * sp;
         double widthPx = clef.getWidth() * sp;
         double heightPx = clef.getHeight() * sp;

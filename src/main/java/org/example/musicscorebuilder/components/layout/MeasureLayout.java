@@ -28,10 +28,13 @@ public class MeasureLayout {
     }
 
     public void addAtBegin(Barline barline) {
+        SegmentLayout seg3 = new SegmentLayout(this);
+        staves.forEach(staff -> seg3.add(staff.getKeySigLayout()));
+        segments.addFirst(seg3);
+
         SegmentLayout seg2 = new SegmentLayout(this);
         staves.forEach(staff -> seg2.add(staff.getClefLayout()));
         segments.addFirst(seg2);
-
 
         if (barline == null) return;
         SegmentLayout seg1 = new SegmentLayout(this);

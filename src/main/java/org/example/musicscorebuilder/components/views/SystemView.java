@@ -15,7 +15,7 @@ public class SystemView extends ComponentView {
         double widthPx = system.getWidth() * sp;
         double heightPx = system.getHeight() * sp;
 
-        fillBackground(gc, Util.generateRandomColor(), systemX, systemY, widthPx, heightPx);
+//        fillBackground(gc, Util.generateRandomColor(), systemX, systemY, widthPx, heightPx);
 
         system.getBraceLayout().ifPresent(brace -> braceView.draw(gc, brace, systemX, systemY, sp));
 

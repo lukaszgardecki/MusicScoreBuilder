@@ -17,7 +17,7 @@ public class SegmentLayout {
     }
 
     public void add(ElementLayout elementLayout) {
-        if (elementLayout.getWidth() > width) { width = elementLayout.getWidth();}
+        if (elementLayout.getWidth() > width) { width = elementLayout.getWidth(); }
         elements.add(elementLayout);
     }
 

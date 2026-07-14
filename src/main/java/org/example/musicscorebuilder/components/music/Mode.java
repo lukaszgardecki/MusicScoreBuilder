@@ -13,10 +13,10 @@ public class Mode {
     public Mode(ModeType type) {
         this.type = type;
         switch (type) {
-            case SOLO -> staves.add(new Staff(0, new Clef(ClefType.G)));
+            case SOLO -> staves.add(new Staff(0, ClefType.G, KeySigType.S2));
             case HARMONY -> {
-                staves.add(new Staff(0, new Clef(ClefType.G)));
-                staves.add(new Staff(1, new Clef(ClefType.F)));
+                staves.add(new Staff(0, ClefType.G, KeySigType.F3));
+                staves.add(new Staff(1, ClefType.F, KeySigType.F3));
             }
         }
        this.braceType = switch (type) {

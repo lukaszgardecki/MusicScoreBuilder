@@ -15,7 +15,7 @@ public class StaffView extends ComponentView {
         double heightPx = staff.getHeight() * sp;
         double lineSpacingPx = staff.getLineSpacing() * sp;
 
-        fillBackground(gc, Util.generateRandomColor(), staffX, staffY, widthPx, heightPx);
+//        fillBackground(gc, Util.generateRandomColor(), staffX, staffY, widthPx, heightPx);
 
         gc.setStroke(Color.BLACK);
         gc.setLineWidth(staff.getLineWidth() * sp);
