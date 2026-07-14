@@ -4,8 +4,10 @@ import javafx.fxml.FXML;
 import javafx.scene.control.ScrollPane;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
 import org.example.musicscorebuilder.components.layout.ScoreStyle;
+import org.example.musicscorebuilder.components.music.Mode;
 import org.example.musicscorebuilder.components.music.Page;
 import org.example.musicscorebuilder.components.music.PageFormat;
+import org.example.musicscorebuilder.components.music.Score;
 import org.example.musicscorebuilder.components.views.BackgroundView;
 
 public class PageAreaController {
@@ -26,7 +28,9 @@ public class PageAreaController {
     }
 
     private void refreshView() {
-        ScoreLayout score = layoutEngine.compute(ScoreService.getInstance().getScore());
-        container.updateContent(score);
+        Score score = ScoreService.getInstance().getScore();
+        Mode mode = score.getModes().getFirst();
+        ScoreLayout scoreLayout = layoutEngine.compute(mode);
+        container.updateContent(scoreLayout);
     }
 }

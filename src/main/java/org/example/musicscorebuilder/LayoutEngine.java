@@ -14,30 +14,32 @@ public class LayoutEngine {
         this.style = style;
     }
 
-    public ScoreLayout compute(Score score) {
+    public ScoreLayout compute(Mode mode) {
         ScoreLayout scoreLayout = new ScoreLayout();
         PageLayout currentPage = createPageLayout(scoreLayout);
         scoreLayout.addPageLayout(currentPage);
 
-        SystemLayout newSystem = addNewSystemToPage(currentPage);
+        SystemLayout newSystem = addNewSystemToPage(currentPage, mode);
 
-        for (Measure measure : score.getMeasures()) {
-            addMeasureToAllParts(measure, score.getParts(), newSystem);
+        for (Measure measure : mode.getMeasures()) {
+            MeasureLayout measureLayout = createMeasureLayout(measure,  newSystem);
 
-            if (newSystem.getWidth() > currentPage.getEffectiveWidth()) {
-                SystemLayout oldSystem = newSystem;
-
-                removeLastMeasureFromSystem(oldSystem, score.getParts());
-
-                if (currentPage.getRemainingHeight() < oldSystem.getHeight()) {
+            boolean noSpaceForNextMeasure = currentPage.getEffectiveWidth() - newSystem.getWidth() < measureLayout.getWidth();
+            boolean noSpaceForNextSystem = currentPage.getRemainingHeight() < newSystem.getHeight();
+            if (noSpaceForNextMeasure) {
+                if (noSpaceForNextSystem) {
                     currentPage = createPageLayout(scoreLayout);
                     scoreLayout.addPageLayout(currentPage);
                 }
-
-                newSystem = addNewSystemToPage(currentPage);
-                addMeasureToAllParts(measure, score.getParts(), newSystem);
-                justify(oldSystem);
+                newSystem = addNewSystemToPage(currentPage, mode);
+                measureLayout.setX(newSystem.getWidth());
             }
+
+            if (newSystem.getMeasures().isEmpty()) {
+                measureLayout.addAtBegin(mode.getStartBarline());
+            }
+            newSystem.add(measureLayout);
+            justify(newSystem);
         }
 
         justify(newSystem);
@@ -46,100 +48,60 @@ public class LayoutEngine {
 
     private void justify(SystemLayout system) {
         double targetWidth = system.getPageLayout().getEffectiveWidth();
-        if (system.getParts().isEmpty() || system.getWidth() < targetWidth * style.getSystemMinFullnessRatio()) return;
+        if (system.getMeasures().isEmpty() || system.getWidth() < targetWidth * style.getSystemMinFullnessRatio()) return;
         double extraSpace = targetWidth - system.getWidth();
         if (extraSpace <= 0) return;
 
-        for (PartLayout partLayout : system.getParts()) {
-            double currentX = partLayout.getBraceLayout().getWidth();
-            List<PMeasureLayout> partMeasures = partLayout.getPartMeasures();
+        List<MeasureLayout> measures = system.getMeasures();
 
-            double totalNotesMinWidthSum = 0.0;
-            double[] measuresMinWidths = new double[partMeasures.size()];
+        double totalDynamicSegmentsWidthSum = 0.0;
+        double[] measuresDynamicWidths = new double[measures.size()];
 
-            for (int i = 0; i < partMeasures.size(); i++) {
-                PMeasureLayout pm = partMeasures.get(i);
-                List<SMeasureLayout> sMeasures = pm.getSMeasures();
+        for (int i = 0; i < measures.size(); i++) {
+            MeasureLayout m = measures.get(i);
+            double dynamicSegmentsTotalWidth = 0.0;
 
-                if (!sMeasures.isEmpty()) {
-                    double measureMinWidthSum = 0.0;
-                    for (SegmentLayout segment : sMeasures.getFirst().getActiveSegments()) {
-                        if (segment.hasDynamicWidth()) {
-                            measureMinWidthSum += segment.getWidth();
-                        }
+            for (SegmentLayout segment : m.getSegments()) {
+                if (segment.hasDynamicWidth()) dynamicSegmentsTotalWidth += segment.getWidth();
+            }
+            measuresDynamicWidths[i] = dynamicSegmentsTotalWidth;
+            totalDynamicSegmentsWidthSum += dynamicSegmentsTotalWidth;
+        }
+
+        if (totalDynamicSegmentsWidthSum <= 0) return;
+
+        double currentX = system.getBraceWidth();
+
+        for (int i = 0; i < measures.size(); i++) {
+            MeasureLayout measure = measures.get(i);
+            measure.setX(currentX);
+
+            double thisMeasureDynamicWidth = measuresDynamicWidths[i];
+            double widthRatio = thisMeasureDynamicWidth / totalDynamicSegmentsWidthSum;
+            double extraSpaceForThisMeasure = extraSpace * widthRatio;
+
+            long dynamicSegmentsCount = measure.getSegments().stream()
+                    .filter(SegmentLayout::hasDynamicWidth)
+                    .count();
+
+            if (dynamicSegmentsCount > 0) {
+                double extraSpacePerSegment = extraSpaceForThisMeasure / dynamicSegmentsCount;
+
+                for (SegmentLayout segment : measure.getSegments()) {
+                    if (segment.hasDynamicWidth()) {
+                        segment.setWidth(segment.getWidth() + extraSpacePerSegment);
                     }
-                    measuresMinWidths[i] = measureMinWidthSum;
-                    totalNotesMinWidthSum += measureMinWidthSum;
                 }
             }
-
-            if (totalNotesMinWidthSum <= 0) continue;
-
-            for (int i = 0; i < partMeasures.size(); i++) {
-                PMeasureLayout pMeasure = partMeasures.get(i);
-                pMeasure.setX(currentX);
-
-                double thisMeasureNotesMinWidth = measuresMinWidths[i];
-                double share = thisMeasureNotesMinWidth / totalNotesMinWidthSum;
-                double extraSpaceForThisMeasure = extraSpace * share;
-
-                for (SMeasureLayout sMeasure : pMeasure.getSMeasures()) {
-                    List<SegmentLayout> activeSegments = sMeasure.getActiveSegments();
-
-                    int dynamicSegmentsCount = 0;
-                    for (SegmentLayout segment : activeSegments) {
-                        if (segment.hasDynamicWidth()) {
-                            dynamicSegmentsCount++;
-                        }
-                    }
-
-                    double extraSpacePerSegment = dynamicSegmentsCount > 0 ? (extraSpaceForThisMeasure / dynamicSegmentsCount) : 0;
-
-                    double segmentX = 0.0;
-                    for (SegmentLayout segment : activeSegments) {
-                        if (segment.hasDynamicWidth()) {
-                            segment.setWidth(segment.getWidth() + extraSpacePerSegment);
-                        }
-                        segment.setX(segmentX);
-                        segmentX += segment.getWidth();
-                    }
-                }
-                currentX += pMeasure.getWidth();
-            }
+            currentX += measure.getWidth();
         }
     }
 
-    private SystemLayout addNewSystemToPage(PageLayout pageLayout) {
+    private SystemLayout addNewSystemToPage(PageLayout pageLayout, Mode mode) {
         pageLayout.setLastSystemSpaceBelow(style.getSystemSpacing());
-        var newSystem = new SystemLayout(pageLayout);
+        var newSystem = new SystemLayout(pageLayout, mode.getBraceType());
         pageLayout.add(newSystem);
         return newSystem;
-    }
-
-    private void addMeasureToAllParts(Measure measure, List<Part> parts, SystemLayout system) {
-        parts.forEach(part -> addMeasureToPartInSystem(measure, part, system));
-        setFirstMeasuresInSystem(system);
-    }
-
-    private void setFirstMeasuresInSystem(SystemLayout system) {
-        system.getParts().forEach(part -> {
-            if (part.getPartMeasures().size() == 1) {
-                part.getPartMeasures().getFirst().setFirstInSystem();
-            }
-        });
-    }
-
-    private void removeLastMeasureFromSystem(SystemLayout system, List<Part> parts) {
-        for (Part part : parts) {
-            system.findPartLayout(part).ifPresent(PartLayout::removeLastPMeasureLayout);
-        }
-    }
-
-    private void addMeasureToPartInSystem(Measure measure, Part part, SystemLayout system) {
-        PartLayout partLayout = system.findPartLayout(part)
-                .orElseGet(() -> addNewPartToSystem(part, system));
-        PMeasureLayout pMeasureLayout = createPMeasureLayout(measure, partLayout);
-        partLayout.add(pMeasureLayout);
     }
 
     private PageLayout createPageLayout(ScoreLayout scoreLayout) {
@@ -147,35 +109,26 @@ public class LayoutEngine {
         return new PageLayout(page, style, pageIndex);
     }
 
-    private PartLayout addNewPartToSystem(Part part, SystemLayout system) {
-        system.setLastPartSpaceBelow(style.getPartSpacing());
-        PartLayout newPartLayout = new PartLayout(part, 0, system.getHeight());
-        system.add(newPartLayout);
-        return newPartLayout;
-    }
+    private MeasureLayout createMeasureLayout(Measure measure, SystemLayout systemLayout) {
+        MeasureLayout measureLayout = new MeasureLayout(measure, systemLayout.getWidth());
+        measureLayout.setStaffSpacing(style.getStaffSpacing());
 
-    private PMeasureLayout createPMeasureLayout(Measure measure, PartLayout partLayout) {
-        PMeasureLayout pMeasureLayout = new PMeasureLayout(partLayout, measure, partLayout.getWidth(), 0);
-        var staves = partLayout.getPart().getStaves();
-        for (Staff staff : staves) {
-            SMeasureLayout sMeasureLayout = createSMeasureLayout(pMeasureLayout, staff);
-            if (staves.getLast() == staff) sMeasureLayout.setSpaceBelow(0);
-            pMeasureLayout.add(sMeasureLayout);
+        for (Staff staff : measure.getStaves()) {
+            measureLayout.add(new StaffLayout(staff, measureLayout));
         }
-        return pMeasureLayout;
-    }
 
-    private SMeasureLayout createSMeasureLayout(PMeasureLayout pMeasure, Staff staff) {
-        var measureTime = pMeasure.getMeasure().getTimeSignature().getValue();
-        SMeasureLayout sMeasure = new SMeasureLayout(pMeasure, staff, 0, pMeasure.getHeight());
-        sMeasure.setSpaceBelow(style.getStaffSpacing());
-        sMeasure.add(SegmentType.CLEF);
-        sMeasure.add(SegmentType.KEY_SIG);
-        sMeasure.add(SegmentType.TIME_SIG);
+        for (Segment segment : measure.getSegments()) {
+            SegmentLayout segmentLayout = new SegmentLayout(measureLayout);
 
-        for (int i = 0; i < measureTime; i++) {
-            sMeasure.add(SegmentType.CHORD_REST);
+            for (Element element : segment.getElements()) {
+                var el = switch(element) {
+                    case Barline barline -> new BarlineLayout(barline, segmentLayout);
+                    default -> new ElementLayout();
+                };
+                segmentLayout.add(el);
+            }
+            measureLayout.add(segmentLayout);
         }
-        return sMeasure;
+        return measureLayout;
     }
 }

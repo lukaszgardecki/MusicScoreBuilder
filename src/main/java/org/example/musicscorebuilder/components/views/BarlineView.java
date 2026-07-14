@@ -4,17 +4,18 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.StrokeLineCap;
 import org.example.musicscorebuilder.components.layout.BarlineLayout;
-import org.example.musicscorebuilder.util.Util;
-
-import java.util.Random;
 
 public class BarlineView {
 
     public void draw(GraphicsContext gc, BarlineLayout barline, double sMeasureX, double sMeasureY, double sp) {
         double startY = barline.getY() * sp + sMeasureY;
         double endY = startY + (barline.getHeight() * sp);
-        double baseX = barline.getX() * sp + sMeasureX;
+        double baseX = sMeasureX;
 
+//        gc.setStroke(switch (barline.getType()) {
+//            case START -> Color.RED;
+//            case END -> Color.GREEN;
+//        });
         gc.setStroke(Color.BLACK);
         gc.setLineCap(StrokeLineCap.BUTT);
 
@@ -30,7 +31,7 @@ public class BarlineView {
     private void drawSingle(GraphicsContext gc, BarlineLayout barline, double x, double startY, double endY, double sp) {
         double width = barline.getLightLineWidth() * sp;
         gc.setLineWidth(width);
-        double correctedX = x - (width / 2.0);
+        double correctedX = x + (width / 2.0);
         gc.strokeLine(correctedX, startY, correctedX, endY);
     }
 
@@ -39,11 +40,11 @@ public class BarlineView {
         double gap = barline.getGap() * sp;
         gc.setLineWidth(thinWidth);
 
-        double rightX = x - (thinWidth / 2.0);
-        gc.strokeLine(rightX, startY, rightX, endY);
-
-        double leftX = rightX - gap - thinWidth;
+        double leftX = x + (thinWidth / 2.0);
         gc.strokeLine(leftX, startY, leftX, endY);
+
+        double rightX = leftX + gap + thinWidth;
+        gc.strokeLine(rightX, startY, rightX, endY);
     }
 
     private void drawEnd(GraphicsContext gc, BarlineLayout barline, double x, double startY, double endY, double sp) {
@@ -51,13 +52,13 @@ public class BarlineView {
         double thickWidth = barline.getHeavyLineWidth() * sp;
         double gap = barline.getGap() * sp;
 
-        gc.setLineWidth(thickWidth);
-        double rightX = x - (thickWidth / 2.0);
-        gc.strokeLine(rightX, startY, rightX, endY);
-
         gc.setLineWidth(thinWidth);
-        double leftX = rightX - (thickWidth / 2.0) - gap - (thinWidth / 2.0);
+        double leftX = x + (thinWidth / 2.0);
         gc.strokeLine(leftX, startY, leftX, endY);
+
+        gc.setLineWidth(thickWidth);
+        double rightX = leftX + (thinWidth / 2.0) + gap + (thickWidth / 2.0);
+        gc.strokeLine(rightX, startY, rightX, endY);
     }
 
     private void drawRepeatLeft(GraphicsContext gc, BarlineLayout barline, double x, double startY, double endY, double sp) {
@@ -66,38 +67,43 @@ public class BarlineView {
         double gap = barline.getGap() * sp;
 
         gc.setLineWidth(thickWidth);
-        double rightX = x - (thickWidth / 2.0);
-        gc.strokeLine(rightX, startY, rightX, endY);
+        double thickX = x + (thickWidth / 2.0);
+        gc.strokeLine(thickX, startY, thickX, endY);
 
         gc.setLineWidth(thinWidth);
-        double leftX = rightX - (thickWidth / 2.0) - gap - (thinWidth / 2.0);
-        gc.strokeLine(leftX, startY, leftX, endY);
+        double thinX = thickX + (thickWidth / 2.0) + gap + (thinWidth / 2.0);
+        gc.strokeLine(thinX, startY, thinX, endY);
 
-        drawRepeatDots(gc, barline, leftX - (thinWidth / 2.0) - (0.3 * sp), startY, endY, sp);
+        double dotSpace = barline.getDotSpace() * sp;
+        double dotRadius = barline.getDotRadius() * sp;
+        double dotX = thinX + (thinWidth / 2.0) + dotSpace + dotRadius;
+        drawRepeatDots(gc, barline, dotX, startY, endY, sp);
     }
 
     private void drawRepeatRight(GraphicsContext gc, BarlineLayout barline, double x, double startY, double endY, double sp) {
         double thinWidth = barline.getLightLineWidth() * sp;
         double thickWidth = barline.getHeavyLineWidth() * sp;
         double gap = barline.getGap() * sp;
+        double dotRadius = barline.getDotRadius() * sp;
+        double dotSpace = barline.getDotSpace() * sp;
 
-        gc.setLineWidth(thickWidth);
-        double leftX = x + (thickWidth / 2.0);
-        gc.strokeLine(leftX, startY, leftX, endY);
+        double dotX = x + dotRadius;
+        drawRepeatDots(gc, barline, dotX, startY, endY, sp);
 
         gc.setLineWidth(thinWidth);
-        double rightX = leftX + (thickWidth / 2.0) + gap + (thinWidth / 2.0);
-        gc.strokeLine(rightX, startY, rightX, endY);
+        double thinX = dotX + dotRadius + dotSpace + (thinWidth / 2.0);
+        gc.strokeLine(thinX, startY, thinX, endY);
 
-        drawRepeatDots(gc, barline, rightX + (thinWidth / 2.0) + (0.3 * sp), startY, endY, sp);
+        gc.setLineWidth(thickWidth);
+        double thickX = thinX + (thinWidth / 2.0) + gap + (thickWidth / 2.0);
+        gc.strokeLine(thickX, startY, thickX, endY);
     }
 
     //TODO: źle pozycjonuje kropki, tzn. są na złej wysokości (X jest dobry)
     private void drawRepeatDots(GraphicsContext gc, BarlineLayout barline, double dotX, double startY, double endY, double sp) {
         double staffHeight = endY - startY;
         double lineSpacing = staffHeight / 4.0;
-
-        double dotRadius = 0.12 * sp;
+        double dotRadius = barline.getDotRadius() * sp;
 
         gc.setFill(Color.BLACK);
         // Kropka górna: w środku drugiego pola od góry

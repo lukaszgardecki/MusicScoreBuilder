@@ -1,28 +1,26 @@
 package org.example.musicscorebuilder.components.music;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Measure {
-    private int number;
-    private TimeSignature timeSignature;
-    private final Map<Part, PMeasure> partMeasures = new HashMap<>();
-    private BarlineStyle barlineStyle;
+    private TimeSignature timeSignature = new TimeSignature(4);
+    private Barline rightBarline;
+    private final List<Staff> staves;
+    private final List<Segment> segments = new ArrayList<>();
 
-    public Measure(int number, TimeSignature timeSignature, BarlineStyle barlineStyle) {
-        this.number = number;
-        this.timeSignature = timeSignature;
-        this.barlineStyle = barlineStyle;
+    public Measure(BarlineStyle barlineStyle, List<Staff> staves) {
+        this.staves = staves;
+        this.rightBarline = new Barline(barlineStyle, Barline.Type.END);
     }
 
-    public void put(Part part, PMeasure measure) {
-        partMeasures.put(part, measure);
+    public void add(Element element) {
+        Segment seg = new Segment();
+        seg.addElement(element);
+        segments.add(seg);
     }
 
-    public int getNumber() { return number; }
     public TimeSignature getTimeSignature() { return timeSignature; }
-    public Map<Part,  PMeasure> getPartMeasures() { return partMeasures; }
-    public BarlineStyle getBarlineStyle() { return barlineStyle; }
-
-    public void setBarlineStyle(BarlineStyle barlineStyle) { this.barlineStyle = barlineStyle; }
+    public List<Staff> getStaves() { return staves; }
+    public List<Segment> getSegments() { return segments; }
 }

@@ -1,7 +1,6 @@
 package org.example.musicscorebuilder;
 
-import org.example.musicscorebuilder.components.music.InstrumentFactory;
-import org.example.musicscorebuilder.components.music.Score;
+import org.example.musicscorebuilder.components.music.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,13 +19,8 @@ public class ScoreService {
 
     public Score getScore() {
         if  (score != null) return score;
-        Score score = new Score("Utwór", "Kompozytor");
-
-        score.add(InstrumentFactory.createPiano());
-        score.add(InstrumentFactory.createPiano());
-        score.add(InstrumentFactory.createOrgan());
-        score.addMeasures(10);
-
+        Score score = new Score();
+        score.add(ModeFactory.createHarmonyMode());
         this.score = score;
         return score;
     }

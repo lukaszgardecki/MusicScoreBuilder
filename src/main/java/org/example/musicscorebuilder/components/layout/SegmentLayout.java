@@ -1,41 +1,38 @@
 package org.example.musicscorebuilder.components.layout;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SegmentLayout {
-    private static final double DEFAULT_WIDTH = 2.0;
-
-    private SegmentType type;
+    private final MeasureLayout parent;
+    private final List<ElementLayout> elements = new ArrayList<>();
+    private double x, y;
     private double width, height;
-    private double x, y = 0;
-    private boolean isGenerated = true;
 
-    public SegmentLayout(SegmentType type, double x, double height) {
-        this.type = type;
-        isGenerated = type == SegmentType.CHORD_REST;
-        width = switch(type) {
-            case KEY_SIG -> 4.0;
-            case TIME_SIG -> 2.0;
-            default -> DEFAULT_WIDTH;
-        };
-        this.height = height;
-        this.x = x;
+    public SegmentLayout(MeasureLayout parent) {
+        this.parent = parent;
+        this.y = 0;
+        this.width = 0;
+        this.height = parent.getHeight();
     }
 
-    public SegmentType getType() { return type; }
-    public double getWidth() { return isGenerated ? width : 0; }
-    public double getHeight() { return  isGenerated ? height : 0; }
+    public void add(ElementLayout elementLayout) {
+        if (elementLayout.getWidth() > width) { width = elementLayout.getWidth();}
+        elements.add(elementLayout);
+    }
 
-    public double getX() { return x; }
+    public List<ElementLayout> getElements() { return elements; }
+    public double getX() {
+        var segments = parent.getSegments();
+        int i = segments.indexOf(this);
+        if (i == 0) return 0;
+        SegmentLayout prevSeg = segments.get(i - 1);
+        return prevSeg.getX() + prevSeg.getWidth();
+    }
     public double getY() { return y; }
-    public boolean isGenerated() { return isGenerated; }
-    public boolean hasStaticWidth() {
-        return type == SegmentType.CLEF
-            || type == SegmentType.TIME_SIG
-            || type == SegmentType.KEY_SIG;
-    }
-    public boolean hasDynamicWidth() { return !hasStaticWidth(); }
+    public double getWidth() { return width; }
+    public double getHeight() { return height; }
+    public boolean hasDynamicWidth() { return elements.stream().anyMatch(ElementLayout::hasDynamicWidth); }
 
     public void setWidth(double width) { this.width = width; }
-    public void setGenerated(boolean isGenerated) { this.isGenerated = isGenerated; }
-    public void setX(double x) { this.x = x; }
-    public void setY(double y) { this.y = y; }
 }

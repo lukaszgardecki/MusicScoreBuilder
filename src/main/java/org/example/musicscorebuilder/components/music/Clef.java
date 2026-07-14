@@ -1,6 +1,6 @@
 package org.example.musicscorebuilder.components.music;
 
-public class Clef {
+public class Clef extends Element {
     private ClefType type;
 
     public Clef(ClefType type) {
