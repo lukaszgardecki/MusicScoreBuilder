@@ -8,6 +8,7 @@ public class KeySigLayout extends ElementLayout {
     private final Leland fontData;
     private double height;
     private KeySign[] keySigns;
+    private final double leftMargin = 0.85;
 
     public record KeySign(double x, double y, double boxY) {}
 
@@ -20,7 +21,7 @@ public class KeySigLayout extends ElementLayout {
 
         this.keySigns = new KeySign[rawOffsets.length];
         for (int i = 0; i < keySigns.length; i++) {
-            double x = getSignWidth() * i;
+            double x = getSignWidth() * i + leftMargin;
             double y = rawOffsets[i] * staffLayout.getLineSpacing() + staffLayout.getY();
             keySigns[i] = new KeySign(x, y, y - fontData.getNEy());
         }
@@ -29,7 +30,7 @@ public class KeySigLayout extends ElementLayout {
     public double getFontSize() { return height; }
     public String getCode() { return fontData.getCode(); }
     public KeySign[] getKeySigns() { return keySigns; }
-    @Override public double getWidth() { return getSignWidth() * keySigns.length; }
+    @Override public double getWidth() { return getSignWidth() * keySigns.length + leftMargin; }
     public double getSignWidth() { return getHeight() * fontData.getRatio(); }
     public double getHeight() { return fontData.getHeight(); }
 }

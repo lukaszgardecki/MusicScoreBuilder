@@ -23,8 +23,8 @@ public class Mode {
         }
         this.braceType = type == ModeType.SOLO ? BraceType.NONE : BraceType.BRACE;
         this.startBarline = type == ModeType.SOLO ? null : new Barline(BarlineStyle.SINGLE, Barline.Type.START);
-        this.keySignature = new KeySignature(KeySigType.F2);
-        this.timeSignature = new TimeSignature(3, 4, false, false);
+        this.keySignature = new KeySignature(KeySigType.S3);
+        this.timeSignature = new TimeSignature(5, 8, false, false);
     }
 
     public void appendMeasures(int count) {

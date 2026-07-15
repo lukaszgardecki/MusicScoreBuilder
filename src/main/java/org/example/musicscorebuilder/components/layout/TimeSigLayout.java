@@ -5,8 +5,8 @@ import org.example.musicscorebuilder.components.music.TimeSignature;
 
 public class TimeSigLayout extends ElementLayout {
     private final DigitSign[][] digitSigns;
-    private final double width;
-    private final double height;
+    private final double width, height;
+    private final double leftMargin = 0.85;
 
     public record DigitSign(Leland fontData, double x, double y) {
         public double getSignWidth() { return getHeight() * fontData.getRatio(); }
@@ -23,9 +23,9 @@ public class TimeSigLayout extends ElementLayout {
             Leland symbol = timeSignature.isCommon() ? Leland.TIME_COMMON : Leland.TIME_CUT;
             double y = staffLayout.getY() + signOffsetY + staffLayout.getLineSpacing();
             this.digitSigns = new DigitSign[1][1];
-            DigitSign sign = new DigitSign(symbol, 0.0, y);
+            DigitSign sign = new DigitSign(symbol, leftMargin, y);
             this.digitSigns[0][0] = sign;
-            this.width = sign.getSignWidth();
+            this.width = sign.getSignWidth() + leftMargin;
         } else {
             int beat = timeSignature.getBeat();
             int beatType = timeSignature.getBeatType();
@@ -41,7 +41,7 @@ public class TimeSigLayout extends ElementLayout {
 
             double topWidth = getRowWidth(this.digitSigns[0]);
             double bottomWidth = getRowWidth(this.digitSigns[1]);
-            this.width = Math.max(topWidth, bottomWidth);
+            this.width = Math.max(topWidth, bottomWidth) + leftMargin;
 
             alignRowsCenter(topWidth, bottomWidth);
         }
@@ -68,7 +68,7 @@ public class TimeSigLayout extends ElementLayout {
 
     private DigitSign[] createDigitRow(int[] digits, double y) {
         DigitSign[] row = new DigitSign[digits.length];
-        double currentX = 0.0;
+        double currentX = leftMargin;
 
         for (int i = 0; i < digits.length; i++) {
             Leland fontData = getDigitFontData(digits[i]);
@@ -82,7 +82,7 @@ public class TimeSigLayout extends ElementLayout {
     private double getRowWidth(DigitSign[] row) {
         if (row.length == 0) return 0.0;
         DigitSign lastSign = row[row.length - 1];
-        return lastSign.x() + lastSign.getSignWidth();
+        return (lastSign.x() + lastSign.getSignWidth()) - leftMargin;
     }
 
     private void alignRowsCenter(double topWidth, double bottomWidth) {

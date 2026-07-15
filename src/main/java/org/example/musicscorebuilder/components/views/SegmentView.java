@@ -16,7 +16,7 @@ public class SegmentView extends ComponentView {
         double widthPx = segment.getWidth() * sp;
         double heightPx = segment.getHeight() * sp;
 
-        fillBackground(gc, Util.generateRandomColor(0.3f), segmentX, segmentY, widthPx, heightPx);
+//        fillBackground(gc, Util.generateRandomColor(0.3f), segmentX, segmentY, widthPx, heightPx);
 
         for (ElementLayout element : segment.getElements()) {
             switch(element) {
