@@ -1,9 +1,9 @@
 package org.example.musicscorebuilder.components.music;
 
-public class KeySig extends Element {
+public class KeySignature extends Element {
     private KeySigType type;
 
-    public KeySig(KeySigType type) {
+    public KeySignature(KeySigType type) {
         this.type = type;
     }
 

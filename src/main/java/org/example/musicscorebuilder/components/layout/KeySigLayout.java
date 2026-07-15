@@ -1,41 +1,35 @@
 package org.example.musicscorebuilder.components.layout;
 
+import org.example.musicscorebuilder.components.music.KeySignature;
 import org.example.musicscorebuilder.components.music.KeySigType;
 import org.example.musicscorebuilder.components.music.Leland;
 
 public class KeySigLayout extends ElementLayout {
     private final Leland fontData;
     private double height;
-    private double[] offsetsY;
-    private double[] offsetsX;
+    private KeySign[] keySigns;
 
-    public KeySigLayout(StaffLayout staffLayout) {
+    public record KeySign(double x, double y, double boxY) {}
+
+    public KeySigLayout(KeySignature keySignature, StaffLayout staffLayout) {
         super(false);
         this.height = staffLayout.getHeight();
-        KeySigType type = staffLayout.getStaff().getDefaultKeySig().getType();
+        KeySigType type = keySignature.getType();
         fontData = type.getFontData();
         double[] rawOffsets = type.getOffsetsY(staffLayout.getStaff().getDefaultClef().getType());
 
-        this.offsetsY = new double[rawOffsets.length];
-        for (int i = 0; i < rawOffsets.length; i++) {
-            this.offsetsY[i] = rawOffsets[i] * staffLayout.getLineSpacing() + staffLayout.getY();
-        }
-
-        this.offsetsX = new double[offsetsY.length];
-        for (int i = 0; i < offsetsX.length; i++) {
-            offsetsX[i] = getSignWidth() * i;
+        this.keySigns = new KeySign[rawOffsets.length];
+        for (int i = 0; i < keySigns.length; i++) {
+            double x = getSignWidth() * i;
+            double y = rawOffsets[i] * staffLayout.getLineSpacing() + staffLayout.getY();
+            keySigns[i] = new KeySign(x, y, y - fontData.getNEy());
         }
     }
 
-    public int count() { return offsetsY.length; }
-
     public double getFontSize() { return height; }
     public String getCode() { return fontData.getCode(); }
-    public double getX(int i) { return offsetsX[i]; }
-    public double getY(int i) { return offsetsY[i]; }
-    public double getBoxY(int i) { return offsetsY[i] - fontData.getNEy(); }
-
-    @Override public double getWidth() { return getSignWidth() * offsetsY.length; }
+    public KeySign[] getKeySigns() { return keySigns; }
+    @Override public double getWidth() { return getSignWidth() * keySigns.length; }
     public double getSignWidth() { return getHeight() * fontData.getRatio(); }
     public double getHeight() { return fontData.getHeight(); }
 }

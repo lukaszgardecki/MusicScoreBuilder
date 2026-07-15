@@ -1,7 +1,6 @@
 package org.example.musicscorebuilder.components.layout;
 
-import org.example.musicscorebuilder.components.music.Barline;
-import org.example.musicscorebuilder.components.music.Measure;
+import org.example.musicscorebuilder.components.music.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,19 +26,23 @@ public class MeasureLayout {
         segments.add(segmentLayout);
     }
 
-    public void addAtBegin(Barline barline) {
-        SegmentLayout seg3 = new SegmentLayout(this);
-        staves.forEach(staff -> seg3.add(staff.getKeySigLayout()));
-        segments.addFirst(seg3);
+    public void add1stMeasureAttributes(Mode mode) {
+        SegmentLayout seg1 = new SegmentLayout(this);
+        staves.forEach(staff -> seg1.add(new TimeSigLayout(mode.getTimeSignature(), staff)));
+        segments.addFirst(seg1);
 
         SegmentLayout seg2 = new SegmentLayout(this);
-        staves.forEach(staff -> seg2.add(staff.getClefLayout()));
+        staves.forEach(staff -> seg2.add(new KeySigLayout(mode.getKeySignature(), staff)));
         segments.addFirst(seg2);
 
-        if (barline == null) return;
-        SegmentLayout seg1 = new SegmentLayout(this);
-        seg1.add(new BarlineLayout(barline, seg1));
-        segments.addFirst(seg1);
+        SegmentLayout seg3 = new SegmentLayout(this);
+        staves.forEach(staff -> seg3.add(staff.getClefLayout()));
+        segments.addFirst(seg3);
+
+//        if (startBarline == null) return;
+        SegmentLayout seg4 = new SegmentLayout(this);
+        seg4.add(new BarlineLayout(mode.getStartBarline(), seg4));
+        segments.addFirst(seg4);
     }
 
     public List<SegmentLayout> getSegments() { return segments; }

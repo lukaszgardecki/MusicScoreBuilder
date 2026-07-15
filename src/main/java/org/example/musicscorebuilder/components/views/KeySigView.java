@@ -12,15 +12,16 @@ public class KeySigView extends ComponentView {
         double heightPx = keySig.getHeight() * sp;
         double fontSize = keySig.getFontSize() * sp;
 
-        for (int i = 0; i < keySig.count(); i++) {
-            double keySigX = segmentX + keySig.getX(i) * sp;
-            double keySigY = segmentY + keySig.getY(i) * sp;
-            double boxY = segmentY + keySig.getBoxY(i) * sp;
+        gc.setFont(FontManager.getLelandFont(fontSize));
+        gc.setFill(Color.BLACK);
+
+        for (KeySigLayout.KeySign sign : keySig.getKeySigns()) {
+            double keySigX = segmentX + sign.x() * sp;
+            double keySigY = segmentY + sign.y() * sp;
+            double boxY = segmentY + sign.boxY() * sp;
 
 //            fillBackground(gc, Color.RED, keySigX, boxY, widthPx, heightPx);
 
-            gc.setFont(FontManager.getLelandFont(fontSize));
-            gc.setFill(Color.BLACK);
             gc.fillText(keySig.getCode(), keySigX, keySigY);
         }
     }

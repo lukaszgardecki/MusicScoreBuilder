@@ -7,26 +7,24 @@ public class Mode {
     private final ModeType type;
     private final BraceType braceType;
     private final Barline startBarline;
+    private final KeySignature keySignature;
+    private final TimeSignature timeSignature;
     private final List<Staff> staves = new ArrayList<>();
     private final List<Measure> measures = new ArrayList<>();
 
     public Mode(ModeType type) {
         this.type = type;
         switch (type) {
-            case SOLO -> staves.add(new Staff(0, ClefType.G, KeySigType.S2));
+            case SOLO -> staves.add(new Staff(0, ClefType.G));
             case HARMONY -> {
-                staves.add(new Staff(0, ClefType.G, KeySigType.F3));
-                staves.add(new Staff(1, ClefType.F, KeySigType.F3));
+                staves.add(new Staff(0, ClefType.G));
+                staves.add(new Staff(1, ClefType.F));
             }
         }
-       this.braceType = switch (type) {
-           case SOLO -> BraceType.NONE;
-           case HARMONY -> BraceType.BRACE;
-       };
-       this.startBarline = switch (type) {
-            case SOLO -> null;
-            case HARMONY -> new Barline(BarlineStyle.SINGLE, Barline.Type.START);
-        };
+        this.braceType = type == ModeType.SOLO ? BraceType.NONE : BraceType.BRACE;
+        this.startBarline = type == ModeType.SOLO ? null : new Barline(BarlineStyle.SINGLE, Barline.Type.START);
+        this.keySignature = new KeySignature(KeySigType.F2);
+        this.timeSignature = new TimeSignature(3, 4, false, false);
     }
 
     public void appendMeasures(int count) {
@@ -35,7 +33,8 @@ public class Mode {
 
     public void appendMeasure() {
         Measure measure = new Measure(BarlineStyle.SINGLE, staves);
-        for (int i = 0; i < 4; i++) {
+        var measureBeats = timeSignature.getBeat();
+        for (int i = 0; i < measureBeats; i++) {
             measure.add(new Element());
         }
         if (!measures.isEmpty()) {
@@ -62,4 +61,6 @@ public class Mode {
     public List<Measure> getMeasures() { return measures; }
     public BraceType getBraceType() { return braceType; }
     public Barline getStartBarline() { return startBarline; }
+    public  KeySignature getKeySignature() { return keySignature; }
+    public TimeSignature getTimeSignature() { return timeSignature; }
 }

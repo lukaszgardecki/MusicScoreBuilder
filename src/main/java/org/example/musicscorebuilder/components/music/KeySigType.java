@@ -28,13 +28,11 @@ public enum KeySigType {
     public Leland getFontData() { return fontData; }
     public double[] getOffsetsY(ClefType type) {
         double[] result = new double[offsetsY.length];
-        double shift = 0.0;
-
-        if (type == ClefType.F) {
-            shift = 1.0;
-        }else if (type == ClefType.C) {
-            shift = 0.5;
-        }
+        double shift = switch(type) {
+            case F -> 1.0;
+            case C -> 0.5;
+            case G -> 0.0;
+        };
 
         for (int i = 0; i < offsetsY.length; i++) {
             result[i] = offsetsY[i] + shift;

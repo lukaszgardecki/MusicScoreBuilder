@@ -36,7 +36,7 @@ public class LayoutEngine {
             }
 
             if (newSystem.getMeasures().isEmpty()) {
-                measureLayout.addAtBegin(mode.getStartBarline());
+                measureLayout.add1stMeasureAttributes(mode);
             }
             newSystem.add(measureLayout);
             justify(newSystem);
