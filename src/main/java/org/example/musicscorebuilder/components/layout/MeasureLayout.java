@@ -39,7 +39,7 @@ public class MeasureLayout {
         staves.forEach(staff -> seg3.add(staff.getClefLayout()));
         segments.addFirst(seg3);
 
-//        if (startBarline == null) return;
+        if (mode.getStartBarline() == null) return;
         SegmentLayout seg4 = new SegmentLayout(this);
         seg4.add(new BarlineLayout(mode.getStartBarline(), seg4));
         segments.addFirst(seg4);
