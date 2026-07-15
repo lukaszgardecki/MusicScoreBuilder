@@ -22,11 +22,13 @@ public class LayoutEngine {
         SystemLayout newSystem = addNewSystemToPage(currentPage, mode);
 
         for (Measure measure : mode.getMeasures()) {
-            MeasureLayout measureLayout = createMeasureLayout(measure,  newSystem);
+            MeasureLayout measureLayout = createMeasureLayout(measure, newSystem);
 
             boolean noSpaceForNextMeasure = currentPage.getEffectiveWidth() - newSystem.getWidth() < measureLayout.getWidth();
             boolean noSpaceForNextSystem = currentPage.getRemainingHeight() < newSystem.getHeight();
             if (noSpaceForNextMeasure) {
+                justify(newSystem);
+
                 if (noSpaceForNextSystem) {
                     currentPage = createPageLayout(scoreLayout);
                     scoreLayout.addPageLayout(currentPage);
@@ -38,8 +40,8 @@ public class LayoutEngine {
             if (newSystem.getMeasures().isEmpty()) {
                 measureLayout.add1stMeasureAttributes(mode);
             }
+
             newSystem.add(measureLayout);
-            justify(newSystem);
         }
 
         justify(newSystem);
