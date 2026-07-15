@@ -25,6 +25,16 @@ public enum KeySigType {
         this.offsetsY = offsetY;
     }
 
+    public static KeySigType of(int value) {
+        if (value == 0) return null;
+        if (value < -7 || value > 7) {
+            throw new IllegalArgumentException("Key signature value must be between -7 and 7, but was: " + value);
+        }
+
+        if (value < 0) return KeySigType.valueOf("F" + Math.abs(value));
+        else return KeySigType.valueOf("S" + value);
+    }
+
     public Leland getFontData() { return fontData; }
     public double[] getOffsetsY(ClefType type) {
         double[] result = new double[offsetsY.length];
