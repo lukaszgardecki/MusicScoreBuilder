@@ -20,14 +20,7 @@ public class TimeSigLayout extends ElementLayout {
         this.y = staffLayout.getY();
         double signOffsetY = 1 * staffLayout.getLineSpacing();
 
-        if (timeSignature.isCommon() || timeSignature.isCut()) {
-            Leland symbol = timeSignature.isCommon() ? Leland.TIME_COMMON : Leland.TIME_CUT;
-            double y = staffLayout.getY() + signOffsetY + staffLayout.getLineSpacing();
-            this.digitSigns = new DigitSign[1][1];
-            DigitSign sign = new DigitSign(symbol, 0.0, y);
-            this.digitSigns[0][0] = sign;
-            this.width = sign.getSignWidth();
-        } else {
+        if (timeSignature.isFractional()) {
             int beat = timeSignature.getBeat();
             int beatType = timeSignature.getBeatType();
 
@@ -45,6 +38,13 @@ public class TimeSigLayout extends ElementLayout {
             this.width = Math.max(topWidth, bottomWidth);
 
             alignRowsCenter(topWidth, bottomWidth);
+        } else {
+            Leland symbol = timeSignature.isCommon() ? Leland.TIME_COMMON : Leland.TIME_CUT;
+            double y = staffLayout.getY() + signOffsetY + staffLayout.getLineSpacing();
+            this.digitSigns = new DigitSign[1][1];
+            DigitSign sign = new DigitSign(symbol, 0.0, y);
+            this.digitSigns[0][0] = sign;
+            this.width = sign.getSignWidth();
         }
     }
 

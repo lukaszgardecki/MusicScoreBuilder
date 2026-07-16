@@ -19,6 +19,10 @@ public class Measure {
         segments.add(seg);
     }
 
+    public void add(int index, Segment segment) {
+        segments.add(index, segment);
+    }
+
     public List<Staff> getStaves() { return staves; }
     public List<Segment> getSegments() { return segments; }
 }

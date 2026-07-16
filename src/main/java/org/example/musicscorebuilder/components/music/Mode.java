@@ -24,7 +24,7 @@ public class Mode {
         this.braceType = type == ModeType.SOLO ? BraceType.NONE : BraceType.BRACE;
         this.startBarline = type == ModeType.SOLO ? null : new Barline(BarlineStyle.SINGLE, Barline.Type.START);
         this.keySignature = new KeySignature(-4);
-        this.timeSignature = new TimeSignature(5, 8, false, false);
+        this.timeSignature = new TimeSignature(5, 8);
     }
 
     public void appendMeasures(int count) {
@@ -33,10 +33,8 @@ public class Mode {
 
     public void appendMeasure() {
         Measure measure = new Measure(BarlineStyle.SINGLE, staves);
-        var measureBeats = timeSignature.getBeat();
-        for (int i = 0; i < measureBeats; i++) {
-            measure.add(new Element());
-        }
+        addSegments(timeSignature.getBeat(), measure);
+
         if (!measures.isEmpty()) {
             Measure lastMeasure = measures.getLast();
             List<Segment> segments = lastMeasure.getSegments();
@@ -63,4 +61,38 @@ public class Mode {
     public Barline getStartBarline() { return startBarline; }
     public  KeySignature getKeySignature() { return keySignature; }
     public TimeSignature getTimeSignature() { return timeSignature; }
+
+    public void setTimeSignature(TimeSignature timeSig) {
+        var currentBeat = this.timeSignature.getBeat();
+        var newBeat = timeSig.getBeat();
+
+        this.timeSignature.update(timeSig.getBeat(), timeSig.getBeatType(), timeSig.getType());
+        measures.forEach(m -> {
+            List<Segment> segments = m.getSegments();
+
+            if (currentBeat > newBeat) {
+                int diff = currentBeat - newBeat;
+                for (int i = 0; i < diff; i++) {
+                    var lastBeatSegmentIdx = segments.size() - 2;
+                    segments.remove(lastBeatSegmentIdx);
+                }
+            } else {
+                int diff = newBeat - currentBeat;
+                addSegments(diff, m);
+            }
+        });
+    }
+
+    private void addSegments(int count, Measure measure) {
+        for (int i = 0; i < count; i++) {
+            int currentSize = measure.getSegments().size();
+            if (currentSize == 0) {
+                measure.add(new Element());
+            } else {
+                Segment segment = new Segment();
+                segment.addElement(new Element());
+                measure.add(currentSize - 1, segment);
+            }
+        }
+    }
 }
