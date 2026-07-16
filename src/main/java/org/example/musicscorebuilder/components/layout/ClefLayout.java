@@ -6,18 +6,16 @@ import org.example.musicscorebuilder.components.music.Leland;
 public class ClefLayout extends ElementLayout {
     private final Leland fontData;
     private double height;
-    private double x, y;
+    private double y;
 
     public ClefLayout(StaffLayout staffLayout) {
         super(false);
         this.height = staffLayout.getHeight();
         ClefType type = staffLayout.getStaff().getDefaultClef().getType();
         fontData = type.getFontData();
-        x = 0.0;
         y = type.getOffsetY() * staffLayout.getLineSpacing() + staffLayout.getY();
     }
 
-    @Override public double getX() { return x; }
     @Override public double getY() { return y; }
     @Override public double getWidth() { return getHeight() * fontData.getRatio(); }
     @Override public double getHeight() { return fontData.getHeight(); }

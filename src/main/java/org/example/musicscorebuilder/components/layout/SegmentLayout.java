@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SegmentLayout {
+    private static final double DEFAULT_LEFT_MARGIN = 0.8;
     private final MeasureLayout parent;
     private final List<ElementLayout> elements = new ArrayList<>();
     private double x, y;
@@ -28,8 +29,18 @@ public class SegmentLayout {
     }
 
     public void add(ElementLayout elementLayout) {
-        if (elementLayout.getWidth() > width) { width = elementLayout.getWidth(); }
         elements.add(elementLayout);
+        double currentMargin = getLeftMargin();
+        for (ElementLayout el : elements) el.setX(currentMargin);
+
+        double maxElementWidth = 0.0;
+        for (ElementLayout el : elements) {
+            if (el.getWidth() > maxElementWidth) {
+                maxElementWidth = el.getWidth();
+            }
+        }
+
+        this.width = currentMargin + maxElementWidth;
     }
 
     public List<ElementLayout> getElements() { return elements; }
@@ -45,5 +56,15 @@ public class SegmentLayout {
     public double getHeight() { return height; }
     public boolean hasDynamicWidth() { return elements.stream().anyMatch(ElementLayout::hasDynamicWidth); }
 
-    public void setWidth(double width) { this.width = width; }
+    public void setWidth(double width) { this.width = Math.max(width, getLeftMargin()); }
+
+    private double getLeftMargin() {
+        if (elements.isEmpty()) return 0.0;
+        for (ElementLayout element : elements) {
+            if (element instanceof BarlineLayout) {
+                return 0.0;
+            }
+        }
+        return DEFAULT_LEFT_MARGIN;
+    }
 }

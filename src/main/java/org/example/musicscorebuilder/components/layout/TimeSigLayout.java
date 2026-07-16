@@ -6,7 +6,7 @@ import org.example.musicscorebuilder.components.music.TimeSignature;
 public class TimeSigLayout extends ElementLayout {
     private final DigitSign[][] digitSigns;
     private final double width, height;
-    private double x, y;
+    private double y;
 
     public record DigitSign(Leland fontData, double x, double y) {
         public double getSignWidth() { return getHeight() * fontData.getRatio(); }
@@ -17,7 +17,6 @@ public class TimeSigLayout extends ElementLayout {
     public TimeSigLayout(TimeSignature timeSignature, StaffLayout staffLayout) {
         super(false);
         this.height = staffLayout.getHeight();
-        this.x = 0.0;
         this.y = staffLayout.getY();
         double signOffsetY = 1 * staffLayout.getLineSpacing();
 
@@ -49,7 +48,6 @@ public class TimeSigLayout extends ElementLayout {
         }
     }
 
-    @Override public double getX() { return x; }
     @Override public double getY() { return y; }
     @Override public double getBoxY() { return getY(); }
     @Override public double getWidth() { return this.width; }
@@ -57,6 +55,26 @@ public class TimeSigLayout extends ElementLayout {
 
     public double getFontSize() { return height; }
     public DigitSign[][] getDigitSigns() { return this.digitSigns; }
+
+    @Override
+    public void setX(double newX) {
+        double oldX = getX();
+        super.setX(newX);
+
+        double deltaX = newX - oldX;
+        if (deltaX == 0) return;
+
+        for (int row = 0; row < digitSigns.length; row++) {
+            for (int col = 0; col < digitSigns[row].length; col++) {
+                DigitSign oldSign = digitSigns[row][col];
+                digitSigns[row][col] = new DigitSign(
+                        oldSign.fontData(),
+                        oldSign.x() + deltaX,
+                        oldSign.y()
+                );
+            }
+        }
+    }
 
     private int[] getDigitsMath(int number) {
         if (number == 0) return new int[]{0};
