@@ -38,7 +38,7 @@ public class LayoutEngine {
             }
 
             if (newSystem.getMeasures().isEmpty()) {
-                measureLayout.add1stMeasureAttributes(mode);
+                add1stMeasureAttributes(mode, measureLayout, scoreLayout);
             }
 
             newSystem.add(measureLayout);
@@ -131,5 +131,30 @@ public class LayoutEngine {
             measureLayout.add(segmentLayout);
         }
         return measureLayout;
+    }
+
+    private void add1stMeasureAttributes(Mode mode, MeasureLayout measureLayout, ScoreLayout scoreLayout) {
+        var staves = measureLayout.getStaffs();
+        var segments = measureLayout.getSegments();
+        var isFirstMeasure = scoreLayout.getPages().size() == 1 && scoreLayout.getPages().get(0).getSystems().size() == 1;
+
+        if (isFirstMeasure) {
+            SegmentLayout seg1 = new SegmentLayout(measureLayout);
+            staves.forEach(staff -> seg1.add(new TimeSigLayout(mode.getTimeSignature(), staff)));
+            segments.addFirst(seg1);
+        }
+
+        SegmentLayout seg2 = new SegmentLayout(measureLayout);
+        staves.forEach(staff -> seg2.add(new KeySigLayout(mode.getKeySignature(), staff, style)));
+        segments.addFirst(seg2);
+
+        SegmentLayout seg3 = new SegmentLayout(measureLayout);
+        staves.forEach(staff -> seg3.add(staff.getClefLayout()));
+        segments.addFirst(seg3);
+
+        if (mode.getStartBarline() == null) return;
+        SegmentLayout seg4 = new SegmentLayout(measureLayout);
+        seg4.add(new BarlineLayout(mode.getStartBarline(), seg4, style));
+        segments.addFirst(seg4);
     }
 }

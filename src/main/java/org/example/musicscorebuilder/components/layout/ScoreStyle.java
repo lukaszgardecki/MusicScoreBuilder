@@ -8,7 +8,7 @@ public class ScoreStyle {
     private static final double SPATIUM_MM = 1.564;
     private static final double SYSTEM_MIN_FULLNESS_RATIO = 0.5;
 
-    private static final double STAFF_SPACING_SCALE = 1.;
+    private static final double STAFF_SPACING_SCALE = 1.3;
     private static final double STAFF_LINE_SPACING = 1;
     private static final double STAFF_LINE_WIDTH_SP = 0.11;
 

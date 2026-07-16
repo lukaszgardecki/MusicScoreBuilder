@@ -41,25 +41,6 @@ public class MeasureLayout {
         segments.add(segmentLayout);
     }
 
-    public void add1stMeasureAttributes(Mode mode) {
-        SegmentLayout seg1 = new SegmentLayout(this);
-        staves.forEach(staff -> seg1.add(new TimeSigLayout(mode.getTimeSignature(), staff)));
-        segments.addFirst(seg1);
-
-        SegmentLayout seg2 = new SegmentLayout(this);
-        staves.forEach(staff -> seg2.add(new KeySigLayout(mode.getKeySignature(), staff, style)));
-        segments.addFirst(seg2);
-
-        SegmentLayout seg3 = new SegmentLayout(this);
-        staves.forEach(staff -> seg3.add(staff.getClefLayout()));
-        segments.addFirst(seg3);
-
-        if (mode.getStartBarline() == null) return;
-        SegmentLayout seg4 = new SegmentLayout(this);
-        seg4.add(new BarlineLayout(mode.getStartBarline(), seg4, style));
-        segments.addFirst(seg4);
-    }
-
     public ScoreStyle getScoreStyle() { return style; }
     public List<SegmentLayout> getSegments() { return segments; }
     public List<StaffLayout> getStaffs() { return staves; }
