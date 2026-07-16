@@ -29,8 +29,8 @@ public class SegmentView extends ComponentView {
 
     private void selectElement(GraphicsContext gc, ElementLayout element) {
         if (element.isSelected()) {
-            gc.setFill(Color.BLUE);
-            gc.setStroke(Color.BLUE);
+            gc.setFill(Color.web("#0078d7"));
+            gc.setStroke(Color.web("#0078d7"));
 
 //             Opcjonalnie: możesz narysować delikatne tło wokół elementu, żeby lepiej go widzieć
 //                 gc.setGlobalAlpha(0.2);

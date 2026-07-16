@@ -4,60 +4,17 @@
 <?import javafx.scene.layout.*?>
 <BorderPane xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" >
 
-    <!-- TOP: Menu + Toolbar -->
     <top>
         <VBox>
-            <MenuBar>
-                <Menu text="Plik">
-                    <MenuItem text="Nowy"/>
-                    <MenuItem text="Otwórz"/>
-                    <MenuItem text="Zapisz"/>
-                    <SeparatorMenuItem/>
-                    <MenuItem text="Wyjdź"/>
-                </Menu>
-                <Menu text="Edytuj">
-                    <MenuItem text="Undo"/>
-                    <MenuItem text="Redo"/>
-                </Menu>
-                <Menu text="Widok"/>
-                <Menu text="Pomoc"/>
-            </MenuBar>
-
+            <fx:include source="menu-bar.fxml"/>
             <fx:include source="toolbar.fxml"/>
         </VBox>
     </top>
 
-    <!-- LEFT: Paleta -->
-    <left>
-        <VBox prefWidth="300" spacing="10" style="-fx-padding: 10;">
-            <Label style="-fx-font-size: 16; -fx-font-weight: bold;" text="Paleta" />
-            <TitledPane text="Nuty" expanded="false">
-                <VBox spacing="5" style="-fx-padding: 5;">
-                    <Button text="Cała nuta" />
-                    <Button text="Półnuta" />
-                    <Button text="Ćwierćnuta" />
-                    <Button text="Ósemka" />
-                    <Button text="Szesnastka" />
-                    <Button text="Trzydziestodwójka" />
-                </VBox>
-            </TitledPane>
+    <left><fx:include source="left.fxml"/></left>
 
-            <TitledPane text="Symbole" expanded="false">
-                <VBox spacing="5" style="-fx-padding: 5;">
-                    <Button text="Staccato" />
-                    <Button text="Accent" />
-                    <Button text="Tenuto" />
-                </VBox>
-            </TitledPane>
-        </VBox>
-    </left>
+    <center><fx:include source="center.fxml"/></center>
 
-    <!-- CENTER: ScrollPane + Canvas -->
-    <center >
-        <fx:include source="center.fxml"/>
-    </center>
-
-    <!-- BOTTOM: Status bar -->
     <bottom>
         <HBox spacing="20" style="-fx-padding: 5; -fx-background-color: #e0e0e0;">
             <Label fx:id="statusLabel" text="Ready" />

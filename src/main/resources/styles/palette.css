@@ -1,0 +1,75 @@
+.titled-pane {
+    -fx-box-border: transparent;
+    -fx-panes-speed: 0s;
+}
+
+.titled-pane:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.titled-pane > .title,
+.titled-pane:focused > .title {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+}
+
+.titled-pane > .title > .text {
+    -fx-font-weight: bold;
+}
+
+.titled-pane > .content {
+    -fx-padding: 0px;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0px;
+}
+
+#timeSignatureGrid {
+    -fx-background-color: #ffffff;
+    -fx-padding: 0;
+    -fx-border-color: rgba(208, 208, 208, 0.51);
+    -fx-border-width: 1px;
+    -fx-border-insets: 0;
+}
+
+.palette-btn {
+    -fx-background-color: #ffffff;
+    -fx-background-insets: 0;
+
+    -fx-border-color: rgba(208, 208, 208, 0.51);
+    -fx-border-width: 1px;
+    -fx-border-insets: 0;
+
+    -fx-padding: 0;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-cursor: hand;
+    -fx-alignment: center;
+
+    -fx-min-width: 45px;
+    -fx-min-height: 40px;
+    -fx-pref-width: 45px;
+    -fx-pref-height: 40px;
+    -fx-max-width: 45px;
+    -fx-max-height: 40px;
+}
+
+.palette-btn > .label {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+}
+
+.palette-btn:hover { -fx-background-color: rgba(74, 171, 255, 0.35); }
+.palette-btn:focused, .palette-btn.selected { -fx-background-color: rgba(74, 171, 255, 0.35); }
+
+.text-glyph {
+    -fx-font-family: "Leland";
+    -fx-fill: #222222;
+    -fx-subpixel-positioned: false;
+    -fx-text-overrun: clip;
+}
+
+.fraction-text { -fx-font-size: 20px; }
+.single-text { -fx-font-size: 24px; }
+
