@@ -15,6 +15,7 @@ public class MusicScoreBuilder extends Application {
         FontManager.loadFonts();
         Scene scene = new Scene(fxmlLoader.load());
         scene.getStylesheets().addAll(
+                Objects.requireNonNull(getClass().getResource("/styles/center.css")).toExternalForm(),
                 Objects.requireNonNull(getClass().getResource("/styles/palette.css")).toExternalForm(),
                 Objects.requireNonNull(getClass().getResource("/styles/toolbar.css")).toExternalForm(),
                 Objects.requireNonNull(getClass().getResource("/styles/sheet.css")).toExternalForm()

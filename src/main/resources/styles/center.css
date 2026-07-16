@@ -1,0 +1,9 @@
+#scrollPane:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-background-insets: 0;
+}
+
+#scrollPane {
+    -fx-background-insets: 0;
+}
