@@ -13,7 +13,6 @@ public class KeySigView extends ComponentView {
         double fontSize = keySig.getFontSize() * sp;
 
         gc.setFont(FontManager.getLelandFont(fontSize));
-        gc.setFill(Color.BLACK);
 
         for (KeySigLayout.KeySign sign : keySig.getKeySigns()) {
             double keySigX = segmentX + sign.x() * sp;

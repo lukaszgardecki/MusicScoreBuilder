@@ -28,10 +28,11 @@ public class BarlineLayout extends ElementLayout {
         y = - 0.5 * 0.08;
     }
 
+    @Override public double getY() { return y; }
+    @Override public double getBoxY() { return y; }
     @Override public double getWidth() { return width; }
+    @Override public double getHeight() { return parent.getHeight() + 0.08; }
 
-    public double getHeight() { return parent.getHeight() + 0.08; }
-    public double getY() { return y; }
     public double getLightLineWidth() { return lightLineWidth; }
     public double getHeavyLineWidth() { return heavyLineWidth; }
     public double getGap() { return gap; }

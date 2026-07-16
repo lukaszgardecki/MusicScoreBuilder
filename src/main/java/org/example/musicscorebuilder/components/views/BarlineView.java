@@ -12,11 +12,6 @@ public class BarlineView {
         double endY = startY + (barline.getHeight() * sp);
         double baseX = sMeasureX;
 
-//        gc.setStroke(switch (barline.getType()) {
-//            case START -> Color.RED;
-//            case END -> Color.GREEN;
-//        });
-        gc.setStroke(Color.BLACK);
         gc.setLineCap(StrokeLineCap.BUTT);
 
         switch (barline.getStyle()) {
@@ -105,8 +100,6 @@ public class BarlineView {
         double lineSpacing = staffHeight / 4.0;
         double dotRadius = barline.getDotRadius() * sp;
 
-        gc.setFill(Color.BLACK);
-        // Kropka górna: w środku drugiego pola od góry
         gc.fillOval(dotX - dotRadius, startY + (1.5 * lineSpacing) - dotRadius, dotRadius * 2, dotRadius * 2);
         // Kropka dolna: w środku trzeciego pola od góry
         gc.fillOval(dotX - dotRadius, startY + (2.5 * lineSpacing) - dotRadius, dotRadius * 2, dotRadius * 2);

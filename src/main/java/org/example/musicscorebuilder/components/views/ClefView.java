@@ -1,7 +1,6 @@
 package org.example.musicscorebuilder.components.views;
 
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 import org.example.musicscorebuilder.FontManager;
 import org.example.musicscorebuilder.components.layout.ClefLayout;
 
@@ -13,11 +12,10 @@ public class ClefView extends ComponentView {
         double widthPx = clef.getWidth() * sp;
         double heightPx = clef.getHeight() * sp;
         double fontSize = clef.getFontSize() * sp;
-        double boxY = segmentY + clef.boxY() * sp;
+        double boxY = segmentY + clef.getBoxY() * sp;
 //        fillBackground(gc, Color.RED, segmentX, boxY, widthPx, heightPx);
 
         gc.setFont(FontManager.getLelandFont(fontSize));
-        gc.setFill(Color.BLACK);
         gc.fillText(clef.getCode(), clefX, clefY);
     }
 }

@@ -5,12 +5,24 @@ import java.util.List;
 
 public class ScoreLayout {
     private final List<PageLayout> pages = new ArrayList<>();
-    private final double spacing = 4.0;
 
     public void addPageLayout(PageLayout pageLayout) {
         pages.add(pageLayout);
     }
 
     public List<PageLayout> getPages() { return pages; }
-    public double getSpacing() { return spacing; }
+
+    public void clearAllSelections() {
+        for (PageLayout page : pages) {
+            for (SystemLayout system : page.getSystems()) {
+                for (MeasureLayout measure : system.getMeasures()) {
+                    for (SegmentLayout segment : measure.getSegments()) {
+                        for (ElementLayout element : segment.getElements()) {
+                            element.setSelected(false);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

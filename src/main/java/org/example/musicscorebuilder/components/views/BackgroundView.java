@@ -11,6 +11,7 @@ public class BackgroundView extends Pane {
     private double zoom = 1.0;
     private double offsetX = 0.0;
     private double offsetY = 0.0;
+    private boolean wasDragged = false;
 
     public BackgroundView(){
         enableDrag();
@@ -57,11 +58,14 @@ public class BackgroundView extends Pane {
         setOnMousePressed(e -> {
             lastX = e.getSceneX();
             lastY = e.getSceneY();
+            wasDragged = false;
         });
 
         setOnMouseDragged(e -> {
             double dx = e.getSceneX() - lastX;
             double dy = e.getSceneY() - lastY;
+
+            if (Math.abs(dx) > 3 || Math.abs(dy) > 3) wasDragged = true;
 
             offsetX += dx;
             offsetY += dy;
@@ -100,5 +104,14 @@ public class BackgroundView extends Pane {
 
             scoreView.setViewportTransform(offsetX, offsetY, zoom);
         });
+    }
+
+    public boolean wasLastMousePressJustClick() { return !wasDragged; }
+    public double toModelX(double screenX) { return (screenX - offsetX) / getActualSp(); }
+    public double toModelY(double screenY) { return (screenY - offsetY) / getActualSp(); }
+
+    private double getActualSp() {
+        if (scoreView == null) return 10.0;
+        return zoom * scoreView.getBaseSpatiumPx();
     }
 }

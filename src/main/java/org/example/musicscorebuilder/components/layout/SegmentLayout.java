@@ -16,6 +16,17 @@ public class SegmentLayout {
         this.height = parent.getHeight();
     }
 
+    public ElementLayout findClickedElement(double measureMusicX, double measureMusicY) {
+        double segmentMusicX = measureMusicX - this.getX();
+        double segmentMusicY = measureMusicY - this.getY();
+
+        for (ElementLayout element : elements) {
+            if (element instanceof EmptyElement) continue;
+            if (element.contains(segmentMusicX, segmentMusicY)) return element;
+        }
+        return null;
+    }
+
     public void add(ElementLayout elementLayout) {
         if (elementLayout.getWidth() > width) { width = elementLayout.getWidth(); }
         elements.add(elementLayout);

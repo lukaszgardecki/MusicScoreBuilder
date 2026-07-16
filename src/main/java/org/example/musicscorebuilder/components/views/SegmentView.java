@@ -1,6 +1,7 @@
 package org.example.musicscorebuilder.components.views;
 
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.util.Util;
 
@@ -19,13 +20,35 @@ public class SegmentView extends ComponentView {
 //        fillBackground(gc, Util.generateRandomColor(0.3f), segmentX, segmentY, widthPx, heightPx);
 
         for (ElementLayout element : segment.getElements()) {
-            switch(element) {
-                case BarlineLayout barline -> barlineView.draw(gc, barline, segmentX, segmentY, sp);
-                case ClefLayout clef -> clefView.draw(gc, clef, segmentX, segmentY, sp);
-                case KeySigLayout keySig -> keySigView.draw(gc, keySig, segmentX, segmentY, sp);
-                case TimeSigLayout timeSig -> timeSigView.draw(gc, timeSig, segmentX, segmentY, sp);
-                default -> {}
-            }
+            gc.save();
+            selectElement(gc, element);
+            drawElement(gc, element, segmentX, segmentY, sp);
+            gc.restore();
+        }
+    }
+
+    private void selectElement(GraphicsContext gc, ElementLayout element) {
+        if (element.isSelected()) {
+            gc.setFill(Color.BLUE);
+            gc.setStroke(Color.BLUE);
+
+//             Opcjonalnie: możesz narysować delikatne tło wokół elementu, żeby lepiej go widzieć
+//                 gc.setGlobalAlpha(0.2);
+//                 gc.fillRect(segmentX, segmentY, widthPx, heightPx);
+//                 gc.setGlobalAlpha(1.0);
+        } else {
+            gc.setFill(Color.BLACK);
+            gc.setStroke(Color.BLACK);
+        }
+    }
+
+    private void drawElement(GraphicsContext gc, ElementLayout element, double segmentX, double segmentY, double sp) {
+        switch(element) {
+            case BarlineLayout barline -> barlineView.draw(gc, barline, segmentX, segmentY, sp);
+            case ClefLayout clef -> clefView.draw(gc, clef, segmentX, segmentY, sp);
+            case KeySigLayout keySig -> keySigView.draw(gc, keySig, segmentX, segmentY, sp);
+            case TimeSigLayout timeSig -> timeSigView.draw(gc, timeSig, segmentX, segmentY, sp);
+            default -> {}
         }
     }
 }

@@ -23,7 +23,6 @@ public class TimeSigView extends ComponentView {
 
 //                fillBackground(gc, Color.RED, timeSigX, boxY, widthPx, heightPx);
 
-                gc.setFill(Color.BLACK);
                 gc.fillText(sign.fontData().getCode(), timeSigX, timeSigY);
             }
         }

@@ -6,7 +6,7 @@ import org.example.musicscorebuilder.components.music.TimeSignature;
 public class TimeSigLayout extends ElementLayout {
     private final DigitSign[][] digitSigns;
     private final double width, height;
-    private final double leftMargin = 0.85;
+    private double x, y;
 
     public record DigitSign(Leland fontData, double x, double y) {
         public double getSignWidth() { return getHeight() * fontData.getRatio(); }
@@ -17,15 +17,17 @@ public class TimeSigLayout extends ElementLayout {
     public TimeSigLayout(TimeSignature timeSignature, StaffLayout staffLayout) {
         super(false);
         this.height = staffLayout.getHeight();
+        this.x = 0.0;
+        this.y = staffLayout.getY();
         double signOffsetY = 1 * staffLayout.getLineSpacing();
 
         if (timeSignature.isCommon() || timeSignature.isCut()) {
             Leland symbol = timeSignature.isCommon() ? Leland.TIME_COMMON : Leland.TIME_CUT;
             double y = staffLayout.getY() + signOffsetY + staffLayout.getLineSpacing();
             this.digitSigns = new DigitSign[1][1];
-            DigitSign sign = new DigitSign(symbol, leftMargin, y);
+            DigitSign sign = new DigitSign(symbol, 0.0, y);
             this.digitSigns[0][0] = sign;
-            this.width = sign.getSignWidth() + leftMargin;
+            this.width = sign.getSignWidth();
         } else {
             int beat = timeSignature.getBeat();
             int beatType = timeSignature.getBeatType();
@@ -41,13 +43,18 @@ public class TimeSigLayout extends ElementLayout {
 
             double topWidth = getRowWidth(this.digitSigns[0]);
             double bottomWidth = getRowWidth(this.digitSigns[1]);
-            this.width = Math.max(topWidth, bottomWidth) + leftMargin;
+            this.width = Math.max(topWidth, bottomWidth);
 
             alignRowsCenter(topWidth, bottomWidth);
         }
     }
 
+    @Override public double getX() { return x; }
+    @Override public double getY() { return y; }
+    @Override public double getBoxY() { return getY(); }
     @Override public double getWidth() { return this.width; }
+    @Override public double getHeight() { return height; }
+
     public double getFontSize() { return height; }
     public DigitSign[][] getDigitSigns() { return this.digitSigns; }
 
@@ -68,7 +75,7 @@ public class TimeSigLayout extends ElementLayout {
 
     private DigitSign[] createDigitRow(int[] digits, double y) {
         DigitSign[] row = new DigitSign[digits.length];
-        double currentX = leftMargin;
+        double currentX = 0.0;
 
         for (int i = 0; i < digits.length; i++) {
             Leland fontData = getDigitFontData(digits[i]);
@@ -82,7 +89,7 @@ public class TimeSigLayout extends ElementLayout {
     private double getRowWidth(DigitSign[] row) {
         if (row.length == 0) return 0.0;
         DigitSign lastSign = row[row.length - 1];
-        return (lastSign.x() + lastSign.getSignWidth()) - leftMargin;
+        return lastSign.x() + lastSign.getSignWidth();
     }
 
     private void alignRowsCenter(double topWidth, double bottomWidth) {

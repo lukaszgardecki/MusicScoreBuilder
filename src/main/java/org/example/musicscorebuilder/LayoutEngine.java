@@ -125,7 +125,7 @@ public class LayoutEngine {
             for (Element element : segment.getElements()) {
                 var el = switch(element) {
                     case Barline barline -> new BarlineLayout(barline, segmentLayout);
-                    default -> new ElementLayout();
+                    default -> new EmptyElement();
                 };
                 segmentLayout.add(el);
             }
