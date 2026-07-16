@@ -4,13 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SegmentLayout {
-    private static final double DEFAULT_LEFT_MARGIN = 0.8;
+    private final ScoreStyle style;
     private final MeasureLayout parent;
     private final List<ElementLayout> elements = new ArrayList<>();
     private double x, y;
     private double width, height;
 
     public SegmentLayout(MeasureLayout parent) {
+        this.style = parent.getScoreStyle();
         this.parent = parent;
         this.y = 0;
         this.width = 0;
@@ -60,11 +61,12 @@ public class SegmentLayout {
 
     private double getLeftMargin() {
         if (elements.isEmpty()) return 0.0;
+
+        boolean hasVisibleElements = false;
         for (ElementLayout element : elements) {
-            if (element instanceof BarlineLayout) {
-                return 0.0;
-            }
+            if (element instanceof BarlineLayout) return 0.0;
+            if (element.getWidth() > 0.0) hasVisibleElements = true;
         }
-        return DEFAULT_LEFT_MARGIN;
+        return hasVisibleElements ? (style.getSegmentLeftMargin() * style.getStaffLineSpacing()) : 0.0;
     }
 }

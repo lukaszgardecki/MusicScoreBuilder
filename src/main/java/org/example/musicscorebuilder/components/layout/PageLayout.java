@@ -21,8 +21,8 @@ public class PageLayout {
     public PageLayout(Page page, ScoreStyle style, int pageIndex) {
         this.width = style.toSp(page.getWidthMm());
         this.height = style.toSp(page.getHeightMm());
-        this.effectiveWidth = style.toSp(page.getEffectiveWidth());
-        this.effectiveHeight = style.toSp(page.getEffectiveHeight());
+        this.effectiveWidth = style.toSp(page.getEffectiveWidthMm());
+        this.effectiveHeight = style.toSp(page.getEffectiveHeightMm());
         this.marginTop = style.toSp(page.getMarginTopMm());
         this.marginBottom = style.toSp(page.getMarginBottomMm());
         this.marginLeft = style.toSp(page.getMarginLeftMm());

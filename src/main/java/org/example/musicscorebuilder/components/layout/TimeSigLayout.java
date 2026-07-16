@@ -7,17 +7,19 @@ public class TimeSigLayout extends ElementLayout {
     private final DigitSign[][] digitSigns;
     private final double width, height;
     private double y;
+    private final double scale;
 
-    public record DigitSign(Leland fontData, double x, double y) {
+    public record DigitSign(Leland fontData, double x, double y, double scale) {
         public double getSignWidth() { return getHeight() * fontData.getRatio(); }
-        public double getHeight() { return fontData.getHeight(); }
-        public double getBoxY() { return y - fontData().getNEy(); }
+        public double getHeight() { return fontData.getHeight() * scale; }
+        public double getBoxY() { return y - (fontData().getNEy() * scale); }
     }
 
     public TimeSigLayout(TimeSignature timeSignature, StaffLayout staffLayout) {
         super(false);
         this.height = staffLayout.getHeight();
         this.y = staffLayout.getY();
+        this.scale = staffLayout.getLineSpacing();
         double signOffsetY = 1 * staffLayout.getLineSpacing();
 
         if (timeSignature.isFractional()) {
@@ -42,7 +44,7 @@ public class TimeSigLayout extends ElementLayout {
             Leland symbol = timeSignature.isCommon() ? Leland.TIME_COMMON : Leland.TIME_CUT;
             double y = staffLayout.getY() + signOffsetY + staffLayout.getLineSpacing();
             this.digitSigns = new DigitSign[1][1];
-            DigitSign sign = new DigitSign(symbol, 0.0, y);
+            DigitSign sign = new DigitSign(symbol, this.getX(), y, scale);
             this.digitSigns[0][0] = sign;
             this.width = sign.getSignWidth();
         }
@@ -70,7 +72,8 @@ public class TimeSigLayout extends ElementLayout {
                 digitSigns[row][col] = new DigitSign(
                         oldSign.fontData(),
                         oldSign.x() + deltaX,
-                        oldSign.y()
+                        oldSign.y(),
+                        scale
                 );
             }
         }
@@ -93,11 +96,11 @@ public class TimeSigLayout extends ElementLayout {
 
     private DigitSign[] createDigitRow(int[] digits, double y) {
         DigitSign[] row = new DigitSign[digits.length];
-        double currentX = 0.0;
+        double currentX = this.getX();
 
         for (int i = 0; i < digits.length; i++) {
             Leland fontData = getDigitFontData(digits[i]);
-            var sign = new DigitSign(fontData, currentX, y);
+            var sign = new DigitSign(fontData, currentX, y, scale);
             row[i] = sign;
             currentX += sign.getSignWidth();
         }
@@ -107,7 +110,7 @@ public class TimeSigLayout extends ElementLayout {
     private double getRowWidth(DigitSign[] row) {
         if (row.length == 0) return 0.0;
         DigitSign lastSign = row[row.length - 1];
-        return lastSign.x() + lastSign.getSignWidth();
+        return (lastSign.x() - this.getX()) + lastSign.getSignWidth();
     }
 
     private void alignRowsCenter(double topWidth, double bottomWidth) {
@@ -124,7 +127,7 @@ public class TimeSigLayout extends ElementLayout {
 
     private void shiftRow(DigitSign[] row, double shift) {
         for (int i = 0; i < row.length; i++) {
-            row[i] = new DigitSign(row[i].fontData(), row[i].x() + shift, row[i].y());
+            row[i] = new DigitSign(row[i].fontData(), row[i].x() + shift, row[i].y(), scale);
         }
     }
 

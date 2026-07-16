@@ -6,14 +6,16 @@ public class StaffLayout {
     private final MeasureLayout parent;
     private final Staff staff;
     private final ClefLayout clefLayout;
-    double lineSpacing = 1;
-    private double lineWidth = lineSpacing * 0.08;
+    private final double lineSpacing;
+    private final double lineWidth;
     private double x = 0, y;
 
-    public StaffLayout(Staff staff, MeasureLayout parent) {
-        this.staff = staff;
+    public StaffLayout(Staff staff, MeasureLayout parent, ScoreStyle scoreStyle) {
         this.parent = parent;
-        y = staff.getIndex() * (getHeight() + parent.getStaffSpacing());
+        this.staff = staff;
+        this.lineSpacing = scoreStyle.getStaffLineSpacing();
+        this.lineWidth = lineSpacing * scoreStyle.getStaffLineWidth();
+        y = staff.getIndex() * (getHeight() + scoreStyle.getStaffSpacing());
         clefLayout = new ClefLayout(this);
     }
 

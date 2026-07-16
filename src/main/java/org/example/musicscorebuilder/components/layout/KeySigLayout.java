@@ -7,14 +7,18 @@ import org.example.musicscorebuilder.components.music.Leland;
 import java.util.Optional;
 
 public class KeySigLayout extends ElementLayout {
+    private final ScoreStyle style;
+    private final StaffLayout staffLayout;
     private Leland fontData = null;
     private double height;
     private KeySign[] keySigns;
 
     public record KeySign(double x, double y, double boxY) {}
 
-    public KeySigLayout(KeySignature keySignature, StaffLayout staffLayout) {
+    public KeySigLayout(KeySignature keySignature, StaffLayout staffLayout, ScoreStyle scoreStyle) {
         super(false);
+        this.style = scoreStyle;
+        this.staffLayout = staffLayout;
         this.height = staffLayout.getHeight();
         this.setY(staffLayout.getY());
         KeySigType type = keySignature.getType();
@@ -27,13 +31,14 @@ public class KeySigLayout extends ElementLayout {
         double[] rawOffsets = type.getOffsetsY(staffLayout.getStaff().getDefaultClef().getType());
         this.keySigns = new KeySign[rawOffsets.length];
 
-        double signWidth = getSignWidth();
+        double startX = this.getX();
+        double stepX = staffLayout.getLineSpacing() + style.getKeySignatureSignSpace();
         for (int i = 0; i < keySigns.length; i++) {
-            double x = signWidth * i;
+            double x = startX + (stepX * i);
             double relativeY = (rawOffsets[i] * staffLayout.getLineSpacing());
             double absoluteY = this.getY() + relativeY;
 
-            keySigns[i] = new KeySign(x, absoluteY, absoluteY - fontData.getNEy());
+            keySigns[i] = new KeySign(x, absoluteY, absoluteY - (fontData.getNEy() * staffLayout.getLineSpacing()));
         }
     }
 
@@ -56,7 +61,13 @@ public class KeySigLayout extends ElementLayout {
         }
     }
 
-    @Override public double getWidth() { return getSignWidth() * keySigns.length; }
+    @Override
+    public double getWidth() {
+        if (keySigns == null || keySigns.length == 0) return 0.0;
+        double scaledSignWidth = getSignWidth();
+        double totalSpacing = (keySigns.length - 1) * (staffLayout.getLineSpacing() + style.getKeySignatureSignSpace());
+        return totalSpacing + scaledSignWidth;
+    }
 
     @Override
     public double getHeight() {
@@ -70,8 +81,7 @@ public class KeySigLayout extends ElementLayout {
             if (sign != null) {
                 hasValidSigns = true;
                 double top = sign.boxY();
-                double bottom = sign.boxY() + fontData.getHeight();
-
+                double bottom = sign.boxY() + (fontData.getHeight() * staffLayout.getLineSpacing());
                 if (top < minY) minY = top;
                 if (bottom > maxY) maxY = bottom;
             }
@@ -119,8 +129,9 @@ public class KeySigLayout extends ElementLayout {
     public double getFontSize() { return height; }
     public String getCode() { return Optional.ofNullable(fontData).map(Leland::getCode).orElse(""); }
     public double getSignWidth() {
+        double scale = staffLayout.getLineSpacing();
         double singleGlyphHeight = Optional.ofNullable(fontData).map(Leland::getHeight).orElse(0d);
-        return singleGlyphHeight * Optional.ofNullable(fontData).map(Leland::getRatio).orElse(0d);
+        return (singleGlyphHeight * Optional.ofNullable(fontData).map(Leland::getRatio).orElse(0d)) * scale;
     }
     public KeySign[] getKeySigns() { return keySigns; }
 }

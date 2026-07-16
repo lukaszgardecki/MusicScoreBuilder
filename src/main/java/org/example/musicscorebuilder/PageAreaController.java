@@ -25,7 +25,7 @@ public class PageAreaController {
         ScoreService.getInstance().addListener(this::refreshView);
 
         this.layoutEngine = new LayoutEngine(
-                new Page(PageFormat.A4_V),
+                new Page(PageFormat.A4_V, 10, 10, 10, 10),
                 new ScoreStyle()
         );
         refreshView();

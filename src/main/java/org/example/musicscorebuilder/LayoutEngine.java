@@ -15,7 +15,7 @@ public class LayoutEngine {
     }
 
     public ScoreLayout compute(Mode mode) {
-        ScoreLayout scoreLayout = new ScoreLayout();
+        ScoreLayout scoreLayout = new ScoreLayout(style);
         PageLayout currentPage = createPageLayout(scoreLayout);
         scoreLayout.addPageLayout(currentPage);
 
@@ -112,11 +112,10 @@ public class LayoutEngine {
     }
 
     private MeasureLayout createMeasureLayout(Measure measure, SystemLayout systemLayout) {
-        MeasureLayout measureLayout = new MeasureLayout(measure, systemLayout.getWidth());
-        measureLayout.setStaffSpacing(style.getStaffSpacing());
+        MeasureLayout measureLayout = new MeasureLayout(measure, systemLayout.getWidth(), style);
 
         for (Staff staff : measure.getStaves()) {
-            measureLayout.add(new StaffLayout(staff, measureLayout));
+            measureLayout.add(new StaffLayout(staff, measureLayout, style));
         }
 
         for (Segment segment : measure.getSegments()) {
@@ -124,7 +123,7 @@ public class LayoutEngine {
 
             for (Element element : segment.getElements()) {
                 var el = switch(element) {
-                    case Barline barline -> new BarlineLayout(barline, segmentLayout);
+                    case Barline barline -> new BarlineLayout(barline, segmentLayout, style);
                     default -> new EmptyElement();
                 };
                 segmentLayout.add(el);

@@ -3,6 +3,7 @@ package org.example.musicscorebuilder.components.views;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.stage.Screen;
 import org.example.musicscorebuilder.components.layout.PageLayout;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
 
@@ -10,13 +11,20 @@ public class ScoreView extends Canvas {
     GraphicsContext gc = getGraphicsContext2D();
     private final PageView pageView = new PageView();
     private ScoreLayout scoreLayout;
-    private final double baseSpatiumPx = 10.0;
+    private final double baseSpatiumPx;
     private double offsetX = 0.0;
     private double offsetY = 0.0;
     private double zoom = 1.0;
 
     public ScoreView(ScoreLayout layout) {
         this.scoreLayout = layout;
+
+        double dpi = Screen.getPrimary().getDpi();
+        if (dpi <= 0) dpi = 96.0;
+
+        double pixelsPerMm = dpi / 25.4;
+        double spatiumMm = scoreLayout.getStyle().getSpatiumMm();
+        this.baseSpatiumPx = spatiumMm * pixelsPerMm;
 
         widthProperty().addListener(evt -> draw());
         heightProperty().addListener(evt -> draw());

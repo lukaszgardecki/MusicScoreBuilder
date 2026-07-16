@@ -41,7 +41,7 @@ public class BackgroundView extends Pane {
 
         var page = scoreView.getScoreLayout().getPages().getFirst();
 
-        double sp = zoom * scoreView.getBaseSpatiumPx();
+        double sp = getActualSp();
         double pageWidthPx = page.getWidth() * sp;
         double pageHeightPx = page.getHeight() * sp;
 
@@ -86,7 +86,7 @@ public class BackgroundView extends Pane {
 
             double maxZoom = 15.0;
             double minZoom = 0.1;
-            double delta = 1.1;
+            double delta = 1.08;
             double zoomFactor = (e.getDeltaY() > 0) ? delta : 1 / delta;
 
             double oldZoom = this.zoom;

@@ -6,7 +6,7 @@ import org.example.musicscorebuilder.components.layout.PageLayout;
 import org.example.musicscorebuilder.components.layout.SystemLayout;
 
 public class PageView {
-    private static final Color PAGE_BACKGROUND_COLOR = Color.WHITE;
+    private static final Color PAGE_BACKGROUND_COLOR = Color.rgb(249,249,249);
     private static final Color PAGE_BORDER_COLOR = Color.rgb(170, 170, 170);
     private final SystemView systemView = new SystemView();
 
