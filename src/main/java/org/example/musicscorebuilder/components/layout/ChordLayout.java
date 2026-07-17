@@ -57,4 +57,6 @@ public class ChordLayout extends ElementLayout {
     }
 
     public List<NoteLayout> getNotes() { return notes; }
+
+    public void setX(double x) { this.x = x; }
 }

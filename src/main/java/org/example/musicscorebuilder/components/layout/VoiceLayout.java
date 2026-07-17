@@ -20,7 +20,22 @@ public class VoiceLayout extends ElementLayout {
 
     @Override public double getY() { return chords.stream().mapToDouble(ChordLayout::getY).min().orElse(0.0); }
     @Override public double getBoxY() { return getY(); }
-    @Override public double getWidth() { return chords.stream().mapToDouble(ChordLayout::getWidth).sum(); }
+    @Override
+    public double getWidth() {
+        if (chords.isEmpty()) return 0.0;
+        double minX = Double.MAX_VALUE;
+        double maxXWithWidth = 0.0;
+
+        for (ChordLayout chord : chords) {
+            if (chord.getX() < minX) minX = chord.getX();
+
+            double rightEdge = chord.getX() + chord.getWidth();
+            if (rightEdge > maxXWithWidth) {
+                maxXWithWidth = rightEdge;
+            }
+        }
+        return maxXWithWidth - minX;
+    }
     @Override public double getHeight() {
         if (chords.isEmpty()) return 0.0;
         double highestBoxY = Double.MAX_VALUE;

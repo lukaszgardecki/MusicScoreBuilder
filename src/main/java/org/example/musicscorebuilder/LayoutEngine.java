@@ -91,15 +91,19 @@ public class LayoutEngine {
                 double extraSpacePerSegment = extraSpaceForThisMeasure / dynamicSegmentsCount;
 
                 for (SegmentLayout segment : measure.getSegments()) {
-                    long dynamicElementsCount = segment.getElements().stream()
-                            .filter(ElementLayout::hasDynamicWidth)
-                            .count();
-
                     if (segment.hasDynamicWidth()) {
-                        double extraSpacePerElement = extraSpacePerSegment / dynamicElementsCount;
-
                         for (ElementLayout element : segment.getElements()) {
+                            if (element instanceof VoiceLayout voiceLayout && element.hasDynamicWidth()) {
+                                List<ChordLayout> chords = voiceLayout.getChords();
+                                if (chords.size() <= 1) continue;
+                                double extraSpacePerGap = extraSpacePerSegment / (chords.size() - 1);
 
+                                for (int c = 0; c < chords.size(); c++) {
+                                    ChordLayout chord = chords.get(c);
+                                    double newX = chord.getX() + (c * extraSpacePerGap);
+                                    chord.setX(newX);
+                                }
+                            }
                         }
                     }
                 }
