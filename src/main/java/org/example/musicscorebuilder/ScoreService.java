@@ -20,7 +20,7 @@ public class ScoreService {
     public Score getScore() {
         if  (score != null) return score;
         Score score = new Score();
-        score.add(ModeFactory.createSoloMode());
+        score.add(ModeFactory.createHarmonyMode());
         this.score = score;
         return score;
     }

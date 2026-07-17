@@ -1,20 +1,22 @@
 package org.example.musicscorebuilder.components.layout;
 
+import org.example.musicscorebuilder.components.music.SegmentType;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class SegmentLayout {
     private final ScoreStyle style;
     private final MeasureLayout parent;
+    private final SegmentType type;
     private final List<ElementLayout> elements = new ArrayList<>();
-    private double x, y;
-    private double width, height;
+    private double y = 0;
+    private double  height;
 
-    public SegmentLayout(MeasureLayout parent) {
+    public SegmentLayout(SegmentType type, MeasureLayout parent) {
         this.style = parent.getScoreStyle();
         this.parent = parent;
-        this.y = 0;
-        this.width = 0;
+        this.type = type;
         this.height = parent.getHeight();
     }
 
@@ -30,18 +32,8 @@ public class SegmentLayout {
     }
 
     public void add(ElementLayout elementLayout) {
+        elementLayout.setX(style.getSegmentLeftMargin());
         elements.add(elementLayout);
-        double currentMargin = getLeftMargin();
-        for (ElementLayout el : elements) el.setX(currentMargin);
-
-        double maxElementWidth = 0.0;
-        for (ElementLayout el : elements) {
-            if (el.getWidth() > maxElementWidth) {
-                maxElementWidth = el.getWidth();
-            }
-        }
-
-        this.width = currentMargin + maxElementWidth;
     }
 
     public List<ElementLayout> getElements() { return elements; }
@@ -53,20 +45,11 @@ public class SegmentLayout {
         return prevSeg.getX() + prevSeg.getWidth();
     }
     public double getY() { return y; }
-    public double getWidth() { return width; }
+    public double getWidth() {
+        if (elements.isEmpty()) return 0;
+        if (type == SegmentType.START_BARLINE) return 0;
+        return elements.stream().mapToDouble(ElementLayout::getWidth).max().orElse(0) + style.getSegmentLeftMargin();
+    }
     public double getHeight() { return height; }
     public boolean hasDynamicWidth() { return elements.stream().anyMatch(ElementLayout::hasDynamicWidth); }
-
-    public void setWidth(double width) { this.width = Math.max(width, getLeftMargin()); }
-
-    private double getLeftMargin() {
-        if (elements.isEmpty()) return 0.0;
-
-        boolean hasVisibleElements = false;
-        for (ElementLayout element : elements) {
-            if (element instanceof BarlineLayout) return 0.0;
-            if (element.getWidth() > 0.0) hasVisibleElements = true;
-        }
-        return hasVisibleElements ? (style.getSegmentLeftMargin() * style.getStaffLineSpacing()) : 0.0;
-    }
 }

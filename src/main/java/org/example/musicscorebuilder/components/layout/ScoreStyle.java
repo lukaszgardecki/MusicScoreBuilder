@@ -29,7 +29,7 @@ public class ScoreStyle {
     private double systemMinFullnessRatio = SYSTEM_MIN_FULLNESS_RATIO;
 
     private double staffSpacingScale = STAFF_SPACING_SCALE;
-    private double staffLineSpacing = staffSpacingScale * STAFF_LINE_SPACING;
+    private double staffLineSpacing = STAFF_LINE_SPACING;
     private double staffLineWidth = STAFF_LINE_WIDTH_SP;
 
     private double barlineLightWidth = BARLINE_LIGHT_WIDTH;
@@ -50,18 +50,18 @@ public class ScoreStyle {
     public double getSystemMinFullnessRatio() { return systemMinFullnessRatio; }
 
     public double getStaffSpacingScale() { return staffSpacingScale; }
-    public double getStaffLineSpacing() { return staffLineSpacing; }
-    public double getStaffLineWidth() { return staffLineWidth; }
+    public double getStaffLineSpacing() { return staffSpacingScale * staffLineSpacing; }
+    public double getStaffLineWidth() { return staffSpacingScale * staffLineWidth; }
 
-    public double getBarlineLightWidth() { return barlineLightWidth; }
-    public double getBarlineHeavyWidth() { return barlineHeavyWidth; }
-    public double getBarlineGap() { return barlineGap; }
-    public double getBarlineDotSpace() { return barlineDotSpace; }
-    public double getBarlineDotRadius() { return barlineDotRadius; }
+    public double getBarlineLightWidth() { return staffSpacingScale * barlineLightWidth; }
+    public double getBarlineHeavyWidth() { return staffSpacingScale * barlineHeavyWidth; }
+    public double getBarlineGap() { return staffSpacingScale * barlineGap; }
+    public double getBarlineDotSpace() { return staffSpacingScale * barlineDotSpace; }
+    public double getBarlineDotRadius() { return staffSpacingScale * barlineDotRadius; }
 
-    public double getSegmentLeftMargin() { return segmentLeftMargin; }
+    public double getSegmentLeftMargin() { return staffSpacingScale * segmentLeftMargin; }
 
-    public double getKeySignatureSignSpace() { return keySignatureSignSpace; }
+    public double getKeySignatureSignSpace() { return staffSpacingScale * keySignatureSignSpace; }
 
 
 

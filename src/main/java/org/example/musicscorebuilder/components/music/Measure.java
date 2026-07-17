@@ -13,14 +13,19 @@ public class Measure {
         this.rightBarline = new Barline(barlineStyle, Barline.Type.END);
     }
 
-    public void add(Element element) {
-        Segment seg = new Segment();
-        seg.addElement(element);
-        segments.add(seg);
+    public void addChordRestSegmentAtEnd() {
+        if (segments.isEmpty()) {
+            segments.add(new Segment(SegmentType.CHORDREST));
+        } else {
+            segments.add(segments.size() - 1, new Segment(SegmentType.CHORDREST));
+        }
     }
 
-    public void add(int index, Segment segment) {
-        segments.add(index, segment);
+    public void addEndBarlineSegment(BarlineStyle style) {
+        var element = new Barline(style, Barline.Type.END);
+        Segment seg = new Segment(SegmentType.BARLINE);
+        seg.addElement(element);
+        segments.add(seg);
     }
 
     public List<Staff> getStaves() { return staves; }

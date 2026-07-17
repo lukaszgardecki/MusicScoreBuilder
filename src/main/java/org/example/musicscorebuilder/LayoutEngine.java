@@ -4,6 +4,7 @@ import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.music.*;
 
 import java.util.List;
+import java.util.Random;
 
 public class LayoutEngine {
     private final ScoreStyle style;
@@ -90,8 +91,16 @@ public class LayoutEngine {
                 double extraSpacePerSegment = extraSpaceForThisMeasure / dynamicSegmentsCount;
 
                 for (SegmentLayout segment : measure.getSegments()) {
+                    long dynamicElementsCount = segment.getElements().stream()
+                            .filter(ElementLayout::hasDynamicWidth)
+                            .count();
+
                     if (segment.hasDynamicWidth()) {
-                        segment.setWidth(segment.getWidth() + extraSpacePerSegment);
+                        double extraSpacePerElement = extraSpacePerSegment / dynamicElementsCount;
+
+                        for (ElementLayout element : segment.getElements()) {
+
+                        }
                     }
                 }
             }
@@ -119,11 +128,12 @@ public class LayoutEngine {
         }
 
         for (Segment segment : measure.getSegments()) {
-            SegmentLayout segmentLayout = new SegmentLayout(measureLayout);
+            SegmentLayout segmentLayout = new SegmentLayout(segment.getType(), measureLayout);
 
             for (Element element : segment.getElements()) {
                 var el = switch(element) {
                     case Barline barline -> new BarlineLayout(barline, segmentLayout, style);
+                    case Voice voice -> createVoiceLayout(voice);
                     default -> new EmptyElement();
                 };
                 segmentLayout.add(el);
@@ -139,22 +149,50 @@ public class LayoutEngine {
         var isFirstMeasure = scoreLayout.getPages().size() == 1 && scoreLayout.getPages().get(0).getSystems().size() == 1;
 
         if (isFirstMeasure) {
-            SegmentLayout seg1 = new SegmentLayout(measureLayout);
+            SegmentLayout seg1 = new SegmentLayout(SegmentType.TIME_SIG, measureLayout);
             staves.forEach(staff -> seg1.add(new TimeSigLayout(mode.getTimeSignature(), staff)));
             segments.addFirst(seg1);
         }
 
-        SegmentLayout seg2 = new SegmentLayout(measureLayout);
+        SegmentLayout seg2 = new SegmentLayout(SegmentType.KEY_SIG, measureLayout);
         staves.forEach(staff -> seg2.add(new KeySigLayout(mode.getKeySignature(), staff, style)));
         segments.addFirst(seg2);
 
-        SegmentLayout seg3 = new SegmentLayout(measureLayout);
+        SegmentLayout seg3 = new SegmentLayout(SegmentType.CLEF, measureLayout);
         staves.forEach(staff -> seg3.add(staff.getClefLayout()));
         segments.addFirst(seg3);
 
         if (mode.getStartBarline() == null) return;
-        SegmentLayout seg4 = new SegmentLayout(measureLayout);
+        SegmentLayout seg4 = new SegmentLayout(SegmentType.START_BARLINE, measureLayout);
         seg4.add(new BarlineLayout(mode.getStartBarline(), seg4, style));
         segments.addFirst(seg4);
+    }
+
+    private VoiceLayout createVoiceLayout(Voice voice) {
+        VoiceLayout voiceLayout = new VoiceLayout(voice);
+        Random random = new Random();
+
+        for(Chord chord : voice.getChords()) {
+            ChordLayout chordLayout = new ChordLayout(chord, voiceLayout.getWidth(), style);
+            int last = 0;
+            for (int i = 0; i < chord.getNotes().size(); i++) {
+                var note = chord.getNotes().get(i);
+                int y;
+                if (i == 0) {
+                    y = random.nextInt(6) - 1; // Losuje od -1 do 4 włącznie
+                    last = y;
+                } else {
+                    do {
+                        y = random.nextInt(6) - 1; // Losuje od -1 do 4 włącznie
+                    } while (y == last); // Powtarza, jeśli wylosowało to samo
+                }
+
+                NoteLayout noteLayout = new NoteLayout(note, 0, y, style);
+                chordLayout.add(noteLayout);
+            }
+
+            voiceLayout.add(chordLayout);
+        }
+        return voiceLayout;
     }
 }

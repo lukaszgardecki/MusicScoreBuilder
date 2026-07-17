@@ -3,7 +3,7 @@ package org.example.musicscorebuilder.components.music;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Voice {
+public class Voice extends Element {
     private final int number;
     private final List<Chord> chords = new ArrayList<>();
 

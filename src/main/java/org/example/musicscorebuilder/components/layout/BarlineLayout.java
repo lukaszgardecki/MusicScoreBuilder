@@ -12,7 +12,7 @@ public class BarlineLayout extends ElementLayout {
     private final double gap;
     private final double dotSpace;
     private final double dotRadius;
-    private double y, width;
+    private double width;
 
     public BarlineLayout(Barline barline, SegmentLayout parent, ScoreStyle scoreStyle) {
         super(false);
@@ -30,11 +30,11 @@ public class BarlineLayout extends ElementLayout {
             case END -> lightLineWidth + gap + heavyLineWidth;
             case REPEAT_LEFT, REPEAT_RIGHT -> heavyLineWidth + gap + lightLineWidth + dotSpace + 2 * dotRadius;
         };
-        y = - 0.5 * style.getStaffLineWidth();
     }
 
-    @Override public double getY() { return y; }
-    @Override public double getBoxY() { return y; }
+    @Override public double getX() { return parent.getWidth() - getWidth(); }
+    @Override public double getY() { return -0.5 * style.getStaffLineWidth(); }
+    @Override public double getBoxY() { return getY(); }
     @Override public double getWidth() { return width; }
     @Override public double getHeight() { return parent.getHeight() + style.getStaffLineWidth(); }
 

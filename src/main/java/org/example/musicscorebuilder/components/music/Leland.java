@@ -22,7 +22,9 @@ public enum Leland {
     TIME_8("\uE088", 1.572, 0.984, 0.06, -0.992),
     TIME_9("\uE089", 1.548, 0.98, 0.06, -0.976),
     TIME_COMMON("\uE08A", 1.852, 1.032, 0.0, -1.024),
-    TIME_CUT("\uE08B", 1.852, 1.552, 0.0, -1.504);
+    TIME_CUT("\uE08B", 1.852, 1.552, 0.0, -1.504),
+
+    NOTE_BLACK("\uE0A4", 1.3, 0.528, 0.0, -0.532);
 
     private final String code;
     private final double NEx;

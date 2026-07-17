@@ -14,7 +14,7 @@ public class StaffLayout {
         this.parent = parent;
         this.staff = staff;
         this.lineSpacing = scoreStyle.getStaffLineSpacing();
-        this.lineWidth = lineSpacing * scoreStyle.getStaffLineWidth();
+        this.lineWidth = scoreStyle.getStaffLineWidth();
         y = staff.getIndex() * (getHeight() + scoreStyle.getStaffSpacing());
         clefLayout = new ClefLayout(this);
     }

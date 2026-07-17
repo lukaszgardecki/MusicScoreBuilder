@@ -39,9 +39,9 @@ public class Mode {
             Measure lastMeasure = measures.getLast();
             List<Segment> segments = lastMeasure.getSegments();
             segments.removeLast();
-            lastMeasure.add(new Barline(BarlineStyle.SINGLE, Barline.Type.END));
+            lastMeasure.addEndBarlineSegment(BarlineStyle.SINGLE);
         }
-        measure.add(new Barline(BarlineStyle.END, Barline.Type.END));
+        measure.addEndBarlineSegment(BarlineStyle.END);
         measures.add(measure);
     }
 
@@ -52,7 +52,7 @@ public class Mode {
         Measure lastMeasure = measures.getLast();
         List<Segment> segments = lastMeasure.getSegments();
         segments.removeLast();
-        lastMeasure.add(new Barline(BarlineStyle.END, Barline.Type.END));
+        lastMeasure.addEndBarlineSegment(BarlineStyle.END);
     }
 
     public List<Staff> getStaves() { return staves; }
@@ -85,14 +85,7 @@ public class Mode {
 
     private void addSegments(int count, Measure measure) {
         for (int i = 0; i < count; i++) {
-            int currentSize = measure.getSegments().size();
-            if (currentSize == 0) {
-                measure.add(new Element());
-            } else {
-                Segment segment = new Segment();
-                segment.addElement(new Element());
-                measure.add(currentSize - 1, segment);
-            }
+            measure.addChordRestSegmentAtEnd();
         }
     }
 }

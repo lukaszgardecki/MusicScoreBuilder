@@ -1,7 +1,6 @@
 package org.example.musicscorebuilder.components.views;
 
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.StrokeLineCap;
 import org.example.musicscorebuilder.components.layout.BarlineLayout;
 
@@ -10,7 +9,7 @@ public class BarlineView {
     public void draw(GraphicsContext gc, BarlineLayout barline, double sMeasureX, double sMeasureY, double sp) {
         double startY = barline.getY() * sp + sMeasureY;
         double endY = startY + (barline.getHeight() * sp);
-        double baseX = sMeasureX;
+        double baseX = sMeasureX + barline.getX() * sp;
 
         gc.setLineCap(StrokeLineCap.BUTT);
 

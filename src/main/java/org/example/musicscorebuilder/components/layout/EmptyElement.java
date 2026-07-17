@@ -6,8 +6,7 @@ public class EmptyElement extends ElementLayout {
         super(true);
     }
 
-    @Override public double getWidth() { return 2; }
-    @Override public double getHeight() { return 7; }
-
+    @Override public double getWidth() { return 10; }
+    @Override public double getHeight() { return 4; }
     @Override public double getBoxY() { return 0; }
 }
