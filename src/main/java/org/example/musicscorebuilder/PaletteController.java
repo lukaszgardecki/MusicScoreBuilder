@@ -3,13 +3,15 @@ package org.example.musicscorebuilder;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextBoundsType;
+import org.example.musicscorebuilder.components.layout.ElementLayout;
+import org.example.musicscorebuilder.components.layout.TimeSigLayout;
 import org.example.musicscorebuilder.components.music.Leland;
-import org.example.musicscorebuilder.components.music.Score;
 import org.example.musicscorebuilder.components.music.TimeSignature;
 
 public class PaletteController {
@@ -18,6 +20,8 @@ public class PaletteController {
     @FXML
     private GridPane timeSignatureGrid;
     private Button selectedButton = null;
+    private final ScoreService scoreService = ScoreService.getInstance();
+    private final ScoreStateManager stateManager = ScoreStateManager.getInstance();
 
     @FXML
     public void initialize() {
@@ -66,27 +70,34 @@ public class PaletteController {
         }
 
         btn.setOnAction(event -> {
-            selectButton(btn);
             handleTimeSignatureSelection(sig);
         });
 
         return btn;
     }
 
+    private void handleTimeSignatureSelection(PreDefinedTimeSignature sig) {
+        ElementLayout selectedLayout = stateManager.getSelectedElement();
+
+        if (selectedLayout instanceof TimeSigLayout) {
+            scoreService.getScore().getModes().forEach(mode -> mode.setTimeSignature(sig.getTimeSignature()));
+            stateManager.clearSelection();
+            stateManager.notifyScoreChanged();
+            selectButton(null);
+        }
+    }
+
     private void selectButton(Button btn) {
-        if (selectedButton != null) {
-            selectedButton.getStyleClass().remove("selected");
+        for (Node node : timeSignatureGrid.getChildren()) {
+            if (node instanceof Button b) {
+                b.getStyleClass().remove("selected");
+            }
         }
 
         selectedButton = btn;
-        selectedButton.getStyleClass().add("selected");
-    }
-
-    private void handleTimeSignatureSelection(PreDefinedTimeSignature sig) {
-        ScoreService scoreService = ScoreService.getInstance();
-        Score score = scoreService.getScore();
-        score.getModes().forEach(mode -> mode.setTimeSignature(sig.getTimeSignature()));
-        scoreService.notifyListeners();
+        if (selectedButton != null) {
+            selectedButton.getStyleClass().add("selected");
+        }
     }
 }
 

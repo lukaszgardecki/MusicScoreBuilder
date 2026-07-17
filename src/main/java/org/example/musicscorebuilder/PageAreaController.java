@@ -15,6 +15,8 @@ public class PageAreaController {
     @FXML private BackgroundView container;
     private LayoutEngine layoutEngine;
     private ScoreLayout currentScoreLayout;
+    private final ScoreService scoreService = ScoreService.getInstance();
+    private final ScoreStateManager stateManager = ScoreStateManager.getInstance();
 
     @FXML
     public void initialize() {
@@ -22,7 +24,7 @@ public class PageAreaController {
         container.prefHeightProperty().bind(scrollPane.heightProperty());
 
         container.setOnMouseClicked(this::handleCanvasClick);
-        ScoreService.getInstance().addListener(this::refreshView);
+        stateManager.addScoreChangeListener(this::refreshView);
 
         this.layoutEngine = new LayoutEngine(
                 new Page(PageFormat.A4_V, 10, 10, 10, 10),
@@ -32,7 +34,7 @@ public class PageAreaController {
     }
 
     private void refreshView() {
-        Score score = ScoreService.getInstance().getScore();
+        Score score = scoreService.getScore();
         Mode mode = score.getModes().getFirst();
         this.currentScoreLayout = layoutEngine.compute(mode);
         container.updateContent(currentScoreLayout);
@@ -103,9 +105,16 @@ public class PageAreaController {
         }
 
         currentScoreLayout.clearAllSelections();
-        if (clickedElement != null) {
-            clickedElement.setSelected(true);
-        }
+        toggleSelection(clickedElement);
         container.updateContent(currentScoreLayout);
+    }
+
+    private void toggleSelection(ElementLayout element) {
+        if (element != null) {
+            element.setSelected(true);
+            stateManager.setSelectedElement(element);
+        } else {
+            stateManager.setSelectedElement(null);
+        }
     }
 }

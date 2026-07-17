@@ -1,37 +1,26 @@
 package org.example.musicscorebuilder;
 
-import org.example.musicscorebuilder.components.music.*;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.example.musicscorebuilder.components.music.ModeFactory;
+import org.example.musicscorebuilder.components.music.Score;
 
 public class ScoreService {
-    private List<ScoreChangeListener> listeners = new ArrayList<>();
     private static ScoreService instance;
     private Score score;
 
     private ScoreService() {}
 
-    public static ScoreService getInstance() {
-        if (instance == null) instance = new ScoreService();
+    public static synchronized ScoreService getInstance() {
+        if (instance == null) {
+            instance = new ScoreService();
+        }
         return instance;
     }
 
     public Score getScore() {
-        if  (score != null) return score;
-        Score score = new Score();
-        score.add(ModeFactory.createHarmonyMode());
-        this.score = score;
+        if (score != null) return score;
+        Score newScore = new Score();
+        newScore.add(ModeFactory.createHarmonyMode());
+        this.score = newScore;
         return score;
-    }
-
-    public void addListener(ScoreChangeListener listener) {
-        listeners.add(listener);
-    }
-
-    public void notifyListeners() {
-        for (ScoreChangeListener l : listeners) {
-            l.onScoreChanged();
-        }
     }
 }
