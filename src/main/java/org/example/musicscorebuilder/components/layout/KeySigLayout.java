@@ -14,8 +14,8 @@ public class KeySigLayout extends ElementLayout {
 
     public record KeySign(double x, double y, double boxY) {}
 
-    public KeySigLayout(KeySignature keySignature, StaffLayout staffLayout, ScoreStyle scoreStyle) {
-        super(false, scoreStyle);
+    public KeySigLayout(KeySignature keySignature, StaffLayout staffLayout, SegmentLayout parent) {
+        super(false, parent);
         this.staffLayout = staffLayout;
         this.height = staffLayout.getHeight();
         this.setY(staffLayout.getY());

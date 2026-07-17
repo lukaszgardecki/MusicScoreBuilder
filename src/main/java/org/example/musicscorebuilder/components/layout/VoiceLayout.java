@@ -9,8 +9,8 @@ public class VoiceLayout extends ElementLayout {
     private final Voice voice;
     private final List<ChordLayout> chords = new ArrayList<>();
 
-    public VoiceLayout(Voice voice, ScoreStyle scoreStyle) {
-        super(true, scoreStyle);
+    public VoiceLayout(Voice voice, SegmentLayout parent) {
+        super(true, parent);
         this.voice = voice;
     }
 

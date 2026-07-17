@@ -111,7 +111,11 @@ public class PageAreaController {
 
     private void toggleSelection(ElementLayout element) {
         if (element != null) {
-            element.setSelected(true);
+            if (element instanceof TimeSigLayout || element instanceof KeySigLayout) {
+                element.getParent().getElements().forEach(e -> e.setSelected(true));
+            } else {
+                element.setSelected(true);
+            }
             stateManager.setSelectedElement(element);
         } else {
             stateManager.setSelectedElement(null);

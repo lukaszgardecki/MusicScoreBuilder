@@ -9,8 +9,8 @@ public class NoteLayout extends ElementLayout {
     private final Note note;
     private final double y;
 
-    public NoteLayout(Note note, ScoreStyle scoreStyle) {
-        super(false, scoreStyle);
+    public NoteLayout(Note note, SegmentLayout parent) {
+        super(false, parent);
         this.note = note;
         this.y = calculateY();
     }

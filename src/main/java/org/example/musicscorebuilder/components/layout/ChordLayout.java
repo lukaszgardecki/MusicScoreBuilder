@@ -10,8 +10,8 @@ public class ChordLayout extends ElementLayout {
     private final List<NoteLayout> notes = new ArrayList<>();
     private double x;
 
-    public ChordLayout(Chord chord, double x, ScoreStyle scoreStyle) {
-        super(true, scoreStyle);
+    public ChordLayout(Chord chord, double x, SegmentLayout parent) {
+        super(true, parent);
         this.chord = chord;
         this.x = x;
     }

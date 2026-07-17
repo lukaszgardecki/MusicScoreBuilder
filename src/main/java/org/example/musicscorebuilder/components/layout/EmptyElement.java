@@ -2,8 +2,8 @@ package org.example.musicscorebuilder.components.layout;
 
 public class EmptyElement extends ElementLayout {
 
-    public EmptyElement(ScoreStyle scoreStyle) {
-        super(true, scoreStyle);
+    public EmptyElement(SegmentLayout parent) {
+        super(true, parent);
     }
 
     @Override public double getWidth() { return 10; }

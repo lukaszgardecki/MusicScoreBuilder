@@ -135,9 +135,9 @@ public class LayoutEngine {
 
             for (Element element : segment.getElements()) {
                 var el = switch(element) {
-                    case Barline barline -> new BarlineLayout(barline, segmentLayout, style);
-                    case Voice voice -> createVoiceLayout(voice);
-                    default -> new EmptyElement(style);
+                    case Barline barline -> new BarlineLayout(barline, segmentLayout);
+                    case Voice voice -> createVoiceLayout(voice, segmentLayout);
+                    default -> new EmptyElement(segmentLayout);
                 };
                 segmentLayout.add(el);
             }
@@ -153,30 +153,30 @@ public class LayoutEngine {
 
         if (isFirstMeasure) {
             SegmentLayout seg1 = new SegmentLayout(SegmentType.TIME_SIG, measureLayout);
-            staves.forEach(staff -> seg1.add(new TimeSigLayout(mode.getTimeSignature(), staff, style)));
+            staves.forEach(staff -> seg1.add(new TimeSigLayout(mode.getTimeSignature(), staff, seg1)));
             segments.addFirst(seg1);
         }
 
         SegmentLayout seg2 = new SegmentLayout(SegmentType.KEY_SIG, measureLayout);
-        staves.forEach(staff -> seg2.add(new KeySigLayout(mode.getKeySignature(), staff, style)));
+        staves.forEach(staff -> seg2.add(new KeySigLayout(mode.getKeySignature(), staff, seg2)));
         segments.addFirst(seg2);
 
         SegmentLayout seg3 = new SegmentLayout(SegmentType.CLEF, measureLayout);
-        staves.forEach(staff -> seg3.add(staff.getClefLayout()));
+        staves.forEach(staff -> seg3.add(new ClefLayout(staff, seg3)));
         segments.addFirst(seg3);
 
         if (mode.getStartBarline() == null) return;
         SegmentLayout seg4 = new SegmentLayout(SegmentType.START_BARLINE, measureLayout);
-        seg4.add(new BarlineLayout(mode.getStartBarline(), seg4, style));
+        seg4.add(new BarlineLayout(mode.getStartBarline(), seg4));
         segments.addFirst(seg4);
     }
 
-    private VoiceLayout createVoiceLayout(Voice voice) {
-        VoiceLayout voiceLayout = new VoiceLayout(voice, style);
+    private VoiceLayout createVoiceLayout(Voice voice, SegmentLayout parent) {
+        VoiceLayout voiceLayout = new VoiceLayout(voice, parent);
 
         for(Chord chord : voice.getChords()) {
-            ChordLayout chordLayout = new ChordLayout(chord, voiceLayout.getWidth(), style);
-            chord.getNotes().forEach(note -> chordLayout.add(new NoteLayout(note, style)));
+            ChordLayout chordLayout = new ChordLayout(chord, voiceLayout.getWidth(), parent);
+            chord.getNotes().forEach(note -> chordLayout.add(new NoteLayout(note, parent)));
             voiceLayout.add(chordLayout);
         }
         return voiceLayout;

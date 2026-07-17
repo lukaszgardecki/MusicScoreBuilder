@@ -2,16 +2,19 @@ package org.example.musicscorebuilder.components.layout;
 
 public abstract class ElementLayout {
     protected final ScoreStyle style;
+    protected final SegmentLayout parent;
     private final boolean hasDynamicWidth;
     private double x = 0.0;
     private double y = 0.0;
     private boolean selected = false;
 
-    public ElementLayout(boolean hasDynamicWidth,  ScoreStyle style) {
+    public ElementLayout(boolean hasDynamicWidth, SegmentLayout parent) {
         this.hasDynamicWidth = hasDynamicWidth;
-        this.style = style;
+        this.style = parent.getScoreStyle();
+        this.parent = parent;
     }
 
+    public SegmentLayout getParent() { return parent; }
     public ScoreStyle getScoreStyle() { return style; }
     public boolean hasDynamicWidth() { return hasDynamicWidth; }
 

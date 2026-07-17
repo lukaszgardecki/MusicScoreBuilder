@@ -4,7 +4,6 @@ import org.example.musicscorebuilder.components.music.Barline;
 import org.example.musicscorebuilder.components.music.BarlineStyle;
 
 public class BarlineLayout extends ElementLayout {
-    private final SegmentLayout parent;
     private final Barline barline;
     private final double lightLineWidth;
     private final double heavyLineWidth;
@@ -13,9 +12,8 @@ public class BarlineLayout extends ElementLayout {
     private final double dotRadius;
     private double width;
 
-    public BarlineLayout(Barline barline, SegmentLayout parent, ScoreStyle scoreStyle) {
-        super(false, scoreStyle);
-        this.parent = parent;
+    public BarlineLayout(Barline barline, SegmentLayout parent) {
+        super(false, parent);
         this.barline = barline;
         this.lightLineWidth = style.getBarlineLightWidth();
         this.heavyLineWidth = style.getBarlineHeavyWidth();
