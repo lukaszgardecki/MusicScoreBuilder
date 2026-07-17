@@ -6,14 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ChordLayout extends ElementLayout {
-    private final ScoreStyle style;
     private final Chord chord;
     private final List<NoteLayout> notes = new ArrayList<>();
     private double x;
 
-    public ChordLayout(Chord chord, double x, ScoreStyle style) {
-        super(true);
-        this.style = style;
+    public ChordLayout(Chord chord, double x, ScoreStyle scoreStyle) {
+        super(true, scoreStyle);
         this.chord = chord;
         this.x = x;
     }
@@ -35,7 +33,7 @@ public class ChordLayout extends ElementLayout {
         for (NoteLayout note : notes) {
             if (note.getX() < minX) minX = note.getX();
             if (note.getX() > maxX) maxX = note.getX();
-            singleNoteWidth = Math.max(singleNoteWidth, note.getWidth());
+            singleNoteWidth = Math.max(singleNoteWidth, note.getBoxWidth());
         }
         return (maxX - minX) + singleNoteWidth;
     }

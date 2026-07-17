@@ -1,7 +1,6 @@
 package org.example.musicscorebuilder.components.layout;
 
 import org.example.musicscorebuilder.components.music.Measure;
-import org.example.musicscorebuilder.components.music.Mode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,19 +17,6 @@ public class MeasureLayout {
         this.measure = measure;
         this.x = x;
         this.y = 0;
-    }
-
-    public ElementLayout findClickedElement(double systemX, double systemY) {
-        double measureMusicX = systemX - this.getX();
-        double measureMusicY = systemY - this.getY();
-
-        for (SegmentLayout segment : segments) {
-            ElementLayout hit = segment.findClickedElement(measureMusicX, measureMusicY);
-            if (hit != null) {
-                return hit;
-            }
-        }
-        return null;
     }
 
     public void add(StaffLayout staffLayout) {

@@ -6,7 +6,7 @@ import java.util.List;
 public class Chord {
     private final List<Note> notes = new ArrayList<>();
 
-    public void addNote(Note note) {
+    public void add(Note note) {
         notes.add(note);
     }
 

@@ -11,7 +11,7 @@ public class Voice extends Element {
         this.number = number;
     }
 
-    public void addChord(Chord chord) {
+    public void add(Chord chord) {
         chords.add(chord);
     }
 

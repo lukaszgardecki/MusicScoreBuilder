@@ -4,7 +4,6 @@ import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.music.*;
 
 import java.util.List;
-import java.util.Random;
 
 public class LayoutEngine {
     private final ScoreStyle style;
@@ -138,7 +137,7 @@ public class LayoutEngine {
                 var el = switch(element) {
                     case Barline barline -> new BarlineLayout(barline, segmentLayout, style);
                     case Voice voice -> createVoiceLayout(voice);
-                    default -> new EmptyElement();
+                    default -> new EmptyElement(style);
                 };
                 segmentLayout.add(el);
             }
@@ -154,7 +153,7 @@ public class LayoutEngine {
 
         if (isFirstMeasure) {
             SegmentLayout seg1 = new SegmentLayout(SegmentType.TIME_SIG, measureLayout);
-            staves.forEach(staff -> seg1.add(new TimeSigLayout(mode.getTimeSignature(), staff)));
+            staves.forEach(staff -> seg1.add(new TimeSigLayout(mode.getTimeSignature(), staff, style)));
             segments.addFirst(seg1);
         }
 
@@ -173,28 +172,11 @@ public class LayoutEngine {
     }
 
     private VoiceLayout createVoiceLayout(Voice voice) {
-        VoiceLayout voiceLayout = new VoiceLayout(voice);
-        Random random = new Random();
+        VoiceLayout voiceLayout = new VoiceLayout(voice, style);
 
         for(Chord chord : voice.getChords()) {
             ChordLayout chordLayout = new ChordLayout(chord, voiceLayout.getWidth(), style);
-            int last = 0;
-            for (int i = 0; i < chord.getNotes().size(); i++) {
-                var note = chord.getNotes().get(i);
-                int y;
-                if (i == 0) {
-                    y = random.nextInt(6) - 1; // Losuje od -1 do 4 włącznie
-                    last = y;
-                } else {
-                    do {
-                        y = random.nextInt(6) - 1; // Losuje od -1 do 4 włącznie
-                    } while (y == last); // Powtarza, jeśli wylosowało to samo
-                }
-
-                NoteLayout noteLayout = new NoteLayout(note, 0, y, style);
-                chordLayout.add(noteLayout);
-            }
-
+            chord.getNotes().forEach(note -> chordLayout.add(new NoteLayout(note, style)));
             voiceLayout.add(chordLayout);
         }
         return voiceLayout;

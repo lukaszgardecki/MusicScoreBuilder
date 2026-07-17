@@ -20,17 +20,6 @@ public class SegmentLayout {
         this.height = parent.getHeight();
     }
 
-    public ElementLayout findClickedElement(double measureMusicX, double measureMusicY) {
-        double segmentMusicX = measureMusicX - this.getX();
-        double segmentMusicY = measureMusicY - this.getY();
-
-        for (ElementLayout element : elements) {
-            if (element instanceof EmptyElement) continue;
-            if (element.contains(segmentMusicX, segmentMusicY)) return element;
-        }
-        return null;
-    }
-
     public void add(ElementLayout elementLayout) {
         elementLayout.setX(style.getSegmentLeftMargin());
         elements.add(elementLayout);
@@ -52,4 +41,5 @@ public class SegmentLayout {
     }
     public double getHeight() { return height; }
     public boolean hasDynamicWidth() { return elements.stream().anyMatch(ElementLayout::hasDynamicWidth); }
+    public ScoreStyle getScoreStyle() { return style; }
 }

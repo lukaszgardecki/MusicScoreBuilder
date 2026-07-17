@@ -7,7 +7,6 @@ import org.example.musicscorebuilder.components.music.Leland;
 import java.util.Optional;
 
 public class KeySigLayout extends ElementLayout {
-    private final ScoreStyle style;
     private final StaffLayout staffLayout;
     private Leland fontData = null;
     private double height;
@@ -16,8 +15,7 @@ public class KeySigLayout extends ElementLayout {
     public record KeySign(double x, double y, double boxY) {}
 
     public KeySigLayout(KeySignature keySignature, StaffLayout staffLayout, ScoreStyle scoreStyle) {
-        super(false);
-        this.style = scoreStyle;
+        super(false, scoreStyle);
         this.staffLayout = staffLayout;
         this.height = staffLayout.getHeight();
         this.setY(staffLayout.getY());

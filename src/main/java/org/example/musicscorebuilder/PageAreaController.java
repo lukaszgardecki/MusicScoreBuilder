@@ -56,8 +56,45 @@ public class PageAreaController {
                 double systemY = pageY - system.getY();
 
                 for (MeasureLayout measure : system.getMeasures()) {
-                    clickedElement = measure.findClickedElement(systemX, systemY);
+                    double measureX = systemX - measure.getX();
+                    double measureY = systemY - measure.getY();
 
+                    for (SegmentLayout segment : measure.getSegments()) {
+                        double segmentMusicX = measureX - segment.getX();
+                        double segmentMusicY = measureY - segment.getY();
+
+                        for (ElementLayout element : segment.getElements()) {
+                            if (element instanceof EmptyElement) continue;
+
+                            if (element instanceof VoiceLayout voice) {
+                                double voiceX = voice.getX();
+
+                                for (ChordLayout chord : voice.getChords()) {
+                                    double chordX = chord.getX();
+
+                                    for (NoteLayout note : chord.getNotes()) {
+                                        double absoluteNoteBoxX = voiceX + chordX + note.getBoxX();
+                                        double absoluteNoteBoxY = note.getBoxY();
+
+                                        if (segmentMusicX >= absoluteNoteBoxX && segmentMusicX <= (absoluteNoteBoxX + note.getBoxWidth()) &&
+                                                segmentMusicY >= absoluteNoteBoxY && segmentMusicY <= (absoluteNoteBoxY + note.getHeight())) {
+
+                                            clickedElement = note;
+                                            break;
+                                        }
+                                    }
+                                    if (clickedElement != null) break;
+                                }
+                            } else {
+                                if (element.contains(segmentMusicX, segmentMusicY)) {
+                                    clickedElement = element;
+                                    break;
+                                }
+                            }
+                            if (clickedElement != null) break;
+                        }
+                        if (clickedElement != null) break;
+                    }
                     if (clickedElement != null) break;
                 }
                 if (clickedElement != null) break;

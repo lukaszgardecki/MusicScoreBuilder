@@ -24,18 +24,18 @@ public class Segment {
 
     private Voice createDefaultVoice() {
         var voice = new Voice(1);
-        voice.addChord(createDefaultChord(voice));
-        voice.addChord(createDefaultChord(voice));
-        voice.addChord(createDefaultChord(voice));
-        voice.addChord(createDefaultChord(voice));
+        voice.add(createDefaultChord(voice));
+        voice.add(createDefaultChord(voice));
+        voice.add(createDefaultChord(voice));
+        voice.add(createDefaultChord(voice));
 
         return voice;
     }
 
     private Chord createDefaultChord(Voice voice) {
         Chord chord = new Chord();
-        chord.addNote(new Note(voice));
-        chord.addNote(new Note(voice));
+        chord.add(new Note(voice, PitchStep.A, 0, 4));
+        chord.add(new Note(voice, PitchStep.D, 0, 4));
         return chord;
     }
 }

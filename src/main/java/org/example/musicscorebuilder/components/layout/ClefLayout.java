@@ -9,8 +9,8 @@ public class ClefLayout extends ElementLayout {
     private final double scale;
     private double y;
 
-    public ClefLayout(StaffLayout staffLayout) {
-        super(false);
+    public ClefLayout(StaffLayout staffLayout, ScoreStyle scoreStyle) {
+        super(false, scoreStyle);
         this.height = staffLayout.getHeight();
         this.scale = staffLayout.getLineSpacing();
         ClefType type = staffLayout.getStaff().getDefaultClef().getType();

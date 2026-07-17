@@ -11,15 +11,19 @@ public class NoteView extends ComponentView {
     public void draw(GraphicsContext gc, NoteLayout note, double chordX, double chordY, double sp) {
         double noteX = chordX + note.getX() * sp;
         double noteY = chordY + note.getY() * sp;
+        double boxX = chordX + note.getBoxX() * sp;
         double boxY = chordY + note.getBoxY() * sp;
-        double widthPx = note.getWidth() * sp;
+        double widthPx = note.getBoxWidth() * sp;
         double heightPx = note.getHeight() * sp;
         double fontSize = note.getFontSize() * sp;
 
-//        fillBackground(gc, Util.generateRandomColor(), noteX, boxY, widthPx, heightPx);
+//        fillBackground(gc, Util.generateRandomColor(), boxX, boxY, widthPx, heightPx);
 
         gc.setFont(FontManager.getLelandFont(fontSize));
-        gc.setFill(Color.BLACK);
+
+        if (note.isSelected()) gc.setFill(Color.web(note.getScoreStyle().getElementSelectedColor()));
+        else gc.setFill(Color.BLACK);
+
         gc.fillText(note.getCode(), noteX, noteY);
     }
 }

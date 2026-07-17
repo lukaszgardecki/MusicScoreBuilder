@@ -9,7 +9,7 @@ public class ScoreStyle {
     private static final double SYSTEM_MIN_FULLNESS_RATIO = 0.5;
 
     private static final double STAFF_SPACING_SCALE = 1.3;
-    private static final double STAFF_LINE_SPACING = 1;
+    private static final double STAFF_LINE_SPACING = 1.0;
     private static final double STAFF_LINE_WIDTH_SP = 0.11;
 
     private static final double BARLINE_LIGHT_WIDTH = 0.18;
@@ -21,6 +21,10 @@ public class ScoreStyle {
     private static final double SEGMENT_LEFT_MARGIN = 1.0;
 
     private static final double KEY_SIGNATURE_SIGN_SPACE = 0.12;
+
+    private static final double NOTE_SIDE_SPACE = 0.3;
+
+    private static final String ELEMENT_SELECTED_COLOR = "#0078d7";
 
     private double pageSpacing = PAGE_SPACING;
     private double staffSpacing = STAFF_SPACING;
@@ -42,6 +46,11 @@ public class ScoreStyle {
 
     private double keySignatureSignSpace = KEY_SIGNATURE_SIGN_SPACE;
 
+    private double noteSideSpace = NOTE_SIDE_SPACE;
+
+    private String elementSelectedColor = ELEMENT_SELECTED_COLOR;
+
+
 
     public double getPageSpacing() { return pageSpacing; }
     public double getStaffSpacing() { return staffSpacing; }
@@ -62,6 +71,10 @@ public class ScoreStyle {
     public double getSegmentLeftMargin() { return staffSpacingScale * segmentLeftMargin; }
 
     public double getKeySignatureSignSpace() { return staffSpacingScale * keySignatureSignSpace; }
+
+    public double getNoteSideSpace() { return staffSpacingScale * noteSideSpace; }
+
+    public String getElementSelectedColor() { return elementSelectedColor; }
 
 
 

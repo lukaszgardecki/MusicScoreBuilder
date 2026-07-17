@@ -15,8 +15,8 @@ public class TimeSigLayout extends ElementLayout {
         public double getBoxY() { return y - (fontData().getNEy() * scale); }
     }
 
-    public TimeSigLayout(TimeSignature timeSignature, StaffLayout staffLayout) {
-        super(false);
+    public TimeSigLayout(TimeSignature timeSignature, StaffLayout staffLayout, ScoreStyle scoreStyle) {
+        super(false, scoreStyle);
         this.height = staffLayout.getHeight();
         this.y = staffLayout.getY();
         this.scale = staffLayout.getLineSpacing();
