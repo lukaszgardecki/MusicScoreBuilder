@@ -6,11 +6,15 @@
 <VBox prefWidth="300.0" spacing="10" style="-fx-padding: 10;"
       xmlns="http://javafx.com/javafx/17"
       xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="org.example.musicscorebuilder.PaletteController"
+      fx:controller="org.example.musicscorebuilder.palette.PaletteController"
 >
     <Label style="-fx-font-size: 16; -fx-font-weight: bold;" text="Paleta" />
 
     <TitledPane text="Oznaczenia metryczne" expanded="false" styleClass="titled-pane">
-        <GridPane fx:id="timeSignatureGrid" snapToPixel="false" maxWidth="-Infinity" maxHeight="-Infinity"/>
+        <GridPane fx:id="timeSignatureGrid" styleClass="palette-grid" snapToPixel="false" maxWidth="-Infinity" maxHeight="-Infinity"/>
+    </TitledPane>
+
+    <TitledPane text="Kreski taktowe" expanded="false" styleClass="titled-pane">
+        <GridPane fx:id="barLinesGrid" styleClass="palette-grid" snapToPixel="false" maxWidth="-Infinity" maxHeight="-Infinity"/>
     </TitledPane>
 </VBox>

@@ -43,4 +43,6 @@ public class BarlineLayout extends ElementLayout {
     public double getDotRadius() { return dotRadius; }
     public BarlineStyle getStyle() { return barline.getStyle(); }
     public Barline.Type getType() { return barline.getType(); }
+
+    public void setStyle(BarlineStyle style) { barline.setStyle(style); }
 }

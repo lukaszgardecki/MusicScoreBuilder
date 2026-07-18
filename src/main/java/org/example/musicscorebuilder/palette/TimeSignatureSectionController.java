@@ -1,10 +1,7 @@
-package org.example.musicscorebuilder;
+package org.example.musicscorebuilder.palette;
 
-import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -14,38 +11,25 @@ import org.example.musicscorebuilder.components.layout.TimeSigLayout;
 import org.example.musicscorebuilder.components.music.Leland;
 import org.example.musicscorebuilder.components.music.TimeSignature;
 
-public class PaletteController {
-    private static final int COLUMNS_COUNT = 6;
+import java.util.Arrays;
+import java.util.List;
 
-    @FXML
-    private GridPane timeSignatureGrid;
-    private Button selectedButton = null;
-    private final ScoreService scoreService = ScoreService.getInstance();
-    private final ScoreStateManager stateManager = ScoreStateManager.getInstance();
+public class TimeSignatureSectionController extends AbstractPaletteSectionController<PreDefinedTimeSignature> {
 
-    @FXML
-    public void initialize() {
-        int index = 0;
-
-        for (PreDefinedTimeSignature sig : PreDefinedTimeSignature.values()) {
-            Button btn = createPaletteButton(sig);
-
-            int col = index % COLUMNS_COUNT;
-            int row = index / COLUMNS_COUNT;
-
-            timeSignatureGrid.add(btn, col, row);
-            index++;
-        }
+    public TimeSignatureSectionController(GridPane gridPane) {
+        super(gridPane);
     }
 
-    private Button createPaletteButton(PreDefinedTimeSignature sig) {
-        Button btn = new Button();
-        btn.getStyleClass().add("palette-btn");
+    @Override
+    protected List<PreDefinedTimeSignature> getItems() {
+        return Arrays.asList(PreDefinedTimeSignature.values());
+    }
 
+    @Override
+    protected Node createButtonGraphic(PreDefinedTimeSignature sig) {
         if (sig.isFractional()) {
             VBox container = new VBox();
             container.setAlignment(Pos.CENTER);
-            container.setPadding(Insets.EMPTY);
             container.setSpacing(0);
 
             Text topText = new Text(sig.getTopGlyph());
@@ -56,48 +40,25 @@ public class PaletteController {
             bottomText.getStyleClass().addAll("text-glyph", "fraction-text");
             bottomText.setBoundsType(TextBoundsType.VISUAL);
 
-            VBox.setMargin(topText, Insets.EMPTY);
-            VBox.setMargin(bottomText, Insets.EMPTY);
-
             container.getChildren().addAll(topText, bottomText);
-            btn.setGraphic(container);
+            return container;
         } else {
             Text singleText = new Text(sig.getTopGlyph());
             singleText.getStyleClass().addAll("text-glyph", "single-text");
             singleText.setBoundsType(TextBoundsType.VISUAL);
-
-            btn.setGraphic(singleText);
+            return singleText;
         }
-
-        btn.setOnAction(event -> {
-            handleTimeSignatureSelection(sig);
-        });
-
-        return btn;
     }
 
-    private void handleTimeSignatureSelection(PreDefinedTimeSignature sig) {
+    @Override
+    protected boolean applyToSelectedElement(PreDefinedTimeSignature sig) {
         ElementLayout selectedLayout = stateManager.getSelectedElement();
 
         if (selectedLayout instanceof TimeSigLayout) {
             scoreService.getScore().getModes().forEach(mode -> mode.setTimeSignature(sig.getTimeSignature()));
-            stateManager.clearSelection();
-            stateManager.notifyScoreChanged();
-            selectButton(null);
+            return true;
         }
-    }
-
-    private void selectButton(Button btn) {
-        for (Node node : timeSignatureGrid.getChildren()) {
-            if (node instanceof Button b) {
-                b.getStyleClass().remove("selected");
-            }
-        }
-
-        selectedButton = btn;
-        if (selectedButton != null) {
-            selectedButton.getStyleClass().add("selected");
-        }
+        return false;
     }
 }
 
