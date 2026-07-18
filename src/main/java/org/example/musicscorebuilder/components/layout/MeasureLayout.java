@@ -1,6 +1,6 @@
 package org.example.musicscorebuilder.components.layout;
 
-import org.example.musicscorebuilder.components.music.Measure;
+import org.example.musicscorebuilder.components.music.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,31 @@ public class MeasureLayout {
         segments.add(segmentLayout);
     }
 
+    public void addClef() {
+        SegmentLayout seg = new SegmentLayout(SegmentType.CLEF, this);
+        seg.addClef();
+        segments.addFirst(seg);
+    }
+    public void addStartBarline(Barline barline) {
+        SegmentLayout seg = new SegmentLayout(SegmentType.START_BARLINE, this);
+        seg.addStartBarline(barline);
+        segments.addFirst(seg);
+    }
+
+    public void addKeySignature(KeySignature keySignature) {
+        SegmentLayout seg = new SegmentLayout(SegmentType.KEY_SIG, this);
+        seg.addKeySignature(keySignature);
+        segments.addFirst(seg);
+    }
+
+    public void addTimeSignature(TimeSignature timeSignature) {
+        SegmentLayout seg = new SegmentLayout(SegmentType.TIME_SIG, this);
+        seg.addTimeSignature(timeSignature);
+        segments.addFirst(seg);
+    }
+
     public ScoreStyle getScoreStyle() { return style; }
+    public Measure getMeasure() { return measure; }
     public List<SegmentLayout> getSegments() { return segments; }
     public List<StaffLayout> getStaffs() { return staves; }
     public double getX() { return x; }

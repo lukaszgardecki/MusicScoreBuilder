@@ -10,9 +10,9 @@ public class BarlineLayout extends ElementLayout {
     private final double gap;
     private final double dotSpace;
     private final double dotRadius;
-    private double width;
+    private double y, width, height;
 
-    public BarlineLayout(Barline barline, SegmentLayout parent) {
+    public BarlineLayout(Barline barline, SegmentLayout parent, StaffLayout staff) {
         super(false, parent);
         this.barline = barline;
         this.lightLineWidth = style.getBarlineLightWidth();
@@ -26,13 +26,15 @@ public class BarlineLayout extends ElementLayout {
             case END -> lightLineWidth + gap + heavyLineWidth;
             case REPEAT_LEFT, REPEAT_RIGHT -> heavyLineWidth + gap + lightLineWidth + dotSpace + 2 * dotRadius;
         };
+        this.height = staff.getHeight() + staff.getSpaceBelow();
+        this.y = staff.getY() - 0.5 * staff.getLineWidth();
     }
 
     @Override public double getX() { return parent.getWidth() - getWidth(); }
-    @Override public double getY() { return -0.5 * style.getStaffLineWidth(); }
+    @Override public double getY() { return y; }
     @Override public double getBoxY() { return getY(); }
     @Override public double getWidth() { return width; }
-    @Override public double getHeight() { return parent.getHeight() + style.getStaffLineWidth(); }
+    @Override public double getHeight() { return height; }
 
     public double getLightLineWidth() { return lightLineWidth; }
     public double getHeavyLineWidth() { return heavyLineWidth; }

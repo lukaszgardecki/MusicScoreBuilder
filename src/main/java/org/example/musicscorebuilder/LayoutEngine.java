@@ -133,13 +133,16 @@ public class LayoutEngine {
         for (Segment segment : measure.getSegments()) {
             SegmentLayout segmentLayout = new SegmentLayout(segment.getType(), measureLayout);
 
-            for (Element element : segment.getElements()) {
-                var el = switch(element) {
-                    case Barline barline -> new BarlineLayout(barline, segmentLayout);
-                    case Voice voice -> createVoiceLayout(voice, segmentLayout);
-                    default -> new EmptyElement(segmentLayout);
-                };
-                segmentLayout.add(el);
+            for (StaffLayout staffLayout : measureLayout.getStaffs()) {
+                for (Element element : segment.getElementsForStaff(staffLayout.getStaff())) {
+
+                    var el = switch(element) {
+                        case Barline barline -> new BarlineLayout(barline, segmentLayout, staffLayout);
+                        case Voice voice -> createVoiceLayout(voice, segmentLayout, staffLayout);
+                        default -> new EmptyElement(segmentLayout);
+                    };
+                    segmentLayout.addElement(staffLayout, el);
+                }
             }
             measureLayout.add(segmentLayout);
         }
@@ -147,36 +150,23 @@ public class LayoutEngine {
     }
 
     private void add1stMeasureAttributes(Mode mode, MeasureLayout measureLayout, ScoreLayout scoreLayout) {
-        var staves = measureLayout.getStaffs();
-        var segments = measureLayout.getSegments();
         var isFirstMeasure = scoreLayout.getPages().size() == 1 && scoreLayout.getPages().get(0).getSystems().size() == 1;
 
         if (isFirstMeasure) {
-            SegmentLayout seg1 = new SegmentLayout(SegmentType.TIME_SIG, measureLayout);
-            staves.forEach(staff -> seg1.add(new TimeSigLayout(mode.getTimeSignature(), staff, seg1)));
-            segments.addFirst(seg1);
+            measureLayout.addTimeSignature(mode.getTimeSignature());
         }
-
-        SegmentLayout seg2 = new SegmentLayout(SegmentType.KEY_SIG, measureLayout);
-        staves.forEach(staff -> seg2.add(new KeySigLayout(mode.getKeySignature(), staff, seg2)));
-        segments.addFirst(seg2);
-
-        SegmentLayout seg3 = new SegmentLayout(SegmentType.CLEF, measureLayout);
-        staves.forEach(staff -> seg3.add(new ClefLayout(staff, seg3)));
-        segments.addFirst(seg3);
-
+        measureLayout.addKeySignature(mode.getKeySignature());
+        measureLayout.addClef();
         if (mode.getStartBarline() == null) return;
-        SegmentLayout seg4 = new SegmentLayout(SegmentType.START_BARLINE, measureLayout);
-        seg4.add(new BarlineLayout(mode.getStartBarline(), seg4));
-        segments.addFirst(seg4);
+        measureLayout.addStartBarline(mode.getStartBarline());
     }
 
-    private VoiceLayout createVoiceLayout(Voice voice, SegmentLayout parent) {
+    private VoiceLayout createVoiceLayout(Voice voice, SegmentLayout parent, StaffLayout staff) {
         VoiceLayout voiceLayout = new VoiceLayout(voice, parent);
 
         for(Chord chord : voice.getChords()) {
             ChordLayout chordLayout = new ChordLayout(chord, voiceLayout.getWidth(), parent);
-            chord.getNotes().forEach(note -> chordLayout.add(new NoteLayout(note, parent)));
+            chord.getNotes().forEach(note -> chordLayout.add(new NoteLayout(note, parent, staff)));
             voiceLayout.add(chordLayout);
         }
         return voiceLayout;

@@ -10,7 +10,7 @@ public class ScoreStyle {
 
     private static final double STAFF_SPACING_SCALE = 1.3;
     private static final double STAFF_LINE_SPACING = 1.0;
-    private static final double STAFF_LINE_WIDTH_SP = 0.11;
+    private static final double STAFF_LINE_WIDTH = 0.11;
 
     private static final double BARLINE_LIGHT_WIDTH = 0.18;
     private static final double BARLINE_HEAVY_WIDTH = 0.55;
@@ -34,7 +34,7 @@ public class ScoreStyle {
 
     private double staffSpacingScale = STAFF_SPACING_SCALE;
     private double staffLineSpacing = STAFF_LINE_SPACING;
-    private double staffLineWidth = STAFF_LINE_WIDTH_SP;
+    private double staffLineWidth = STAFF_LINE_WIDTH;
 
     private double barlineLightWidth = BARLINE_LIGHT_WIDTH;
     private double barlineHeavyWidth = BARLINE_HEAVY_WIDTH;
@@ -52,9 +52,9 @@ public class ScoreStyle {
 
 
 
-    public double getPageSpacing() { return pageSpacing; }
-    public double getStaffSpacing() { return staffSpacing; }
-    public double getSystemSpacing() { return systemSpacing; }
+    public double getPageSpacing() { return staffSpacingScale * pageSpacing; }
+    public double getStaffSpacing() { return staffSpacingScale * staffSpacing; }
+    public double getSystemSpacing() { return staffSpacingScale * systemSpacing; }
     public double getSpatiumMm() { return spatiumMm; }
     public double getSystemMinFullnessRatio() { return systemMinFullnessRatio; }
 

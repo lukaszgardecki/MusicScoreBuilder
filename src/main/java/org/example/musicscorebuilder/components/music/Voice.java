@@ -5,10 +5,12 @@ import java.util.List;
 
 public class Voice extends Element {
     private final int number;
+    private final Staff staff;
     private final List<Chord> chords = new ArrayList<>();
 
-    public Voice(int number) {
+    public Voice(int number, Staff staff) {
         this.number = number;
+        this.staff = staff;
     }
 
     public void add(Chord chord) {

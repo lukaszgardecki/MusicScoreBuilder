@@ -1,41 +1,25 @@
 package org.example.musicscorebuilder.components.music;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Segment {
     private final SegmentType type;
-    private final List<Element> elements = new ArrayList<>();
+    private final Map<Staff, List<Element>> staffElements = new HashMap<>();
 
-    public Segment(SegmentType type) {
+    public Segment(SegmentType type, List<Staff> staves) {
         this.type = type;
-
-        if (type == SegmentType.CHORDREST) {
-            elements.add(createDefaultVoice());
+        for (Staff staff : staves) {
+            staffElements.put(staff, new ArrayList<>());
         }
     }
 
-    public void addElement(Element element) {
-        elements.add(element);
+    public void addElement(Staff staff, Element element) {
+        staffElements.computeIfAbsent(staff, k -> new ArrayList<>()).add(element);
     }
 
-    public List<Element> getElements() { return elements; }
+    public List<Element> getElementsForStaff(Staff staff) {
+        return staffElements.getOrDefault(staff, Collections.emptyList());
+    }
+
     public SegmentType getType() { return type; }
-
-    private Voice createDefaultVoice() {
-        var voice = new Voice(1);
-        voice.add(createDefaultChord(voice));
-        voice.add(createDefaultChord(voice));
-        voice.add(createDefaultChord(voice));
-        voice.add(createDefaultChord(voice));
-
-        return voice;
-    }
-
-    private Chord createDefaultChord(Voice voice) {
-        Chord chord = new Chord();
-        chord.add(new Note(voice, PitchStep.A, 0, 4));
-        chord.add(new Note(voice, PitchStep.D, 0, 4));
-        return chord;
-    }
 }

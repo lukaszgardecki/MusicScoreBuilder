@@ -12,6 +12,7 @@ public class Pitch {
     }
 
     public PitchStep getStep() { return step; }
+    public int getStepValue() { return step.getValue(); }
     public int getAlter() { return alter; }
     public int getOctave() { return octave; }
 }

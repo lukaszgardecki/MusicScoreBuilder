@@ -3,6 +3,7 @@ package org.example.musicscorebuilder.components.views;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import org.example.musicscorebuilder.components.layout.*;
+import org.example.musicscorebuilder.util.Util;
 
 public class SegmentView extends ComponentView {
     private final BarlineView barlineView = new BarlineView();
@@ -19,11 +20,13 @@ public class SegmentView extends ComponentView {
 
 //        fillBackground(gc, Util.generateRandomColor(0.3f), segmentX, segmentY, widthPx, heightPx);
 
-        for (ElementLayout element : segment.getElements()) {
-            gc.save();
-            selectElement(gc, element);
-            drawElement(gc, element, segmentX, segmentY, sp);
-            gc.restore();
+        for (StaffLayout staff : segment.getElementsByStaff().keySet()) {
+            for (ElementLayout element : segment.getElementsForStaff(staff)) {
+                gc.save();
+                selectElement(gc, element);
+                drawElement(gc, element, segmentX, segmentY, sp);
+                gc.restore();
+            }
         }
     }
 
@@ -32,11 +35,6 @@ public class SegmentView extends ComponentView {
             String color = element.getScoreStyle().getElementSelectedColor();
             gc.setFill(Color.web(color));
             gc.setStroke(Color.web(color));
-
-//             Opcjonalnie: możesz narysować delikatne tło wokół elementu, żeby lepiej go widzieć
-//                 gc.setGlobalAlpha(0.2);
-//                 gc.fillRect(segmentX, segmentY, widthPx, heightPx);
-//                 gc.setGlobalAlpha(1.0);
         } else {
             gc.setFill(Color.BLACK);
             gc.setStroke(Color.BLACK);

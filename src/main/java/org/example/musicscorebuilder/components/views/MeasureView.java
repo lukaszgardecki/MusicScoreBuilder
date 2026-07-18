@@ -22,7 +22,7 @@ public class MeasureView extends ComponentView {
             staffView.draw(gc, staff, measureX, measureY, sp);
         }
 
-        for(SegmentLayout segment : measure.getSegments()) {
+        for (SegmentLayout segment : measure.getSegments()) {
             segmentView.draw(gc, segment, measureX, measureY, sp);
         }
     }
