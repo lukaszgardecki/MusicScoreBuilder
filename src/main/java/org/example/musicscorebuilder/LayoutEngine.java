@@ -23,9 +23,9 @@ public class LayoutEngine {
 
         for (Measure measure : mode.getMeasures()) {
             MeasureLayout measureLayout = createMeasureLayout(measure, newSystem);
-
             boolean noSpaceForNextMeasure = currentPage.getEffectiveWidth() - newSystem.getWidth() < measureLayout.getWidth();
-            boolean noSpaceForNextSystem = currentPage.getRemainingHeight() < newSystem.getHeight();
+            boolean noSpaceForNextSystem = currentPage.getRemainingHeight() < newSystem.getHeight() + style.getSystemSpacing();
+
             if (noSpaceForNextMeasure) {
                 justify(newSystem);
 
