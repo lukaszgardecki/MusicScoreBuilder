@@ -5,14 +5,41 @@ import org.example.musicscorebuilder.components.music.*;
 public class NoteLayout extends ElementLayout {
     private final Leland fontData = Leland.NOTE_BLACK;
     private final Note note;
-    private final double y;
+    private final StaffLayout staff;
+    private double y;
 
     public NoteLayout(Note note, SegmentLayout parent, StaffLayout staff) {
         super(false, parent);
         this.note = note;
+        this.staff = staff;
         Clef clef = staff.getStaff().getDefaultClef();
+        this.y = calculateY(clef) + staff.getY();
+    }
 
-        // Liczy względem zera pieciolinii (górna linia), trzeba dodać Y pięciolinii
+    public void updatePitchFromY(double newY) {
+        Clef clef = staff.getStaff().getDefaultClef();
+        ClefType clefType = clef.getType();
+
+        double relativeY = newY - staff.getY();
+        double halfSpacing = 0.5 * style.getStaffLineSpacing();
+
+        double referenceY = clefType.getOffsetY() * style.getStaffLineSpacing();
+        int stepDifference = (int) Math.round((referenceY - relativeY) / halfSpacing);
+        int targetDiatonicStep = stepDifference + clefType.getDiatonicStep();
+
+
+        int currentDiatonicStep = this.note.getOctave() * 7 + this.note.getStep().ordinal();
+        if (targetDiatonicStep == currentDiatonicStep) return;
+
+        int octave = targetDiatonicStep / 7;
+        int stepValue = targetDiatonicStep % 7;
+
+        if (stepValue < 0) {
+            stepValue += 7;
+            octave -= 1;
+        }
+
+        this.note.setPitch(PitchStep.values()[stepValue], octave);
         this.y = calculateY(clef) + staff.getY();
     }
 
@@ -30,10 +57,8 @@ public class NoteLayout extends ElementLayout {
     public String getCode() { return fontData.getCode(); }
 
     private double calculateY(Clef clef) {
-        Pitch pitch = note.getPitch();
         ClefType clefType = clef.getType();
-
-        int noteDiatonicStep = (pitch.getOctave() * 7) + pitch.getStepValue();
+        int noteDiatonicStep = (note.getOctave() * 7) + note.getStepValue();
         int stepDifference = noteDiatonicStep - clefType.getDiatonicStep();
         double referenceY = clefType.getOffsetY() * style.getStaffLineSpacing();
         double halfSpacing = 0.5 * style.getStaffLineSpacing();

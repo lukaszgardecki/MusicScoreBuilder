@@ -1,6 +1,6 @@
 package org.example.musicscorebuilder.components.music;
 
-public class ModeFactory {
+public class ScoreFactory {
     private static final int measuresCount = 5;
 
     public static Mode createSoloMode() {
@@ -13,5 +13,12 @@ public class ModeFactory {
         Mode mode = new Mode(ModeType.HARMONY);
         mode.appendMeasures(measuresCount);
         return mode;
+    }
+
+    public static Score createScore() {
+        Score score = new Score();
+        score.add(createSoloMode());
+        score.add(createHarmonyMode());
+        return score;
     }
 }

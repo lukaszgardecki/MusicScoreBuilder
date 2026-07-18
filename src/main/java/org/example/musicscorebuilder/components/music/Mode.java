@@ -14,17 +14,11 @@ public class Mode {
 
     public Mode(ModeType type) {
         this.type = type;
-        switch (type) {
-            case SOLO -> staves.add(new Staff(0, ClefType.G));
-            case HARMONY -> {
-                staves.add(new Staff(0, ClefType.G));
-                staves.add(new Staff(1, ClefType.F));
-            }
-        }
         this.braceType = type == ModeType.SOLO ? BraceType.NONE : BraceType.BRACE;
         this.startBarline = type == ModeType.SOLO ? null : new Barline(BarlineStyle.SINGLE, Barline.Type.START);
         this.keySignature = new KeySignature(-2);
         this.timeSignature = new TimeSignature(4, 4);
+        addDefaultStaves();
     }
 
     public void appendMeasures(int count) {
@@ -59,7 +53,7 @@ public class Mode {
     public List<Measure> getMeasures() { return measures; }
     public BraceType getBraceType() { return braceType; }
     public Barline getStartBarline() { return startBarline; }
-    public  KeySignature getKeySignature() { return keySignature; }
+    public KeySignature getKeySignature() { return keySignature; }
     public TimeSignature getTimeSignature() { return timeSignature; }
 
     public void setTimeSignature(TimeSignature timeSig) {
@@ -86,6 +80,16 @@ public class Mode {
     private void addSegments(int count, Measure measure) {
         for (int i = 0; i < count; i++) {
             measure.addChordRestSegmentAtEnd();
+        }
+    }
+
+    private void addDefaultStaves() {
+        switch (type) {
+            case SOLO -> staves.add(new Staff(0, ClefType.G));
+            case HARMONY -> {
+                staves.add(new Staff(0, ClefType.G));
+                staves.add(new Staff(1, ClefType.F));
+            }
         }
     }
 }

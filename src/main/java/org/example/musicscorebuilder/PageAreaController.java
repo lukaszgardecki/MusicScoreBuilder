@@ -25,6 +25,11 @@ public class PageAreaController {
         container.prefWidthProperty().bind(scrollPane.widthProperty());
         container.prefHeightProperty().bind(scrollPane.heightProperty());
 
+        NoteDragHandler dragHandler = new NoteDragHandler(container, this::findClickedElement, () -> this.currentScoreLayout);
+        container.addEventFilter(MouseEvent.MOUSE_PRESSED, dragHandler::handlePressed);
+        container.addEventFilter(MouseEvent.MOUSE_DRAGGED, dragHandler::handleDragged);
+        container.addEventFilter(MouseEvent.MOUSE_RELEASED, dragHandler::handleReleased);
+
         container.setOnMouseClicked(this::handleCanvasClick);
         stateManager.addScoreChangeListener(this::refreshView);
 
@@ -63,7 +68,14 @@ public class PageAreaController {
     private void handleCanvasClick(MouseEvent event) {
         if (currentScoreLayout == null) return;
         if (!container.wasLastMousePressJustClick()) return;
+        ElementLayout clickedElement = findClickedElement(event);
 
+        currentScoreLayout.clearAllSelections();
+        toggleSelection(clickedElement);
+        container.updateContent(currentScoreLayout);
+    }
+
+    private ElementLayout findClickedElement(MouseEvent event) {
         double globalMusicX = container.toModelX(event.getX());
         double globalMusicY = container.toModelY(event.getY());
 
@@ -123,10 +135,7 @@ public class PageAreaController {
             }
             if (clickedElement != null) break;
         }
-
-        currentScoreLayout.clearAllSelections();
-        toggleSelection(clickedElement);
-        container.updateContent(currentScoreLayout);
+        return clickedElement;
     }
 
     private void toggleSelection(ElementLayout element) {

@@ -17,8 +17,15 @@ public class Note {
     public int getDuration() { return duration; }
     public Voice getVoice() { return voice; }
     public NoteType getType() { return type; }
+    public PitchStep getStep() { return pitch.getStep(); }
+    public int getStepValue() { return pitch.getStepValue(); }
+    public int getAlter() { return pitch.getAlter(); }
+    public int getOctave() { return pitch.getOctave(); }
 
-
+    public void setPitch(PitchStep step, int octave) {
+        pitch.setStep(step);
+        pitch.setOctave(octave);
+    }
 }
 
 enum NoteType {
