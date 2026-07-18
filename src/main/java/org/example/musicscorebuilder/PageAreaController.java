@@ -2,6 +2,7 @@ package org.example.musicscorebuilder;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.input.MouseEvent;
 import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.music.Mode;
@@ -13,6 +14,7 @@ import org.example.musicscorebuilder.components.views.BackgroundView;
 public class PageAreaController {
     @FXML private ScrollPane scrollPane;
     @FXML private BackgroundView container;
+    @FXML private ToggleButton viewModeToggle;
     private LayoutEngine layoutEngine;
     private ScoreLayout currentScoreLayout;
     private final ScoreService scoreService = ScoreService.getInstance();
@@ -26,6 +28,9 @@ public class PageAreaController {
         container.setOnMouseClicked(this::handleCanvasClick);
         stateManager.addScoreChangeListener(this::refreshView);
 
+        viewModeToggle.setSelected(true);
+        viewModeToggle.setText("Widok: Głos Solowy");
+
         this.layoutEngine = new LayoutEngine(
                 new Page(PageFormat.A4_V, 10, 10, 10, 10),
                 new ScoreStyle()
@@ -33,10 +38,25 @@ public class PageAreaController {
         refreshView();
     }
 
+    @FXML
+    private void toggleViewMode() {
+        Score score = scoreService.getScore();
+        if (score.getModes().size() <= 1) return;
+
+        if (viewModeToggle.isSelected()) {
+            viewModeToggle.setText("Widok: Głos Solowy");
+            stateManager.setCurrentModeIndex(0);
+        } else {
+            viewModeToggle.setText("Widok: Pełna Partytura");
+            stateManager.setCurrentModeIndex(1);
+        }
+    }
+
     private void refreshView() {
         Score score = scoreService.getScore();
-        Mode mode = score.getModes().getFirst();
-        this.currentScoreLayout = layoutEngine.compute(mode);
+        Mode activeMode = stateManager.getCurrentMode(score);
+        if (activeMode == null) return;
+        this.currentScoreLayout = layoutEngine.compute(activeMode);
         container.updateContent(currentScoreLayout);
     }
 
