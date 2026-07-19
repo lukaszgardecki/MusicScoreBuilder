@@ -24,9 +24,16 @@ public class NoteLayout extends ElementLayout {
     public void updatePitchFromY(double newY) {
         Clef clef = staff.getStaff().getDefaultClef();
         ClefType clefType = clef.getType();
+        double spacing = style.getStaffLineSpacing();
+        double topLineY = staff.getY();
+        double bottomLineY = staff.getY() + (4 * spacing);
+        int ledgersLimit = style.getNoteMaxLedgerLines();
+        double minAllowedY = topLineY - (ledgersLimit * spacing);
+        double maxAllowedY = bottomLineY + (ledgersLimit * spacing);
 
-        double relativeY = newY - staff.getY();
-        double halfSpacing = 0.5 * style.getStaffLineSpacing();
+        double clampedY = Math.max(minAllowedY, Math.min(maxAllowedY, newY));
+        double relativeY = clampedY - staff.getY();
+        double halfSpacing = 0.5 * spacing;
 
         double referenceY = clefType.getOffsetY() * style.getStaffLineSpacing();
         int stepDifference = (int) Math.round((referenceY - relativeY) / halfSpacing);
