@@ -23,6 +23,8 @@ public class ScoreStyle {
     private static final double KEY_SIGNATURE_SIGN_SPACE = 0.12;
 
     private static final double NOTE_SIDE_SPACE = 0.3;
+    private static final double NOTE_LEDGER_LINE_LENGTH_FACTOR = 1.0;
+    private static final double NOTE_LEDGER_LINE_THICKNESS = STAFF_LINE_WIDTH + 0.04;
 
     private static final String ELEMENT_SELECTED_COLOR = "#0078d7";
 
@@ -47,6 +49,8 @@ public class ScoreStyle {
     private double keySignatureSignSpace = KEY_SIGNATURE_SIGN_SPACE;
 
     private double noteSideSpace = NOTE_SIDE_SPACE;
+    private double noteLedgerLengthFactor = NOTE_LEDGER_LINE_LENGTH_FACTOR;
+    private double noteLedgerLineThickness = NOTE_LEDGER_LINE_THICKNESS;
 
     private String elementSelectedColor = ELEMENT_SELECTED_COLOR;
 
@@ -73,6 +77,8 @@ public class ScoreStyle {
     public double getKeySignatureSignSpace() { return staffSpacingScale * keySignatureSignSpace; }
 
     public double getNoteSideSpace() { return staffSpacingScale * noteSideSpace; }
+    public double getNoteLedgerLengthFactor() { return noteLedgerLengthFactor; }
+    public double getNoteLedgerLineThickness() { return staffSpacingScale * noteLedgerLineThickness; }
 
     public String getElementSelectedColor() { return elementSelectedColor; }
 

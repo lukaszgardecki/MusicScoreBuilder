@@ -7,6 +7,7 @@ import org.example.musicscorebuilder.components.layout.NoteLayout;
 import org.example.musicscorebuilder.util.Util;
 
 public class NoteView extends ComponentView {
+    private final LedgerLineView ledgerLineView = new LedgerLineView();
 
     public void draw(GraphicsContext gc, NoteLayout note, double chordX, double chordY, double sp) {
         double noteX = chordX + note.getX() * sp;
@@ -18,6 +19,10 @@ public class NoteView extends ComponentView {
         double fontSize = note.getFontSize() * sp;
 
 //        fillBackground(gc, Util.generateRandomColor(), boxX, boxY, widthPx, heightPx);
+
+        for (NoteLayout.LedgerLine ledgerLine : note.getLedgerLines()) {
+            ledgerLineView.draw(gc, ledgerLine, chordX, chordY, sp);
+        }
 
         gc.setFont(FontManager.getLelandFont(fontSize));
 

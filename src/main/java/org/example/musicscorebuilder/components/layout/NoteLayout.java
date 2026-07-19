@@ -2,11 +2,16 @@ package org.example.musicscorebuilder.components.layout;
 
 import org.example.musicscorebuilder.components.music.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class NoteLayout extends ElementLayout {
     private final Leland fontData = Leland.NOTE_BLACK;
     private final Note note;
     private final StaffLayout staff;
     private double y;
+
+    public record LedgerLine(double startX, double endX, double y, double thickness) {}
 
     public NoteLayout(Note note, SegmentLayout parent, StaffLayout staff) {
         super(false, parent);
@@ -63,5 +68,38 @@ public class NoteLayout extends ElementLayout {
         double referenceY = clefType.getOffsetY() * style.getStaffLineSpacing();
         double halfSpacing = 0.5 * style.getStaffLineSpacing();
         return referenceY - (stepDifference * halfSpacing);
+    }
+
+    public List<LedgerLine> getLedgerLines() {
+        List<LedgerLine> lines = new ArrayList<>();
+
+        double spacing = style.getStaffLineSpacing();
+        double topLineY = staff.getY();
+        double bottomLineY = staff.getY() + (4 * spacing);
+        double lengthFactor = style.getNoteLedgerLengthFactor();
+        double thickness = style.getNoteLedgerLineThickness();
+        double boxX = getBoxX();
+        double boxWidth = getBoxWidth();
+        double centerX = boxX + (boxWidth / 2.0);
+        double targetWidth = boxWidth * lengthFactor;
+        double startX = centerX - (targetWidth / 2.0);
+        double endX = centerX + (targetWidth / 2.0);
+
+        if (this.y < topLineY - (0.25 * spacing)) {
+            double currentLineY = topLineY - spacing;
+            while (currentLineY >= this.y - (0.25 * spacing)) {
+                lines.add(new LedgerLine(startX, endX, currentLineY, thickness));
+                currentLineY -= spacing;
+            }
+        }
+        else if (this.y > bottomLineY + (0.25 * spacing)) {
+            double currentLineY = bottomLineY + spacing;
+            while (currentLineY <= this.y + (0.25 * spacing)) {
+                lines.add(new LedgerLine(startX, endX, currentLineY, thickness));
+                currentLineY += spacing;
+            }
+        }
+
+        return lines;
     }
 }
