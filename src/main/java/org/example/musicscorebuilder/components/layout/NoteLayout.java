@@ -6,15 +6,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NoteLayout extends ElementLayout {
+    private final ChordLayout parent;
     private final Leland fontData = Leland.NOTE_BLACK;
     private final Note note;
     private final StaffLayout staff;
     private double y;
+    private double xOffset = 0.0;
 
     public record LedgerLine(double startX, double endX, double y, double thickness) {}
 
-    public NoteLayout(Note note, SegmentLayout parent, StaffLayout staff) {
-        super(false, parent);
+    public NoteLayout(Note note, ChordLayout parent, StaffLayout staff) {
+        super(false, parent.getParent());
+        this.parent = parent;
         this.note = note;
         this.staff = staff;
         Clef clef = staff.getStaff().getDefaultClef();
@@ -53,20 +56,23 @@ public class NoteLayout extends ElementLayout {
 
         this.note.setPitch(PitchStep.values()[stepValue], octave);
         this.y = calculateY(clef) + staff.getY();
+        parent.resolveCollisions();
     }
 
-    @Override public double getX() { return style.getNoteSideSpace(); }
+    @Override public double getX() { return xOffset; }
     @Override public double getY() { return y; }
     @Override public double getBoxY() { return y - (0.5 * style.getStaffLineSpacing()); }
     @Override public double getWidth() { return getBoxWidth(); }
     @Override public double getHeight() { return style.getStaffLineSpacing(); }
 
-    public double getBoxX() { return getX() - style.getNoteSideSpace(); }
+    public Note getNote() { return note; }
+    public double getBoxX() { return getX(); }
     public double getFontWidth() { return (fontData.getHeight() * fontData.getRatio()) * style.getStaffLineSpacing(); }
-    public double getBoxWidth() { return getFontWidth() + 2 * style.getNoteSideSpace(); }
+    public double getBoxWidth() { return getFontWidth(); }
 
     public double getFontSize() { return 4 * style.getStaffLineSpacing(); }
     public String getCode() { return fontData.getCode(); }
+    public int getDiatonicStep() { return note.getPitch().getAbsoluteDiatonicStep(); }
 
     private double calculateY(Clef clef) {
         ClefType clefType = clef.getType();
@@ -109,4 +115,6 @@ public class NoteLayout extends ElementLayout {
 
         return lines;
     }
+
+    public void setXOffset(double xOffset) { this.xOffset = xOffset; }
 }

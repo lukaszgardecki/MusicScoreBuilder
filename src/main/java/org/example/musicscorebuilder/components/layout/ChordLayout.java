@@ -9,6 +9,8 @@ public class ChordLayout extends ElementLayout {
     private final Chord chord;
     private final List<NoteLayout> notes = new ArrayList<>();
     private double x;
+    private StemDirection stemDirection = StemDirection.UP;
+    private ChordCollisionResolver collisionResolver = new ChordCollisionResolver();
 
     public ChordLayout(Chord chord, double x, SegmentLayout parent) {
         super(true, parent);
@@ -18,6 +20,11 @@ public class ChordLayout extends ElementLayout {
 
     public void add(NoteLayout note) {
         notes.add(note);
+        resolveCollisions();
+    }
+
+    public void resolveCollisions() {
+        collisionResolver.resolveCollisions(this);
     }
 
     @Override public double getX() { return x; }
@@ -55,6 +62,8 @@ public class ChordLayout extends ElementLayout {
     }
 
     public List<NoteLayout> getNotes() { return notes; }
+    public StemDirection getStemDirection() { return stemDirection; }
 
     public void setX(double x) { this.x = x; }
+    public void setStemDirection(StemDirection stemDirection) { this.stemDirection = stemDirection; }
 }

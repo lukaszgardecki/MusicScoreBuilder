@@ -101,9 +101,9 @@ public class LayoutEngine {
     private VoiceLayout createVoiceLayout(Voice voice, StaffLayout staff, SegmentLayout parent) {
         VoiceLayout voiceLayout = new VoiceLayout(voice, parent);
 
-        for(Chord chord : voice.getChords()) {
+        for (Chord chord : voice.getChords()) {
             ChordLayout chordLayout = new ChordLayout(chord, voiceLayout.getWidth(), parent);
-            chord.getNotes().forEach(note -> chordLayout.add(new NoteLayout(note, parent, staff)));
+            chord.getNotes().forEach(note -> chordLayout.add(new NoteLayout(note, chordLayout, staff)));
             voiceLayout.add(chordLayout);
         }
         return voiceLayout;
