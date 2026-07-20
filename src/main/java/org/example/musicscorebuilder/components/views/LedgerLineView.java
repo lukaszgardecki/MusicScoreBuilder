@@ -1,6 +1,7 @@
 package org.example.musicscorebuilder.components.views;
 
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 import org.example.musicscorebuilder.components.layout.NoteLayout;
 
 public class LedgerLineView {
@@ -9,6 +10,8 @@ public class LedgerLineView {
         double lineStartX = chordX + ledgerLine.startX() * sp;
         double lineEndX = chordX + ledgerLine.endX() * sp;
         double lineY = chordY + ledgerLine.y() * sp;
+
+        gc.setStroke(Color.BLACK);
         gc.setLineWidth(ledgerLine.thickness() * sp);
         gc.strokeLine(lineStartX, lineY, lineEndX, lineY);
     }

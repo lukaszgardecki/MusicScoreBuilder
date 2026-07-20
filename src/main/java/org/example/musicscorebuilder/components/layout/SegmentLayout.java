@@ -1,21 +1,22 @@
 package org.example.musicscorebuilder.components.layout;
 
 import org.example.musicscorebuilder.components.music.*;
-
 import java.util.*;
 
 public class SegmentLayout {
     private final ScoreStyle style;
     private final MeasureLayout parent;
+    private final ChordCollisionResolver collisionResolver = new ChordCollisionResolver();
     private final Map<StaffLayout, List<ElementLayout>> elementsByStaff = new HashMap<>();
     private SegmentType type;
-    private double y = 0, height;
+    private double x, y = 0, height;
+    private double extraWidth = 0.0;
 
     public SegmentLayout(SegmentType type, MeasureLayout parent) {
         this.style = parent.getScoreStyle();
         this.parent = parent;
         this.type = type;
-        this.height = parent.getHeight()-style.getStaffLineWidth();
+        this.height = parent.getHeight() - style.getStaffLineWidth();
         for (StaffLayout staffLayout : parent.getStaffs()) {
             elementsByStaff.put(staffLayout, new ArrayList<>());
         }
@@ -23,30 +24,55 @@ public class SegmentLayout {
 
     public void addByStaff(StaffLayout staffLayout, ElementLayout elementLayout) {
         elementsByStaff.computeIfAbsent(staffLayout, k -> new ArrayList<>()).add(elementLayout);
+
+        if (type == SegmentType.CHORDREST && elementLayout instanceof NoteLayout) {
+            resolveCollisionsForStaff(staffLayout);
+        }
     }
 
     public void addStartBarline(Barline startBarline) {
-        elementsByStaff.forEach((staff, elements) -> {
-            elements.add(new BarlineLayout(startBarline, staff, this));
-        });
+        elementsByStaff.forEach((staff, elements) ->
+                elements.add(new BarlineLayout(startBarline, staff, this))
+        );
     }
 
     public void addClef() {
-        elementsByStaff.forEach((staff, elements) -> {
-            elements.add(new ClefLayout(staff.getStaff().getDefaultClef(), staff, this));
-        });
+        elementsByStaff.forEach((staff, elements) ->
+                elements.add(new ClefLayout(staff.getStaff().getDefaultClef(), staff, this))
+        );
     }
 
     public void addKeySignature(KeySignature keySignature) {
-        elementsByStaff.forEach((staff, elements) -> {
-            elements.add(new KeySigLayout(keySignature, staff, this));
-        });
+        elementsByStaff.forEach((staff, elements) ->
+                elements.add(new KeySigLayout(keySignature, staff, this))
+        );
     }
 
     public void addTimeSignature(TimeSignature timeSignature) {
-        elementsByStaff.forEach((staff, elements) -> {
-            elements.add(new TimeSigLayout(timeSignature, staff, this));
-        });
+        elementsByStaff.forEach((staff, elements) ->
+                elements.add(new TimeSigLayout(timeSignature, staff, this))
+        );
+    }
+
+    public void resolveCollisions() {
+        if (type != SegmentType.CHORDREST) return;
+        for (StaffLayout staffLayout : elementsByStaff.keySet()) {
+            resolveCollisionsForStaff(staffLayout);
+        }
+    }
+
+    private void resolveCollisionsForStaff(StaffLayout staffLayout) {
+        if (type != SegmentType.CHORDREST) return;
+
+        List<ElementLayout> elements = elementsByStaff.get(staffLayout);
+        if (elements == null) return;
+
+        List<NoteLayout> notes = elements.stream()
+                .filter(NoteLayout.class::isInstance)
+                .map(NoteLayout.class::cast)
+                .toList();
+
+        collisionResolver.resolveCollisions(notes);
     }
 
     public List<ElementLayout> getElementsForStaff(StaffLayout staffLayout) {
@@ -66,7 +92,7 @@ public class SegmentLayout {
     public double getX() {
         var segments = parent.getSegments();
         int i = segments.indexOf(this);
-        if (i == 0) return 0;
+        if (i <= 0) return 0;
         SegmentLayout prevSeg = segments.get(i - 1);
         return prevSeg.getX() + prevSeg.getWidth();
     }
@@ -74,16 +100,22 @@ public class SegmentLayout {
     public double getWidth() {
         List<ElementLayout> allElements = getElements();
         if (allElements.isEmpty()) return 0;
-        var margin = type == SegmentType.END_BARLINE ? 0 : style.getSegmentRightMargin();
 
-        return allElements.stream()
+        double maxElementWidth = allElements.stream()
                 .mapToDouble(ElementLayout::getWidth)
                 .max()
-                .orElse(0) + margin;
+                .orElse(0);
+
+        var margin = type == SegmentType.END_BARLINE ? 0 : style.getSegmentRightMargin();
+        return maxElementWidth + margin + extraWidth;
     }
     public double getHeight() { return height; }
     public boolean hasDynamicWidth() { return getElements().stream().anyMatch(ElementLayout::hasDynamicWidth); }
     public ScoreStyle getScoreStyle() { return style; }
 
+    public void setX(double x) { this.x = x; }
+    public void setExtraWidth(double extraWidth) {
+        this.extraWidth = extraWidth;
+    }
     public void setType(SegmentType type) { this.type = type; }
 }

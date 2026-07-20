@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NoteLayout extends ElementLayout {
-    private final ChordLayout parent;
     private final Leland fontData = Leland.NOTE_BLACK;
+    private StemDirection stemDirection = StemDirection.UP;
     private final Note note;
     private final StaffLayout staff;
     private double y;
@@ -15,9 +15,8 @@ public class NoteLayout extends ElementLayout {
 
     public record LedgerLine(double startX, double endX, double y, double thickness) {}
 
-    public NoteLayout(Note note, ChordLayout parent, StaffLayout staff) {
-        super(false, parent.getParent());
-        this.parent = parent;
+    public NoteLayout(Note note, StaffLayout staff, SegmentLayout segmentLayout) {
+        super(true, segmentLayout);
         this.note = note;
         this.staff = staff;
         Clef clef = staff.getStaff().getDefaultClef();
@@ -56,23 +55,25 @@ public class NoteLayout extends ElementLayout {
 
         this.note.setPitch(PitchStep.values()[stepValue], octave);
         this.y = calculateY(clef) + staff.getY();
+
         parent.resolveCollisions();
     }
 
     @Override public double getX() { return xOffset; }
     @Override public double getY() { return y; }
     @Override public double getBoxY() { return y - (0.5 * style.getStaffLineSpacing()); }
-    @Override public double getWidth() { return getBoxWidth(); }
+    @Override public double getWidth() { return getFontWidth(); }
     @Override public double getHeight() { return style.getStaffLineSpacing(); }
 
     public Note getNote() { return note; }
     public double getBoxX() { return getX(); }
     public double getFontWidth() { return (fontData.getHeight() * fontData.getRatio()) * style.getStaffLineSpacing(); }
-    public double getBoxWidth() { return getFontWidth(); }
+    public double getBoxWidth() { return getWidth(); }
 
     public double getFontSize() { return 4 * style.getStaffLineSpacing(); }
     public String getCode() { return fontData.getCode(); }
     public int getDiatonicStep() { return note.getPitch().getAbsoluteDiatonicStep(); }
+    public StemDirection getStemDirection() { return stemDirection; }
 
     private double calculateY(Clef clef) {
         ClefType clefType = clef.getType();

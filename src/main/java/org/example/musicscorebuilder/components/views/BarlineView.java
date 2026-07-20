@@ -69,8 +69,7 @@ public class BarlineView {
         gc.strokeLine(thinX, startY, thinX, endY);
 
         double dotSpace = barline.getDotSpace() * sp;
-        double dotRadius = barline.getDotRadius() * sp;
-        double dotX = thinX + (thinWidth / 2.0) + dotSpace + dotRadius;
+        double dotX = thinX + (thinWidth / 2.0) + dotSpace;
         drawRepeatDots(gc, barline, dotX, startY, endY, sp);
     }
 
@@ -81,11 +80,10 @@ public class BarlineView {
         double dotRadius = barline.getDotRadius() * sp;
         double dotSpace = barline.getDotSpace() * sp;
 
-        double dotX = x + dotRadius;
-        drawRepeatDots(gc, barline, dotX, startY, endY, sp);
+        drawRepeatDots(gc, barline, x, startY, endY, sp);
 
         gc.setLineWidth(thinWidth);
-        double thinX = dotX + dotRadius + dotSpace + (thinWidth / 2.0);
+        double thinX = x + 2 * dotRadius + dotSpace + (thinWidth / 2.0);
         gc.strokeLine(thinX, startY, thinX, endY);
 
         gc.setLineWidth(thickWidth);
@@ -93,14 +91,16 @@ public class BarlineView {
         gc.strokeLine(thickX, startY, thickX, endY);
     }
 
-    //TODO: źle pozycjonuje kropki, tzn. są na złej wysokości (X jest dobry)
     private void drawRepeatDots(GraphicsContext gc, BarlineLayout barline, double dotX, double startY, double endY, double sp) {
-        double staffHeight = endY - startY;
-        double lineSpacing = staffHeight / 4.0;
         double dotRadius = barline.getDotRadius() * sp;
+        double lineSpacing = barline.getParent().getScoreStyle().getStaffLineSpacing() * sp;
+        double dotDiameter = dotRadius * 2.0;
+        double staffLineWidth = barline.getParent().getScoreStyle().getStaffLineWidth() * sp;
 
-        gc.fillOval(dotX - dotRadius, startY + (1.5 * lineSpacing) - dotRadius, dotRadius * 2, dotRadius * 2);
-        // Kropka dolna: w środku trzeciego pola od góry
-        gc.fillOval(dotX - dotRadius, startY + (2.5 * lineSpacing) - dotRadius, dotRadius * 2, dotRadius * 2);
+        double topDotY = startY + (1.5 * lineSpacing) - dotRadius + (staffLineWidth / 2.0);
+        double bottomDotY = startY + (2.5 * lineSpacing) - dotRadius + (staffLineWidth / 2.0);
+
+        gc.fillOval(dotX, topDotY, dotDiameter, dotDiameter);
+        gc.fillOval(dotX, bottomDotY, dotDiameter, dotDiameter);
     }
 }

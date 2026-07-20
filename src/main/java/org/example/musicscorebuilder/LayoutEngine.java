@@ -69,16 +69,13 @@ public class LayoutEngine {
 
         for (Segment segment : measure.getSegments()) {
             SegmentLayout segmentLayout = new SegmentLayout(segment.getType(), measureLayout);
-
             for (StaffLayout staff : measureLayout.getStaffs()) {
                 for (Element element : segment.getElementsForStaff(staff.getStaff())) {
-
-                    var el = switch(element) {
-                        case Barline barline -> new BarlineLayout(barline, staff, segmentLayout);
-                        case Voice voice -> createVoiceLayout(voice, staff, segmentLayout);
-                        default -> new EmptyElement(segmentLayout);
-                    };
-                    segmentLayout.addByStaff(staff, el);
+                    if (element instanceof Barline barline) {
+                        segmentLayout.addByStaff(staff, new BarlineLayout(barline, staff, segmentLayout));
+                    } else if (element instanceof Note note) {
+                        segmentLayout.addByStaff(staff, new NoteLayout(note, staff, segmentLayout));
+                    }
                 }
             }
             measureLayout.add(segmentLayout);
@@ -96,16 +93,5 @@ public class LayoutEngine {
         measureLayout.addClef();
         if (mode.getStartBarline() == null) return;
         measureLayout.addStartBarline(mode.getStartBarline());
-    }
-
-    private VoiceLayout createVoiceLayout(Voice voice, StaffLayout staff, SegmentLayout parent) {
-        VoiceLayout voiceLayout = new VoiceLayout(voice, parent);
-
-        for (Chord chord : voice.getChords()) {
-            ChordLayout chordLayout = new ChordLayout(chord, voiceLayout.getWidth(), parent);
-            chord.getNotes().forEach(note -> chordLayout.add(new NoteLayout(note, chordLayout, staff)));
-            voiceLayout.add(chordLayout);
-        }
-        return voiceLayout;
     }
 }

@@ -16,13 +16,13 @@ public class ScoreStyle {
     private static final double BARLINE_HEAVY_WIDTH = 0.55;
     private static final double BARLINE_GAP = 0.37;
     private static final double BARLINE_DOT_SPACE = 0.37;
-    private static final double BARLINE_DOT_RADIUS = 0.15;
+    private static final double BARLINE_DOT_RADIUS = 0.2;
 
     private static final double SEGMENT_RIGHT_MARGIN = 0.7;
 
     private static final double KEY_SIGNATURE_SIGN_SPACE = 0.12;
 
-    private static final double NOTE_LEDGER_LINE_LENGTH_FACTOR = 1.2;
+    private static final double NOTE_LEDGER_LINE_LENGTH_FACTOR = 1.4;
     private static final double NOTE_LEDGER_LINE_THICKNESS = STAFF_LINE_WIDTH + 0.04;
     private static final int NOTE_MAX_LEDGER_LINES = 3;
 

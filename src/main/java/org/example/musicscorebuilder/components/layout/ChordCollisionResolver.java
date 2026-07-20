@@ -5,10 +5,11 @@ import java.util.List;
 
 public class ChordCollisionResolver {
 
-    public void resolveCollisions(ChordLayout chord) {
-        List<NoteLayout> notes = chord.getNotes();
-        if (notes.size() <= 1) {
-            if (!notes.isEmpty()) notes.getFirst().setXOffset(0.0);
+    public void resolveCollisions(List<NoteLayout> notes) {
+        if (notes == null || notes.size() <= 1) {
+            if (notes != null && !notes.isEmpty()) {
+                notes.getFirst().setXOffset(0.0);
+            }
             return;
         }
 
@@ -17,13 +18,11 @@ public class ChordCollisionResolver {
                 .sorted(Comparator.comparingInt(NoteLayout::getDiatonicStep))
                 .toList();
 
-        resolveCollisions(chord.getStemDirection(), sortedNotes);
-    }
+        StemDirection stemDirection = sortedNotes.getFirst().getStemDirection();
 
-    private void resolveCollisions(StemDirection stemDirection, List<NoteLayout> notes) {
-        for (int i = 0; i < notes.size() - 1; i++) {
-            NoteLayout currentNote = notes.get(i);
-            NoteLayout nextNote = notes.get(i + 1);
+        for (int i = 0; i < sortedNotes.size() - 1; i++) {
+            NoteLayout currentNote = sortedNotes.get(i);
+            NoteLayout nextNote = sortedNotes.get(i + 1);
 
             int diatonicDistance = nextNote.getDiatonicStep() - currentNote.getDiatonicStep();
 

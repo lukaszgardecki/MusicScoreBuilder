@@ -100,24 +100,18 @@ public class PageAreaController {
                         for (ElementLayout element : segment.getElements()) {
                             if (element instanceof EmptyElement) continue;
 
-                            if (element instanceof VoiceLayout voice) {
-                                double voiceX = voice.getX();
+                            if (element instanceof NoteLayout note) {
+                                double noteMinX = note.getBoxX();
+                                double noteMaxX = noteMinX + note.getBoxWidth();
 
-                                for (ChordLayout chord : voice.getChords()) {
-                                    double chordX = chord.getX();
+                                double noteMinY = note.getBoxY();
+                                double noteMaxY = noteMinY + note.getHeight();
 
-                                    for (NoteLayout note : chord.getNotes()) {
-                                        double absoluteNoteBoxX = voiceX + chordX + note.getBoxX();
-                                        double absoluteNoteBoxY = note.getBoxY();
+                                if (segmentMusicX >= noteMinX && segmentMusicX <= noteMaxX &&
+                                        segmentMusicY >= noteMinY && segmentMusicY <= noteMaxY) {
 
-                                        if (segmentMusicX >= absoluteNoteBoxX && segmentMusicX <= (absoluteNoteBoxX + note.getBoxWidth()) &&
-                                                segmentMusicY >= absoluteNoteBoxY && segmentMusicY <= (absoluteNoteBoxY + note.getHeight())) {
-
-                                            clickedElement = note;
-                                            break;
-                                        }
-                                    }
-                                    if (clickedElement != null) break;
+                                    clickedElement = note;
+                                    break;
                                 }
                             } else {
                                 if (element.contains(segmentMusicX, segmentMusicY)) {
@@ -125,7 +119,6 @@ public class PageAreaController {
                                     break;
                                 }
                             }
-                            if (clickedElement != null) break;
                         }
                         if (clickedElement != null) break;
                     }

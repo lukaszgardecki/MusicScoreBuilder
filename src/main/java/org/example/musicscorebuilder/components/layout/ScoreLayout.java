@@ -25,14 +25,6 @@ public class ScoreLayout {
                     for (SegmentLayout segment : measure.getSegments()) {
                         for (ElementLayout element : segment.getElements()) {
                             element.setSelected(false);
-
-                            if (element instanceof VoiceLayout voice) {
-                                for (ChordLayout chord : voice.getChords()) {
-                                    for (NoteLayout note : chord.getNotes()) {
-                                        note.setSelected(false);
-                                    }
-                                }
-                            }
                         }
                     }
                 }
