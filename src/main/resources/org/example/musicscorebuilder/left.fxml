@@ -10,11 +10,11 @@
 >
     <Label style="-fx-font-size: 16; -fx-font-weight: bold;" text="Paleta" />
 
-    <TitledPane text="Oznaczenia metryczne" expanded="false" styleClass="titled-pane">
+    <TitledPane text="Oznaczenia metryczne" expanded="true" styleClass="titled-pane">
         <GridPane fx:id="timeSignatureGrid" styleClass="palette-grid" snapToPixel="false" maxWidth="-Infinity" maxHeight="-Infinity"/>
     </TitledPane>
 
-    <TitledPane text="Kreski taktowe" expanded="false" styleClass="titled-pane">
+    <TitledPane text="Kreski taktowe" expanded="true" styleClass="titled-pane">
         <GridPane fx:id="barLinesGrid" styleClass="palette-grid" snapToPixel="false" maxWidth="-Infinity" maxHeight="-Infinity"/>
     </TitledPane>
 </VBox>

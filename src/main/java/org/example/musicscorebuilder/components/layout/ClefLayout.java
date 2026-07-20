@@ -1,5 +1,6 @@
 package org.example.musicscorebuilder.components.layout;
 
+import org.example.musicscorebuilder.components.music.Clef;
 import org.example.musicscorebuilder.components.music.ClefType;
 import org.example.musicscorebuilder.components.music.Leland;
 
@@ -9,11 +10,11 @@ public class ClefLayout extends ElementLayout {
     private final double scale;
     private double y;
 
-    public ClefLayout(StaffLayout staffLayout, SegmentLayout parent) {
+    public ClefLayout(Clef clef, StaffLayout staffLayout, SegmentLayout parent) {
         super(false, parent);
         this.height = staffLayout.getHeight();
         this.scale = staffLayout.getLineSpacing();
-        ClefType type = staffLayout.getStaff().getDefaultClef().getType();
+        ClefType type = clef.getType();
         fontData = type.getFontData();
         y = type.getOffsetY() * staffLayout.getLineSpacing() + staffLayout.getY();
     }

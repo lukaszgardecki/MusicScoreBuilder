@@ -67,7 +67,7 @@ public class BarlinesSectionController extends AbstractPaletteSectionController<
         SegmentLayout mockParent = new SegmentLayout(SegmentType.BARLINE, mockMeasureLayout);
         Barline mockBarline = new Barline(item, Barline.Type.START);
 
-        BarlineLayout mockLayout = new BarlineLayout(mockBarline, mockParent, staffLayout) {
+        BarlineLayout mockLayout = new BarlineLayout(mockBarline, staffLayout, mockParent) {
             @Override
             public double getWidth() {
                 return switch (item) {

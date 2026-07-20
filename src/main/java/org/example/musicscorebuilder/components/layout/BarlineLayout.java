@@ -10,9 +10,9 @@ public class BarlineLayout extends ElementLayout {
     private final double gap;
     private final double dotSpace;
     private final double dotRadius;
-    private double y, width, height;
+    private double x = 0, y, width, height;
 
-    public BarlineLayout(Barline barline, SegmentLayout parent, StaffLayout staff) {
+    public BarlineLayout(Barline barline, StaffLayout staff, SegmentLayout parent) {
         super(false, parent);
         this.barline = barline;
         this.lightLineWidth = style.getBarlineLightWidth();
@@ -30,7 +30,7 @@ public class BarlineLayout extends ElementLayout {
         this.y = staff.getY() - 0.5 * staff.getLineWidth();
     }
 
-    @Override public double getX() { return parent.getWidth() - getWidth(); }
+    @Override public double getX() { return x; }
     @Override public double getY() { return y; }
     @Override public double getBoxY() { return getY(); }
     @Override public double getWidth() { return width; }

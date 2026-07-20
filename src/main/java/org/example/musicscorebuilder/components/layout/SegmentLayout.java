@@ -1,17 +1,14 @@
 package org.example.musicscorebuilder.components.layout;
 
-import org.example.musicscorebuilder.components.music.Barline;
-import org.example.musicscorebuilder.components.music.KeySignature;
-import org.example.musicscorebuilder.components.music.SegmentType;
-import org.example.musicscorebuilder.components.music.TimeSignature;
+import org.example.musicscorebuilder.components.music.*;
 
 import java.util.*;
 
 public class SegmentLayout {
     private final ScoreStyle style;
     private final MeasureLayout parent;
-    private final SegmentType type;
     private final Map<StaffLayout, List<ElementLayout>> elementsByStaff = new HashMap<>();
+    private SegmentType type;
     private double y = 0, height;
 
     public SegmentLayout(SegmentType type, MeasureLayout parent) {
@@ -24,38 +21,31 @@ public class SegmentLayout {
         }
     }
 
-    public void addElement(StaffLayout staffLayout, ElementLayout elementLayout) {
-        elementLayout.setX(style.getSegmentLeftMargin());
+    public void addByStaff(StaffLayout staffLayout, ElementLayout elementLayout) {
         elementsByStaff.computeIfAbsent(staffLayout, k -> new ArrayList<>()).add(elementLayout);
     }
 
     public void addStartBarline(Barline startBarline) {
         elementsByStaff.forEach((staff, elements) -> {
-            elements.add(new BarlineLayout(startBarline, this, staff));
+            elements.add(new BarlineLayout(startBarline, staff, this));
         });
     }
 
     public void addClef() {
         elementsByStaff.forEach((staff, elements) -> {
-            ClefLayout clef = new ClefLayout(staff, this);
-            clef.setX(style.getSegmentLeftMargin());
-            elements.add(clef);
+            elements.add(new ClefLayout(staff.getStaff().getDefaultClef(), staff, this));
         });
     }
 
     public void addKeySignature(KeySignature keySignature) {
         elementsByStaff.forEach((staff, elements) -> {
-            KeySigLayout keySig = new KeySigLayout(keySignature, staff, this);
-            keySig.setX(style.getSegmentLeftMargin());
-            elements.add(keySig);
+            elements.add(new KeySigLayout(keySignature, staff, this));
         });
     }
 
     public void addTimeSignature(TimeSignature timeSignature) {
         elementsByStaff.forEach((staff, elements) -> {
-            TimeSigLayout timeSig = new TimeSigLayout(timeSignature, staff, this);
-            timeSig.setX(style.getSegmentLeftMargin());
-            elements.add(timeSig);
+            elements.add(new TimeSigLayout(timeSignature, staff, this));
         });
     }
 
@@ -72,6 +62,7 @@ public class SegmentLayout {
                 .flatMap(List::stream)
                 .toList();
     }
+    public SegmentType getType() { return type; }
     public double getX() {
         var segments = parent.getSegments();
         int i = segments.indexOf(this);
@@ -83,14 +74,16 @@ public class SegmentLayout {
     public double getWidth() {
         List<ElementLayout> allElements = getElements();
         if (allElements.isEmpty()) return 0;
-        if (type == SegmentType.START_BARLINE) return 0;
+        var margin = type == SegmentType.END_BARLINE ? 0 : style.getSegmentRightMargin();
 
         return allElements.stream()
                 .mapToDouble(ElementLayout::getWidth)
                 .max()
-                .orElse(0) + style.getSegmentLeftMargin();
+                .orElse(0) + margin;
     }
     public double getHeight() { return height; }
     public boolean hasDynamicWidth() { return getElements().stream().anyMatch(ElementLayout::hasDynamicWidth); }
     public ScoreStyle getScoreStyle() { return style; }
+
+    public void setType(SegmentType type) { this.type = type; }
 }

@@ -18,7 +18,7 @@ public class ScoreStyle {
     private static final double BARLINE_DOT_SPACE = 0.37;
     private static final double BARLINE_DOT_RADIUS = 0.15;
 
-    private static final double SEGMENT_LEFT_MARGIN = 1.0;
+    private static final double SEGMENT_RIGHT_MARGIN = 0.7;
 
     private static final double KEY_SIGNATURE_SIGN_SPACE = 0.12;
 
@@ -45,7 +45,7 @@ public class ScoreStyle {
     private double barlineDotSpace = BARLINE_DOT_SPACE;
     private double barlineDotRadius = BARLINE_DOT_RADIUS;
 
-    private double segmentLeftMargin = SEGMENT_LEFT_MARGIN;
+    private double segmentRightMargin = SEGMENT_RIGHT_MARGIN;
 
     private double keySignatureSignSpace = KEY_SIGNATURE_SIGN_SPACE;
 
@@ -74,7 +74,7 @@ public class ScoreStyle {
     public double getBarlineDotSpace() { return staffSpacingScale * barlineDotSpace; }
     public double getBarlineDotRadius() { return staffSpacingScale * barlineDotRadius; }
 
-    public double getSegmentLeftMargin() { return staffSpacingScale * segmentLeftMargin; }
+    public double getSegmentRightMargin() { return staffSpacingScale * segmentRightMargin; }
 
     public double getKeySignatureSignSpace() { return staffSpacingScale * keySignatureSignSpace; }
 

@@ -3,15 +3,15 @@ package org.example.musicscorebuilder;
 import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.music.*;
 
-import java.util.List;
-
 public class LayoutEngine {
     private final ScoreStyle style;
     private final Page page;
+    private final SystemJustifier systemJustifier;
 
     public LayoutEngine(Page page, ScoreStyle style) {
         this.page = page;
         this.style = style;
+        this.systemJustifier = new SystemJustifier(style);
     }
 
     public ScoreLayout compute(Mode mode) {
@@ -27,7 +27,7 @@ public class LayoutEngine {
             boolean noSpaceForNextSystem = currentPage.getRemainingHeight() < newSystem.getHeight() + style.getSystemSpacing();
 
             if (noSpaceForNextMeasure) {
-                justify(newSystem);
+                systemJustifier.justify(newSystem);
 
                 if (noSpaceForNextSystem) {
                     currentPage = createPageLayout(scoreLayout);
@@ -44,71 +44,8 @@ public class LayoutEngine {
             newSystem.add(measureLayout);
         }
 
-        justify(newSystem);
+        systemJustifier.justify(newSystem);
         return scoreLayout;
-    }
-
-    private void justify(SystemLayout system) {
-        double targetWidth = system.getPageLayout().getEffectiveWidth();
-        if (system.getMeasures().isEmpty() || system.getWidth() < targetWidth * style.getSystemMinFullnessRatio()) return;
-        double extraSpace = targetWidth - system.getWidth();
-        if (extraSpace <= 0) return;
-
-        List<MeasureLayout> measures = system.getMeasures();
-
-        double totalDynamicSegmentsWidthSum = 0.0;
-        double[] measuresDynamicWidths = new double[measures.size()];
-
-        for (int i = 0; i < measures.size(); i++) {
-            MeasureLayout m = measures.get(i);
-            double dynamicSegmentsTotalWidth = 0.0;
-
-            for (SegmentLayout segment : m.getSegments()) {
-                if (segment.hasDynamicWidth()) dynamicSegmentsTotalWidth += segment.getWidth();
-            }
-            measuresDynamicWidths[i] = dynamicSegmentsTotalWidth;
-            totalDynamicSegmentsWidthSum += dynamicSegmentsTotalWidth;
-        }
-
-        if (totalDynamicSegmentsWidthSum <= 0) return;
-
-        double currentX = system.getBraceWidth();
-
-        for (int i = 0; i < measures.size(); i++) {
-            MeasureLayout measure = measures.get(i);
-            measure.setX(currentX);
-
-            double thisMeasureDynamicWidth = measuresDynamicWidths[i];
-            double widthRatio = thisMeasureDynamicWidth / totalDynamicSegmentsWidthSum;
-            double extraSpaceForThisMeasure = extraSpace * widthRatio;
-
-            long dynamicSegmentsCount = measure.getSegments().stream()
-                    .filter(SegmentLayout::hasDynamicWidth)
-                    .count();
-
-            if (dynamicSegmentsCount > 0) {
-                double extraSpacePerSegment = extraSpaceForThisMeasure / dynamicSegmentsCount;
-
-                for (SegmentLayout segment : measure.getSegments()) {
-                    if (segment.hasDynamicWidth()) {
-                        for (ElementLayout element : segment.getElements()) {
-                            if (element instanceof VoiceLayout voiceLayout && element.hasDynamicWidth()) {
-                                List<ChordLayout> chords = voiceLayout.getChords();
-                                if (chords.size() <= 1) continue;
-                                double extraSpacePerGap = extraSpacePerSegment / (chords.size() - 1);
-
-                                for (int c = 0; c < chords.size(); c++) {
-                                    ChordLayout chord = chords.get(c);
-                                    double newX = chord.getX() + (c * extraSpacePerGap);
-                                    chord.setX(newX);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            currentX += measure.getWidth();
-        }
     }
 
     private SystemLayout addNewSystemToPage(PageLayout pageLayout, Mode mode) {
@@ -133,15 +70,15 @@ public class LayoutEngine {
         for (Segment segment : measure.getSegments()) {
             SegmentLayout segmentLayout = new SegmentLayout(segment.getType(), measureLayout);
 
-            for (StaffLayout staffLayout : measureLayout.getStaffs()) {
-                for (Element element : segment.getElementsForStaff(staffLayout.getStaff())) {
+            for (StaffLayout staff : measureLayout.getStaffs()) {
+                for (Element element : segment.getElementsForStaff(staff.getStaff())) {
 
                     var el = switch(element) {
-                        case Barline barline -> new BarlineLayout(barline, segmentLayout, staffLayout);
-                        case Voice voice -> createVoiceLayout(voice, segmentLayout, staffLayout);
+                        case Barline barline -> new BarlineLayout(barline, staff, segmentLayout);
+                        case Voice voice -> createVoiceLayout(voice, staff, segmentLayout);
                         default -> new EmptyElement(segmentLayout);
                     };
-                    segmentLayout.addElement(staffLayout, el);
+                    segmentLayout.addByStaff(staff, el);
                 }
             }
             measureLayout.add(segmentLayout);
@@ -161,7 +98,7 @@ public class LayoutEngine {
         measureLayout.addStartBarline(mode.getStartBarline());
     }
 
-    private VoiceLayout createVoiceLayout(Voice voice, SegmentLayout parent, StaffLayout staff) {
+    private VoiceLayout createVoiceLayout(Voice voice, StaffLayout staff, SegmentLayout parent) {
         VoiceLayout voiceLayout = new VoiceLayout(voice, parent);
 
         for(Chord chord : voice.getChords()) {
