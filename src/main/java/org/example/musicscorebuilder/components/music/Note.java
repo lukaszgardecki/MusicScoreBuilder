@@ -2,15 +2,15 @@ package org.example.musicscorebuilder.components.music;
 
 public class Note extends Element {
     private Pitch pitch;
-    private int duration;
     private int voice;
     private NoteType type;
+    private int duration;
 
     public Note(int voice, PitchStep pitchStep, int alter, int octave, NoteType type) {
-        pitch = new Pitch(pitchStep, alter,  octave);
-        duration = 1;
+        this.pitch = new Pitch(pitchStep, alter, octave);
         this.voice = voice;
         this.type = type;
+        this.duration = type.getSegments();
     }
 
     public Pitch getPitch() { return pitch; }
@@ -25,5 +25,9 @@ public class Note extends Element {
     public void setPitch(PitchStep step, int octave) {
         pitch.setStep(step);
         pitch.setOctave(octave);
+    }
+    public void setType(NoteType type) {
+        this.type = type;
+        this.duration = type.getSegments();
     }
 }

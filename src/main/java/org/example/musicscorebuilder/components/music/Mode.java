@@ -1,5 +1,7 @@
 package org.example.musicscorebuilder.components.music;
 
+import org.example.musicscorebuilder.FakeMeasureNotesGenerator;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +29,8 @@ public class Mode {
 
     public void appendMeasure() {
         Measure measure = new Measure(BarlineStyle.SINGLE, staves);
-        addSegments(timeSignature.getBeat(), measure);
+        int targetSegments = FakeMeasureNotesGenerator.getMeasureCapacityInSegments(timeSignature);
+        FakeMeasureNotesGenerator.fillMeasureWithTwoVoices(measure, targetSegments);
 
         if (!measures.isEmpty()) {
             Measure lastMeasure = measures.getLast();
