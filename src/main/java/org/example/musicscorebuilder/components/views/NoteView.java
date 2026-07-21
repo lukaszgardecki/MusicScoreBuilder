@@ -9,6 +9,7 @@ import org.example.musicscorebuilder.util.Util;
 public class NoteView extends ComponentView {
     private final LedgerLineView ledgerLineView = new LedgerLineView();
     private final StemView stemView = new StemView();
+    private final BeamView beamView = new BeamView();
 
     public void draw(GraphicsContext gc, NoteLayout note, double segmentX, double segmentY, double sp) {
         double noteX = segmentX + note.getX() * sp;
@@ -26,6 +27,7 @@ public class NoteView extends ComponentView {
         }
 
         stemView.draw(gc, note.getStem(), segmentX, segmentY, sp);
+        beamView.draw(gc, note.getBeam(), segmentX, segmentY, sp);
 
         gc.setFont(FontManager.getLelandFont(fontSize));
 

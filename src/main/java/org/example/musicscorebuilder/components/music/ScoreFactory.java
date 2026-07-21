@@ -1,7 +1,7 @@
 package org.example.musicscorebuilder.components.music;
 
 public class ScoreFactory {
-    private static final int measuresCount = 5;
+    private static final int measuresCount = 32;
 
     public static ScoreMode createSoloMode() {
         ScoreMode scoreMode = new ScoreMode(ModeType.SOLO);

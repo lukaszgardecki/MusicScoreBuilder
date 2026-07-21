@@ -10,6 +10,7 @@ public class NoteLayout extends ElementLayout {
     private final Note note;
     private final StaffLayout staff;
     private final StemLayout stem;
+    private final BeamLayout beam;
     private double y;
     private double xOffset = 0.0;
 
@@ -27,6 +28,7 @@ public class NoteLayout extends ElementLayout {
         Clef clef = staff.getStaff().getDefaultClef();
         this.y = calculateY(clef) + staff.getY();
         this.stem = note.getType() == NoteType.WHOLE ? null : new StemLayout(this);
+        this.beam = note.getType() == NoteType.EIGHTH ? new BeamLayout(this) : null;
     }
 
     public void updatePitchFromY(double newY) {
@@ -68,7 +70,11 @@ public class NoteLayout extends ElementLayout {
     @Override public double getX() { return xOffset; }
     @Override public double getY() { return y; }
     @Override public double getBoxY() { return y - (0.5 * style.getStaffLineSpacing()); }
-    @Override public double getWidth() { return getFontWidth(); }
+    @Override public double getWidth() {
+        var headWidth = getFontWidth();
+        var flagWidth = getStem() == null ? 0 : getStem().getDirection() == StemDirection.UP ? getStem().getWidth() : 0;
+        return headWidth + flagWidth;
+    }
     @Override public double getHeight() { return style.getStaffLineSpacing(); }
 
     @Override
@@ -85,12 +91,13 @@ public class NoteLayout extends ElementLayout {
     public Note getNote() { return note; }
     public double getBoxX() { return getX(); }
     public double getFontWidth() { return (fontData.getHeight() * fontData.getRatio()) * style.getStaffLineSpacing(); }
-    public double getBoxWidth() { return getWidth(); }
+    public double getBoxWidth() { return getFontWidth(); }
 
     public double getFontSize() { return 4 * style.getStaffLineSpacing(); }
     public String getCode() { return fontData.getCode(); }
     public int getDiatonicStep() { return note.getPitch().getAbsoluteDiatonicStep(); }
     public StemLayout getStem() { return stem; }
+    public BeamLayout getBeam() { return beam; }
     public StaffLayout getStaffLayout() { return staff; }
 
     private double calculateY(Clef clef) {

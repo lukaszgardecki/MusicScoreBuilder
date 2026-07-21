@@ -13,16 +13,8 @@ public class StemLayout implements Selectable {
         this.style = parentNote.getScoreStyle();
     }
 
-    @Override
-    public boolean isSelected() {
-        return selected;
-    }
-
-    @Override
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-    }
-
+    @Override public boolean isSelected() { return selected; }
+    @Override public void setSelected(boolean selected) { this.selected = selected; }
     @Override
     public boolean contains(double segmentX, double segmentY) {
         double lineWidth = getWidth();
@@ -35,7 +27,7 @@ public class StemLayout implements Selectable {
     }
 
     public double getX() {
-        double localStemX = (getDirection() == StemDirection.UP) ? parentNote.getWidth() - getWidth() : 0;
+        double localStemX = (getDirection() == StemDirection.UP) ? parentNote.getBoxWidth() - getWidth() : 0;
         return parentNote.getX() + localStemX;
     }
 
@@ -83,9 +75,7 @@ public class StemLayout implements Selectable {
         int activeVoices = parentNote.getParent().getVoiceCountForStaff(parentNote.getStaffLayout());
 
         if (activeVoices > 1) {
-            return (voice % 2 == 1)
-                    ? StemDirection.UP
-                    : StemDirection.DOWN;
+            return (voice % 2 == 1) ? StemDirection.UP : StemDirection.DOWN;
         }
 
         Clef clef = parentNote.getStaffLayout().getStaff().getDefaultClef();

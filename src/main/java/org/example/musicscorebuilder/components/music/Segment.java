@@ -17,8 +17,17 @@ public class Segment {
         staffElements.computeIfAbsent(staff, k -> new ArrayList<>()).add(element);
     }
 
-    public List<Element> getElementsForStaff(Staff staff) {
+    public List<Element> getElementsByStaff(Staff staff) {
         return staffElements.getOrDefault(staff, Collections.emptyList());
+    }
+
+    public int getVoiceCountByStaff(Staff staff) {
+        return (int) getElementsByStaff(staff).stream()
+                .filter(Note.class::isInstance)
+                .map(Note.class::cast)
+                .map(Note::getVoice)
+                .distinct()
+                .count();
     }
 
     public SegmentType getType() { return type; }

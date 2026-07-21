@@ -26,7 +26,9 @@ public enum Leland {
 
     NOTE_HEAD_WHOLE("\uE0A2", 1.492, 0.544, 0.0, -0.536),
     NOTE_HEAD_HALF("\uE0A3", 1.3, 0.528, 0.0, -0.532),
-    NOTE_HEAD_BLACK("\uE0A4", 1.3, 0.528, 0.0, -0.532);
+    NOTE_HEAD_BLACK("\uE0A4", 1.3, 0.528, 0.0, -0.532),
+    NOTE_FLAG_8TH_UP("\uE240", 1.157, 0.048, 0.001, -3.268),
+    NOTE_FLAG_8TH_DOWN("\uE241", 1.235, 3.268, -0.0, -0.048);
 
     private final String code;
     private final double NEx;

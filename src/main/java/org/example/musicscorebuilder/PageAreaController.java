@@ -102,8 +102,12 @@ public class PageAreaController {
                         double segmentMusicY = measureY - segment.getY();
 
                         for (ElementLayout element : segment.getElements()) {
-                            if (element instanceof NoteLayout noteLayout && noteLayout.getStem() != null) {
-                                if (noteLayout.getStem().contains(segmentMusicX, segmentMusicY)) {
+                            if (element instanceof NoteLayout noteLayout) {
+                                if (noteLayout.getBeam() != null && noteLayout.getBeam().contains(segmentMusicX, segmentMusicY)) {
+                                    return noteLayout.getBeam();
+                                }
+
+                                if (noteLayout.getStem() != null && noteLayout.getStem().contains(segmentMusicX, segmentMusicY)) {
                                     return noteLayout.getStem();
                                 }
                             }
@@ -141,6 +145,8 @@ public class PageAreaController {
             }
         } else if (clickedElement instanceof StemLayout stem) {
             itemsToSelect.add(stem);
+        } else if (clickedElement instanceof BeamLayout beam) {
+            itemsToSelect.add(beam);
         } else if (clickedElement instanceof MeasureStaffSelection selection) {
             itemsToSelect.add(selection);
 
@@ -169,8 +175,13 @@ public class PageAreaController {
 
                         for (ElementLayout element : staffElements) {
                             itemsToSelect.add(element);
-                            if (element instanceof NoteLayout noteLayout && noteLayout.getStem() != null) {
-                                itemsToSelect.add(noteLayout.getStem());
+                            if (element instanceof NoteLayout noteLayout) {
+                                if (noteLayout.getStem() != null) {
+                                    itemsToSelect.add(noteLayout.getStem());
+                                }
+                                if (noteLayout.getBeam() != null) {
+                                    itemsToSelect.add(noteLayout.getBeam());
+                                }
                             }
                         }
                     }

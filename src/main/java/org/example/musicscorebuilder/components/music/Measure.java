@@ -25,6 +25,12 @@ public class Measure {
 
     public List<Staff> getStaves() { return staves; }
     public List<Segment> getSegments() { return segments; }
+    public int countVoicesByStaff(Staff staff) {
+        return segments.stream()
+                .mapToInt(s -> s.getVoiceCountByStaff(staff))
+                .max()
+                .orElse(0);
+    }
 
     public void addChordRestSegmentAtEnd() {
         Segment seg = new Segment(SegmentType.CHORDREST, staves);

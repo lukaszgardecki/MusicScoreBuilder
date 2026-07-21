@@ -70,7 +70,7 @@ public class LayoutEngine {
         for (Segment segment : measure.getSegments()) {
             SegmentLayout segmentLayout = new SegmentLayout(segment.getType(), measureLayout);
             for (StaffLayout staff : measureLayout.getStaffs()) {
-                for (Element element : segment.getElementsForStaff(staff.getStaff())) {
+                for (Element element : segment.getElementsByStaff(staff.getStaff())) {
                     if (element instanceof Barline barline) {
                         segmentLayout.addByStaff(staff, new BarlineLayout(barline, staff, segmentLayout));
                     } else if (element instanceof Note note) {
