@@ -21,9 +21,12 @@ public class StaffView extends ComponentView {
         gc.setLineWidth(staff.getLineWidth() * sp);
         gc.setLineCap(StrokeLineCap.BUTT);
 
+        double drawStartX = Math.round(staffX);
+        double drawEndX = Math.round(staffX + widthPx);
+
         for (int i = 0; i < staff.getLinesNumber(); i++) {
-            double currentLineY = staffY + (i * lineSpacingPx);
-            gc.strokeLine(staffX, currentLineY, staffX + widthPx, currentLineY);
+            double currentLineY = Math.round(staffY + (i * lineSpacingPx));
+            gc.strokeLine(drawStartX, currentLineY, drawEndX, currentLineY);
         }
     }
 }

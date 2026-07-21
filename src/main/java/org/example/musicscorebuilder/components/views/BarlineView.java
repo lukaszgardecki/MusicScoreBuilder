@@ -7,9 +7,11 @@ import org.example.musicscorebuilder.components.layout.BarlineLayout;
 public class BarlineView {
 
     public void draw(GraphicsContext gc, BarlineLayout barline, double sMeasureX, double sMeasureY, double sp) {
-        double startY = barline.getY() * sp + sMeasureY;
-        double endY = startY + (barline.getHeight() * sp);
-        double baseX = sMeasureX + barline.getX() * sp;
+        double rawStartY = barline.getY() * sp + sMeasureY;
+        double rawEndY = rawStartY + (barline.getHeight() * sp);
+        double startY = Math.round(rawStartY);
+        double endY = Math.round(rawEndY);
+        double baseX = Math.round(sMeasureX + barline.getX() * sp);
 
         gc.setLineCap(StrokeLineCap.BUTT);
 
