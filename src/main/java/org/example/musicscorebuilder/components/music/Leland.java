@@ -24,7 +24,9 @@ public enum Leland {
     TIME_COMMON("\uE08A", 1.852, 1.032, 0.0, -1.024),
     TIME_CUT("\uE08B", 1.852, 1.552, 0.0, -1.504),
 
-    NOTE_BLACK("\uE0A4", 1.3, 0.528, 0.0, -0.532);
+    NOTE_HEAD_WHOLE("\uE0A2", 1.492, 0.544, 0.0, -0.536),
+    NOTE_HEAD_HALF("\uE0A3", 1.3, 0.528, 0.0, -0.532),
+    NOTE_HEAD_BLACK("\uE0A4", 1.3, 0.528, 0.0, -0.532);
 
     private final String code;
     private final double NEx;

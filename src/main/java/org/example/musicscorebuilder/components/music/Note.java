@@ -6,11 +6,11 @@ public class Note extends Element {
     private int voice;
     private NoteType type;
 
-    public Note(int voice, PitchStep pitchStep, int alter, int octave) {
+    public Note(int voice, PitchStep pitchStep, int alter, int octave, NoteType type) {
         pitch = new Pitch(pitchStep, alter,  octave);
         duration = 1;
         this.voice = voice;
-        type = NoteType.QUARTER;
+        this.type = type;
     }
 
     public Pitch getPitch() { return pitch; }
@@ -26,8 +26,4 @@ public class Note extends Element {
         pitch.setStep(step);
         pitch.setOctave(octave);
     }
-}
-
-enum NoteType {
-    EIGHTH, QUARTER, HALF, WHOLE
 }

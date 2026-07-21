@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NoteLayout extends ElementLayout {
-    private final Leland fontData = Leland.NOTE_BLACK;
+    private final Leland fontData;
     private StemDirection stemDirection = StemDirection.UP;
     private final Note note;
     private final StaffLayout staff;
@@ -19,6 +19,11 @@ public class NoteLayout extends ElementLayout {
         super(true, segmentLayout);
         this.note = note;
         this.staff = staff;
+        this.fontData = switch (note.getType()) {
+            case EIGHTH, QUARTER -> Leland.NOTE_HEAD_BLACK;
+            case HALF -> Leland.NOTE_HEAD_HALF;
+            case WHOLE -> Leland.NOTE_HEAD_WHOLE;
+        };
         Clef clef = staff.getStaff().getDefaultClef();
         this.y = calculateY(clef) + staff.getY();
     }
