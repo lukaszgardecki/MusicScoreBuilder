@@ -105,13 +105,13 @@ public class SegmentLayout {
         List<ElementLayout> allElements = getElements();
         if (allElements.isEmpty()) return 0;
 
-        double maxElementWidth = allElements.stream()
-                .mapToDouble(ElementLayout::getWidth)
+        double maxRight = allElements.stream()
+                .mapToDouble(e -> e.getX() + e.getWidth())
                 .max()
                 .orElse(0);
 
         var margin = type == SegmentType.END_BARLINE ? 0 : style.getSegmentRightMargin();
-        return maxElementWidth + margin + extraWidth;
+        return maxRight + margin + extraWidth;
     }
     public double getHeight() { return height; }
     public boolean hasDynamicWidth() { return getElements().stream().anyMatch(ElementLayout::hasDynamicWidth); }
