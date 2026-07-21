@@ -5,12 +5,14 @@ import org.example.musicscorebuilder.components.music.Score;
 import org.example.musicscorebuilder.components.music.ScoreMode;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public class ScoreStateManager {
     private static ScoreStateManager instance;
     private final List<ScoreChangeListener> scoreChangeListeners = new ArrayList<>();
-    private Selectable selectedItem = null;
+    private final List<Selectable> selectedItems = new ArrayList<>();
     private int currentModeIndex = 0;
 
     private ScoreStateManager() {}
@@ -36,29 +38,22 @@ public class ScoreStateManager {
     }
 
 
-
-    public void setSelectedItem(Selectable item) {
-        if (this.selectedItem != null) {
-            this.selectedItem.setSelected(false);
-        }
-
-        this.selectedItem = item;
-
-        if (this.selectedItem != null) {
-            this.selectedItem.setSelected(true);
-        }
-    }
-
-    public Selectable getSelectedItem() {
-        return selectedItem;
+    public void setSelectedItem(Collection<? extends Selectable> items) {
+        deselectAll();
+        selectAll(items);
     }
 
     public void clearSelection() {
-        setSelectedItem(null);
+        setSelectedItem(Collections.emptyList());
     }
 
+    public List<Selectable> getSelectedItems() {
+        return selectedItems;
+    }
 
-
+    public Selectable getSelectedItem() {
+        return selectedItems.isEmpty() ? null : selectedItems.getFirst();
+    }
 
     public void addScoreChangeListener(ScoreChangeListener listener) {
         scoreChangeListeners.add(listener);
@@ -68,5 +63,25 @@ public class ScoreStateManager {
         for (ScoreChangeListener l : scoreChangeListeners) {
             l.onScoreChanged();
         }
+    }
+
+    private void selectAll(Collection<? extends Selectable> items) {
+        if (items != null) {
+            for (Selectable item : items) {
+                if (item != null) {
+                    selectedItems.add(item);
+                    item.setSelected(true);
+                }
+            }
+        }
+    }
+
+    private void deselectAll() {
+        for (Selectable item : selectedItems) {
+            if (item != null) {
+                item.setSelected(false);
+            }
+        }
+        selectedItems.clear();
     }
 }

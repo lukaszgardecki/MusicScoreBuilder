@@ -8,6 +8,7 @@ import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.music.*;
 import org.example.musicscorebuilder.components.views.BackgroundView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PageAreaController {
@@ -124,14 +125,16 @@ public class PageAreaController {
             return;
         }
 
+        List<Selectable> itemsToSelect = new ArrayList<>();
+
         if (clickedElement instanceof ElementLayout element) {
             if (clickedElement instanceof TimeSigLayout || clickedElement instanceof KeySigLayout) {
-                element.getParent().getElements().forEach(e -> e.setSelected(true));
+                itemsToSelect.addAll(element.getParent().getElements());
             } else {
-                clickedElement.setSelected(true);
+                itemsToSelect.add(element);
             }
         } else if (clickedElement instanceof MeasureStaffSelection selection) {
-            selection.setSelected(true);
+            itemsToSelect.add(selection);
 
             MeasureLayout measure = selection.getMeasure();
             StaffLayout targetStaff = selection.getStaff();
@@ -154,16 +157,14 @@ public class PageAreaController {
                 if (firstChordRestIdx != -1) {
                     for (int i = firstChordRestIdx; i <= lastChordRestIdx; i++) {
                         SegmentLayout segment = segments.get(i);
-                        List<ElementLayout> staffElements = segment.getElementsForStaff(targetStaff);
-
-                        for (ElementLayout element : staffElements) {
-                            element.setSelected(true);
-                        }
+                        itemsToSelect.addAll(segment.getElementsForStaff(targetStaff));
                     }
                 }
             }
+        } else {
+            itemsToSelect.add(clickedElement);
         }
 
-        stateManager.setSelectedItem(clickedElement);
+        stateManager.setSelectedItem(itemsToSelect);
     }
 }
