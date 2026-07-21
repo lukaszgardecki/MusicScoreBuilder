@@ -75,6 +75,15 @@ public class MeasureLayout {
         double totalSpacing = (staves.size() - 1) * style.getStaffSpacing();
         return totalStavesHeight + totalSpacing;
     }
+    public int getVoiceCountForStaff(StaffLayout staff) {
+        return (int) segments.stream()
+                .flatMap(segment -> segment.getElementsByStaff().get(staff).stream())
+                .filter(NoteLayout.class::isInstance)
+                .map(NoteLayout.class::cast)
+                .map(note -> note.getNote().getVoice())
+                .distinct()
+                .count();
+    }
 
     public void setX(double x) { this.x = x; }
 }

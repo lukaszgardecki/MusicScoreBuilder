@@ -18,7 +18,8 @@ public class ChordCollisionResolver {
                 .sorted(Comparator.comparingInt(NoteLayout::getDiatonicStep))
                 .toList();
 
-        StemDirection stemDirection = sortedNotes.getFirst().getStemDirection();
+        StemLayout stemLayout = sortedNotes.getFirst().getStem();
+        StemDirection stemDirection = stemLayout != null ? stemLayout.getDirection() : StemDirection.UP;
 
         for (int i = 0; i < sortedNotes.size() - 1; i++) {
             NoteLayout currentNote = sortedNotes.get(i);

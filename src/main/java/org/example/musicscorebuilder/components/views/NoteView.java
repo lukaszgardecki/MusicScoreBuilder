@@ -8,12 +8,13 @@ import org.example.musicscorebuilder.util.Util;
 
 public class NoteView extends ComponentView {
     private final LedgerLineView ledgerLineView = new LedgerLineView();
+    private final StemView stemView = new StemView();
 
-    public void draw(GraphicsContext gc, NoteLayout note, double chordX, double chordY, double sp) {
-        double noteX = chordX + note.getX() * sp;
-        double noteY = chordY + note.getY() * sp;
-        double boxX = chordX + note.getBoxX() * sp;
-        double boxY = chordY + note.getBoxY() * sp;
+    public void draw(GraphicsContext gc, NoteLayout note, double segmentX, double segmentY, double sp) {
+        double noteX = segmentX + note.getX() * sp;
+        double noteY = segmentY + note.getY() * sp;
+        double boxX = segmentX + note.getBoxX() * sp;
+        double boxY = segmentY + note.getBoxY() * sp;
         double widthPx = note.getBoxWidth() * sp;
         double heightPx = note.getHeight() * sp;
         double fontSize = note.getFontSize() * sp;
@@ -21,8 +22,10 @@ public class NoteView extends ComponentView {
 //        fillBackground(gc, Util.generateRandomColor(), boxX, boxY, widthPx, heightPx);
 
         for (NoteLayout.LedgerLine ledgerLine : note.getLedgerLines()) {
-            ledgerLineView.draw(gc, ledgerLine, chordX, chordY, sp);
+            ledgerLineView.draw(gc, ledgerLine, segmentX, segmentY, sp);
         }
+
+        stemView.draw(gc, note.getStem(), segmentX, segmentY, sp);
 
         gc.setFont(FontManager.getLelandFont(fontSize));
 

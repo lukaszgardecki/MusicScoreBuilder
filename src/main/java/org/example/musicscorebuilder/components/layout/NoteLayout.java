@@ -7,9 +7,9 @@ import java.util.List;
 
 public class NoteLayout extends ElementLayout {
     private final Leland fontData;
-    private StemDirection stemDirection = StemDirection.UP;
     private final Note note;
     private final StaffLayout staff;
+    private final StemLayout stem;
     private double y;
     private double xOffset = 0.0;
 
@@ -26,6 +26,7 @@ public class NoteLayout extends ElementLayout {
         };
         Clef clef = staff.getStaff().getDefaultClef();
         this.y = calculateY(clef) + staff.getY();
+        this.stem = note.getType() == NoteType.WHOLE ? null : new StemLayout(this);
     }
 
     public void updatePitchFromY(double newY) {
@@ -89,7 +90,8 @@ public class NoteLayout extends ElementLayout {
     public double getFontSize() { return 4 * style.getStaffLineSpacing(); }
     public String getCode() { return fontData.getCode(); }
     public int getDiatonicStep() { return note.getPitch().getAbsoluteDiatonicStep(); }
-    public StemDirection getStemDirection() { return stemDirection; }
+    public StemLayout getStem() { return stem; }
+    public StaffLayout getStaffLayout() { return staff; }
 
     private double calculateY(Clef clef) {
         ClefType clefType = clef.getType();

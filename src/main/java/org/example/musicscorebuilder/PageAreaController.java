@@ -102,6 +102,12 @@ public class PageAreaController {
                         double segmentMusicY = measureY - segment.getY();
 
                         for (ElementLayout element : segment.getElements()) {
+                            if (element instanceof NoteLayout noteLayout && noteLayout.getStem() != null) {
+                                if (noteLayout.getStem().contains(segmentMusicX, segmentMusicY)) {
+                                    return noteLayout.getStem();
+                                }
+                            }
+
                             if (element.contains(segmentMusicX, segmentMusicY)) {
                                 return element;
                             }
@@ -133,6 +139,8 @@ public class PageAreaController {
             } else {
                 itemsToSelect.add(element);
             }
+        } else if (clickedElement instanceof StemLayout stem) {
+            itemsToSelect.add(stem);
         } else if (clickedElement instanceof MeasureStaffSelection selection) {
             itemsToSelect.add(selection);
 
@@ -157,7 +165,14 @@ public class PageAreaController {
                 if (firstChordRestIdx != -1) {
                     for (int i = firstChordRestIdx; i <= lastChordRestIdx; i++) {
                         SegmentLayout segment = segments.get(i);
-                        itemsToSelect.addAll(segment.getElementsForStaff(targetStaff));
+                        List<ElementLayout> staffElements = segment.getElementsForStaff(targetStaff);
+
+                        for (ElementLayout element : staffElements) {
+                            itemsToSelect.add(element);
+                            if (element instanceof NoteLayout noteLayout && noteLayout.getStem() != null) {
+                                itemsToSelect.add(noteLayout.getStem());
+                            }
+                        }
                     }
                 }
             }

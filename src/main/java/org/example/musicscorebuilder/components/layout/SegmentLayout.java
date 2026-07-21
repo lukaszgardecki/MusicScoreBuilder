@@ -88,6 +88,10 @@ public class SegmentLayout {
                 .flatMap(List::stream)
                 .toList();
     }
+    public int getVoiceCountForStaff(StaffLayout staff) {
+        return parent.getVoiceCountForStaff(staff);
+    }
+
     public SegmentType getType() { return type; }
     public double getX() {
         var segments = parent.getSegments();
