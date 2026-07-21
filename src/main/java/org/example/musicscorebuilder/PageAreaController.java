@@ -98,26 +98,9 @@ public class PageAreaController {
                         double segmentMusicY = measureY - segment.getY();
 
                         for (ElementLayout element : segment.getElements()) {
-                            if (element instanceof EmptyElement) continue;
-
-                            if (element instanceof NoteLayout note) {
-                                double noteMinX = note.getBoxX();
-                                double noteMaxX = noteMinX + note.getBoxWidth();
-
-                                double noteMinY = note.getBoxY();
-                                double noteMaxY = noteMinY + note.getHeight();
-
-                                if (segmentMusicX >= noteMinX && segmentMusicX <= noteMaxX &&
-                                        segmentMusicY >= noteMinY && segmentMusicY <= noteMaxY) {
-
-                                    clickedElement = note;
-                                    break;
-                                }
-                            } else {
-                                if (element.contains(segmentMusicX, segmentMusicY)) {
-                                    clickedElement = element;
-                                    break;
-                                }
+                            if (element.contains(segmentMusicX, segmentMusicY)) {
+                                clickedElement = element;
+                                break;
                             }
                         }
                         if (clickedElement != null) break;

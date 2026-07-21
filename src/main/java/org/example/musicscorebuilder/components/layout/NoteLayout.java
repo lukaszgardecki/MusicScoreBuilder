@@ -65,6 +65,17 @@ public class NoteLayout extends ElementLayout {
     @Override public double getWidth() { return getFontWidth(); }
     @Override public double getHeight() { return style.getStaffLineSpacing(); }
 
+    @Override
+    public boolean contains(double segmentMusicX, double segmentMusicY) {
+        double noteMinX = getBoxX();
+        double noteMaxX = noteMinX + getBoxWidth();
+
+        double noteMinY = getBoxY();
+        double noteMaxY = noteMinY + getHeight();
+        return segmentMusicX >= noteMinX && segmentMusicX <= noteMaxX &&
+                segmentMusicY >= noteMinY && segmentMusicY <= noteMaxY;
+    }
+
     public Note getNote() { return note; }
     public double getBoxX() { return getX(); }
     public double getFontWidth() { return (fontData.getHeight() * fontData.getRatio()) * style.getStaffLineSpacing(); }
