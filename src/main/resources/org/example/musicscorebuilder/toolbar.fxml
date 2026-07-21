@@ -7,6 +7,9 @@
     fx:controller="org.example.musicscorebuilder.ToolbarController"
     styleClass="main-toolbar"
 >
+    <Separator />
+    <Button fx:id="modeButton" styleClass="toolbar-btn" text="IN" onAction="#toggleMode"/>
+    <Separator />
     <Button styleClass="toolbar-btn" text="64" />
     <Button styleClass="toolbar-btn" text="32" />
     <Button styleClass="toolbar-btn" text="16" />

@@ -6,18 +6,18 @@ import java.util.List;
 public class Score {
     private String title;
     private final PageFormat pageFormat = PageFormat.A4_V;
-    private final List<Mode> modes = new ArrayList<>();
+    private final List<ScoreMode> scoreModes = new ArrayList<>();
 
-    public void add(Mode mode) { modes.add(mode); }
+    public void add(ScoreMode scoreMode) { scoreModes.add(scoreMode); }
     public void addNewMeasure() {
-        modes.forEach(Mode::appendMeasure);
+        scoreModes.forEach(ScoreMode::appendMeasure);
     }
 
     public void removeLastMeasure() {
-        modes.forEach(Mode::removeLastMeasure);
+        scoreModes.forEach(ScoreMode::removeLastMeasure);
     }
 
     public String getTitle() { return title; }
     public PageFormat getPageFormat() { return pageFormat; }
-    public List<Mode> getModes() { return modes; }
+    public List<ScoreMode> getModes() { return scoreModes; }
 }

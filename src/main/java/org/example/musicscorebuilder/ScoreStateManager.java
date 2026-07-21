@@ -1,8 +1,8 @@
 package org.example.musicscorebuilder;
 
 import org.example.musicscorebuilder.components.layout.Selectable;
-import org.example.musicscorebuilder.components.music.Mode;
 import org.example.musicscorebuilder.components.music.Score;
+import org.example.musicscorebuilder.components.music.ScoreMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,7 @@ public class ScoreStateManager {
         notifyScoreChanged();
     }
 
-    public Mode getCurrentMode(Score score) {
+    public ScoreMode getCurrentMode(Score score) {
         if (score == null || score.getModes().isEmpty()) return null;
         if (currentModeIndex < 0 || currentModeIndex >= score.getModes().size()) {
             return score.getModes().getFirst();

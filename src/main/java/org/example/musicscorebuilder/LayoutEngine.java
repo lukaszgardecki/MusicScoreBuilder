@@ -14,14 +14,14 @@ public class LayoutEngine {
         this.systemJustifier = new SystemJustifier(style);
     }
 
-    public ScoreLayout compute(Mode mode) {
+    public ScoreLayout compute(ScoreMode scoreMode) {
         ScoreLayout scoreLayout = new ScoreLayout(style);
         PageLayout currentPage = createPageLayout(scoreLayout);
         scoreLayout.addPageLayout(currentPage);
 
-        SystemLayout newSystem = addNewSystemToPage(currentPage, mode);
+        SystemLayout newSystem = addNewSystemToPage(currentPage, scoreMode);
 
-        for (Measure measure : mode.getMeasures()) {
+        for (Measure measure : scoreMode.getMeasures()) {
             MeasureLayout measureLayout = createMeasureLayout(measure, newSystem);
             boolean noSpaceForNextMeasure = currentPage.getEffectiveWidth() - newSystem.getWidth() < measureLayout.getWidth();
             boolean noSpaceForNextSystem = currentPage.getRemainingHeight() < newSystem.getHeight() + style.getSystemSpacing();
@@ -33,12 +33,12 @@ public class LayoutEngine {
                     currentPage = createPageLayout(scoreLayout);
                     scoreLayout.addPageLayout(currentPage);
                 }
-                newSystem = addNewSystemToPage(currentPage, mode);
+                newSystem = addNewSystemToPage(currentPage, scoreMode);
                 measureLayout.setX(newSystem.getWidth());
             }
 
             if (newSystem.getMeasures().isEmpty()) {
-                add1stMeasureAttributes(mode, measureLayout, scoreLayout);
+                add1stMeasureAttributes(scoreMode, measureLayout, scoreLayout);
             }
 
             newSystem.add(measureLayout);
@@ -48,9 +48,9 @@ public class LayoutEngine {
         return scoreLayout;
     }
 
-    private SystemLayout addNewSystemToPage(PageLayout pageLayout, Mode mode) {
+    private SystemLayout addNewSystemToPage(PageLayout pageLayout, ScoreMode scoreMode) {
         pageLayout.setLastSystemSpaceBelow(style.getSystemSpacing());
-        var newSystem = new SystemLayout(pageLayout, mode.getBraceType());
+        var newSystem = new SystemLayout(pageLayout, scoreMode.getBraceType());
         pageLayout.add(newSystem);
         return newSystem;
     }
@@ -83,15 +83,15 @@ public class LayoutEngine {
         return measureLayout;
     }
 
-    private void add1stMeasureAttributes(Mode mode, MeasureLayout measureLayout, ScoreLayout scoreLayout) {
+    private void add1stMeasureAttributes(ScoreMode scoreMode, MeasureLayout measureLayout, ScoreLayout scoreLayout) {
         var isFirstMeasure = scoreLayout.getPages().size() == 1 && scoreLayout.getPages().get(0).getSystems().size() == 1;
 
         if (isFirstMeasure) {
-            measureLayout.addTimeSignature(mode.getTimeSignature());
+            measureLayout.addTimeSignature(scoreMode.getTimeSignature());
         }
-        measureLayout.addKeySignature(mode.getKeySignature());
+        measureLayout.addKeySignature(scoreMode.getKeySignature());
         measureLayout.addClef();
-        if (mode.getStartBarline() == null) return;
-        measureLayout.addStartBarline(mode.getStartBarline());
+        if (scoreMode.getStartBarline() == null) return;
+        measureLayout.addStartBarline(scoreMode.getStartBarline());
     }
 }

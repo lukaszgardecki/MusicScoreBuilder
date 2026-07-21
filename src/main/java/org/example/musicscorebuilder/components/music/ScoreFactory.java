@@ -3,16 +3,16 @@ package org.example.musicscorebuilder.components.music;
 public class ScoreFactory {
     private static final int measuresCount = 5;
 
-    public static Mode createSoloMode() {
-        Mode mode = new Mode(ModeType.SOLO);
-        mode.appendMeasures(measuresCount);
-        return mode;
+    public static ScoreMode createSoloMode() {
+        ScoreMode scoreMode = new ScoreMode(ModeType.SOLO);
+        scoreMode.appendMeasures(measuresCount);
+        return scoreMode;
     }
 
-    public static Mode createHarmonyMode() {
-        Mode mode = new Mode(ModeType.HARMONY);
-        mode.appendMeasures(measuresCount);
-        return mode;
+    public static ScoreMode createHarmonyMode() {
+        ScoreMode scoreMode = new ScoreMode(ModeType.HARMONY);
+        scoreMode.appendMeasures(measuresCount);
+        return scoreMode;
     }
 
     public static Score createScore() {

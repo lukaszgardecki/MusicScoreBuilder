@@ -26,3 +26,8 @@
 .toolbar-btn:pressed {
     -fx-background-color: rgba(0, 0, 0, 0.25);
 }
+
+.toolbar-btn.active {
+    -fx-background-color: #0078d7;
+    -fx-text-fill: white;
+}
