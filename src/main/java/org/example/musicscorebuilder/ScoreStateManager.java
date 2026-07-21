@@ -1,6 +1,6 @@
 package org.example.musicscorebuilder;
 
-import org.example.musicscorebuilder.components.layout.ElementLayout;
+import org.example.musicscorebuilder.components.layout.Selectable;
 import org.example.musicscorebuilder.components.music.Mode;
 import org.example.musicscorebuilder.components.music.Score;
 
@@ -10,7 +10,7 @@ import java.util.List;
 public class ScoreStateManager {
     private static ScoreStateManager instance;
     private final List<ScoreChangeListener> scoreChangeListeners = new ArrayList<>();
-    private ElementLayout selectedElement = null;
+    private Selectable selectedItem = null;
     private int currentModeIndex = 0;
 
     private ScoreStateManager() {}
@@ -37,16 +37,24 @@ public class ScoreStateManager {
 
 
 
-    public void setSelectedElement(ElementLayout element) {
-        this.selectedElement = element;
+    public void setSelectedItem(Selectable item) {
+        if (this.selectedItem != null) {
+            this.selectedItem.setSelected(false);
+        }
+
+        this.selectedItem = item;
+
+        if (this.selectedItem != null) {
+            this.selectedItem.setSelected(true);
+        }
     }
 
-    public ElementLayout getSelectedElement() {
-        return selectedElement;
+    public Selectable getSelectedItem() {
+        return selectedItem;
     }
 
     public void clearSelection() {
-        this.selectedElement = null;
+        setSelectedItem(null);
     }
 
 

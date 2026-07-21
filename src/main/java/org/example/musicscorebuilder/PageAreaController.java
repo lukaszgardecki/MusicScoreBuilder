@@ -5,11 +5,10 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.input.MouseEvent;
 import org.example.musicscorebuilder.components.layout.*;
-import org.example.musicscorebuilder.components.music.Mode;
-import org.example.musicscorebuilder.components.music.Page;
-import org.example.musicscorebuilder.components.music.PageFormat;
-import org.example.musicscorebuilder.components.music.Score;
+import org.example.musicscorebuilder.components.music.*;
 import org.example.musicscorebuilder.components.views.BackgroundView;
+
+import java.util.List;
 
 public class PageAreaController {
     @FXML private ScrollPane scrollPane;
@@ -55,6 +54,13 @@ public class PageAreaController {
             viewModeToggle.setText("Widok: Pełna Partytura");
             stateManager.setCurrentModeIndex(1);
         }
+        refreshView();
+    }
+
+    private void redraw() {
+        if (currentScoreLayout != null) {
+            container.updateContent(currentScoreLayout);
+        }
     }
 
     private void refreshView() {
@@ -62,24 +68,21 @@ public class PageAreaController {
         Mode activeMode = stateManager.getCurrentMode(score);
         if (activeMode == null) return;
         this.currentScoreLayout = layoutEngine.compute(activeMode);
-        container.updateContent(currentScoreLayout);
+        redraw();
     }
 
     private void handleCanvasClick(MouseEvent event) {
         if (currentScoreLayout == null) return;
         if (!container.wasLastMousePressJustClick()) return;
-        ElementLayout clickedElement = findClickedElement(event);
-
+        Selectable clickedElement = findClickedElement(event);
         currentScoreLayout.clearAllSelections();
         toggleSelection(clickedElement);
-        container.updateContent(currentScoreLayout);
+        redraw();
     }
 
-    private ElementLayout findClickedElement(MouseEvent event) {
+    private Selectable findClickedElement(MouseEvent event) {
         double globalMusicX = container.toModelX(event.getX());
         double globalMusicY = container.toModelY(event.getY());
-
-        ElementLayout clickedElement = null;
 
         for (PageLayout page : currentScoreLayout.getPages()) {
             double pageX = globalMusicX - page.getX();
@@ -99,31 +102,68 @@ public class PageAreaController {
 
                         for (ElementLayout element : segment.getElements()) {
                             if (element.contains(segmentMusicX, segmentMusicY)) {
-                                clickedElement = element;
-                                break;
+                                return element;
                             }
                         }
-                        if (clickedElement != null) break;
                     }
-                    if (clickedElement != null) break;
+
+                    MeasureStaffSelection region = measure.getElementsRegionAt(measureX, measureY);
+                    if (region != null && region.contains(measureX, measureY)) {
+                        return region;
+                    }
                 }
-                if (clickedElement != null) break;
             }
-            if (clickedElement != null) break;
         }
-        return clickedElement;
+
+        return null;
     }
 
-    private void toggleSelection(ElementLayout element) {
-        if (element != null) {
-            if (element instanceof TimeSigLayout || element instanceof KeySigLayout) {
+    private void toggleSelection(Selectable clickedElement) {
+        if (clickedElement == null) {
+            stateManager.clearSelection();
+            return;
+        }
+
+        if (clickedElement instanceof ElementLayout element) {
+            if (clickedElement instanceof TimeSigLayout || clickedElement instanceof KeySigLayout) {
                 element.getParent().getElements().forEach(e -> e.setSelected(true));
             } else {
-                element.setSelected(true);
+                clickedElement.setSelected(true);
             }
-            stateManager.setSelectedElement(element);
-        } else {
-            stateManager.setSelectedElement(null);
+        } else if (clickedElement instanceof MeasureStaffSelection selection) {
+            selection.setSelected(true);
+
+            MeasureLayout measure = selection.getMeasure();
+            StaffLayout targetStaff = selection.getStaff();
+
+            if (measure != null && measure.getSegments() != null && targetStaff != null) {
+                List<SegmentLayout> segments = measure.getSegments();
+
+                int firstChordRestIdx = -1;
+                int lastChordRestIdx = -1;
+
+                for (int i = 0; i < segments.size(); i++) {
+                    if (segments.get(i).getType() == SegmentType.CHORDREST) {
+                        if (firstChordRestIdx == -1) {
+                            firstChordRestIdx = i;
+                        }
+                        lastChordRestIdx = i;
+                    }
+                }
+
+                if (firstChordRestIdx != -1) {
+                    for (int i = firstChordRestIdx; i <= lastChordRestIdx; i++) {
+                        SegmentLayout segment = segments.get(i);
+                        List<ElementLayout> staffElements = segment.getElementsForStaff(targetStaff);
+
+                        for (ElementLayout element : staffElements) {
+                            element.setSelected(true);
+                        }
+                    }
+                }
+            }
         }
+
+        stateManager.setSelectedItem(clickedElement);
     }
 }

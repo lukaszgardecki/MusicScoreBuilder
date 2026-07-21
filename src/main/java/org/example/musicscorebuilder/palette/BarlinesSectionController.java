@@ -28,7 +28,7 @@ public class BarlinesSectionController extends AbstractPaletteSectionController<
 
     @Override
     protected boolean applyToSelectedElement(BarlineStyle item) {
-        var selectedLayout = stateManager.getSelectedElement();
+        var selectedLayout = stateManager.getSelectedItem();
         if (selectedLayout instanceof BarlineLayout actualBarlineLayout) {
             actualBarlineLayout.setStyle(item);
             return true;

@@ -50,6 +50,18 @@ public class MeasureLayout {
         segments.addFirst(seg);
     }
 
+    public MeasureStaffSelection getElementsRegionAt(double measureX, double measureY) {
+        for (StaffLayout staff : staves) {
+            double staffY = staff.getY();
+            double staffHeight = staff.getHeight();
+
+            if (measureY >= staffY && measureY <= (staffY + staffHeight)) {
+                return new MeasureStaffSelection(this, staff);
+            }
+        }
+        return staves.isEmpty() ? null : new MeasureStaffSelection(this, staves.getFirst());
+    }
+
     public ScoreStyle getScoreStyle() { return style; }
     public Measure getMeasure() { return measure; }
     public List<SegmentLayout> getSegments() { return segments; }
@@ -63,5 +75,6 @@ public class MeasureLayout {
         double totalSpacing = (staves.size() - 1) * style.getStaffSpacing();
         return totalStavesHeight + totalSpacing;
     }
+
     public void setX(double x) { this.x = x; }
 }

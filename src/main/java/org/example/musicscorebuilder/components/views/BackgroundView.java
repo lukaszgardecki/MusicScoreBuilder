@@ -65,6 +65,8 @@ public class BackgroundView extends Pane {
             double dx = e.getSceneX() - lastX;
             double dy = e.getSceneY() - lastY;
 
+            if (Math.hypot(dx, dy) > 2.0) wasDragged = true;
+
             offsetX += dx;
             offsetY += dy;
 

@@ -27,6 +27,9 @@ public class ScoreStyle {
     private static final int NOTE_MAX_LEDGER_LINES = 3;
 
     private static final String ELEMENT_SELECTED_COLOR = "#0078d7";
+    private static final double SELECTION_FRAME_WIDTH = 2 * STAFF_LINE_WIDTH;
+    private static final double SELECTION_FRAME_EXTRA_HEIGHT = STAFF_LINE_SPACING;
+    private static final double SELECTION_FRAME_RADIUS = 0.5;
 
     private double pageSpacing = PAGE_SPACING;
     private double staffSpacing = STAFF_SPACING;
@@ -53,7 +56,9 @@ public class ScoreStyle {
     private int noteMaxLedgerLines = NOTE_MAX_LEDGER_LINES;
 
     private String elementSelectedColor = ELEMENT_SELECTED_COLOR;
-
+    private double selectionFrameWidth =  SELECTION_FRAME_WIDTH;
+    private double selectionFrameExtraHeight = SELECTION_FRAME_EXTRA_HEIGHT;
+    private double selectionFrameRadius = SELECTION_FRAME_RADIUS;
 
 
     public double getPageSpacing() { return staffSpacingScale * pageSpacing; }
@@ -81,8 +86,9 @@ public class ScoreStyle {
     public int getNoteMaxLedgerLines() { return noteMaxLedgerLines; }
 
     public String getElementSelectedColor() { return elementSelectedColor; }
-
-
+    public double getSelectionFrameWidth() { return staffSpacingScale * selectionFrameWidth; }
+    public double getSelectionFrameExtraHeight() { return staffSpacingScale * selectionFrameExtraHeight; }
+    public double getSelectionFrameRadius() { return staffSpacingScale * selectionFrameRadius; }
 
     public double toSp(double valueInMm) {
         if (spatiumMm <= 0) return 0;

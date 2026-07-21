@@ -6,7 +6,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextBoundsType;
-import org.example.musicscorebuilder.components.layout.ElementLayout;
+import org.example.musicscorebuilder.components.layout.Selectable;
 import org.example.musicscorebuilder.components.layout.TimeSigLayout;
 import org.example.musicscorebuilder.components.music.Leland;
 import org.example.musicscorebuilder.components.music.TimeSignature;
@@ -52,9 +52,9 @@ public class TimeSignatureSectionController extends AbstractPaletteSectionContro
 
     @Override
     protected boolean applyToSelectedElement(PreDefinedTimeSignature sig) {
-        ElementLayout selectedLayout = stateManager.getSelectedElement();
+        Selectable item = stateManager.getSelectedItem();
 
-        if (selectedLayout instanceof TimeSigLayout) {
+        if (item instanceof TimeSigLayout) {
             scoreService.getScore().getModes().forEach(mode -> mode.setTimeSignature(sig.getTimeSignature()));
             return true;
         }

@@ -1,9 +1,9 @@
 package org.example.musicscorebuilder;
 
 import javafx.scene.input.MouseEvent;
-import org.example.musicscorebuilder.components.layout.ElementLayout;
 import org.example.musicscorebuilder.components.layout.NoteLayout;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
+import org.example.musicscorebuilder.components.layout.Selectable;
 import org.example.musicscorebuilder.components.views.BackgroundView;
 
 import java.util.function.Function;
@@ -15,7 +15,7 @@ public class NoteDragHandler {
     private record DragSession(NoteLayout note, double startMouseY, double offsetY) {}
 
     private final BackgroundView container;
-    private final Function<MouseEvent, ElementLayout> elementFinder;
+    private final Function<MouseEvent, Selectable> elementFinder;
     private final Supplier<ScoreLayout> layoutProvider;
     private final ScoreStateManager stateManager = ScoreStateManager.getInstance();
     private DragSession session = null;
@@ -24,7 +24,7 @@ public class NoteDragHandler {
 
     public NoteDragHandler(
             BackgroundView container,
-            Function<MouseEvent, ElementLayout> elementFinder,
+            Function<MouseEvent, Selectable> elementFinder,
             Supplier<ScoreLayout> layoutProvider) {
         this.container = container;
         this.elementFinder = elementFinder;
@@ -35,7 +35,7 @@ public class NoteDragHandler {
         ScoreLayout layout = layoutProvider.get();
         if (layout == null) return;
 
-        ElementLayout clicked = elementFinder.apply(event);
+        Selectable clicked = elementFinder.apply(event);
         if (clicked instanceof NoteLayout note) startNoteDragSession(note, event, layout);
         else if (clicked != null) startOtherElementDragSession();
         else reset();
@@ -75,8 +75,6 @@ public class NoteDragHandler {
         isDraggingOtherElement = false;
 
         layout.clearAllSelections();
-        container.updateContent(layout);
-        event.consume();
     }
 
     private void startOtherElementDragSession() {

@@ -1,6 +1,6 @@
 package org.example.musicscorebuilder.components.layout;
 
-public abstract class ElementLayout {
+public abstract class ElementLayout implements Selectable {
     protected final ScoreStyle style;
     protected final SegmentLayout parent;
     private final boolean hasDynamicWidth;
@@ -14,25 +14,24 @@ public abstract class ElementLayout {
         this.parent = parent;
     }
 
+    @Override public boolean isSelected() { return selected; }
+    @Override public void setSelected(boolean selected) { this.selected = selected; }
+    @Override
+    public boolean contains(double segmentMusicX, double segmentMusicY) {
+        return segmentMusicX >= getX() && segmentMusicX <= (getX() + getWidth()) &&
+                segmentMusicY >= getBoxY() && segmentMusicY <= (getBoxY() + getHeight());
+    }
+
     public SegmentLayout getParent() { return parent; }
     public ScoreStyle getScoreStyle() { return style; }
     public boolean hasDynamicWidth() { return hasDynamicWidth; }
 
     public double getX() { return x; }
-    public void setX(double x) { this.x = x; }
-
     public double getY() { return y; }
-    public void setY(double y) { this.y = y; }
-
-    public boolean isSelected() { return selected; }
-    public void setSelected(boolean selected) { this.selected = selected; }
-
     public abstract double getWidth();
     public abstract double getHeight();
     public abstract double getBoxY();
 
-    public boolean contains(double segmentMusicX, double segmentMusicY) {
-        return segmentMusicX >= getX() && segmentMusicX <= (getX() + getWidth()) &&
-                segmentMusicY >= getBoxY() && segmentMusicY <= (getBoxY() + getHeight());
-    }
+    public void setX(double x) { this.x = x; }
+    public void setY(double y) { this.y = y; }
 }
