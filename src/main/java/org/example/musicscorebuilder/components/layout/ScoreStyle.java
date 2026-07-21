@@ -31,7 +31,7 @@ public class ScoreStyle {
     private static final String ELEMENT_SELECTED_COLOR = "#0078d7";
     private static final double SELECTION_FRAME_WIDTH = 2 * STAFF_LINE_WIDTH;
     private static final double SELECTION_FRAME_EXTRA_HEIGHT = STAFF_LINE_SPACING;
-    private static final double SELECTION_FRAME_RADIUS = 0.5;
+    private static final double SELECTION_FRAME_RADIUS = 0.4;
 
     private double pageSpacing = PAGE_SPACING;
     private double staffSpacing = STAFF_SPACING;
