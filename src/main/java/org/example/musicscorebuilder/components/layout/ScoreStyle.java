@@ -3,8 +3,8 @@ package org.example.musicscorebuilder.components.layout;
 public class ScoreStyle {
 
     private static final double PAGE_SPACING = 4.0;
-    private static final double STAFF_SPACING = 4.0;
-    private static final double SYSTEM_SPACING = 6.0;
+    private static final double STAFF_SPACING = 7.0;
+    private static final double SYSTEM_SPACING = 8.0;
     private static final double SPATIUM_MM = 1.564;
     private static final double SYSTEM_MIN_FULLNESS_RATIO = 0.5;
 

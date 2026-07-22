@@ -1,5 +1,6 @@
 package org.example.musicscorebuilder.components.layout;
 
+import org.example.musicscorebuilder.components.layout.util.StemLengthCalculator;
 import org.example.musicscorebuilder.components.music.Clef;
 import org.example.musicscorebuilder.components.music.ClefType;
 
@@ -40,10 +41,11 @@ public class StemLayout implements Selectable {
     public double getEndY() {
         double spacing = style.getStaffLineSpacing();
         double diff = parentNote.getScoreStyle().getNoteStemHeightDiffFactor();
-        double standardStemHeight = (3.5 * spacing) - diff;
 
         double startY = getStartY();
         double middleY = getMiddleLineY();
+        double stemLengthFactor = StemLengthCalculator.calculate(parentNote, middleY, spacing);
+        double standardStemHeight = (stemLengthFactor * spacing) - diff;
         StemDirection direction = getDirection();
 
         double stemHeight = standardStemHeight;

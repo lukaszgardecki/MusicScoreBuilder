@@ -1,12 +1,12 @@
 package org.example.musicscorebuilder.components.layout;
 
+import org.example.musicscorebuilder.components.layout.util.NoteCollisionResolver;
 import org.example.musicscorebuilder.components.music.*;
 import java.util.*;
 
 public class SegmentLayout {
     private final ScoreStyle style;
     private final MeasureLayout parent;
-    private final ChordCollisionResolver collisionResolver = new ChordCollisionResolver();
     private final Map<StaffLayout, List<ElementLayout>> elementsByStaff = new HashMap<>();
     private SegmentType type;
     private double x, y = 0, height;
@@ -72,7 +72,7 @@ public class SegmentLayout {
                 .map(NoteLayout.class::cast)
                 .toList();
 
-        collisionResolver.resolveCollisions(notes);
+        NoteCollisionResolver.resolve(notes);
     }
 
     public List<ElementLayout> getElementsForStaff(StaffLayout staffLayout) {

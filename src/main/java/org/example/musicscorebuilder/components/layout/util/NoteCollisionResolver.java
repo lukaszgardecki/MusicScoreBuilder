@@ -1,13 +1,18 @@
-package org.example.musicscorebuilder.components.layout;
+package org.example.musicscorebuilder.components.layout.util;
 
+import org.example.musicscorebuilder.components.layout.NoteLayout;
+import org.example.musicscorebuilder.components.layout.StemDirection;
+import org.example.musicscorebuilder.components.layout.StemLayout;
 import org.example.musicscorebuilder.components.music.NoteType;
 
 import java.util.Comparator;
 import java.util.List;
 
-public class ChordCollisionResolver {
+public final class NoteCollisionResolver {
 
-    public void resolveCollisions(List<NoteLayout> notes) {
+    private NoteCollisionResolver() {}
+
+    public static void resolve(List<NoteLayout> notes) {
         if (notes == null || notes.size() <= 1) {
             if (notes != null && !notes.isEmpty()) {
                 notes.getFirst().setXOffset(0.0);
@@ -40,7 +45,7 @@ public class ChordCollisionResolver {
         }
     }
 
-    private boolean shouldOffset(NoteLayout nextNote, NoteLayout currentNote) {
+    private static boolean shouldOffset(NoteLayout nextNote, NoteLayout currentNote) {
         int diatonicDistance = nextNote.getDiatonicStep() - currentNote.getDiatonicStep();
 
         if (diatonicDistance == 1) return true;
