@@ -10,7 +10,7 @@ public class NoteLayout extends ElementLayout {
     private final Note note;
     private final StaffLayout staff;
     private final StemLayout stem;
-    private final BeamSingleLayout beam;
+    private final BeamSingleLayout singleBeam;
     private double y;
     private double xOffset = 0.0;
 
@@ -28,7 +28,7 @@ public class NoteLayout extends ElementLayout {
         Clef clef = staff.getStaff().getDefaultClef();
         this.y = calculateY(clef) + staff.getY();
         this.stem = note.getType() == NoteType.WHOLE ? null : new StemLayout(this);
-        this.beam = note.isBeamed() ? null : note.getType() == NoteType.EIGHTH ? new BeamSingleLayout(this) : null;
+        this.singleBeam = note.isBeamed() ? null : note.getType() == NoteType.EIGHTH ? new BeamSingleLayout(this) : null;
     }
 
     public void updatePitchFromY(double newY) {
@@ -97,7 +97,7 @@ public class NoteLayout extends ElementLayout {
     public String getCode() { return fontData.getCode(); }
     public int getDiatonicStep() { return note.getPitch().getAbsoluteDiatonicStep(); }
     public StemLayout getStem() { return stem; }
-    public BeamSingleLayout getBeamSingle() { return beam; }
+    public BeamSingleLayout getBeamSingle() { return singleBeam; }
     public StaffLayout getStaffLayout() { return staff; }
 
     private double calculateY(Clef clef) {

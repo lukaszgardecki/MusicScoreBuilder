@@ -33,12 +33,38 @@ public class FakeMeasureNotesGenerator {
         int remainingSegments = totalCapacity;
 
         while (remainingSegments > 0) {
-            NoteType randomType = NoteType.getRandomFitting(remainingSegments);
+            boolean makeBeamGroup = Math.random() < 0.5 && remainingSegments >= 2;
+
+            if (makeBeamGroup) {
+                int count = (remainingSegments >= 4 && Math.random() < 0.5) ? 4 : 2;
+                int needed = count * NoteType.EIGHTH.getSegments();
+
+                if (remainingSegments >= needed) {
+                    for (int i = 0; i < count; i++) {
+                        BeamType beamType;
+                        if (i == 0) {
+                            beamType = BeamType.BEGIN;
+                        } else if (i == count - 1) {
+                            beamType = BeamType.END;
+                        } else {
+                            beamType = BeamType.CONTINUE;
+                        }
+
+                        PitchStep randomStep = PitchStep.values()[(int) (Math.random() * PitchStep.values().length)];
+                        notes.add(new Note(voice, randomStep, 0, octave, NoteType.EIGHTH, beamType));
+                    }
+                    remainingSegments -= needed;
+                    continue;
+                }
+            }
+
+            NoteType randomType;
+            do {
+                randomType = NoteType.getRandomFitting(remainingSegments);
+            } while (randomType == NoteType.EIGHTH && remainingSegments > 1);
+
             PitchStep randomStep = PitchStep.values()[(int) (Math.random() * PitchStep.values().length)];
-
-            var beamType = randomType == NoteType.EIGHTH ? BeamType.BEGIN : BeamType.NONE;
-
-            notes.add(new Note(voice, randomStep, 0, octave, randomType, beamType));
+            notes.add(new Note(voice, randomStep, 0, octave, randomType, BeamType.NONE));
             remainingSegments -= randomType.getSegments();
         }
         return notes;

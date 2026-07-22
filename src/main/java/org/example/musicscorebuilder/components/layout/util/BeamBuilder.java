@@ -3,6 +3,7 @@ package org.example.musicscorebuilder.components.layout.util;
 import org.example.musicscorebuilder.components.layout.BeamGroupLayout;
 import org.example.musicscorebuilder.components.layout.NoteLayout;
 import org.example.musicscorebuilder.components.layout.StaffLayout;
+import org.example.musicscorebuilder.components.music.BeamType;
 
 import java.util.*;
 
@@ -20,11 +21,8 @@ public class BeamBuilder {
             return resultGroups;
         }
 
-        // 1. Sortujemy wszystko chronologicznie po X
         notesToProcess.sort(Comparator.comparingDouble(NoteLayout::getX));
 
-        // 2. Klucz mapy: StaffLayout + Voice
-        // Grupujemy surowe nuty po pięciolinii i głosie
         Map<StaffLayout, Map<Integer, List<NoteLayout>>> rawNotesByStaffAndVoice = new HashMap<>();
 
         for (NoteLayout noteLayout : notesToProcess) {
@@ -37,24 +35,37 @@ public class BeamBuilder {
                     .add(noteLayout);
         }
 
-        // 3. Dla każdego głosu dzielimy nuty na sztywne paczki (np. po 4 nuty)
         for (Map<Integer, List<NoteLayout>> voicesMap : rawNotesByStaffAndVoice.values()) {
             for (List<NoteLayout> voiceNotes : voicesMap.values()) {
 
                 BeamGroupLayout currentGroup = null;
 
-                for (NoteLayout note : voiceNotes) {
-                    // Jeśli nie mamy grupy lub obecna grupa ma już 4 nuty, tworzymy nową
-                    if (currentGroup == null || currentGroup.size() >= 4) {
+                for (NoteLayout noteLayout : voiceNotes) {
+                    BeamType beamType = noteLayout.getNote().getBeam();
+
+                    if (beamType == BeamType.BEGIN) {
                         currentGroup = new BeamGroupLayout();
                         resultGroups.add(currentGroup);
+                        currentGroup.addNote(noteLayout);
+                    } else if (beamType == BeamType.CONTINUE || beamType == BeamType.END) {
+                        if (currentGroup != null) {
+                            currentGroup.addNote(noteLayout);
+                        } else {
+                            currentGroup = new BeamGroupLayout();
+                            resultGroups.add(currentGroup);
+                            currentGroup.addNote(noteLayout);
+                        }
+
+                        if (beamType == BeamType.END) {
+                            currentGroup = null;
+                        }
+                    } else {
+                        currentGroup = null;
                     }
-                    currentGroup.addNote(note);
                 }
             }
         }
 
-        // Odrzucamy grupy, które mają tylko 1 nutę (bo pojedyncza nuta to nie belka)
         resultGroups.removeIf(group -> group.size() <= 1);
 
         notesToProcess.clear();
