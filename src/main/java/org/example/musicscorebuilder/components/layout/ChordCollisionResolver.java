@@ -1,5 +1,7 @@
 package org.example.musicscorebuilder.components.layout;
 
+import org.example.musicscorebuilder.components.music.NoteType;
+
 import java.util.Comparator;
 import java.util.List;
 
@@ -25,16 +27,30 @@ public class ChordCollisionResolver {
             NoteLayout currentNote = sortedNotes.get(i);
             NoteLayout nextNote = sortedNotes.get(i + 1);
 
-            int diatonicDistance = nextNote.getDiatonicStep() - currentNote.getDiatonicStep();
+            if (shouldOffset(nextNote, currentNote)) {
+                double offsetWidth = currentNote.getBoxWidth();
 
-            if (diatonicDistance <= 1) {
                 if (stemDirection == StemDirection.UP) {
-                    nextNote.setXOffset(currentNote.getWidth());
+                    nextNote.setXOffset(offsetWidth);
                 } else {
-                    currentNote.setXOffset(nextNote.getWidth());
+                    currentNote.setXOffset(offsetWidth);
                 }
                 i++;
             }
         }
+    }
+
+    private boolean shouldOffset(NoteLayout nextNote, NoteLayout currentNote) {
+        int diatonicDistance = nextNote.getDiatonicStep() - currentNote.getDiatonicStep();
+
+        if (diatonicDistance == 1) return true;
+        if (diatonicDistance == 0) {
+            NoteType type1 = currentNote.getNote().getType();
+            NoteType type2 = nextNote.getNote().getType();
+            boolean bothAreBlack = type1.isBlack() && type2.isBlack();
+            boolean bothAreHalf = type1.isHalf() && type2.isHalf();
+            return !(bothAreBlack || bothAreHalf);
+        }
+        return false;
     }
 }

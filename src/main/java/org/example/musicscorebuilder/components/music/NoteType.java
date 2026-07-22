@@ -17,13 +17,10 @@ public enum NoteType {
         this.segments = segments;
     }
 
-    public int getSegments() {
-        return segments;
-    }
-
-    public static NoteType getRandom() {
-        return VALUES[ThreadLocalRandom.current().nextInt(VALUES.length)];
-    }
+    public int getSegments() { return segments; }
+    public boolean isHalf() { return this == HALF; }
+    public boolean isBlack() { return  this != HALF && this != WHOLE; }
+    public static NoteType getRandom() { return VALUES[ThreadLocalRandom.current().nextInt(VALUES.length)]; }
 
     public static NoteType getRandomFitting(int maxSegments) {
         List<NoteType> fitting = new ArrayList<>();
