@@ -72,7 +72,7 @@ public class NoteLayout extends ElementLayout {
     @Override public double getBoxY() { return y - (0.5 * style.getStaffLineSpacing()); }
     @Override public double getWidth() {
         var headWidth = getFontWidth();
-        var flagWidth = getStem() == null ? 0 : getStem().getDirection() == StemDirection.UP ? getStem().getWidth() : 0;
+        var flagWidth = getBeam() == null ? 0 : getStem().getDirection() == StemDirection.UP ? getBeam().getFontWidth() : 0;
         return headWidth + flagWidth;
     }
     @Override public double getHeight() { return style.getStaffLineSpacing(); }

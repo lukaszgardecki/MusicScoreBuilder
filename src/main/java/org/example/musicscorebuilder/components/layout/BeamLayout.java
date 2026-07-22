@@ -25,10 +25,7 @@ public class BeamLayout implements Selectable {
         double y = getY();
 
         double totalWidth = getFontWidth();
-        double heightDiff = parentNote.getStem().getDirection() == StemDirection.UP
-                ? 0.75 * style.getStaffLineSpacing()
-                : style.getStaffLineSpacing();
-        double height = getFontSize() - heightDiff;
+        double height = getHeight();
 
         double startX = x + stemWidth;
         double width = totalWidth - stemWidth;
@@ -47,6 +44,13 @@ public class BeamLayout implements Selectable {
 
     public double getX() { return parentNote.getStem().getX(); }
     public double getY() { return parentNote.getStem().getEndY(); }
+    public double getBoxY() {return parentNote.getStem().getDirection() == StemDirection.UP ? getY() : getY() - getHeight(); }
+    public double getHeight() {
+        double heightDiff = parentNote.getStem().getDirection() == StemDirection.UP
+                ? 0.75 * style.getStaffLineSpacing()
+                : style.getStaffLineSpacing();
+        return getFontSize() - heightDiff;
+    }
 
     public double getFontWidth() { return (fontData.getHeight() * fontData.getRatio()) * style.getStaffLineSpacing(); }
     public double getFontSize() { return 4 * style.getStaffLineSpacing(); }

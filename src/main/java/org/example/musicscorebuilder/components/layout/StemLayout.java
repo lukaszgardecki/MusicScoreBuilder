@@ -18,7 +18,7 @@ public class StemLayout implements Selectable {
     @Override
     public boolean contains(double segmentX, double segmentY) {
         double lineWidth = getWidth();
-        double correctedX = getX() + parentNote.getX() + (lineWidth / 2.0);
+        double correctedX = getX() + (lineWidth / 2.0);
 
         boolean hitX = Math.abs(segmentX - correctedX) <= (lineWidth / 2.0);
         boolean hitY = segmentY >= Math.min(getStartY(), getEndY()) && segmentY <= Math.max(getStartY(), getEndY());
