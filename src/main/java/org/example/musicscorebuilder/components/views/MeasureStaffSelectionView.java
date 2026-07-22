@@ -33,7 +33,7 @@ public class MeasureStaffSelectionView extends ComponentView {
         double rectHeight = (staff.getHeight() + extraHeight) * sp;
         double arcRadius = scoreStyle.getSelectionFrameRadius() * sp;
 
-        gc.setStroke(Color.web(scoreStyle.getElementSelectedColor()));
+        gc.setStroke(Color.web(scoreStyle.getSelectColor(selection)));
         gc.setLineWidth(scoreStyle.getSelectionFrameWidth() * sp);
         gc.strokeRoundRect(rectX, rectY, rectWidth, rectHeight, arcRadius, arcRadius);
     }

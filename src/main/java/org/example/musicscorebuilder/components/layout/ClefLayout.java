@@ -23,6 +23,7 @@ public class ClefLayout extends ElementLayout {
     @Override public double getWidth() { return (fontData.getHeight() * fontData.getRatio()) * scale; }
     @Override public double getHeight() { return fontData.getHeight() * scale; }
     @Override public double getBoxY() { return getY() - (fontData.getNEy() * scale); }
+    @Override public int getVoice() { return 1; }
 
     public double getFontSize() { return height; }
     public String getCode() { return fontData.getCode(); }

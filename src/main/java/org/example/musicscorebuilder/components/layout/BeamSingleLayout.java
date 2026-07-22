@@ -18,6 +18,7 @@ public class BeamSingleLayout implements Selectable {
 
     @Override public boolean isSelected() { return selected; }
     @Override public void setSelected(boolean selected) { this.selected = selected; }
+    @Override public int getVoice() { return parentNote.getVoice(); }
     @Override
     public boolean contains(double segmentX, double segmentY) {
         double stemWidth = parentNote.getStem().getWidth();

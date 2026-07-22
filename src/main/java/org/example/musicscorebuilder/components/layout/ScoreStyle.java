@@ -29,7 +29,8 @@ public class ScoreStyle {
     private static final double NOTE_STEM_HEIGHT_DIFF_FACTOR = 0.2;
     private static final double NOTE_BEAM_THICKNESS = 0.5;
 
-    private static final String ELEMENT_SELECTED_COLOR = "#0078d7";
+    private static final String VOICE_1_COLOR = "#0066cc";
+    private static final String VOICE_2_COLOR = "#007a1a";
     private static final double SELECTION_FRAME_WIDTH = 2 * STAFF_LINE_WIDTH;
     private static final double SELECTION_FRAME_EXTRA_HEIGHT = STAFF_LINE_SPACING;
     private static final double SELECTION_FRAME_RADIUS = 0.4;
@@ -61,7 +62,8 @@ public class ScoreStyle {
     private double noteStemHeightDiffFactor = NOTE_STEM_HEIGHT_DIFF_FACTOR;
     private double noteBeamThickness = NOTE_BEAM_THICKNESS;
 
-    private String elementSelectedColor = ELEMENT_SELECTED_COLOR;
+    private String voice1Color = VOICE_1_COLOR;
+    private String voice2Color = VOICE_2_COLOR;
     private double selectionFrameWidth =  SELECTION_FRAME_WIDTH;
     private double selectionFrameExtraHeight = SELECTION_FRAME_EXTRA_HEIGHT;
     private double selectionFrameRadius = SELECTION_FRAME_RADIUS;
@@ -73,7 +75,6 @@ public class ScoreStyle {
     public double getSpatiumMm() { return spatiumMm; }
     public double getSystemMinFullnessRatio() { return systemMinFullnessRatio; }
 
-    public double getStaffSpacingScale() { return staffSpacingScale; }
     public double getStaffLineSpacing() { return staffSpacingScale * staffLineSpacing; }
     public double getStaffLineWidth() { return staffSpacingScale * staffLineWidth; }
 
@@ -94,7 +95,6 @@ public class ScoreStyle {
     public double getNoteStemHeightDiffFactor() { return noteStemHeightDiffFactor * getStaffLineSpacing(); }
     public double getNoteBeamThickness() { return staffSpacingScale * noteBeamThickness; }
 
-    public String getElementSelectedColor() { return elementSelectedColor; }
     public double getSelectionFrameWidth() { return staffSpacingScale * selectionFrameWidth; }
     public double getSelectionFrameExtraHeight() { return staffSpacingScale * selectionFrameExtraHeight; }
     public double getSelectionFrameRadius() { return staffSpacingScale * selectionFrameRadius; }
@@ -102,5 +102,16 @@ public class ScoreStyle {
     public double toSp(double valueInMm) {
         if (spatiumMm <= 0) return 0;
         return valueInMm / spatiumMm;
+    }
+
+    public String getSelectColor(Selectable element) {
+        if (element.isSelected()) {
+            int voice =  element.getVoice();
+            return switch (voice) {
+                case 1 -> voice1Color;
+                default -> voice2Color;
+            };
+        }
+        return "#000000";
     }
 }

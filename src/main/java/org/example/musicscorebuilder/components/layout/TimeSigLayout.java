@@ -54,6 +54,7 @@ public class TimeSigLayout extends ElementLayout {
     @Override public double getBoxY() { return getY(); }
     @Override public double getWidth() { return this.width; }
     @Override public double getHeight() { return height; }
+    @Override public int getVoice() { return 1; }
 
     public double getFontSize() { return height; }
     public DigitSign[][] getDigitSigns() { return this.digitSigns; }

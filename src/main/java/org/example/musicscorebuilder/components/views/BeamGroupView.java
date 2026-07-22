@@ -37,8 +37,7 @@ public class BeamGroupView extends ComponentView {
                 startY + halfBeamThickness  // Down Left
         };
 
-        if (beamGroup.isSelected()) gc.setFill(Color.web(style.getElementSelectedColor()));
-        else gc.setFill(Color.BLACK);
+        gc.setFill(Color.web(style.getSelectColor(beamGroup)));
         gc.fillPolygon(xPoints, yPoints, 4);
     }
 }

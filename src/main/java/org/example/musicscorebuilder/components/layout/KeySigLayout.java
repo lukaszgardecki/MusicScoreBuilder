@@ -41,25 +41,6 @@ public class KeySigLayout extends ElementLayout {
     }
 
     @Override
-    public void setX(double newX) {
-        double oldX = getX();
-        super.setX(newX);
-
-        double deltaX = newX - oldX;
-        if (deltaX == 0 || keySigns == null) return;
-
-        for (int i = 0; i < keySigns.length; i++) {
-            KeySign oldSign = keySigns[i];
-            if (oldSign == null) continue;
-            keySigns[i] = new KeySign(
-                    oldSign.x() + deltaX,
-                    oldSign.y(),
-                    oldSign.boxY()
-            );
-        }
-    }
-
-    @Override
     public double getWidth() {
         if (keySigns == null || keySigns.length == 0) return 0.0;
         double scaledSignWidth = getSignWidth();
@@ -104,6 +85,35 @@ public class KeySigLayout extends ElementLayout {
         }
         return hasValidSigns ? minY : getY();
     }
+    @Override public int getVoice() { return 1; }
+
+    public double getFontSize() { return height; }
+    public String getCode() { return Optional.ofNullable(fontData).map(Leland::getCode).orElse(""); }
+    public double getSignWidth() {
+        double scale = staffLayout.getLineSpacing();
+        double singleGlyphHeight = Optional.ofNullable(fontData).map(Leland::getHeight).orElse(0d);
+        return (singleGlyphHeight * Optional.ofNullable(fontData).map(Leland::getRatio).orElse(0d)) * scale;
+    }
+    public KeySign[] getKeySigns() { return keySigns; }
+
+    @Override
+    public void setX(double newX) {
+        double oldX = getX();
+        super.setX(newX);
+
+        double deltaX = newX - oldX;
+        if (deltaX == 0 || keySigns == null) return;
+
+        for (int i = 0; i < keySigns.length; i++) {
+            KeySign oldSign = keySigns[i];
+            if (oldSign == null) continue;
+            keySigns[i] = new KeySign(
+                    oldSign.x() + deltaX,
+                    oldSign.y(),
+                    oldSign.boxY()
+            );
+        }
+    }
 
     @Override
     public void setY(double newY) {
@@ -123,13 +133,4 @@ public class KeySigLayout extends ElementLayout {
             );
         }
     }
-
-    public double getFontSize() { return height; }
-    public String getCode() { return Optional.ofNullable(fontData).map(Leland::getCode).orElse(""); }
-    public double getSignWidth() {
-        double scale = staffLayout.getLineSpacing();
-        double singleGlyphHeight = Optional.ofNullable(fontData).map(Leland::getHeight).orElse(0d);
-        return (singleGlyphHeight * Optional.ofNullable(fontData).map(Leland::getRatio).orElse(0d)) * scale;
-    }
-    public KeySign[] getKeySigns() { return keySigns; }
 }

@@ -21,8 +21,7 @@ public class BeamSingleView extends ComponentView {
 
         gc.setFont(FontManager.getLelandFont(fontSize));
 
-        if (beam.isSelected()) gc.setFill(Color.web(beam.getScoreStyle().getElementSelectedColor()));
-        else gc.setFill(Color.BLACK);
+        gc.setFill(Color.web(beam.getScoreStyle().getSelectColor(beam)));
         gc.fillText(beam.getCode(), beamX, beamY);
     }
 }

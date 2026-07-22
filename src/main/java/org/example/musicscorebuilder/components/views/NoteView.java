@@ -31,10 +31,7 @@ public class NoteView extends ComponentView {
         if (note.getBeamSingle() instanceof BeamSingleLayout single) beamSingleView.draw(gc, single, segmentX, segmentY, sp);
 
         gc.setFont(FontManager.getLelandFont(fontSize));
-
-        if (note.isSelected()) gc.setFill(Color.web(note.getScoreStyle().getElementSelectedColor()));
-        else gc.setFill(Color.BLACK);
-
+        gc.setFill(Color.web(note.getScoreStyle().getSelectColor(note)));
         gc.fillText(note.getCode(), noteX, noteY);
     }
 }

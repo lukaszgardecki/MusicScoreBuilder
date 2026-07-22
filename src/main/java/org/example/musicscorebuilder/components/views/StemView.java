@@ -15,12 +15,7 @@ public class StemView {
         double baseX = segmentX + stem.getX() * sp;
         double correctedX = baseX + (stem.getWidth() * sp / 2.0);
 
-        if (stem.isSelected()) {
-            gc.setStroke(Color.web(stem.getScoreStyle().getElementSelectedColor()));
-        } else {
-            gc.setStroke(Color.BLACK);
-        }
-
+        gc.setStroke(Color.web(stem.getScoreStyle().getSelectColor(stem)));
         gc.setLineCap(StrokeLineCap.BUTT);
         gc.setLineWidth(stem.getWidth() * sp);
         gc.strokeLine(correctedX, startY, correctedX, endY);

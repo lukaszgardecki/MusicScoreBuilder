@@ -77,7 +77,7 @@ public class NoteLayout extends ElementLayout {
         return headWidth + flagWidth;
     }
     @Override public double getHeight() { return style.getStaffLineSpacing(); }
-
+    @Override public int getVoice() { return note.getVoice(); }
     @Override
     public boolean contains(double segmentMusicX, double segmentMusicY) {
         double noteMinX = getBoxX();

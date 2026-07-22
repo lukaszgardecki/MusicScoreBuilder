@@ -11,6 +11,7 @@ public class BeamGroupLayout implements Selectable {
 
     @Override public boolean isSelected() { return selected; }
     @Override public void setSelected(boolean selected) { this.selected = selected; }
+    @Override public int getVoice() { return notes.isEmpty() ? 1 : notes.getFirst().getVoice(); }
     @Override
     public boolean contains(double measureX, double measureY) {
         if (notes.isEmpty()) return false;

@@ -14,7 +14,7 @@ public class MeasureStaffSelection implements Selectable {
 
     @Override public boolean isSelected() { return selected; }
     @Override public void setSelected(boolean selected) { this.selected = selected; }
-
+    @Override public int getVoice() { return 1; }
     @Override
     public boolean contains(double measureX, double measureY) {
         double staffY = staff.getY();
