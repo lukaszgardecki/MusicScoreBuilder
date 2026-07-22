@@ -76,7 +76,7 @@ public class PageAreaController {
         if (currentScoreLayout == null) return;
         if (!container.wasLastMousePressJustClick()) return;
         Selectable clickedElement = findClickedElement(event);
-        currentScoreLayout.clearAllSelections();
+        stateManager.clearSelection();
         toggleSelection(clickedElement);
         redraw();
     }

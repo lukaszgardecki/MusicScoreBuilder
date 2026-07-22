@@ -32,11 +32,8 @@ public class NoteDragHandler {
     }
 
     public void handlePressed(MouseEvent event) {
-        ScoreLayout layout = layoutProvider.get();
-        if (layout == null) return;
-
         Selectable clicked = elementFinder.apply(event);
-        if (clicked instanceof NoteLayout note) startNoteDragSession(note, event, layout);
+        if (clicked instanceof NoteLayout note) startNoteDragSession(note, event);
         else if (clicked != null) startOtherElementDragSession();
         else reset();
     }
@@ -67,14 +64,13 @@ public class NoteDragHandler {
         reset();
     }
 
-    private void startNoteDragSession(NoteLayout note, MouseEvent event, ScoreLayout layout) {
+    private void startNoteDragSession(NoteLayout note, MouseEvent event) {
         double mouseModelY = container.toModelY(event.getY());
 
         session = new DragSession(note, mouseModelY, mouseModelY - note.getY());
         isDragActive = false;
         isDraggingOtherElement = false;
-
-        layout.clearAllSelections();
+        stateManager.clearSelection();
     }
 
     private void startOtherElementDragSession() {

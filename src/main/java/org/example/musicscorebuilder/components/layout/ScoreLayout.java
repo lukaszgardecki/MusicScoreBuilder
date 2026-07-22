@@ -17,18 +17,4 @@ public class ScoreLayout {
 
     public ScoreStyle getStyle() { return style; }
     public List<PageLayout> getPages() { return pages; }
-
-    public void clearAllSelections() {
-        for (PageLayout page : pages) {
-            for (SystemLayout system : page.getSystems()) {
-                for (MeasureLayout measure : system.getMeasures()) {
-                    for (SegmentLayout segment : measure.getSegments()) {
-                        for (ElementLayout element : segment.getElements()) {
-                            element.setSelected(false);
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
