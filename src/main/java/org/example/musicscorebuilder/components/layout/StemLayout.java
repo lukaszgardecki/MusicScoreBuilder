@@ -29,42 +29,51 @@ public class StemLayout implements Selectable {
     }
 
     public double getX() {
-        double localStemX = (getDirection() == StemDirection.UP) ? parentNote.getBoxWidth() - getWidth() : 0;
+        boolean isUp = (getDirection() == StemDirection.UP);
+        double stemWidth = getWidth();
+        double localStemX = isUp ? parentNote.getBoxWidth() - stemWidth : 0;
+
+        if (parentNote.getBeamGroup() != null) {
+            double spacing = style.getStaffLineSpacing();
+            double beamYAtNote = StemLengthCalculator.calculateBeamYAtNote(parentNote, getMiddleLineY(), spacing);
+            double noteCenterY = parentNote.getY() + (parentNote.getHeight() / 2.0);
+
+            if (isUp && noteCenterY < beamYAtNote) {
+                localStemX = 0;
+            } else if (!isUp && noteCenterY > beamYAtNote) {
+                localStemX = parentNote.getBoxWidth() - stemWidth;
+            }
+        }
+
         return parentNote.getX() + localStemX;
     }
 
     public double getStartY() {
         double diff = parentNote.getScoreStyle().getNoteStemHeightDiffFactor();
         double noteY = parentNote.getY();
-        return getDirection() == StemDirection.UP ? noteY - diff : noteY + diff;
+        StemDirection direction = getDirection();
+        boolean isUp = (direction == StemDirection.UP);
+
+        if (parentNote.getBeamGroup() != null) {
+            double spacing = style.getStaffLineSpacing();
+            double beamYAtNote = StemLengthCalculator.calculateBeamYAtNote(parentNote, getMiddleLineY(), spacing);
+            double noteCenterY = noteY + (parentNote.getHeight() / 2.0);
+
+            boolean crossed = (isUp && beamYAtNote > noteCenterY) || (!isUp && beamYAtNote < noteCenterY);
+            if (crossed) {
+                return isUp ? noteY + diff : noteY - diff;
+            }
+        }
+
+        return isUp ? noteY - diff : noteY + diff;
     }
 
     public double getEndY() {
         double spacing = style.getStaffLineSpacing();
-        double diff = parentNote.getScoreStyle().getNoteStemHeightDiffFactor();
-
-        double startY = getStartY();
         double middleY = getMiddleLineY();
-        double stemLengthFactor = StemLengthCalculator.calculate(parentNote, middleY, spacing);
-        double standardStemHeight = (stemLengthFactor * spacing) - diff;
-        StemDirection direction = getDirection();
+        double startY = getStartY();
 
-        double stemHeight = standardStemHeight;
-        double distanceToMiddle = Math.abs(middleY - startY);
-
-        if (direction == StemDirection.UP) {
-            if (startY > middleY && distanceToMiddle > standardStemHeight) {
-                stemHeight = distanceToMiddle;
-            }
-        } else {
-            if (startY < middleY && distanceToMiddle > standardStemHeight) {
-                stemHeight = distanceToMiddle;
-            }
-        }
-
-        return direction == StemDirection.UP
-                ? startY - stemHeight
-                : startY + stemHeight;
+        return StemLengthCalculator.calculateEndY(parentNote, middleY, startY, spacing);
     }
 
     public double getWidth() {

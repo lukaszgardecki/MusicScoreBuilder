@@ -51,6 +51,10 @@ public class BeamGroupLayout implements Selectable {
         }
     }
 
+    public List<NoteLayout> getNotes() {
+        return notes;
+    }
+
     public NoteLayout getFirstNote() {
         if (notes.isEmpty()) return null;
         return notes.getFirst();

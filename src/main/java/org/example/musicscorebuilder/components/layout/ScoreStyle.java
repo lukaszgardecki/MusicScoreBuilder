@@ -26,6 +26,9 @@ public class ScoreStyle {
     private static final double NOTE_LEDGER_LINE_THICKNESS = 0.16;
     private static final int NOTE_MAX_LEDGER_LINES = 3;
     private static final double NOTE_STEM_WIDTH = 0.1;
+    private static final double NOTE_STEM_SINGLE_DEFAULT_HEIGHT = 3.5;
+    private static final double NOTE_STEM_BEAMED_DEFAULT_HEIGHT = 3.0;
+    private static final double NOTE_STEM_MIN_HEIGHT = 2.25;
     private static final double NOTE_STEM_HEIGHT_DIFF_FACTOR = 0.2;
     private static final double NOTE_BEAM_THICKNESS = 0.5;
 
@@ -59,6 +62,9 @@ public class ScoreStyle {
     private double noteLedgerLineThickness = NOTE_LEDGER_LINE_THICKNESS;
     private int noteMaxLedgerLines = NOTE_MAX_LEDGER_LINES;
     private double noteStemWidth = NOTE_STEM_WIDTH;
+    private double noteStemSingleDefaultHeight = NOTE_STEM_SINGLE_DEFAULT_HEIGHT;
+    private double noteStemBeamedDefaultHeight = NOTE_STEM_BEAMED_DEFAULT_HEIGHT;
+    private double noteStemMinHeight = NOTE_STEM_MIN_HEIGHT;
     private double noteStemHeightDiffFactor = NOTE_STEM_HEIGHT_DIFF_FACTOR;
     private double noteBeamThickness = NOTE_BEAM_THICKNESS;
 
@@ -92,6 +98,9 @@ public class ScoreStyle {
     public double getNoteLedgerLineThickness() { return staffSpacingScale * noteLedgerLineThickness; }
     public int getNoteMaxLedgerLines() { return noteMaxLedgerLines; }
     public double getNoteStemWidth() { return staffSpacingScale * noteStemWidth; }
+    public double getNoteStemSingleDefaultHeight() { return staffSpacingScale * noteStemSingleDefaultHeight; }
+    public double getNoteStemBeamedDefaultHeight() { return staffSpacingScale * noteStemBeamedDefaultHeight; }
+    public double getNoteStemMinHeight() { return staffSpacingScale * noteStemMinHeight; }
     public double getNoteStemHeightDiffFactor() { return noteStemHeightDiffFactor * getStaffLineSpacing(); }
     public double getNoteBeamThickness() { return staffSpacingScale * noteBeamThickness; }
 
