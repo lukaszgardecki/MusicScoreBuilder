@@ -8,11 +8,11 @@ public class FakeMeasureNotesGenerator {
 
     public static void fillMeasureWithTwoVoices(Measure measure, int totalCapacity) {
         var staves = measure.getStaves();
-        List<Note> s1v1 = generateNotesForVoice(1, totalCapacity, PitchStep.G, 4);
-        List<Note> s1v2 = generateNotesForVoice(2, totalCapacity, PitchStep.C, 4);
+        List<Note> s1v1 = generateNotesForVoice(1, totalCapacity, 5);
+        List<Note> s1v2 = generateNotesForVoice(2, totalCapacity, 4);
 
-        List<Note> s2v1 = staves.size() == 2 ? generateNotesForVoice(1, totalCapacity, PitchStep.D, 3) : List.of();
-        List<Note> s2v2 = staves.size() == 2 ? generateNotesForVoice(2, totalCapacity, PitchStep.A, 2) : List.of();
+        List<Note> s2v1 = staves.size() == 2 ? generateNotesForVoice(1, totalCapacity, 3) : List.of();
+        List<Note> s2v2 = staves.size() == 2 ? generateNotesForVoice(2, totalCapacity, 2) : List.of();
 
         buildSegmentsFromVoices(measure, s1v1, s1v2, s2v1, s2v2);
     }
@@ -28,13 +28,15 @@ public class FakeMeasureNotesGenerator {
         return timeSig.getBeat() * segmentsPerBeat;
     }
 
-    private static List<Note> generateNotesForVoice(int voice, int totalCapacity, PitchStep step, int octave) {
+    private static List<Note> generateNotesForVoice(int voice, int totalCapacity, int octave) {
         List<Note> notes = new ArrayList<>();
         int remainingSegments = totalCapacity;
 
         while (remainingSegments > 0) {
             NoteType randomType = NoteType.getRandomFitting(remainingSegments);
-            notes.add(new Note(voice, step, 0, octave, randomType));
+            PitchStep randomStep = PitchStep.values()[(int) (Math.random() * PitchStep.values().length)];
+
+            notes.add(new Note(voice, randomStep, 0, octave, randomType));
             remainingSegments -= randomType.getSegments();
         }
         return notes;
