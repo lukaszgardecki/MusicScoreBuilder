@@ -8,6 +8,7 @@ import org.example.musicscorebuilder.util.Util;
 public class MeasureView extends ComponentView {
     private final SegmentView segmentView = new SegmentView();
     private final StaffView staffView = new StaffView();
+    private final BeamGroupView beamsView = new BeamGroupView();
     private final MeasureStaffSelectionView selectionView = new MeasureStaffSelectionView();
 
     public void draw(GraphicsContext gc, MeasureLayout measure, double systemX, double systemY, double sp) {
@@ -24,6 +25,10 @@ public class MeasureView extends ComponentView {
 
         for (SegmentLayout segment : measure.getSegments()) {
             segmentView.draw(gc, segment, measureX, measureY, sp);
+        }
+
+        for (BeamGroupLayout beamGroup : measure.getBeamGroups()) {
+            beamsView.draw(gc, beamGroup, measureX, measureY, sp);
         }
 
         Selectable selectedItem = ScoreStateManager.getInstance().getSelectedItem();

@@ -1,6 +1,7 @@
 package org.example.musicscorebuilder;
 
 import org.example.musicscorebuilder.components.layout.*;
+import org.example.musicscorebuilder.components.layout.util.BeamBuilder;
 import org.example.musicscorebuilder.components.music.*;
 
 public class LayoutEngine {
@@ -62,6 +63,7 @@ public class LayoutEngine {
 
     private MeasureLayout createMeasureLayout(Measure measure, SystemLayout systemLayout) {
         MeasureLayout measureLayout = new MeasureLayout(measure, systemLayout.getWidth(), style);
+        BeamBuilder beamBuilder = new BeamBuilder();
 
         for (Staff staff : measure.getStaves()) {
             measureLayout.add(new StaffLayout(staff, measureLayout, style));
@@ -74,12 +76,15 @@ public class LayoutEngine {
                     if (element instanceof Barline barline) {
                         segmentLayout.addByStaff(staff, new BarlineLayout(barline, staff, segmentLayout));
                     } else if (element instanceof Note note) {
-                        segmentLayout.addByStaff(staff, new NoteLayout(note, staff, segmentLayout));
+                        NoteLayout noteLayout = new NoteLayout(note, staff, segmentLayout);
+                        segmentLayout.addByStaff(staff, noteLayout);
+                        if (note.isBeamed()) beamBuilder.add(noteLayout);
                     }
                 }
             }
             measureLayout.add(segmentLayout);
         }
+        measureLayout.setBeamGroups(beamBuilder.build());
         return measureLayout;
     }
 

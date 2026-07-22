@@ -27,6 +27,7 @@ public class ScoreStyle {
     private static final int NOTE_MAX_LEDGER_LINES = 3;
     private static final double NOTE_STEM_WIDTH = 0.1;
     private static final double NOTE_STEM_HEIGHT_DIFF_FACTOR = 0.2;
+    private static final double NOTE_BEAM_THICKNESS = 0.5;
 
     private static final String ELEMENT_SELECTED_COLOR = "#0078d7";
     private static final double SELECTION_FRAME_WIDTH = 2 * STAFF_LINE_WIDTH;
@@ -58,6 +59,7 @@ public class ScoreStyle {
     private int noteMaxLedgerLines = NOTE_MAX_LEDGER_LINES;
     private double noteStemWidth = NOTE_STEM_WIDTH;
     private double noteStemHeightDiffFactor = NOTE_STEM_HEIGHT_DIFF_FACTOR;
+    private double noteBeamThickness = NOTE_BEAM_THICKNESS;
 
     private String elementSelectedColor = ELEMENT_SELECTED_COLOR;
     private double selectionFrameWidth =  SELECTION_FRAME_WIDTH;
@@ -90,6 +92,7 @@ public class ScoreStyle {
     public int getNoteMaxLedgerLines() { return noteMaxLedgerLines; }
     public double getNoteStemWidth() { return staffSpacingScale * noteStemWidth; }
     public double getNoteStemHeightDiffFactor() { return noteStemHeightDiffFactor * getStaffLineSpacing(); }
+    public double getNoteBeamThickness() { return staffSpacingScale * noteBeamThickness; }
 
     public String getElementSelectedColor() { return elementSelectedColor; }
     public double getSelectionFrameWidth() { return staffSpacingScale * selectionFrameWidth; }

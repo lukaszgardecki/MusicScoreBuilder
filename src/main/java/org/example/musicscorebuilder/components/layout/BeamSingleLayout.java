@@ -2,13 +2,13 @@ package org.example.musicscorebuilder.components.layout;
 
 import org.example.musicscorebuilder.components.music.Leland;
 
-public class BeamLayout implements Selectable {
+public class BeamSingleLayout implements Selectable {
     private final Leland fontData;
     private final ScoreStyle style;
     private final NoteLayout parentNote;
     private boolean selected;
 
-    public BeamLayout(NoteLayout parentNote) {
+    public BeamSingleLayout(NoteLayout parentNote) {
         this.parentNote = parentNote;
         this.style = parentNote.getScoreStyle();
         this.fontData = parentNote.getStem().getDirection() == StemDirection.UP

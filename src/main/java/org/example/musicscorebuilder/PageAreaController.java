@@ -97,14 +97,22 @@ public class PageAreaController {
                     double measureX = systemX - measure.getX();
                     double measureY = systemY - measure.getY();
 
+                    if (measure.getBeamGroups() != null && !measure.getBeamGroups().isEmpty()) {
+                        for (BeamGroupLayout beamGroup : measure.getBeamGroups()) {
+                            if (beamGroup.contains(measureX, measureY)) {
+                                return beamGroup;
+                            }
+                        }
+                    }
+
                     for (SegmentLayout segment : measure.getSegments()) {
                         double segmentMusicX = measureX - segment.getX();
                         double segmentMusicY = measureY - segment.getY();
 
                         for (ElementLayout element : segment.getElements()) {
                             if (element instanceof NoteLayout noteLayout) {
-                                if (noteLayout.getBeam() != null && noteLayout.getBeam().contains(segmentMusicX, segmentMusicY)) {
-                                    return noteLayout.getBeam();
+                                if (noteLayout.getBeamSingle() != null && noteLayout.getBeamSingle().contains(segmentMusicX, segmentMusicY)) {
+                                    return noteLayout.getBeamSingle();
                                 }
 
                                 if (noteLayout.getStem() != null && noteLayout.getStem().contains(segmentMusicX, segmentMusicY)) {
@@ -145,7 +153,7 @@ public class PageAreaController {
             }
         } else if (clickedElement instanceof StemLayout stem) {
             itemsToSelect.add(stem);
-        } else if (clickedElement instanceof BeamLayout beam) {
+        } else if (clickedElement instanceof BeamGroupLayout beam) {
             itemsToSelect.add(beam);
         } else if (clickedElement instanceof MeasureStaffSelection selection) {
             itemsToSelect.add(selection);
@@ -179,9 +187,20 @@ public class PageAreaController {
                                 if (noteLayout.getStem() != null) {
                                     itemsToSelect.add(noteLayout.getStem());
                                 }
-                                if (noteLayout.getBeam() != null) {
-                                    itemsToSelect.add(noteLayout.getBeam());
+                                if (noteLayout.getBeamSingle() != null) {
+                                    itemsToSelect.add(noteLayout.getBeamSingle());
                                 }
+                            }
+                        }
+                    }
+                }
+
+                if (measure.getBeamGroups() != null) {
+                    for (BeamGroupLayout beamGroup : measure.getBeamGroups()) {
+                        if (!beamGroup.isEmpty()) {
+                            StaffLayout groupStaff = beamGroup.getFirstNote().getStaffLayout();
+                            if (groupStaff == targetStaff) {
+                                itemsToSelect.add(beamGroup);
                             }
                         }
                     }

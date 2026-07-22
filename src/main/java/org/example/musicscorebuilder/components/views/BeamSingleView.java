@@ -3,12 +3,11 @@ package org.example.musicscorebuilder.components.views;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import org.example.musicscorebuilder.FontManager;
-import org.example.musicscorebuilder.components.layout.BeamLayout;
-import org.example.musicscorebuilder.util.Util;
+import org.example.musicscorebuilder.components.layout.BeamSingleLayout;
 
-public class BeamView extends ComponentView{
+public class BeamSingleView extends ComponentView {
 
-    public void draw(GraphicsContext gc, BeamLayout beam, double segmentX, double segmentY, double sp) {
+    public void draw(GraphicsContext gc, BeamSingleLayout beam, double segmentX, double segmentY, double sp) {
         if (beam == null) return;
 
         double beamX = segmentX + beam.getX() * sp;

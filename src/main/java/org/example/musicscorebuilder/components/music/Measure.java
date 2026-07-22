@@ -36,13 +36,13 @@ public class Measure {
         Segment seg = new Segment(SegmentType.CHORDREST, staves);
 
         var staff1 = staves.get(0);
-        seg.addElement(staff1, new Note(1, PitchStep.C, 0, 4, NoteType.getRandom()));
-        seg.addElement(staff1, new Note(1, PitchStep.G, 0, 4, NoteType.getRandom()));
+        seg.addElement(staff1, new Note(1, PitchStep.C, 0, 4, NoteType.getRandom(), BeamType.NONE));
+        seg.addElement(staff1, new Note(1, PitchStep.G, 0, 4, NoteType.getRandom(), BeamType.NONE));
 
         if (staves.size() == 2) {
             var staff2 = staves.get(1);
-            seg.addElement(staff2, new Note(1, PitchStep.A, 0, 3, NoteType.getRandom()));
-            seg.addElement(staff2, new Note(1, PitchStep.D, 0, 3, NoteType.getRandom()));
+            seg.addElement(staff2, new Note(1, PitchStep.A, 0, 3, NoteType.getRandom(), BeamType.NONE));
+            seg.addElement(staff2, new Note(1, PitchStep.D, 0, 3, NoteType.getRandom(), BeamType.NONE));
         }
 
         if (segments.isEmpty()) {

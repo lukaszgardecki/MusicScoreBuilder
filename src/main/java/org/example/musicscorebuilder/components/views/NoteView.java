@@ -3,13 +3,13 @@ package org.example.musicscorebuilder.components.views;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import org.example.musicscorebuilder.FontManager;
+import org.example.musicscorebuilder.components.layout.BeamSingleLayout;
 import org.example.musicscorebuilder.components.layout.NoteLayout;
-import org.example.musicscorebuilder.util.Util;
 
 public class NoteView extends ComponentView {
     private final LedgerLineView ledgerLineView = new LedgerLineView();
     private final StemView stemView = new StemView();
-    private final BeamView beamView = new BeamView();
+    private final BeamSingleView beamSingleView = new BeamSingleView();
 
     public void draw(GraphicsContext gc, NoteLayout note, double segmentX, double segmentY, double sp) {
         double noteX = segmentX + note.getX() * sp;
@@ -27,7 +27,8 @@ public class NoteView extends ComponentView {
         }
 
         stemView.draw(gc, note.getStem(), segmentX, segmentY, sp);
-        beamView.draw(gc, note.getBeam(), segmentX, segmentY, sp);
+
+        if (note.getBeamSingle() instanceof BeamSingleLayout single) beamSingleView.draw(gc, single, segmentX, segmentY, sp);
 
         gc.setFont(FontManager.getLelandFont(fontSize));
 

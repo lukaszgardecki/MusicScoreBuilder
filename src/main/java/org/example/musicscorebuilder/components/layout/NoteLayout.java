@@ -10,7 +10,7 @@ public class NoteLayout extends ElementLayout {
     private final Note note;
     private final StaffLayout staff;
     private final StemLayout stem;
-    private final BeamLayout beam;
+    private final BeamSingleLayout beam;
     private double y;
     private double xOffset = 0.0;
 
@@ -28,7 +28,7 @@ public class NoteLayout extends ElementLayout {
         Clef clef = staff.getStaff().getDefaultClef();
         this.y = calculateY(clef) + staff.getY();
         this.stem = note.getType() == NoteType.WHOLE ? null : new StemLayout(this);
-        this.beam = note.getType() == NoteType.EIGHTH ? new BeamLayout(this) : null;
+        this.beam = note.isBeamed() ? null : note.getType() == NoteType.EIGHTH ? new BeamSingleLayout(this) : null;
     }
 
     public void updatePitchFromY(double newY) {
@@ -72,7 +72,7 @@ public class NoteLayout extends ElementLayout {
     @Override public double getBoxY() { return y - (0.5 * style.getStaffLineSpacing()); }
     @Override public double getWidth() {
         var headWidth = getFontWidth();
-        var flagWidth = getBeam() == null ? 0 : getStem().getDirection() == StemDirection.UP ? getBeam().getFontWidth() : 0;
+        var flagWidth = getBeamSingle() == null ? 0 : getStem().getDirection() == StemDirection.UP ? getBeamSingle().getFontWidth() : 0;
         return headWidth + flagWidth;
     }
     @Override public double getHeight() { return style.getStaffLineSpacing(); }
@@ -97,7 +97,7 @@ public class NoteLayout extends ElementLayout {
     public String getCode() { return fontData.getCode(); }
     public int getDiatonicStep() { return note.getPitch().getAbsoluteDiatonicStep(); }
     public StemLayout getStem() { return stem; }
-    public BeamLayout getBeam() { return beam; }
+    public BeamSingleLayout getBeamSingle() { return beam; }
     public StaffLayout getStaffLayout() { return staff; }
 
     private double calculateY(Clef clef) {

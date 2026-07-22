@@ -4,12 +4,14 @@ public class Note extends Element {
     private Pitch pitch;
     private int voice;
     private NoteType type;
+    private BeamType beam;
     private int duration;
 
-    public Note(int voice, PitchStep pitchStep, int alter, int octave, NoteType type) {
+    public Note(int voice, PitchStep pitchStep, int alter, int octave, NoteType type, BeamType beam) {
         this.pitch = new Pitch(pitchStep, alter, octave);
         this.voice = voice;
         this.type = type;
+        this.beam = beam;
         this.duration = type.getSegments();
     }
 
@@ -17,6 +19,8 @@ public class Note extends Element {
     public int getDuration() { return duration; }
     public int getVoice() { return voice; }
     public NoteType getType() { return type; }
+    public BeamType getBeam() { return beam; }
+    public boolean isBeamed() { return beam != null && beam != BeamType.NONE; }
     public PitchStep getStep() { return pitch.getStep(); }
     public int getStepValue() { return pitch.getStepValue(); }
     public int getAlter() { return pitch.getAlter(); }

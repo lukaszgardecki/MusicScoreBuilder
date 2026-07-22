@@ -10,6 +10,7 @@ public class MeasureLayout {
     private final Measure measure;
     private final List<StaffLayout> staves = new ArrayList<>();
     private final List<SegmentLayout> segments = new ArrayList<>();
+    private List<BeamGroupLayout> beams = new ArrayList<>();
     private double x, y;
 
     public MeasureLayout(Measure measure, double x, ScoreStyle scoreStyle) {
@@ -19,13 +20,8 @@ public class MeasureLayout {
         this.y = 0;
     }
 
-    public void add(StaffLayout staffLayout) {
-        staves.add(staffLayout);
-    }
-
-    public void add(SegmentLayout segmentLayout) {
-        segments.add(segmentLayout);
-    }
+    public void add(StaffLayout staffLayout) { staves.add(staffLayout); }
+    public void add(SegmentLayout segmentLayout) { segments.add(segmentLayout); }
 
     public void addClef() {
         SegmentLayout seg = new SegmentLayout(SegmentType.CLEF, this);
@@ -66,6 +62,7 @@ public class MeasureLayout {
     public Measure getMeasure() { return measure; }
     public List<SegmentLayout> getSegments() { return segments; }
     public List<StaffLayout> getStaffs() { return staves; }
+    public List<BeamGroupLayout> getBeamGroups() { return beams; }
     public double getX() { return x; }
     public double getY() { return y; }
     public double getWidth() { return segments.stream().mapToDouble(SegmentLayout::getWidth).sum(); }
@@ -82,4 +79,5 @@ public class MeasureLayout {
     }
 
     public void setX(double x) { this.x = x; }
+    public void setBeamGroups(List<BeamGroupLayout> beamGroups) { this.beams = beamGroups; }
 }

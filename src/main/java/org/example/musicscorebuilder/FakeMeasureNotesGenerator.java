@@ -36,7 +36,9 @@ public class FakeMeasureNotesGenerator {
             NoteType randomType = NoteType.getRandomFitting(remainingSegments);
             PitchStep randomStep = PitchStep.values()[(int) (Math.random() * PitchStep.values().length)];
 
-            notes.add(new Note(voice, randomStep, 0, octave, randomType));
+            var beamType = randomType == NoteType.EIGHTH ? BeamType.BEGIN : BeamType.NONE;
+
+            notes.add(new Note(voice, randomStep, 0, octave, randomType, beamType));
             remainingSegments -= randomType.getSegments();
         }
         return notes;
