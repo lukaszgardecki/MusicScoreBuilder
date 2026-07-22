@@ -21,8 +21,6 @@ public class BeamBuilder {
             return resultGroups;
         }
 
-        notesToProcess.sort(Comparator.comparingDouble(NoteLayout::getX));
-
         Map<StaffLayout, Map<Integer, List<NoteLayout>>> rawNotesByStaffAndVoice = new HashMap<>();
 
         for (NoteLayout noteLayout : notesToProcess) {
@@ -47,26 +45,33 @@ public class BeamBuilder {
                         currentGroup = new BeamGroupLayout();
                         resultGroups.add(currentGroup);
                         currentGroup.addNote(noteLayout);
+                        noteLayout.setBeamGroup(currentGroup);
                     } else if (beamType == BeamType.CONTINUE || beamType == BeamType.END) {
-                        if (currentGroup != null) {
-                            currentGroup.addNote(noteLayout);
-                        } else {
+                        if (currentGroup == null) {
                             currentGroup = new BeamGroupLayout();
                             resultGroups.add(currentGroup);
-                            currentGroup.addNote(noteLayout);
                         }
+                        currentGroup.addNote(noteLayout);
+                        noteLayout.setBeamGroup(currentGroup);
 
                         if (beamType == BeamType.END) {
                             currentGroup = null;
                         }
                     } else {
+                        noteLayout.setBeamGroup(null);
                         currentGroup = null;
                     }
                 }
             }
         }
 
-        resultGroups.removeIf(group -> group.size() <= 1);
+        resultGroups.removeIf(group -> {
+            if (group.size() <= 1) {
+                group.clear();
+                return true;
+            }
+            return false;
+        });
 
         notesToProcess.clear();
         return resultGroups;

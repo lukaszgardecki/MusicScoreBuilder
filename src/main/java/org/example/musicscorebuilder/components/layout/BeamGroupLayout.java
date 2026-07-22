@@ -3,13 +3,9 @@ package org.example.musicscorebuilder.components.layout;
 import javafx.scene.shape.Polygon;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 public class BeamGroupLayout implements Selectable {
-    private static final Comparator<NoteLayout> X_COMPARATOR =
-            Comparator.comparingDouble(n -> n.getParent().getX() + n.getX());
     private final List<NoteLayout> notes = new ArrayList<>();
     private boolean selected;
 
@@ -19,8 +15,9 @@ public class BeamGroupLayout implements Selectable {
     public boolean contains(double measureX, double measureY) {
         if (notes.isEmpty()) return false;
 
-        NoteLayout first = notes.getFirst();
-        NoteLayout last = notes.getLast();
+        NoteLayout first = getFirstNote();
+        NoteLayout last = getLastNote();
+        if (first == null || last == null) return false;
 
         ScoreStyle style = first.getScoreStyle();
 
@@ -47,14 +44,20 @@ public class BeamGroupLayout implements Selectable {
 
     public void addNote(NoteLayout note) { notes.add(note); }
 
+    public void clear() {
+        for (NoteLayout note : notes) {
+            note.setBeamGroup(null);
+        }
+    }
+
     public NoteLayout getFirstNote() {
         if (notes.isEmpty()) return null;
-        return Collections.min(notes, X_COMPARATOR);
+        return notes.getFirst();
     }
 
     public NoteLayout getLastNote() {
         if (notes.isEmpty()) return null;
-        return Collections.max(notes, X_COMPARATOR);
+        return notes.getLast();
     }
 
     public int size() { return notes.size(); }

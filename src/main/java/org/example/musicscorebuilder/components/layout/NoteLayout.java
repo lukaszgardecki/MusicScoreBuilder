@@ -11,6 +11,7 @@ public class NoteLayout extends ElementLayout {
     private final StaffLayout staff;
     private final StemLayout stem;
     private final BeamSingleLayout singleBeam;
+    private BeamGroupLayout beamGroup;
     private double y;
     private double xOffset = 0.0;
 
@@ -98,6 +99,7 @@ public class NoteLayout extends ElementLayout {
     public int getDiatonicStep() { return note.getPitch().getAbsoluteDiatonicStep(); }
     public StemLayout getStem() { return stem; }
     public BeamSingleLayout getBeamSingle() { return singleBeam; }
+    public BeamGroupLayout getBeamGroup() { return beamGroup; }
     public StaffLayout getStaffLayout() { return staff; }
 
     private double calculateY(Clef clef) {
@@ -143,4 +145,5 @@ public class NoteLayout extends ElementLayout {
     }
 
     public void setXOffset(double xOffset) { this.xOffset = xOffset; }
+    public void setBeamGroup(BeamGroupLayout beamGroup) { this.beamGroup = beamGroup; }
 }
