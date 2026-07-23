@@ -1,5 +1,6 @@
 package org.example.musicscorebuilder;
 
+import org.example.musicscorebuilder.components.layout.SegmentLayout;
 import org.example.musicscorebuilder.components.music.Mode;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,10 +11,7 @@ public class InsertModeManager {
     private Mode mode = Mode.DISPLAY;
     private final ScoreStateManager stateManager = ScoreStateManager.getInstance();
     private final List<Consumer<Boolean>> listeners = new ArrayList<>();
-
-    private double currentMouseX = -1;
-    private double currentMouseY = -1;
-    private final List<Runnable> mouseMoveListeners = new ArrayList<>();
+    private SegmentLayout editedSegment = null;
 
     private InsertModeManager() {}
 
@@ -32,40 +30,48 @@ public class InsertModeManager {
         }
     }
 
-    public void activateInsertMode() {
+    public void setEditedSegment(SegmentLayout newSegment) {
+        if (this.editedSegment != newSegment) {
+            if (this.editedSegment != null) {
+                this.editedSegment.setHighlighted(false);
+            }
+            this.editedSegment = newSegment;
+        }
+
+        if (this.editedSegment != null) {
+            this.editedSegment.setHighlighted(true);
+        }
+    }
+
+    public SegmentLayout getEditedSegment() {
+        return editedSegment;
+    }
+
+
+    private void activateInsertMode() {
         if (mode != Mode.INSERT) {
             mode = Mode.INSERT;
             stateManager.clearSelection();
             stateManager.notifyScoreChanged();
+
+            if (this.editedSegment != null) {
+                this.editedSegment.setHighlighted(true);
+            }
+
             notifyListeners();
             System.out.println("Activate Insert Mode");
         }
     }
 
-    public void deactivateInsertMode() {
+    private void deactivateInsertMode() {
         if (mode != Mode.DISPLAY) {
             mode = Mode.DISPLAY;
-            currentMouseX = -1;
-            currentMouseY = -1;
+            if (this.editedSegment != null) {
+                this.editedSegment.setHighlighted(false);
+            }
             notifyListeners();
             System.out.println("Deactivate Insert Mode");
         }
-    }
-
-    public void updateMousePosition(double x, double y) {
-        if (!isInsertMode()) return;
-        this.currentMouseX = x;
-        this.currentMouseY = y;
-        for (Runnable listener : mouseMoveListeners) {
-            listener.run();
-        }
-    }
-
-    public double getCurrentMouseX() { return currentMouseX; }
-    public double getCurrentMouseY() { return currentMouseY; }
-
-    public void addMouseMoveListener(Runnable listener) {
-        mouseMoveListeners.add(listener);
     }
 
     private void notifyListeners() {

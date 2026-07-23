@@ -4,7 +4,6 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.stage.Screen;
-import org.example.musicscorebuilder.InsertModeManager;
 import org.example.musicscorebuilder.components.layout.PageLayout;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
 
@@ -48,30 +47,6 @@ public class ScoreView extends Canvas {
         if (getWidth() <= 0 || getHeight() <= 0) return;
         drawBackground();
         drawPages();
-
-        InsertModeManager insertManager = InsertModeManager.getInstance();
-        if (insertManager.isInsertMode() && insertManager.getCurrentMouseX() != -1) {
-            drawGhostNote(insertManager.getCurrentMouseX(), insertManager.getCurrentMouseY());
-        }
-    }
-
-    private void drawGhostNote(double modelX, double modelY) {
-        // METODA TESTOWA RYSUJĄCA NUTKĘ DUCHA
-
-        double sp = zoom * baseSpatiumPx;
-        double screenX = modelX * sp + offsetX;
-        double screenY = modelY * sp + offsetY;
-
-        gc.save();
-        gc.setFill(Color.rgb(100, 100, 100, 0.5));
-        gc.setStroke(Color.rgb(100, 100, 100, 0.5));
-
-        double noteHeadWidth = sp * 1.2;
-        double noteHeadHeight = sp * 0.8;
-
-        gc.fillOval(screenX - noteHeadWidth / 2, screenY - noteHeadHeight / 2, noteHeadWidth, noteHeadHeight);
-
-        gc.restore();
     }
 
     private void drawBackground() {

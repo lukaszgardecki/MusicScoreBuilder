@@ -42,6 +42,15 @@ public class PageAreaController {
                 shortcutHandler.register(newScene);
             }
         });
+
+        insertModeManager.addModeChangeListener(isInsert -> {
+            if (isInsert ) {
+                SegmentLayout first = getFirstNoteSegment();
+                if (first != null) insertModeManager.setEditedSegment(first);
+            }
+            redraw();
+        });
+
         viewModeToggle.setSelected(true);
         viewModeToggle.setText("Widok: Głos Solowy");
 
@@ -60,12 +69,11 @@ public class PageAreaController {
         if (viewModeToggle.isSelected()) {
             viewModeToggle.setText("Widok: Głos Solowy");
             stateManager.setCurrentModeIndex(0);
-            if (insertModeManager.isInsertMode()) insertModeManager.deactivateInsertMode();
         } else {
             viewModeToggle.setText("Widok: Pełna Partytura");
             stateManager.setCurrentModeIndex(1);
-            if (insertModeManager.isInsertMode()) insertModeManager.deactivateInsertMode();
         }
+        if (insertModeManager.isInsertMode()) insertModeManager.toggleInsertMode();
         refreshView();
     }
 
@@ -91,6 +99,22 @@ public class PageAreaController {
         stateManager.clearSelection();
         toggleSelection(clickedElement);
         redraw();
+    }
+
+    private SegmentLayout getFirstNoteSegment() {
+        if (currentScoreLayout == null) return null;
+        if (currentScoreLayout.getPages().isEmpty()) return null;
+        var page = currentScoreLayout.getPages().getFirst();
+        if (page.getSystems().isEmpty()) return null;
+        var system = page.getSystems().getFirst();
+        if (system.getMeasures().isEmpty()) return null;
+        var measure = system.getMeasures().getFirst();
+        for (SegmentLayout segment : measure.getSegments()) {
+            if (segment.getType() == SegmentType.CHORDREST) {
+                return segment;
+            }
+        }
+        return null;
     }
 
     private Selectable findClickedElement(MouseEvent event) {

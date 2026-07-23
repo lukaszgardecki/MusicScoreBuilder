@@ -18,17 +18,11 @@ public class BackgroundView extends Pane {
     public BackgroundView(){
         enableDrag();
         enableZoom();
-        enableInsertHover();
         centerFirstPage();
-
-        insertModeManager.addMouseMoveListener(() -> {
-            if (scoreView != null) {
-                scoreView.setViewportTransform(offsetX, offsetY, zoom);
-            }
-        });
 
         insertModeManager.addModeChangeListener(isInsert -> {
             if (scoreView != null) {
+                scoreView.update(scoreView.getScoreLayout());
                 scoreView.setViewportTransform(offsetX, offsetY, zoom);
             }
         });
@@ -67,22 +61,6 @@ public class BackgroundView extends Pane {
         offsetY = (canvasHeight - pageHeightPx) / 2.0;
 
         scoreView.setViewportTransform(offsetX, offsetY, zoom);
-    }
-
-    private void enableInsertHover() {
-        setOnMouseMoved(e -> {
-            if (!insertModeManager.isInsertMode()) return;
-            double modelX = toModelX(e.getX());
-            double modelY = toModelY(e.getY());
-            insertModeManager.updateMousePosition(modelX, modelY);
-        });
-
-        // Chowanie ducha / tymczasowe
-        setOnMouseExited(e -> {
-            if (insertModeManager.isInsertMode()) {
-                insertModeManager.updateMousePosition(-1, -1);
-            }
-        });
     }
 
     private void enableDrag() {

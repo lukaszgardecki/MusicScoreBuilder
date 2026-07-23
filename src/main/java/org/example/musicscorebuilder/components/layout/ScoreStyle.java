@@ -38,6 +38,9 @@ public class ScoreStyle {
     private static final double SELECTION_FRAME_EXTRA_HEIGHT = STAFF_LINE_SPACING;
     private static final double SELECTION_FRAME_RADIUS = 0.4;
 
+    private static final double EDIT_CURSOR_WIDTH = 0.2;
+    private static final double EDIT_CURSOR_LENGTH_FACTOR = 0.8;
+
     private double pageSpacing = PAGE_SPACING;
     private double staffSpacing = STAFF_SPACING;
     private double systemSpacing = SYSTEM_SPACING;
@@ -107,6 +110,9 @@ public class ScoreStyle {
     public double getSelectionFrameWidth() { return staffSpacingScale * selectionFrameWidth; }
     public double getSelectionFrameExtraHeight() { return staffSpacingScale * selectionFrameExtraHeight; }
     public double getSelectionFrameRadius() { return staffSpacingScale * selectionFrameRadius; }
+
+    public double getEditCursorWidth() { return EDIT_CURSOR_WIDTH; }
+    public double getEditCursorAboveBelowLength() { return EDIT_CURSOR_LENGTH_FACTOR * getStaffLineSpacing(); }
 
     public double toSp(double valueInMm) {
         if (spatiumMm <= 0) return 0;

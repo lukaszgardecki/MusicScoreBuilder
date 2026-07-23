@@ -27,11 +27,7 @@ public class ToolbarController {
 
     @FXML
     private void toggleMode() {
-        if (modeManager.isInsertMode()) {
-            modeManager.deactivateInsertMode();
-        } else {
-            modeManager.activateInsertMode();
-        }
+        modeManager.toggleInsertMode();
     }
 
     @FXML

@@ -11,6 +11,7 @@ public class SegmentLayout {
     private SegmentType type;
     private double x, y = 0, height;
     private double extraWidth = 0.0;
+    private boolean highlighted = false;
 
     public SegmentLayout(SegmentType type, MeasureLayout parent) {
         this.style = parent.getScoreStyle();
@@ -116,10 +117,12 @@ public class SegmentLayout {
     public double getHeight() { return height; }
     public boolean hasDynamicWidth() { return getElements().stream().anyMatch(ElementLayout::hasDynamicWidth); }
     public ScoreStyle getScoreStyle() { return style; }
+    public boolean isHighlighted() { return highlighted; }
 
     public void setX(double x) { this.x = x; }
     public void setExtraWidth(double extraWidth) {
         this.extraWidth = extraWidth;
     }
     public void setType(SegmentType type) { this.type = type; }
+    public void setHighlighted(boolean highlighted) { this.highlighted = highlighted; }
 }
