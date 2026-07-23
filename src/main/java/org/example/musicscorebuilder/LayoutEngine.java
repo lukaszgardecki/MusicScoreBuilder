@@ -4,10 +4,14 @@ import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.layout.util.BeamBuilder;
 import org.example.musicscorebuilder.components.music.*;
 
+import java.util.IdentityHashMap;
+import java.util.Map;
+
 public class LayoutEngine {
     private final ScoreStyle style;
     private final Page page;
     private final SystemJustifier systemJustifier;
+    private final Map<Measure, MeasureLayout> measureCache = new IdentityHashMap<>();
 
     public LayoutEngine(Page page, ScoreStyle style) {
         this.page = page;
@@ -23,7 +27,17 @@ public class LayoutEngine {
         SystemLayout newSystem = addNewSystemToPage(currentPage, scoreMode);
 
         for (Measure measure : scoreMode.getMeasures()) {
-            MeasureLayout measureLayout = createMeasureLayout(measure, newSystem);
+            MeasureLayout measureLayout;
+            if (measureCache.containsKey(measure) && !measure.isDirty()) {
+                measureLayout = measureCache.get(measure);
+                measureLayout.remove1stMeasureAttributes();
+                measureLayout.resetLayoutState();
+            } else {
+                measureLayout = createMeasureLayout(measure, newSystem);
+                measureCache.put(measure, measureLayout);
+                measure.setDirty(false);
+            }
+
             boolean noSpaceForNextMeasure = currentPage.getEffectiveWidth() - newSystem.getWidth() < measureLayout.getWidth();
             boolean noSpaceForNextSystem = currentPage.getRemainingHeight() < newSystem.getHeight() + style.getSystemSpacing();
 
@@ -42,6 +56,8 @@ public class LayoutEngine {
                 add1stMeasureAttributes(scoreMode, measureLayout, scoreLayout);
             }
 
+            double startX = newSystem.getMeasures().isEmpty() ? newSystem.getBraceWidth() : newSystem.getWidth();
+            measureLayout.setX(startX);
             newSystem.add(measureLayout);
         }
 
@@ -92,11 +108,11 @@ public class LayoutEngine {
         var isFirstMeasure = scoreLayout.getPages().size() == 1 && scoreLayout.getPages().get(0).getSystems().size() == 1;
 
         if (isFirstMeasure) {
-            measureLayout.addTimeSignature(scoreMode.getTimeSignature());
+            measureLayout.addSystemTimeSignature(scoreMode.getTimeSignature());
         }
-        measureLayout.addKeySignature(scoreMode.getKeySignature());
-        measureLayout.addClef();
+        measureLayout.addSystemKeySignature(scoreMode.getKeySignature());
+        measureLayout.addSystemClef();
         if (scoreMode.getStartBarline() == null) return;
-        measureLayout.addStartBarline(scoreMode.getStartBarline());
+        measureLayout.addSystemStartBarline(scoreMode.getStartBarline());
     }
 }

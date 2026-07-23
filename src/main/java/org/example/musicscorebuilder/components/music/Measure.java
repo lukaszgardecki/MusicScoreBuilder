@@ -5,6 +5,7 @@ import java.util.List;
 
 public class Measure {
     private Barline rightBarline;
+    private boolean dirty = true;
     private final List<Staff> staves;
     private final List<Segment> segments = new ArrayList<>();
 
@@ -21,6 +22,7 @@ public class Measure {
             seg.addElement(staff, element);
         }
         segments.add(seg);
+        setDirty(true);
     }
 
     public List<Staff> getStaves() { return staves; }
@@ -50,5 +52,10 @@ public class Measure {
         } else {
             segments.add(segments.size() - 1, seg);
         }
+
+        setDirty(true);
     }
+
+    public boolean isDirty() { return dirty; }
+    public void setDirty(boolean dirty) { this.dirty = dirty; }
 }

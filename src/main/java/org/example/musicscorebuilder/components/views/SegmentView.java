@@ -3,6 +3,7 @@ package org.example.musicscorebuilder.components.views;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import org.example.musicscorebuilder.components.layout.*;
+import org.example.musicscorebuilder.util.Util;
 
 public class SegmentView extends ComponentView {
     private final EditCursorView editCursorView = new EditCursorView();

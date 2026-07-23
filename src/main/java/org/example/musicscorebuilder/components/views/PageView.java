@@ -24,7 +24,14 @@ public class PageView {
         gc.setLineWidth(0.1 * sp);
         gc.strokeRoundRect(pageX, pageY, cardWidthPx, cardHeightPx, cornerRadius, cornerRadius);
 
+        var canvasHeight = gc.getCanvas().getHeight();
         for (SystemLayout system : page.getSystems()) {
+            double systemY = pageY + system.getY() * sp;
+            double systemHeightPx = system.getHeight() * sp;
+
+            if (systemY + systemHeightPx < 0 || systemY > canvasHeight) {
+                continue;
+            }
             systemView.draw(gc, system, pageX, pageY, sp);
         }
     }

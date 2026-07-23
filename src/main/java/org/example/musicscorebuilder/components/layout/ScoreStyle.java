@@ -120,13 +120,14 @@ public class ScoreStyle {
     }
 
     public String getSelectColor(Selectable element) {
-        if (element.isSelected()) {
-            int voice =  element.getVoice();
-            return switch (voice) {
-                case 1 -> voice1Color;
-                default -> voice2Color;
-            };
-        }
+        if (element.isSelected())
+            return getSelectColorByVoiceNumber(element.getVoice());
+        return "#000000";
+    }
+
+    public String getSelectColorByVoiceNumber(int voice) {
+        if (voice == 1) return voice1Color;
+        if (voice == 2) return voice2Color;
         return "#000000";
     }
 }

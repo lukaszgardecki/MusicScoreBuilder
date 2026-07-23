@@ -23,27 +23,42 @@ public class MeasureLayout {
     public void add(StaffLayout staffLayout) { staves.add(staffLayout); }
     public void add(SegmentLayout segmentLayout) { segments.add(segmentLayout); }
 
-    public void addClef() {
+    public void addSystemClef() {
         SegmentLayout seg = new SegmentLayout(SegmentType.CLEF, this);
         seg.addClef();
+        seg.setSystemGenerated(true);
         segments.addFirst(seg);
     }
-    public void addStartBarline(Barline barline) {
+    public void addSystemStartBarline(Barline barline) {
         SegmentLayout seg = new SegmentLayout(SegmentType.START_BARLINE, this);
         seg.addStartBarline(barline);
+        seg.setSystemGenerated(true);
         segments.addFirst(seg);
     }
 
-    public void addKeySignature(KeySignature keySignature) {
+    public void addSystemKeySignature(KeySignature keySignature) {
         SegmentLayout seg = new SegmentLayout(SegmentType.KEY_SIG, this);
         seg.addKeySignature(keySignature);
+        seg.setSystemGenerated(true);
         segments.addFirst(seg);
     }
 
-    public void addTimeSignature(TimeSignature timeSignature) {
+    public void addSystemTimeSignature(TimeSignature timeSignature) {
         SegmentLayout seg = new SegmentLayout(SegmentType.TIME_SIG, this);
         seg.addTimeSignature(timeSignature);
+        seg.setSystemGenerated(true);
         segments.addFirst(seg);
+    }
+
+    public void remove1stMeasureAttributes() {
+        segments.removeIf(SegmentLayout::isSystemGenerated);
+    }
+
+    public void resetLayoutState() {
+        this.x = 0.0;
+        for (SegmentLayout segment : segments) {
+            segment.setExtraWidth(0.0);
+        }
     }
 
     public MeasureStaffSelection getElementsRegionAt(double measureX, double measureY) {

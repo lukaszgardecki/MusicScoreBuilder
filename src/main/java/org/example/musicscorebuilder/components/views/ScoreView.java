@@ -57,7 +57,18 @@ public class ScoreView extends Canvas {
 
     private void drawPages() {
         double sp = zoom * baseSpatiumPx;
+        double canvasWidth = getWidth();
+        double canvasHeight = getHeight();
+
         for (PageLayout page : scoreLayout.getPages()) {
+            double pageX = offsetX + page.getX() * sp;
+            double pageY = offsetY;
+            double pageWidthPx = page.getWidth() * sp;
+            double pageHeightPx = page.getHeight() * sp;
+
+            if (pageY + pageHeightPx < 0 || pageY > canvasHeight) continue;
+            if (pageX + pageWidthPx < 0 || pageX > canvasWidth) continue;
+
             pageView.draw(gc, page, offsetX, offsetY, sp);
         }
     }
