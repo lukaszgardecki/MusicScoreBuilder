@@ -1,15 +1,15 @@
 package org.example.musicscorebuilder.components.views;
 
 import javafx.scene.canvas.GraphicsContext;
-import org.example.musicscorebuilder.ScoreStateManager;
+import org.example.musicscorebuilder.managers.ScoreStateManager;
 import org.example.musicscorebuilder.components.layout.*;
-import org.example.musicscorebuilder.util.Util;
 
 public class MeasureView extends ComponentView {
     private final SegmentView segmentView = new SegmentView();
     private final StaffView staffView = new StaffView();
     private final BeamGroupView beamsView = new BeamGroupView();
     private final MeasureStaffSelectionView selectionView = new MeasureStaffSelectionView();
+    private final EditCursorView editCursorView = new EditCursorView();
 
     public void draw(GraphicsContext gc, MeasureLayout measure, double systemX, double systemY, double sp) {
         double measureX = measure.getX() * sp + systemX;
@@ -24,6 +24,8 @@ public class MeasureView extends ComponentView {
         }
 
         for (SegmentLayout segment : measure.getSegments()) {
+            if (segment.isHighlighted()) editCursorView.draw(gc, segment, measureX, measureY, sp);
+
             segmentView.draw(gc, segment, measureX, measureY, sp);
         }
 

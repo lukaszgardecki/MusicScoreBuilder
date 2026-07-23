@@ -1,4 +1,6 @@
-package org.example.musicscorebuilder.components.layout;
+package org.example.musicscorebuilder.components.layout.engine;
+
+import org.example.musicscorebuilder.components.layout.Selectable;
 
 public class ScoreStyle {
 

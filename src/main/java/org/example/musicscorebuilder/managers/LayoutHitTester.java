@@ -1,129 +1,18 @@
-package org.example.musicscorebuilder;
+package org.example.musicscorebuilder.managers;
 
-import javafx.fxml.FXML;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.input.MouseEvent;
 import org.example.musicscorebuilder.components.layout.*;
-import org.example.musicscorebuilder.components.music.*;
-import org.example.musicscorebuilder.components.views.BackgroundView;
+import org.example.musicscorebuilder.components.music.SegmentType;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-public class PageAreaController {
-    @FXML private ScrollPane scrollPane;
-    @FXML private BackgroundView container;
-    @FXML private ToggleButton viewModeToggle;
-    private LayoutEngine layoutEngine;
-    private ScoreLayout currentScoreLayout;
-    private final ScoreService scoreService = ScoreService.getInstance();
-    private final ScoreStateManager stateManager = ScoreStateManager.getInstance();
-    private final InsertModeManager insertModeManager = InsertModeManager.getInstance();
-    private final ShortcutHandler shortcutHandler = new ShortcutHandler();
+public class LayoutHitTester {
 
-    @FXML
-    public void initialize() {
-        container.prefWidthProperty().bind(scrollPane.widthProperty());
-        container.prefHeightProperty().bind(scrollPane.heightProperty());
-
-        NoteDragHandler dragHandler = new NoteDragHandler(container, this::findClickedElement, () -> this.currentScoreLayout);
-        container.addEventFilter(MouseEvent.MOUSE_PRESSED, dragHandler::handlePressed);
-        container.addEventFilter(MouseEvent.MOUSE_DRAGGED, dragHandler::handleDragged);
-        container.addEventFilter(MouseEvent.MOUSE_RELEASED, dragHandler::handleReleased);
-
-        container.setOnMouseClicked(this::handleCanvasClick);
-        stateManager.addScoreChangeListener(this::refreshView);
-        container.sceneProperty().addListener((obs, oldScene, newScene) -> {
-            if (oldScene != null) {
-                shortcutHandler.unregister(oldScene);
-            }
-            if (newScene != null) {
-                shortcutHandler.register(newScene);
-            }
-        });
-
-        insertModeManager.addModeChangeListener(isInsert -> {
-            if (isInsert ) {
-                SegmentLayout first = getFirstNoteSegment();
-                if (first != null) insertModeManager.setEditedSegment(first);
-            }
-            redraw();
-        });
-
-        viewModeToggle.setSelected(true);
-        viewModeToggle.setText("Widok: Głos Solowy");
-
-        this.layoutEngine = new LayoutEngine(
-                new Page(PageFormat.A4_V, 10, 10, 10, 10),
-                new ScoreStyle()
-        );
-        refreshView();
-    }
-
-    @FXML
-    private void toggleViewMode() {
-        Score score = scoreService.getScore();
-        if (score.getModes().size() <= 1) return;
-
-        if (viewModeToggle.isSelected()) {
-            viewModeToggle.setText("Widok: Głos Solowy");
-            stateManager.setCurrentModeIndex(0);
-        } else {
-            viewModeToggle.setText("Widok: Pełna Partytura");
-            stateManager.setCurrentModeIndex(1);
-        }
-        if (insertModeManager.isInsertMode()) insertModeManager.toggleInsertMode();
-        refreshView();
-    }
-
-    private void redraw() {
-        if (currentScoreLayout != null) {
-            container.updateContent(currentScoreLayout);
-        }
-    }
-
-    private void refreshView() {
-        Score score = scoreService.getScore();
-        ScoreMode activeScoreMode = stateManager.getCurrentMode(score);
-        if (activeScoreMode == null) return;
-        this.currentScoreLayout = layoutEngine.compute(activeScoreMode);
-        redraw();
-    }
-
-    private void handleCanvasClick(MouseEvent event) {
-        if (insertModeManager.isInsertMode()) return;
-        if (currentScoreLayout == null) return;
-        if (!container.wasLastMousePressJustClick()) return;
-        Selectable clickedElement = findClickedElement(event);
-        stateManager.clearSelection();
-        toggleSelection(clickedElement);
-        redraw();
-    }
-
-    private SegmentLayout getFirstNoteSegment() {
-        if (currentScoreLayout == null) return null;
-        if (currentScoreLayout.getPages().isEmpty()) return null;
-        var page = currentScoreLayout.getPages().getFirst();
-        if (page.getSystems().isEmpty()) return null;
-        var system = page.getSystems().getFirst();
-        if (system.getMeasures().isEmpty()) return null;
-        var measure = system.getMeasures().getFirst();
-        for (SegmentLayout segment : measure.getSegments()) {
-            if (segment.getType() == SegmentType.CHORDREST) {
-                return segment;
-            }
-        }
-        return null;
-    }
-
-    private Selectable findClickedElement(MouseEvent event) {
-        double globalMusicX = container.toModelX(event.getX());
-        double globalMusicY = container.toModelY(event.getY());
-
-        for (PageLayout page : currentScoreLayout.getPages()) {
-            double pageX = globalMusicX - page.getX();
-            double pageY = globalMusicY;
+    public static Selectable findClickedElement(List<PageLayout> pages, double globalX, double globalY) {
+        for (PageLayout page : pages) {
+            double pageX = globalX - page.getX();
+            double pageY = globalY;
 
             for (SystemLayout system : page.getSystems()) {
                 double systemX = pageX - system.getX();
@@ -173,12 +62,8 @@ public class PageAreaController {
         return null;
     }
 
-    private void toggleSelection(Selectable clickedElement) {
-        if (clickedElement == null) {
-            stateManager.clearSelection();
-            return;
-        }
-
+    public static List<Selectable> resolveSelection(Selectable clickedElement) {
+        if (clickedElement == null) { return Collections.emptyList(); }
         List<Selectable> itemsToSelect = new ArrayList<>();
 
         if (clickedElement instanceof ElementLayout element) {
@@ -204,7 +89,7 @@ public class PageAreaController {
                 int lastChordRestIdx = -1;
 
                 for (int i = 0; i < segments.size(); i++) {
-                    if (segments.get(i).getType() == SegmentType.CHORDREST) {
+                    if (segments.get(i).getType() == SegmentType.NOTEREST) {
                         if (firstChordRestIdx == -1) {
                             firstChordRestIdx = i;
                         }
@@ -245,7 +130,6 @@ public class PageAreaController {
         } else {
             itemsToSelect.add(clickedElement);
         }
-
-        stateManager.setSelectedItem(itemsToSelect);
+        return itemsToSelect;
     }
 }

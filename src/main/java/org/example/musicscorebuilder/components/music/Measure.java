@@ -35,7 +35,7 @@ public class Measure {
     }
 
     public void addChordRestSegmentAtEnd() {
-        Segment seg = new Segment(SegmentType.CHORDREST, staves);
+        Segment seg = new Segment(SegmentType.NOTEREST, staves);
 
         var staff1 = staves.get(0);
         seg.addElement(staff1, new Note(1, PitchStep.C, 0, 4, NoteType.getRandom(), BeamType.NONE));

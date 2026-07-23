@@ -33,6 +33,7 @@ public class MeasureStaffSelection implements Selectable {
 
         return xMatches && yMatches;
     }
+    @Override public SegmentLayout getParentSegment() { return measure.getSegments().getFirst(); }
 
     public MeasureLayout getMeasure() { return measure; }
     public StaffLayout getStaff() { return staff; }
@@ -40,7 +41,7 @@ public class MeasureStaffSelection implements Selectable {
     public double getElementsX() {
         double currentX = 0.0;
         for (SegmentLayout seg : measure.getSegments()) {
-            if (seg.getType() == SegmentType.CHORDREST) {
+            if (seg.getType() == SegmentType.NOTEREST) {
                 break;
             }
             currentX += seg.getWidth();
@@ -50,7 +51,7 @@ public class MeasureStaffSelection implements Selectable {
 
     public double getElementsWidth() {
         return measure.getSegments().stream()
-                .filter(seg -> seg.getType() == SegmentType.CHORDREST)
+                .filter(seg -> seg.getType() == SegmentType.NOTEREST)
                 .mapToDouble(SegmentLayout::getWidth)
                 .sum();
     }

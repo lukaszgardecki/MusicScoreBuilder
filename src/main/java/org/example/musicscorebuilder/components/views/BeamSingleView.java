@@ -2,7 +2,7 @@ package org.example.musicscorebuilder.components.views;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
-import org.example.musicscorebuilder.FontManager;
+import org.example.musicscorebuilder.managers.FontManager;
 import org.example.musicscorebuilder.components.layout.BeamSingleLayout;
 
 public class BeamSingleView extends ComponentView {

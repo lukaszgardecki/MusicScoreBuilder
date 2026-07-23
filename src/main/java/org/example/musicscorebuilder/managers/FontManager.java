@@ -1,4 +1,4 @@
-package org.example.musicscorebuilder;
+package org.example.musicscorebuilder.managers;
 
 import javafx.scene.text.Font;
 

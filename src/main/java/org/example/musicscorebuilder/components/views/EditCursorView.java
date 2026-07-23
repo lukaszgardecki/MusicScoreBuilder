@@ -6,7 +6,9 @@ import org.example.musicscorebuilder.components.layout.SegmentLayout;
 
 public class EditCursorView extends ComponentView {
 
-    public void draw(GraphicsContext gc, SegmentLayout segment, double segmentX, double segmentY, double sp) {
+    public void draw(GraphicsContext gc, SegmentLayout segment, double measureX, double measureY, double sp) {
+        double segmentX = segment.getX() * sp + measureX;
+        double segmentY = segment.getY() * sp + measureY;
         double staffHeight = segment.getElementsByStaff().keySet().stream().findFirst().get().getHeight() * sp;
         var style = segment.getScoreStyle();
         double yD = style.getEditCursorAboveBelowLength() * sp;

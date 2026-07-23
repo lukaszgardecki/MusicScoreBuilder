@@ -1,13 +1,16 @@
-package org.example.musicscorebuilder;
+package org.example.musicscorebuilder.controller;
 
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import org.example.musicscorebuilder.ScoreService;
+import org.example.musicscorebuilder.managers.ModeManager;
+import org.example.musicscorebuilder.managers.ScoreStateManager;
 
 public class ToolbarController {
     private final ScoreService scoreService = ScoreService.getInstance();
     private final ScoreStateManager stateManager = ScoreStateManager.getInstance();
-    private final InsertModeManager modeManager = InsertModeManager.getInstance();
+    private final ModeManager modeManager = ModeManager.getInstance();
 
     @FXML private Button modeButton;
 

@@ -2,11 +2,11 @@ package org.example.musicscorebuilder.components.views;
 
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
-import org.example.musicscorebuilder.InsertModeManager;
+import org.example.musicscorebuilder.managers.ModeManager;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
 
 public class BackgroundView extends Pane {
-    private final InsertModeManager insertModeManager = InsertModeManager.getInstance();
+    private final ModeManager modeManager = ModeManager.getInstance();
     private ScoreView scoreView;
     private double lastX;
     private double lastY;
@@ -20,7 +20,7 @@ public class BackgroundView extends Pane {
         enableZoom();
         centerFirstPage();
 
-        insertModeManager.addModeChangeListener(isInsert -> {
+        modeManager.addModeChangeListener(isInsert -> {
             if (scoreView != null) {
                 scoreView.update(scoreView.getScoreLayout());
                 scoreView.setViewportTransform(offsetX, offsetY, zoom);
@@ -65,14 +65,14 @@ public class BackgroundView extends Pane {
 
     private void enableDrag() {
         setOnMousePressed(e -> {
-            if (insertModeManager.isInsertMode()) return;
+            if (modeManager.isInsertMode()) return;
             lastX = e.getSceneX();
             lastY = e.getSceneY();
             wasDragged = false;
         });
 
         setOnMouseDragged(e -> {
-            if (insertModeManager.isInsertMode()) return;
+            if (modeManager.isInsertMode()) return;
 
             double dx = e.getSceneX() - lastX;
             double dy = e.getSceneY() - lastY;

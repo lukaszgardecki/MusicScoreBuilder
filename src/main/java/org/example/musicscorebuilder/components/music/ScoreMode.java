@@ -1,6 +1,6 @@
 package org.example.musicscorebuilder.components.music;
 
-import org.example.musicscorebuilder.FakeMeasureNotesGenerator;
+import org.example.musicscorebuilder.util.FakeMeasureNotesGenerator;
 
 import java.util.ArrayList;
 import java.util.List;

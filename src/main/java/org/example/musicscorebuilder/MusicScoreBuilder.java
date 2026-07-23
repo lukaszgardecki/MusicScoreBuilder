@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.example.musicscorebuilder.managers.FontManager;
 
 import java.io.IOException;
 import java.util.Objects;

@@ -6,7 +6,6 @@ import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.util.Util;
 
 public class SegmentView extends ComponentView {
-    private final EditCursorView editCursorView = new EditCursorView();
     private final BarlineView barlineView = new BarlineView();
     private final ClefView clefView = new ClefView();
     private final KeySigView keySigView = new KeySigView();
@@ -20,8 +19,6 @@ public class SegmentView extends ComponentView {
         double heightPx = segment.getHeight() * sp;
 
 //        fillBackground(gc, Util.generateRandomColor(0.3f), segmentX, segmentY, widthPx, heightPx);
-
-        if (segment.isHighlighted()) editCursorView.draw(gc, segment, segmentX, segmentY, sp);
 
         for (StaffLayout staff : segment.getElementsByStaff().keySet()) {
             for (ElementLayout element : segment.getElementsForStaff(staff)) {

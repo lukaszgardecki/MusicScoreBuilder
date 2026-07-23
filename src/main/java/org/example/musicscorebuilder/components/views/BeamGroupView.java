@@ -4,7 +4,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import org.example.musicscorebuilder.components.layout.BeamGroupLayout;
 import org.example.musicscorebuilder.components.layout.NoteLayout;
-import org.example.musicscorebuilder.components.layout.ScoreStyle;
+import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.layout.StemDirection;
 
 public class BeamGroupView extends ComponentView {

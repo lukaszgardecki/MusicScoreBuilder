@@ -4,7 +4,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import org.example.musicscorebuilder.components.layout.MeasureLayout;
 import org.example.musicscorebuilder.components.layout.MeasureStaffSelection;
-import org.example.musicscorebuilder.components.layout.ScoreStyle;
+import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.layout.StaffLayout;
 
 public class MeasureStaffSelectionView extends ComponentView {

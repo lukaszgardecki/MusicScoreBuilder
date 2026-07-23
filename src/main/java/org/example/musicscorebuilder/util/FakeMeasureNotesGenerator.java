@@ -1,4 +1,4 @@
-package org.example.musicscorebuilder;
+package org.example.musicscorebuilder.util;
 
 import org.example.musicscorebuilder.components.music.*;
 
@@ -78,7 +78,7 @@ public class FakeMeasureNotesGenerator {
         sortedOffsets.addAll(s2Map.keySet());
 
         for (int offset : sortedOffsets) {
-            Segment seg = new Segment(SegmentType.CHORDREST, staves);
+            Segment seg = new Segment(SegmentType.NOTEREST, staves);
 
             if (s1Map.containsKey(offset)) {
                 for (Note note : s1Map.get(offset)) {

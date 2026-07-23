@@ -20,4 +20,12 @@ module org.example.musicscorebuilder {
     opens org.example.musicscorebuilder.palette to javafx.fxml;
     exports org.example.musicscorebuilder.components.layout.util;
     opens org.example.musicscorebuilder.components.layout.util to javafx.fxml;
+    exports org.example.musicscorebuilder.managers;
+    opens org.example.musicscorebuilder.managers to javafx.fxml;
+    exports org.example.musicscorebuilder.controller;
+    opens org.example.musicscorebuilder.controller to javafx.fxml;
+    exports org.example.musicscorebuilder.util;
+    opens org.example.musicscorebuilder.util to javafx.fxml;
+    exports org.example.musicscorebuilder.components.layout.engine;
+    opens org.example.musicscorebuilder.components.layout.engine to javafx.fxml;
 }

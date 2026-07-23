@@ -4,7 +4,7 @@
 <ToolBar
     xmlns="http://javafx.com/javafx"
     xmlns:fx="http://javafx.com/fxml"
-    fx:controller="org.example.musicscorebuilder.ToolbarController"
+    fx:controller="org.example.musicscorebuilder.controller.ToolbarController"
     styleClass="main-toolbar"
 >
     <Separator />

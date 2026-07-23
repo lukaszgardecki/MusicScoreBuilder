@@ -1,5 +1,7 @@
 package org.example.musicscorebuilder.components.layout;
 
+import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
+
 public abstract class ElementLayout implements Selectable {
     protected final ScoreStyle style;
     protected final SegmentLayout parent;
@@ -21,6 +23,7 @@ public abstract class ElementLayout implements Selectable {
         return segmentMusicX >= getX() && segmentMusicX <= (getX() + getWidth()) &&
                 segmentMusicY >= getBoxY() && segmentMusicY <= (getBoxY() + getHeight());
     }
+    @Override public SegmentLayout getParentSegment() { return  parent; }
 
     public SegmentLayout getParent() { return parent; }
     public ScoreStyle getScoreStyle() { return style; }

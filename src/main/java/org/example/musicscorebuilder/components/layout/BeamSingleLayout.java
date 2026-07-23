@@ -1,5 +1,6 @@
 package org.example.musicscorebuilder.components.layout;
 
+import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.music.Leland;
 
 public class BeamSingleLayout implements Selectable {
@@ -42,6 +43,7 @@ public class BeamSingleLayout implements Selectable {
 
         return hitX && hitY;
     }
+    @Override public SegmentLayout getParentSegment() { return parentNote.getParentSegment(); }
 
     public double getX() { return parentNote.getStem().getX(); }
     public double getY() { return parentNote.getStem().getEndY(); }

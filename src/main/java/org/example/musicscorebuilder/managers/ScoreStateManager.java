@@ -1,8 +1,10 @@
-package org.example.musicscorebuilder;
+package org.example.musicscorebuilder.managers;
 
+import org.example.musicscorebuilder.components.layout.SegmentLayout;
 import org.example.musicscorebuilder.components.layout.Selectable;
 import org.example.musicscorebuilder.components.music.Score;
 import org.example.musicscorebuilder.components.music.ScoreMode;
+import org.example.musicscorebuilder.components.music.SegmentType;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,13 +40,14 @@ public class ScoreStateManager {
     }
 
 
-    public void setSelectedItem(Collection<? extends Selectable> items) {
+    public void setSelected(Selectable item) {
+        List<Selectable> itemsToSelect = LayoutHitTester.resolveSelection(item);
         deselectAll();
-        selectAll(items);
+        selectAll(itemsToSelect);
     }
 
     public void clearSelection() {
-        setSelectedItem(Collections.emptyList());
+        setSelected(null);
     }
 
     public List<Selectable> getSelectedItems() {
@@ -53,6 +56,14 @@ public class ScoreStateManager {
 
     public Selectable getSelectedItem() {
         return selectedItems.isEmpty() ? null : selectedItems.getFirst();
+    }
+
+    public SegmentLayout getSelectedSegment() {
+        if (selectedItems.isEmpty()) return null;
+        return selectedItems.stream()
+                .map(Selectable::getParentSegment)
+                .filter(s -> s.getType() == SegmentType.NOTEREST)
+                .findFirst().orElse(null);
     }
 
     public void addScoreChangeListener(ScoreChangeListener listener) {

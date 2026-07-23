@@ -4,7 +4,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 import org.example.musicscorebuilder.ScoreService;
-import org.example.musicscorebuilder.ScoreStateManager;
+import org.example.musicscorebuilder.managers.ScoreStateManager;
 
 import java.util.List;
 

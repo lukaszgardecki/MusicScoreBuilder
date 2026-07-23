@@ -1,6 +1,7 @@
 package org.example.musicscorebuilder.components.layout;
 
 import javafx.scene.shape.Polygon;
+import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +43,7 @@ public class BeamGroupLayout implements Selectable {
         );
         return poly.contains(measureX, measureY);
     }
+    @Override public SegmentLayout getParentSegment() { return notes.getFirst().getParentSegment(); }
 
     public void addNote(NoteLayout note) { notes.add(note); }
 

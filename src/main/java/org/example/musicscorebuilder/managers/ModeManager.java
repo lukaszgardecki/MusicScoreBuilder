@@ -1,4 +1,4 @@
-package org.example.musicscorebuilder;
+package org.example.musicscorebuilder.managers;
 
 import org.example.musicscorebuilder.components.layout.SegmentLayout;
 import org.example.musicscorebuilder.components.music.Mode;
@@ -6,18 +6,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class InsertModeManager {
-    private static InsertModeManager instance;
+public class ModeManager {
+    private static ModeManager instance;
     private Mode mode = Mode.DISPLAY;
     private final ScoreStateManager stateManager = ScoreStateManager.getInstance();
     private final List<Consumer<Boolean>> listeners = new ArrayList<>();
     private SegmentLayout editedSegment = null;
 
-    private InsertModeManager() {}
+    private ModeManager() {}
 
-    public static synchronized InsertModeManager getInstance() {
+    public static synchronized ModeManager getInstance() {
         if (instance == null) {
-            instance = new InsertModeManager();
+            instance = new ModeManager();
         }
         return instance;
     }
@@ -51,7 +51,6 @@ public class InsertModeManager {
     private void activateInsertMode() {
         if (mode != Mode.INSERT) {
             mode = Mode.INSERT;
-            stateManager.clearSelection();
             stateManager.notifyScoreChanged();
 
             if (this.editedSegment != null) {
@@ -59,7 +58,6 @@ public class InsertModeManager {
             }
 
             notifyListeners();
-            System.out.println("Activate Insert Mode");
         }
     }
 
@@ -70,7 +68,6 @@ public class InsertModeManager {
                 this.editedSegment.setHighlighted(false);
             }
             notifyListeners();
-            System.out.println("Deactivate Insert Mode");
         }
     }
 

@@ -5,6 +5,8 @@ import org.example.musicscorebuilder.components.layout.NoteLayout;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
 import org.example.musicscorebuilder.components.layout.Selectable;
 import org.example.musicscorebuilder.components.views.BackgroundView;
+import org.example.musicscorebuilder.managers.ModeManager;
+import org.example.musicscorebuilder.managers.ScoreStateManager;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -18,7 +20,7 @@ public class NoteDragHandler {
     private final Function<MouseEvent, Selectable> elementFinder;
     private final Supplier<ScoreLayout> layoutProvider;
     private final ScoreStateManager stateManager = ScoreStateManager.getInstance();
-    private final InsertModeManager insertModeManager = InsertModeManager.getInstance();
+    private final ModeManager modeManager = ModeManager.getInstance();
 
     private DragSession session = null;
     private boolean isDragActive = false;
@@ -34,7 +36,7 @@ public class NoteDragHandler {
     }
 
     public void handlePressed(MouseEvent event) {
-        if (insertModeManager.isInsertMode()) {
+        if (modeManager.isInsertMode()) {
             event.consume();
             handleInsertModeClick(event);
             return;
@@ -47,7 +49,7 @@ public class NoteDragHandler {
     }
 
     public void handleDragged(MouseEvent event) {
-        if (insertModeManager.isInsertMode()) return;
+        if (modeManager.isInsertMode()) return;
 
         ScoreLayout layout = layoutProvider.get();
         if (layout == null) return;
@@ -57,7 +59,7 @@ public class NoteDragHandler {
     }
 
     public void handleReleased(MouseEvent event) {
-        if (insertModeManager.isInsertMode()) return;
+        if (modeManager.isInsertMode()) return;
 
         ScoreLayout layout = layoutProvider.get();
         if (layout == null) {

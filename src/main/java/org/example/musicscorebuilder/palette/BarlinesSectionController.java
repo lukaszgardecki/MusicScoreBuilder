@@ -6,6 +6,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import org.example.musicscorebuilder.components.layout.*;
+import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.music.*;
 import org.example.musicscorebuilder.components.views.BarlineView;
 import org.example.musicscorebuilder.components.views.StaffView;

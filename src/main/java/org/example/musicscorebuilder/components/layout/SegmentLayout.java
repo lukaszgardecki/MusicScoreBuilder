@@ -1,5 +1,6 @@
 package org.example.musicscorebuilder.components.layout;
 
+import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.layout.util.NoteCollisionResolver;
 import org.example.musicscorebuilder.components.music.*;
 import java.util.*;
@@ -27,7 +28,7 @@ public class SegmentLayout {
     public void addByStaff(StaffLayout staffLayout, ElementLayout elementLayout) {
         elementsByStaff.computeIfAbsent(staffLayout, k -> new ArrayList<>()).add(elementLayout);
 
-        if (type == SegmentType.CHORDREST && elementLayout instanceof NoteLayout) {
+        if (type == SegmentType.NOTEREST && elementLayout instanceof NoteLayout) {
             resolveCollisionsForStaff(staffLayout);
         }
     }
@@ -57,14 +58,14 @@ public class SegmentLayout {
     }
 
     public void resolveCollisions() {
-        if (type != SegmentType.CHORDREST) return;
+        if (type != SegmentType.NOTEREST) return;
         for (StaffLayout staffLayout : elementsByStaff.keySet()) {
             resolveCollisionsForStaff(staffLayout);
         }
     }
 
     private void resolveCollisionsForStaff(StaffLayout staffLayout) {
-        if (type != SegmentType.CHORDREST) return;
+        if (type != SegmentType.NOTEREST) return;
 
         List<ElementLayout> elements = elementsByStaff.get(staffLayout);
         if (elements == null) return;

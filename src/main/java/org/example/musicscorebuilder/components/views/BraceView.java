@@ -5,9 +5,8 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
-import org.example.musicscorebuilder.FontManager;
+import org.example.musicscorebuilder.managers.FontManager;
 import org.example.musicscorebuilder.components.layout.BraceLayout;
-import org.example.musicscorebuilder.util.Util;
 
 public class BraceView extends ComponentView {
 

@@ -1,6 +1,7 @@
-package org.example.musicscorebuilder;
+package org.example.musicscorebuilder.components.layout.util;
 
 import org.example.musicscorebuilder.components.layout.*;
+import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.music.SegmentType;
 
 import java.util.Arrays;

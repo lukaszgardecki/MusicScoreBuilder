@@ -3,9 +3,10 @@ package org.example.musicscorebuilder;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import org.example.musicscorebuilder.managers.ModeManager;
 
 public class ShortcutHandler {
-    private final InsertModeManager insertModeManager = InsertModeManager.getInstance();
+    private final ModeManager modeManager = ModeManager.getInstance();
 
     public void register(Scene scene) {
         scene.addEventFilter(KeyEvent.KEY_PRESSED, this::handleKeyPressed);
@@ -17,7 +18,7 @@ public class ShortcutHandler {
 
     private void handleKeyPressed(KeyEvent event) {
         if (event.getCode() == KeyCode.N) {
-            insertModeManager.toggleInsertMode();
+            modeManager.toggleInsertMode();
             event.consume();
         }
     }

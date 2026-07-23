@@ -1,7 +1,8 @@
-package org.example.musicscorebuilder;
+package org.example.musicscorebuilder.components.layout.engine;
 
 import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.layout.util.BeamBuilder;
+import org.example.musicscorebuilder.components.layout.util.SystemJustifier;
 import org.example.musicscorebuilder.components.music.*;
 
 import java.util.IdentityHashMap;
