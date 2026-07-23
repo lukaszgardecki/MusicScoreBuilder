@@ -2,9 +2,11 @@ package org.example.musicscorebuilder.components.views;
 
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
+import org.example.musicscorebuilder.InsertModeManager;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
 
 public class BackgroundView extends Pane {
+    private final InsertModeManager insertModeManager = InsertModeManager.getInstance();
     private ScoreView scoreView;
     private double lastX;
     private double lastY;
@@ -16,7 +18,20 @@ public class BackgroundView extends Pane {
     public BackgroundView(){
         enableDrag();
         enableZoom();
+        enableInsertHover();
         centerFirstPage();
+
+        insertModeManager.addMouseMoveListener(() -> {
+            if (scoreView != null) {
+                scoreView.setViewportTransform(offsetX, offsetY, zoom);
+            }
+        });
+
+        insertModeManager.addModeChangeListener(isInsert -> {
+            if (scoreView != null) {
+                scoreView.setViewportTransform(offsetX, offsetY, zoom);
+            }
+        });
     }
 
     public void updateContent(ScoreLayout newLayout) {
@@ -54,14 +69,33 @@ public class BackgroundView extends Pane {
         scoreView.setViewportTransform(offsetX, offsetY, zoom);
     }
 
+    private void enableInsertHover() {
+        setOnMouseMoved(e -> {
+            if (!insertModeManager.isInsertMode()) return;
+            double modelX = toModelX(e.getX());
+            double modelY = toModelY(e.getY());
+            insertModeManager.updateMousePosition(modelX, modelY);
+        });
+
+        // Chowanie ducha / tymczasowe
+        setOnMouseExited(e -> {
+            if (insertModeManager.isInsertMode()) {
+                insertModeManager.updateMousePosition(-1, -1);
+            }
+        });
+    }
+
     private void enableDrag() {
         setOnMousePressed(e -> {
+            if (insertModeManager.isInsertMode()) return;
             lastX = e.getSceneX();
             lastY = e.getSceneY();
             wasDragged = false;
         });
 
         setOnMouseDragged(e -> {
+            if (insertModeManager.isInsertMode()) return;
+
             double dx = e.getSceneX() - lastX;
             double dy = e.getSceneY() - lastY;
 
@@ -88,7 +122,7 @@ public class BackgroundView extends Pane {
 
             double maxZoom = 15.0;
             double minZoom = 0.1;
-            double delta = 1.08;
+            double delta = 1.12;
             double zoomFactor = (e.getDeltaY() > 0) ? delta : 1 / delta;
 
             double oldZoom = this.zoom;

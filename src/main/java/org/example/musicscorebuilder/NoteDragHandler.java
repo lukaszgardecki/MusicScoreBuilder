@@ -18,6 +18,8 @@ public class NoteDragHandler {
     private final Function<MouseEvent, Selectable> elementFinder;
     private final Supplier<ScoreLayout> layoutProvider;
     private final ScoreStateManager stateManager = ScoreStateManager.getInstance();
+    private final InsertModeManager insertModeManager = InsertModeManager.getInstance();
+
     private DragSession session = null;
     private boolean isDragActive = false;
     private boolean isDraggingOtherElement = false;
@@ -32,6 +34,12 @@ public class NoteDragHandler {
     }
 
     public void handlePressed(MouseEvent event) {
+        if (insertModeManager.isInsertMode()) {
+            event.consume();
+            handleInsertModeClick(event);
+            return;
+        }
+
         Selectable clicked = elementFinder.apply(event);
         if (clicked instanceof NoteLayout note) startNoteDragSession(note, event);
         else if (clicked != null) startOtherElementDragSession();
@@ -39,6 +47,8 @@ public class NoteDragHandler {
     }
 
     public void handleDragged(MouseEvent event) {
+        if (insertModeManager.isInsertMode()) return;
+
         ScoreLayout layout = layoutProvider.get();
         if (layout == null) return;
 
@@ -47,6 +57,8 @@ public class NoteDragHandler {
     }
 
     public void handleReleased(MouseEvent event) {
+        if (insertModeManager.isInsertMode()) return;
+
         ScoreLayout layout = layoutProvider.get();
         if (layout == null) {
             reset();
@@ -62,6 +74,17 @@ public class NoteDragHandler {
         }
 
         reset();
+    }
+
+    private void handleInsertModeClick(MouseEvent event) {
+        event.consume();
+        double mouseModelX = container.toModelX(event.getX());
+        double mouseModelY = container.toModelY(event.getY());
+
+        System.out.println("Tryb wstawiania: Kliknięto w modelX: " + mouseModelX + ", modelY: " + mouseModelY);
+
+        // TUTAJ PODPIĘCIE: szukanie segmentu / pięciolinii i dodawanie nowej nuty
+        // np. scoreModifier.insertNoteAt(mouseModelX, mouseModelY);
     }
 
     private void startNoteDragSession(NoteLayout note, MouseEvent event) {

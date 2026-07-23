@@ -19,6 +19,8 @@ public class PageAreaController {
     private ScoreLayout currentScoreLayout;
     private final ScoreService scoreService = ScoreService.getInstance();
     private final ScoreStateManager stateManager = ScoreStateManager.getInstance();
+    private final InsertModeManager insertModeManager = InsertModeManager.getInstance();
+    private final ShortcutHandler shortcutHandler = new ShortcutHandler();
 
     @FXML
     public void initialize() {
@@ -32,7 +34,14 @@ public class PageAreaController {
 
         container.setOnMouseClicked(this::handleCanvasClick);
         stateManager.addScoreChangeListener(this::refreshView);
-
+        container.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (oldScene != null) {
+                shortcutHandler.unregister(oldScene);
+            }
+            if (newScene != null) {
+                shortcutHandler.register(newScene);
+            }
+        });
         viewModeToggle.setSelected(true);
         viewModeToggle.setText("Widok: Głos Solowy");
 
@@ -51,9 +60,11 @@ public class PageAreaController {
         if (viewModeToggle.isSelected()) {
             viewModeToggle.setText("Widok: Głos Solowy");
             stateManager.setCurrentModeIndex(0);
+            if (insertModeManager.isInsertMode()) insertModeManager.deactivateInsertMode();
         } else {
             viewModeToggle.setText("Widok: Pełna Partytura");
             stateManager.setCurrentModeIndex(1);
+            if (insertModeManager.isInsertMode()) insertModeManager.deactivateInsertMode();
         }
         refreshView();
     }
@@ -73,6 +84,7 @@ public class PageAreaController {
     }
 
     private void handleCanvasClick(MouseEvent event) {
+        if (insertModeManager.isInsertMode()) return;
         if (currentScoreLayout == null) return;
         if (!container.wasLastMousePressJustClick()) return;
         Selectable clickedElement = findClickedElement(event);

@@ -12,13 +12,24 @@ public class ToolbarController {
     @FXML private Button modeButton;
 
     @FXML
+    public void initialize() {
+        modeManager.addModeChangeListener(isInsert -> {
+            ObservableList<String> styleClasses = modeButton.getStyleClass();
+            if (isInsert) {
+                if (!styleClasses.contains("active")) {
+                    styleClasses.add("active");
+                }
+            } else {
+                styleClasses.remove("active");
+            }
+        });
+    }
+
+    @FXML
     private void toggleMode() {
-        ObservableList<String> styleClasses = modeButton.getStyleClass();
-        if (styleClasses.contains("active")) {
-            styleClasses.remove("active");
+        if (modeManager.isInsertMode()) {
             modeManager.deactivateInsertMode();
         } else {
-            styleClasses.add("active");
             modeManager.activateInsertMode();
         }
     }
