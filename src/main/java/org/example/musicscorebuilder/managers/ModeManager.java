@@ -1,6 +1,5 @@
 package org.example.musicscorebuilder.managers;
 
-import org.example.musicscorebuilder.components.layout.edit.CursorLayout;
 import org.example.musicscorebuilder.components.layout.edit.GhostNoteLayout;
 import org.example.musicscorebuilder.components.music.Mode;
 import java.util.ArrayList;
@@ -12,7 +11,6 @@ public class ModeManager {
     private Mode mode = Mode.DISPLAY;
     private final ScoreStateManager stateManager = ScoreStateManager.getInstance();
     private final List<Consumer<Boolean>> listeners = new ArrayList<>();
-    private CursorLayout cursorLayout;
     private GhostNoteLayout ghostNote;
 
     private ModeManager() {}
@@ -31,9 +29,6 @@ public class ModeManager {
             activateInsertMode();
         }
     }
-
-    public CursorLayout getLastCursor() { return cursorLayout; }
-    public void setCursorLayout(CursorLayout newCursorLayout) { this.cursorLayout = newCursorLayout; }
 
     public void setGhostNote(GhostNoteLayout ghostNote) { this.ghostNote = ghostNote; }
     public void clearGhostNote() { this.ghostNote = null; }

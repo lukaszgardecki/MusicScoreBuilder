@@ -8,6 +8,8 @@ import java.util.*;
 
 public class SegmentLayout {
     private final ScoreStyle style;
+    private SegmentLayout next;
+    private SegmentLayout prev;
     private final MeasureLayout parent;
     private final Map<StaffLayout, List<ElementLayout>> elementsByStaff = new HashMap<>();
     private SegmentType type;
@@ -132,4 +134,31 @@ public class SegmentLayout {
     public void setType(SegmentType type) { this.type = type; }
     public void setCursor(CursorLayout cursor) { this.cursorLayout = cursor; }
     public void setSystemGenerated(boolean systemGenerated) { this.systemGenerated = systemGenerated; }
+    public SegmentLayout getNext() { return next; }
+    public SegmentLayout getPrev() { return prev; }
+    public SegmentLayout getNextSameType() {
+        SegmentLayout current = this.next;
+        while (current != null) {
+            if (current.getType() == this.type) {
+                return current;
+            }
+            current = current.next;
+        }
+        return null;
+    }
+
+    public SegmentLayout getPrevSameType() {
+        SegmentLayout current = this.prev;
+        while (current != null) {
+            if (current.getType() == this.type) {
+                return current;
+            }
+            current = current.prev;
+        }
+        return null;
+    }
+
+
+    public void setNext(SegmentLayout next) { this.next = next; }
+    public void setPrev(SegmentLayout prev) { this.prev = prev; }
 }

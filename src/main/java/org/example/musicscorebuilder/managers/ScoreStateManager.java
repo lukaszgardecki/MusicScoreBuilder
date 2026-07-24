@@ -8,6 +8,7 @@ import org.example.musicscorebuilder.components.music.SegmentType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public class ScoreStateManager {
     private static ScoreStateManager instance;
@@ -56,11 +57,11 @@ public class ScoreStateManager {
         return selectedItems.isEmpty() ? null : selectedItems.getFirst();
     }
 
-    public Selectable getFirstSelectedNoteRest() {
-        if (selectedItems.isEmpty()) return null;
+    public Optional<Selectable> getFirstSelectedNoteRest() {
+        if (selectedItems.isEmpty()) return Optional.empty();
         return selectedItems.stream()
                 .filter(s -> s.getSegment().getType() == SegmentType.NOTEREST)
-                .findFirst().orElse(null);
+                .findFirst();
     }
 
     public void addScoreChangeListener(ScoreChangeListener listener) {

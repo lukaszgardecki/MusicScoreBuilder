@@ -11,16 +11,15 @@ import org.example.musicscorebuilder.components.layout.edit.CursorLayout;
 import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.layout.engine.LayoutEngine;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
-import org.example.musicscorebuilder.components.music.Page;
-import org.example.musicscorebuilder.components.music.PageFormat;
-import org.example.musicscorebuilder.components.music.Score;
-import org.example.musicscorebuilder.components.music.ScoreMode;
+import org.example.musicscorebuilder.components.music.*;
 import org.example.musicscorebuilder.components.views.BackgroundView;
 import org.example.musicscorebuilder.managers.LayoutHitTester;
 import org.example.musicscorebuilder.managers.ModeManager;
+import org.example.musicscorebuilder.managers.ScoreNavigator;
 import org.example.musicscorebuilder.managers.ScoreStateManager;
 
 import java.util.List;
+import java.util.Optional;
 
 public class PageAreaController {
     @FXML private ScrollPane scrollPane;
@@ -31,6 +30,7 @@ public class PageAreaController {
     private final ScoreService scoreService = ScoreService.getInstance();
     private final ScoreStateManager stateManager = ScoreStateManager.getInstance();
     private final ModeManager modeManager = ModeManager.getInstance();
+    private final ScoreNavigator scoreNavigator = ScoreNavigator.getInstance();
     private final ShortcutHandler shortcutHandler = new ShortcutHandler();
 
     @FXML
@@ -101,36 +101,19 @@ public class PageAreaController {
     }
 
     private void handleInsertModeActivation() {
-        Selectable selectedNoteRest = stateManager.getFirstSelectedNoteRest();
-        CursorLayout cursorLayout = null;
-
-        if (selectedNoteRest != null) {
-            cursorLayout = new CursorLayout(selectedNoteRest);
-        }
-
-        if (cursorLayout == null) {
-            cursorLayout = modeManager.getLastCursor();
-        }
+        stateManager.getFirstSelectedNoteRest()
+                .map(CursorLayout::new)
+                .or(() -> Optional.ofNullable(scoreNavigator.getLastCursor()))
+                .or(() -> Optional.ofNullable(currentScoreLayout)
+                        .map(ScoreLayout::findFirstNoteElement)
+                        .map(CursorLayout::new))
+                .ifPresent(scoreNavigator::setCursorLayout);
 
         stateManager.clearSelection();
-
-        if (cursorLayout == null && currentScoreLayout != null) {
-            Selectable firstNoteElement = currentScoreLayout.findFirstNoteElement();
-            if (firstNoteElement != null) {
-                cursorLayout = new CursorLayout(firstNoteElement);
-            }
-        }
-
-        if (cursorLayout != null) {
-            modeManager.setCursorLayout(cursorLayout);
-            if (cursorLayout.getSegment() != null) {
-                cursorLayout.getSegment().setCursor(cursorLayout);
-            }
-        }
     }
 
     private void handleInsertModeDeactivation() {
-        CursorLayout currentCursor = modeManager.getLastCursor();
+        CursorLayout currentCursor = scoreNavigator.getLastCursor();
         if (currentCursor != null && currentCursor.getSegment() != null) {
             currentCursor.getSegment().setCursor(null);
         }

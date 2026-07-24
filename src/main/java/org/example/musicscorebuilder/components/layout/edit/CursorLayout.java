@@ -16,6 +16,7 @@ public class CursorLayout {
         this.element = element;
         this.parent = element.getSegment();
         this.staff = element.getStaff();
+        this.element.setSelected(true);
 
         ScoreStyle style = parent.getScoreStyle();
         this.color = style.getSelectColor(element);

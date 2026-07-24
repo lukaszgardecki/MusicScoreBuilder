@@ -63,6 +63,8 @@ public class LayoutEngine {
         }
 
         systemJustifier.justify(newSystem);
+
+        linkAllSegments(scoreLayout);
         return scoreLayout;
     }
 
@@ -115,5 +117,27 @@ public class LayoutEngine {
         measureLayout.addSystemClef();
         if (scoreMode.getStartBarline() == null) return;
         measureLayout.addSystemStartBarline(scoreMode.getStartBarline());
+    }
+
+    private void linkAllSegments(ScoreLayout scoreLayout) {
+        java.util.List<SegmentLayout> allSegments = new java.util.ArrayList<>();
+
+        for (PageLayout page : scoreLayout.getPages()) {
+            for (SystemLayout system : page.getSystems()) {
+                for (MeasureLayout measure : system.getMeasures()) {
+                    allSegments.addAll(measure.getSegments());
+                }
+            }
+        }
+
+        for (int i = 0; i < allSegments.size(); i++) {
+            SegmentLayout current = allSegments.get(i);
+            if (i > 0) {
+                current.setPrev(allSegments.get(i - 1));
+            }
+            if (i < allSegments.size() - 1) {
+                current.setNext(allSegments.get(i + 1));
+            }
+        }
     }
 }

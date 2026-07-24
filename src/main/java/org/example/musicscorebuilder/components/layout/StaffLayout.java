@@ -22,6 +22,7 @@ public class StaffLayout {
         y = staff.getIndex() * (getHeight() + scoreStyle.getStaffSpacing());
     }
 
+    public MeasureLayout getParent() { return parent; }
     public Staff getStaff() { return staff; }
     public int getLinesNumber() { return staff.getLinesNumber(); }
     public double getLineWidth() { return lineWidth; }

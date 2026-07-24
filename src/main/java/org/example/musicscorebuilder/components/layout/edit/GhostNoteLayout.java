@@ -4,8 +4,11 @@ import org.example.musicscorebuilder.components.layout.NoteLayout;
 import org.example.musicscorebuilder.components.layout.SegmentLayout;
 import org.example.musicscorebuilder.components.layout.StaffLayout;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
-import org.example.musicscorebuilder.components.music.*;
-import org.example.musicscorebuilder.managers.ModeManager;
+import org.example.musicscorebuilder.components.music.BeamType;
+import org.example.musicscorebuilder.components.music.Note;
+import org.example.musicscorebuilder.components.music.NoteType;
+import org.example.musicscorebuilder.components.music.PitchStep;
+import org.example.musicscorebuilder.managers.ScoreNavigator;
 
 public class GhostNoteLayout extends NoteLayout {
     private final SegmentLayout segment;
@@ -19,7 +22,7 @@ public class GhostNoteLayout extends NoteLayout {
         this.segment = segment;
         this.staff = staff;
         this.style = segment.getScoreStyle();
-        this.color = style.getEditInsertColor(ModeManager.getInstance().getLastCursor().getElement());
+        this.color = style.getEditInsertColor(ScoreNavigator.getInstance().getLastCursor().getElement());
         updatePitchFromY(initialModelY);
     }
 
