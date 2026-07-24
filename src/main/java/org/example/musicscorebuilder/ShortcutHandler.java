@@ -20,6 +20,9 @@ public class ShortcutHandler {
         if (event.getCode() == KeyCode.N) {
             modeManager.toggleInsertMode();
             event.consume();
+        } else if (event.getCode() == KeyCode.ESCAPE) {
+            if (modeManager.isInsertMode()) { modeManager.toggleInsertMode(); }
+            event.consume();
         }
     }
 }
