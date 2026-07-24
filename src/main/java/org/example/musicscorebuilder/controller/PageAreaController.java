@@ -58,6 +58,8 @@ public class PageAreaController {
             stateManager.setCurrentModeIndex(1);
         }
         if (modeManager.isInsertMode()) modeManager.toggleInsertMode();
+        scoreNavigator.clearCursor();
+        stateManager.clearSelection();
         refreshView();
     }
 
