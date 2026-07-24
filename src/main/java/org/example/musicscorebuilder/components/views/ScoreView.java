@@ -4,17 +4,21 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.stage.Screen;
-import org.example.musicscorebuilder.components.layout.*;
+import org.example.musicscorebuilder.components.layout.NoteLayout;
+import org.example.musicscorebuilder.components.layout.PageLayout;
+import org.example.musicscorebuilder.components.layout.ScoreLayout;
 import org.example.musicscorebuilder.components.layout.edit.GhostNoteLayout;
 import org.example.musicscorebuilder.components.music.SegmentType;
 import org.example.musicscorebuilder.managers.LayoutHitTester;
 import org.example.musicscorebuilder.managers.ModeManager;
+import org.example.musicscorebuilder.managers.ScoreNavigator;
 
 public class ScoreView extends Canvas {
     GraphicsContext gc = getGraphicsContext2D();
     private final PageView pageView = new PageView();
     private ScoreLayout scoreLayout;
     private final ModeManager modeManager = ModeManager.getInstance();
+    private final ScoreNavigator scoreNavigator = ScoreNavigator.getInstance();
     private final double baseSpatiumPx;
     private double offsetX = 0.0;
     private double offsetY = 0.0;
@@ -47,6 +51,16 @@ public class ScoreView extends Canvas {
             LayoutHitTester.SegmentStaffAndY target = LayoutHitTester.findSegmentAndStaffAt(
                     scoreLayout.getPages(), modelX, modelY
             );
+
+            if (target != null) {
+                var voice = scoreNavigator.getLastCursor().getElement().getVoice();
+                boolean segmentHasSameVoiceNote = target.segment().getElementsForStaff(target.staff()).stream()
+                        .filter(NoteLayout.class::isInstance)
+                        .map(NoteLayout.class::cast)
+                        .map(NoteLayout::getNote)
+                        .anyMatch(n -> n.getVoice() == voice);
+                if (!segmentHasSameVoiceNote) return;
+            }
 
             GhostNoteLayout currentGhost = modeManager.getGhostNote();
 
