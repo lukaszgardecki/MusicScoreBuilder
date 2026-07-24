@@ -13,7 +13,7 @@ public final class StemLengthCalculator {
             return calculateBeamedFactor(parentNote, parentNote.getBeamGroup(), middleY, spacing);
         }
 
-        int activeVoices = parentNote.getParent().getVoiceCountForStaff(parentNote.getStaffLayout());
+        int activeVoices = parentNote.getParent().getVoiceCountForStaff(parentNote.getStaff());
 
         if (activeVoices == 1) {
             return calculateSingleVoiceFactor(parentNote, middleY, spacing);
@@ -170,7 +170,7 @@ public final class StemLengthCalculator {
         y1 += totalShift;
         y2 += totalShift;
 
-        int activeVoices = first.getParent().getVoiceCountForStaff(first.getStaffLayout());
+        int activeVoices = first.getParent().getVoiceCountForStaff(first.getStaff());
         if (activeVoices == 1) {
             for (NoteLayout note : first.getBeamGroup().getNotes()) {
                 boolean noteIsUp = isStemUp(note);

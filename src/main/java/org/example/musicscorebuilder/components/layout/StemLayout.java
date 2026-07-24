@@ -28,7 +28,8 @@ public class StemLayout implements Selectable {
 
         return hitX && hitY;
     }
-    @Override public SegmentLayout getParentSegment() { return parentNote.getParentSegment(); }
+    @Override public SegmentLayout getSegment() { return parentNote.getSegment(); }
+    @Override public StaffLayout getStaff() { return parentNote.getStaff(); }
 
     public double getX() {
         boolean isUp = (getDirection() == StemDirection.UP);
@@ -86,13 +87,13 @@ public class StemLayout implements Selectable {
 
     public StemDirection getDirection() {
         int voice = parentNote.getNote().getVoice();
-        int activeVoices = parentNote.getParent().getVoiceCountForStaff(parentNote.getStaffLayout());
+        int activeVoices = parentNote.getParent().getVoiceCountForStaff(parentNote.getStaff());
 
         if (activeVoices > 1) {
             return (voice % 2 == 1) ? StemDirection.UP : StemDirection.DOWN;
         }
 
-        Clef clef = parentNote.getStaffLayout().getStaff().getDefaultClef();
+        Clef clef = parentNote.getStaff().getStaff().getDefaultClef();
         ClefType clefType = clef.getType();
 
         int noteStep = parentNote.getNote().getPitch().getAbsoluteDiatonicStep();
@@ -106,6 +107,6 @@ public class StemLayout implements Selectable {
     private double getMiddleLineY() {
         var style = parentNote.getScoreStyle();
         double spacing = style.getStaffLineSpacing();
-        return parentNote.getStaffLayout().getY() + (2.0 * spacing);
+        return parentNote.getStaff().getY() + (2.0 * spacing);
     }
 }

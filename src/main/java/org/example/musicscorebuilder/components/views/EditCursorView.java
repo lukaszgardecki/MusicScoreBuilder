@@ -2,31 +2,27 @@ package org.example.musicscorebuilder.components.views;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
-import org.example.musicscorebuilder.components.layout.SegmentLayout;
+import org.example.musicscorebuilder.components.layout.CursorLayout;
 
 public class EditCursorView extends ComponentView {
 
-    public void draw(GraphicsContext gc, SegmentLayout segment, double measureX, double measureY, double sp) {
-        double segmentX = segment.getX() * sp + measureX;
-        double segmentY = segment.getY() * sp + measureY;
-        double staffHeight = segment.getElementsByStaff().keySet().stream().findFirst().get().getHeight() * sp;
-        var style = segment.getScoreStyle();
-        double yD = style.getEditCursorAboveBelowLength() * sp;
-        var startY = segmentY - yD;
-        var bgWidth = segment.getWidth() * sp;
-        var bgHeight = staffHeight + 2 * yD;
+    public void draw(GraphicsContext gc, CursorLayout cursor, double measureX, double measureY, double sp) {
+        double cursorX = cursor.getX() * sp + measureX;
+        double cursorY = cursor.getY() * sp + measureY;
+        var bgWidth = cursor.getWidth() * sp;
+        var bgHeight = cursor.getHeight() * sp;
+        String colorHex = cursor.getColor();
         gc.save();
 
-        Color color = Color.rgb(0, 120, 255, 0.3);
-        fillBackground(gc, color, segmentX, startY, bgWidth, bgHeight);
+        Color bgColor = Color.web(colorHex, 0.3);
+        fillBackground(gc, bgColor, cursorX, cursorY, bgWidth, bgHeight);
 
-        double cursorWidth = style.getEditCursorWidth() * sp;
-        var cursorX = segmentX - 0.5 * cursorWidth;
-        var cursorEndY = startY + bgHeight;
-        var cursorColor = Color.rgb(0, 120, 255, 0.8);
+        double cursorWidth = cursor.getThickness() * sp;
+        var cursorEndY = cursorY + bgHeight;
+        var cursorColor = Color.web(colorHex);
         gc.setStroke(cursorColor);
         gc.setLineWidth(cursorWidth);
-        gc.strokeLine(cursorX, startY, cursorX, cursorEndY);
+        gc.strokeLine(cursorX, cursorY, cursorX, cursorEndY);
 
         gc.restore();
     }

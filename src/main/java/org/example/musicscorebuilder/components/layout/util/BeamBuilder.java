@@ -24,7 +24,7 @@ public class BeamBuilder {
         Map<StaffLayout, Map<Integer, List<NoteLayout>>> rawNotesByStaffAndVoice = new HashMap<>();
 
         for (NoteLayout noteLayout : notesToProcess) {
-            StaffLayout staff = noteLayout.getStaffLayout();
+            StaffLayout staff = noteLayout.getStaff();
             int voice = noteLayout.getNote().getVoice();
 
             rawNotesByStaffAndVoice

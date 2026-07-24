@@ -8,7 +8,6 @@ import java.util.List;
 public class NoteLayout extends ElementLayout {
     private final Leland fontData;
     private final Note note;
-    private final StaffLayout staff;
     private final StemLayout stem;
     private final BeamSingleLayout singleBeam;
     private BeamGroupLayout beamGroup;
@@ -17,10 +16,9 @@ public class NoteLayout extends ElementLayout {
 
     public record LedgerLine(double startX, double endX, double y, double thickness) {}
 
-    public NoteLayout(Note note, StaffLayout staff, SegmentLayout segmentLayout) {
-        super(true, segmentLayout);
+    public NoteLayout(Note note, StaffLayout staff, SegmentLayout parent) {
+        super(true, parent, staff);
         this.note = note;
-        this.staff = staff;
         this.fontData = switch (note.getType()) {
             case EIGHTH, QUARTER -> Leland.NOTE_HEAD_BLACK;
             case HALF -> Leland.NOTE_HEAD_HALF;
@@ -93,14 +91,12 @@ public class NoteLayout extends ElementLayout {
     public double getBoxX() { return getX(); }
     public double getFontWidth() { return (fontData.getHeight() * fontData.getRatio()) * style.getStaffLineSpacing(); }
     public double getBoxWidth() { return getFontWidth(); }
-
     public double getFontSize() { return 4 * style.getStaffLineSpacing(); }
     public String getCode() { return fontData.getCode(); }
     public int getDiatonicStep() { return note.getPitch().getAbsoluteDiatonicStep(); }
     public StemLayout getStem() { return stem; }
     public BeamSingleLayout getBeamSingle() { return singleBeam; }
     public BeamGroupLayout getBeamGroup() { return beamGroup; }
-    public StaffLayout getStaffLayout() { return staff; }
 
     private double calculateY(Clef clef) {
         ClefType clefType = clef.getType();

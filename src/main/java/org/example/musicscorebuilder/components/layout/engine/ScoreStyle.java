@@ -40,7 +40,7 @@ public class ScoreStyle {
     private static final double SELECTION_FRAME_EXTRA_HEIGHT = STAFF_LINE_SPACING;
     private static final double SELECTION_FRAME_RADIUS = 0.4;
 
-    private static final double EDIT_CURSOR_WIDTH = 0.2;
+    private static final double EDIT_CURSOR_WIDTH = 0.3;
     private static final double EDIT_CURSOR_LENGTH_FACTOR = 0.8;
 
     private double pageSpacing = PAGE_SPACING;

@@ -10,13 +10,13 @@ public class ClefLayout extends ElementLayout {
     private final double scale;
     private double y;
 
-    public ClefLayout(Clef clef, StaffLayout staffLayout, SegmentLayout parent) {
-        super(false, parent);
-        this.height = staffLayout.getHeight();
-        this.scale = staffLayout.getLineSpacing();
+    public ClefLayout(Clef clef, StaffLayout staff, SegmentLayout parent) {
+        super(false, parent, staff);
+        this.height = staff.getHeight();
+        this.scale = staff.getLineSpacing();
         ClefType type = clef.getType();
         fontData = type.getFontData();
-        y = type.getOffsetY() * staffLayout.getLineSpacing() + staffLayout.getY();
+        y = type.getOffsetY() * staff.getLineSpacing() + staff.getY();
     }
 
     @Override public double getY() { return y; }

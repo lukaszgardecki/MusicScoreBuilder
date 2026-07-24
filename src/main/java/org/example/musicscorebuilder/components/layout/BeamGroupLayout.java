@@ -43,7 +43,8 @@ public class BeamGroupLayout implements Selectable {
         );
         return poly.contains(measureX, measureY);
     }
-    @Override public SegmentLayout getParentSegment() { return notes.getFirst().getParentSegment(); }
+    @Override public SegmentLayout getSegment() { return notes.getFirst().getSegment(); }
+    @Override public StaffLayout getStaff() { return notes.isEmpty() ? null : notes.getFirst().getStaff(); }
 
     public void addNote(NoteLayout note) { notes.add(note); }
 

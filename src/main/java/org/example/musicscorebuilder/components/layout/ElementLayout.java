@@ -5,15 +5,17 @@ import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 public abstract class ElementLayout implements Selectable {
     protected final ScoreStyle style;
     protected final SegmentLayout parent;
+    protected final StaffLayout staff;
     private final boolean hasDynamicWidth;
     private double x = 0.0;
     private double y = 0.0;
     private boolean selected = false;
 
-    public ElementLayout(boolean hasDynamicWidth, SegmentLayout parent) {
+    public ElementLayout(boolean hasDynamicWidth, SegmentLayout parent,  StaffLayout staff) {
         this.hasDynamicWidth = hasDynamicWidth;
         this.style = parent.getScoreStyle();
         this.parent = parent;
+        this.staff = staff;
     }
 
     @Override public boolean isSelected() { return selected; }
@@ -23,7 +25,8 @@ public abstract class ElementLayout implements Selectable {
         return segmentMusicX >= getX() && segmentMusicX <= (getX() + getWidth()) &&
                 segmentMusicY >= getBoxY() && segmentMusicY <= (getBoxY() + getHeight());
     }
-    @Override public SegmentLayout getParentSegment() { return  parent; }
+    @Override public SegmentLayout getSegment() { return  parent; }
+    @Override public StaffLayout getStaff() { return staff; }
 
     public SegmentLayout getParent() { return parent; }
     public ScoreStyle getScoreStyle() { return style; }

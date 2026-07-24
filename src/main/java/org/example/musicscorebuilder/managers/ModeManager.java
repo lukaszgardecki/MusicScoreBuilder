@@ -1,6 +1,6 @@
 package org.example.musicscorebuilder.managers;
 
-import org.example.musicscorebuilder.components.layout.SegmentLayout;
+import org.example.musicscorebuilder.components.layout.CursorLayout;
 import org.example.musicscorebuilder.components.music.Mode;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,7 @@ public class ModeManager {
     private Mode mode = Mode.DISPLAY;
     private final ScoreStateManager stateManager = ScoreStateManager.getInstance();
     private final List<Consumer<Boolean>> listeners = new ArrayList<>();
-    private SegmentLayout editedSegment = null;
+    private CursorLayout cursorLayout;
 
     private ModeManager() {}
 
@@ -30,33 +30,13 @@ public class ModeManager {
         }
     }
 
-    public void setEditedSegment(SegmentLayout newSegment) {
-        if (this.editedSegment != newSegment) {
-            if (this.editedSegment != null) {
-                this.editedSegment.setHighlighted(false);
-            }
-            this.editedSegment = newSegment;
-        }
-
-        if (this.editedSegment != null) {
-            this.editedSegment.setHighlighted(true);
-        }
-    }
-
-    public SegmentLayout getEditedSegment() {
-        return editedSegment;
-    }
-
+    public CursorLayout getLastCursor() { return cursorLayout; }
+    public void setCursorLayout(CursorLayout newCursorLayout) { this.cursorLayout = newCursorLayout; }
 
     private void activateInsertMode() {
         if (mode != Mode.INSERT) {
             mode = Mode.INSERT;
             stateManager.notifyScoreChanged();
-
-            if (this.editedSegment != null) {
-                this.editedSegment.setHighlighted(true);
-            }
-
             notifyListeners();
         }
     }
@@ -64,9 +44,6 @@ public class ModeManager {
     private void deactivateInsertMode() {
         if (mode != Mode.DISPLAY) {
             mode = Mode.DISPLAY;
-            if (this.editedSegment != null) {
-                this.editedSegment.setHighlighted(false);
-            }
             notifyListeners();
         }
     }

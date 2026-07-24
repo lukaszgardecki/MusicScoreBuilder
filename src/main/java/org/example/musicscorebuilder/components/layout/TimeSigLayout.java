@@ -15,12 +15,12 @@ public class TimeSigLayout extends ElementLayout {
         public double getBoxY() { return y - (fontData().getNEy() * scale); }
     }
 
-    public TimeSigLayout(TimeSignature timeSignature, StaffLayout staffLayout, SegmentLayout parent) {
-        super(false, parent);
-        this.height = staffLayout.getHeight();
-        this.y = staffLayout.getY();
-        this.scale = staffLayout.getLineSpacing();
-        double signOffsetY = 1 * staffLayout.getLineSpacing();
+    public TimeSigLayout(TimeSignature timeSignature, StaffLayout staff, SegmentLayout parent) {
+        super(false, parent, staff);
+        this.height = staff.getHeight();
+        this.y = staff.getY();
+        this.scale = staff.getLineSpacing();
+        double signOffsetY = 1 * staff.getLineSpacing();
 
         if (timeSignature.isFractional()) {
             int beat = timeSignature.getBeat();
@@ -30,9 +30,9 @@ public class TimeSigLayout extends ElementLayout {
             int[] beatTypeDigits = getDigitsMath(beatType);
 
             this.digitSigns = new DigitSign[2][];
-            double y = staffLayout.getY() + signOffsetY;
+            double y = staff.getY() + signOffsetY;
             this.digitSigns[0] = createDigitRow(beatDigits, y);
-            double bottomY = y + 2 * staffLayout.getLineSpacing();
+            double bottomY = y + 2 * staff.getLineSpacing();
             this.digitSigns[1] = createDigitRow(beatTypeDigits, bottomY);
 
             double topWidth = getRowWidth(this.digitSigns[0]);
@@ -42,7 +42,7 @@ public class TimeSigLayout extends ElementLayout {
             alignRowsCenter(topWidth, bottomWidth);
         } else {
             Leland symbol = timeSignature.isCommon() ? Leland.TIME_COMMON : Leland.TIME_CUT;
-            double y = staffLayout.getY() + signOffsetY + staffLayout.getLineSpacing();
+            double y = staff.getY() + signOffsetY + staff.getLineSpacing();
             this.digitSigns = new DigitSign[1][1];
             DigitSign sign = new DigitSign(symbol, this.getX(), y, scale);
             this.digitSigns[0][0] = sign;

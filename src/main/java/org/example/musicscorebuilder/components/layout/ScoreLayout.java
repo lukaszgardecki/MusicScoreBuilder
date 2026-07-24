@@ -21,16 +21,20 @@ public class ScoreLayout {
     public ScoreStyle getStyle() { return style; }
     public List<PageLayout> getPages() { return pages; }
 
-    public SegmentLayout findFirstNoteSegment() {
+    public Selectable findFirstNoteElement() {
         if (pages.isEmpty()) return null;
         var page = pages.getFirst();
         if (page.getSystems().isEmpty()) return null;
         var system = page.getSystems().getFirst();
         if (system.getMeasures().isEmpty()) return null;
         var measure = system.getMeasures().getFirst();
+
         for (SegmentLayout segment : measure.getSegments()) {
             if (segment.getType() == SegmentType.NOTEREST) {
-                return segment;
+                List<ElementLayout> elements = segment.getElements();
+                if (!elements.isEmpty()) {
+                    return elements.getFirst();
+                }
             }
         }
         return null;

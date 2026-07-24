@@ -119,7 +119,7 @@ public class LayoutHitTester {
                 if (measure.getBeamGroups() != null) {
                     for (BeamGroupLayout beamGroup : measure.getBeamGroups()) {
                         if (!beamGroup.isEmpty()) {
-                            StaffLayout groupStaff = beamGroup.getFirstNote().getStaffLayout();
+                            StaffLayout groupStaff = beamGroup.getFirstNote().getStaff();
                             if (groupStaff == targetStaff) {
                                 itemsToSelect.add(beamGroup);
                             }

@@ -13,7 +13,7 @@ public class BarlineLayout extends ElementLayout {
     private double x = 0, y, width, height;
 
     public BarlineLayout(Barline barline, StaffLayout staff, SegmentLayout parent) {
-        super(false, parent);
+        super(false, parent, staff);
         this.barline = barline;
         this.lightLineWidth = style.getBarlineLightWidth();
         this.heavyLineWidth = style.getBarlineHeavyWidth();

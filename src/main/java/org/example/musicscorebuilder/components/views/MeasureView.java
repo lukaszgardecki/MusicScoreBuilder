@@ -24,7 +24,7 @@ public class MeasureView extends ComponentView {
         }
 
         for (SegmentLayout segment : measure.getSegments()) {
-            if (segment.isHighlighted()) editCursorView.draw(gc, segment, measureX, measureY, sp);
+            if (segment.hasActiveCursor()) editCursorView.draw(gc, segment.getCursor(), measureX, measureY, sp);
 
             segmentView.draw(gc, segment, measureX, measureY, sp);
         }

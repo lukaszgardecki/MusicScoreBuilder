@@ -12,7 +12,7 @@ public class SegmentLayout {
     private SegmentType type;
     private double x, y = 0, height;
     private double extraWidth = 0.0;
-    private boolean highlighted = false;
+    private CursorLayout cursorLayout;
     private boolean systemGenerated = false;
 
     public SegmentLayout(SegmentType type, MeasureLayout parent) {
@@ -119,14 +119,15 @@ public class SegmentLayout {
     public double getHeight() { return height; }
     public boolean hasDynamicWidth() { return getElements().stream().anyMatch(ElementLayout::hasDynamicWidth); }
     public ScoreStyle getScoreStyle() { return style; }
-    public boolean isHighlighted() { return highlighted; }
     public boolean isSystemGenerated() { return systemGenerated; }
+    public CursorLayout getCursor() { return cursorLayout; }
+    public boolean hasActiveCursor() { return cursorLayout != null; }
 
     public void setX(double x) { this.x = x; }
     public void setExtraWidth(double extraWidth) {
         this.extraWidth = extraWidth;
     }
     public void setType(SegmentType type) { this.type = type; }
-    public void setHighlighted(boolean highlighted) { this.highlighted = highlighted; }
+    public void setCursor(CursorLayout cursor) { this.cursorLayout = cursor; }
     public void setSystemGenerated(boolean systemGenerated) { this.systemGenerated = systemGenerated; }
 }

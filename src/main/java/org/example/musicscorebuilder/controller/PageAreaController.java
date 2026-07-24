@@ -7,8 +7,7 @@ import javafx.scene.input.MouseEvent;
 import org.example.musicscorebuilder.NoteDragHandler;
 import org.example.musicscorebuilder.ScoreService;
 import org.example.musicscorebuilder.ShortcutHandler;
-import org.example.musicscorebuilder.components.layout.ScoreLayout;
-import org.example.musicscorebuilder.components.layout.Selectable;
+import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.layout.engine.LayoutEngine;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.music.Page;
@@ -94,28 +93,45 @@ public class PageAreaController {
         });
 
         modeManager.addModeChangeListener(isInsert -> {
-            if (isInsert) {
-                handleInsertModeActivation();
-            }
+            if (isInsert) handleInsertModeActivation();
+            else handleInsertModeDeactivation();
             redraw();
         });
     }
 
     private void handleInsertModeActivation() {
-        var targetSegment = stateManager.getSelectedSegment();
+        Selectable selectedNoteRest = stateManager.getFirstSelectedNoteRest();
+        CursorLayout cursorLayout = null;
 
-        if (targetSegment == null) {
-            targetSegment =  modeManager.getEditedSegment();
+        if (selectedNoteRest != null) {
+            cursorLayout = new CursorLayout(selectedNoteRest);
+        }
+
+        if (cursorLayout == null) {
+            cursorLayout = modeManager.getLastCursor();
         }
 
         stateManager.clearSelection();
 
-        if (targetSegment == null && currentScoreLayout != null) {
-            targetSegment = currentScoreLayout.findFirstNoteSegment();
+        if (cursorLayout == null && currentScoreLayout != null) {
+            Selectable firstNoteElement = currentScoreLayout.findFirstNoteElement();
+            if (firstNoteElement != null) {
+                cursorLayout = new CursorLayout(firstNoteElement);
+            }
         }
 
-        if (targetSegment != null) {
-            modeManager.setEditedSegment(targetSegment);
+        if (cursorLayout != null) {
+            modeManager.setCursorLayout(cursorLayout);
+            if (cursorLayout.getSegment() != null) {
+                cursorLayout.getSegment().setCursor(cursorLayout);
+            }
+        }
+    }
+
+    private void handleInsertModeDeactivation() {
+        CursorLayout currentCursor = modeManager.getLastCursor();
+        if (currentCursor != null && currentCursor.getSegment() != null) {
+            currentCursor.getSegment().setCursor(null);
         }
     }
 

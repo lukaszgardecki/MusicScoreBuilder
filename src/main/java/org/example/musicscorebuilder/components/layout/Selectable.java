@@ -5,5 +5,6 @@ public interface Selectable {
     void setSelected(boolean selected);
     int getVoice();
     boolean contains(double x, double y);
-    SegmentLayout getParentSegment();
+    SegmentLayout getSegment();
+    StaffLayout getStaff();
 }

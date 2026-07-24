@@ -43,7 +43,8 @@ public class BeamSingleLayout implements Selectable {
 
         return hitX && hitY;
     }
-    @Override public SegmentLayout getParentSegment() { return parentNote.getParentSegment(); }
+    @Override public SegmentLayout getSegment() { return parentNote.getSegment(); }
+    @Override public StaffLayout getStaff() { return parentNote.getStaff(); }
 
     public double getX() { return parentNote.getStem().getX(); }
     public double getY() { return parentNote.getStem().getEndY(); }

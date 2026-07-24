@@ -1,6 +1,5 @@
 package org.example.musicscorebuilder.managers;
 
-import org.example.musicscorebuilder.components.layout.SegmentLayout;
 import org.example.musicscorebuilder.components.layout.Selectable;
 import org.example.musicscorebuilder.components.music.Score;
 import org.example.musicscorebuilder.components.music.ScoreMode;
@@ -8,7 +7,6 @@ import org.example.musicscorebuilder.components.music.SegmentType;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 public class ScoreStateManager {
@@ -58,11 +56,10 @@ public class ScoreStateManager {
         return selectedItems.isEmpty() ? null : selectedItems.getFirst();
     }
 
-    public SegmentLayout getSelectedSegment() {
+    public Selectable getFirstSelectedNoteRest() {
         if (selectedItems.isEmpty()) return null;
         return selectedItems.stream()
-                .map(Selectable::getParentSegment)
-                .filter(s -> s.getType() == SegmentType.NOTEREST)
+                .filter(s -> s.getSegment().getType() == SegmentType.NOTEREST)
                 .findFirst().orElse(null);
     }
 
