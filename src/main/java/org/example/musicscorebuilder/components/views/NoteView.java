@@ -2,6 +2,7 @@ package org.example.musicscorebuilder.components.views;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import org.example.musicscorebuilder.components.layout.edit.GhostNoteLayout;
 import org.example.musicscorebuilder.managers.FontManager;
 import org.example.musicscorebuilder.components.layout.BeamSingleLayout;
 import org.example.musicscorebuilder.components.layout.NoteLayout;
@@ -30,8 +31,11 @@ public class NoteView extends ComponentView {
 
         if (note.getBeamSingle() instanceof BeamSingleLayout single) beamSingleView.draw(gc, single, segmentX, segmentY, sp);
 
+        var color = note instanceof GhostNoteLayout ghost
+                ? ghost.getColor()
+                : note.getScoreStyle().getSelectColor(note);
         gc.setFont(FontManager.getLelandFont(fontSize));
-        gc.setFill(Color.web(note.getScoreStyle().getSelectColor(note)));
+        gc.setFill(Color.web(color));
         gc.fillText(note.getCode(), noteX, noteY);
     }
 }

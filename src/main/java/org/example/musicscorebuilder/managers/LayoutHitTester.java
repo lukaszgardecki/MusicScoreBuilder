@@ -1,6 +1,7 @@
 package org.example.musicscorebuilder.managers;
 
 import org.example.musicscorebuilder.components.layout.*;
+import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.music.SegmentType;
 
 import java.util.ArrayList;
@@ -8,6 +9,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class LayoutHitTester {
+
+    public record SegmentStaffAndY(SegmentLayout segment, StaffLayout staff, double measureY) {}
 
     public static Selectable findClickedElement(List<PageLayout> pages, double globalX, double globalY) {
         for (PageLayout page : pages) {
@@ -60,6 +63,94 @@ public class LayoutHitTester {
         }
 
         return null;
+    }
+
+    public static SegmentStaffAndY findSegmentAndStaffAt(List<PageLayout> pages, double globalX, double globalY) {
+        SegmentStaffAndY xMatchedFallback = null;
+
+        for (PageLayout page : pages) {
+            double pageX = globalX - page.getX();
+            double pageY = globalY;
+
+            if (pageX < 0 || pageX > page.getWidth() || pageY < 0 || pageY > page.getHeight()) {
+                continue;
+            }
+
+            for (SystemLayout system : page.getSystems()) {
+                double systemX = pageX - system.getX();
+                double systemY = pageY - system.getY();
+
+                double verticalBuffer = 0.0;
+                if (!system.getMeasures().isEmpty() && !system.getMeasures().get(0).getStaffs().isEmpty()) {
+                    ScoreStyle style = system.getMeasures().get(0).getScoreStyle();
+                    verticalBuffer = style.getNoteMaxLedgerLines() * style.getStaffLineSpacing();
+                }
+
+                if (systemX < 0 || systemX > system.getWidth() || systemY < -verticalBuffer || systemY > system.getHeight() + verticalBuffer) {
+                    continue;
+                }
+
+                for (MeasureLayout measure : system.getMeasures()) {
+                    double measureX = systemX - measure.getX();
+                    double measureY = systemY - measure.getY();
+
+                    if (measureX < 0 || measureX > measure.getWidth()) {
+                        continue;
+                    }
+
+                    for (SegmentLayout segment : measure.getSegments()) {
+                        double segX = segment.getX();
+                        double segWidth = segment.getWidth();
+
+                        if (measureX >= segX && measureX <= segX + segWidth) {
+                            if (segment.getType() != SegmentType.NOTEREST) {
+                                return null;
+                            }
+                        }
+                    }
+
+                    StaffLayout targetStaff = null;
+                    for (StaffLayout staff : measure.getStaffs()) {
+                        double staffY = staff.getY();
+                        double spacing = measure.getScoreStyle().getStaffLineSpacing();
+                        int ledgersLimit = measure.getScoreStyle().getNoteMaxLedgerLines();
+
+                        double staffTop = staffY - (ledgersLimit * spacing);
+                        double staffBottom = staffY + (4 * spacing) + (ledgersLimit * spacing);
+
+                        if (measureY >= staffTop && measureY <= staffBottom) {
+                            targetStaff = staff;
+                            break;
+                        }
+                    }
+
+                    for (SegmentLayout segment : measure.getSegments()) {
+                        if (segment.getType() != SegmentType.NOTEREST) {
+                            continue;
+                        }
+
+                        double segX = segment.getX();
+                        double segWidth = segment.getWidth();
+
+                        if (measureX >= segX && measureX <= segX + segWidth) {
+                            StaffLayout fallbackStaff = targetStaff != null ? targetStaff : (measure.getStaffs().isEmpty() ? null : measure.getStaffs().get(0));
+
+                            if (fallbackStaff != null) {
+                                SegmentStaffAndY match = new SegmentStaffAndY(segment, fallbackStaff, measureY);
+
+                                if (targetStaff != null) {
+                                    return match;
+                                } else {
+                                    xMatchedFallback = match;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return xMatchedFallback;
     }
 
     public static List<Selectable> resolveSelection(Selectable clickedElement) {

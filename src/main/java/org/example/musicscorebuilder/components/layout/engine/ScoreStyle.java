@@ -35,13 +35,15 @@ public class ScoreStyle {
     private static final double NOTE_BEAM_THICKNESS = 0.5;
 
     private static final String VOICE_1_COLOR = "#0066cc";
+    private static final String VOICE_1_INSERT_COLOR = "#3399ff";
     private static final String VOICE_2_COLOR = "#007a1a";
+    private static final String VOICE_2_INSERT_COLOR = "#00b32d";
     private static final double SELECTION_FRAME_WIDTH = 2 * STAFF_LINE_WIDTH;
     private static final double SELECTION_FRAME_EXTRA_HEIGHT = STAFF_LINE_SPACING;
     private static final double SELECTION_FRAME_RADIUS = 0.4;
 
     private static final double EDIT_CURSOR_WIDTH = 0.3;
-    private static final double EDIT_CURSOR_LENGTH_FACTOR = 0.8;
+    private static final double EDIT_CURSOR_PADDING = 0.8;
 
     private double pageSpacing = PAGE_SPACING;
     private double staffSpacing = STAFF_SPACING;
@@ -74,7 +76,9 @@ public class ScoreStyle {
     private double noteBeamThickness = NOTE_BEAM_THICKNESS;
 
     private String voice1Color = VOICE_1_COLOR;
+    private String voice1InsertColor = VOICE_1_INSERT_COLOR;
     private String voice2Color = VOICE_2_COLOR;
+    private String voice2InsertColor = VOICE_2_INSERT_COLOR;
     private double selectionFrameWidth =  SELECTION_FRAME_WIDTH;
     private double selectionFrameExtraHeight = SELECTION_FRAME_EXTRA_HEIGHT;
     private double selectionFrameRadius = SELECTION_FRAME_RADIUS;
@@ -114,7 +118,7 @@ public class ScoreStyle {
     public double getSelectionFrameRadius() { return staffSpacingScale * selectionFrameRadius; }
 
     public double getEditCursorWidth() { return EDIT_CURSOR_WIDTH; }
-    public double getEditCursorAboveBelowLength() { return EDIT_CURSOR_LENGTH_FACTOR * getStaffLineSpacing(); }
+    public double getEditCursorPadding() { return EDIT_CURSOR_PADDING * getStaffLineSpacing(); }
 
     public double toSp(double valueInMm) {
         if (spatiumMm <= 0) return 0;
@@ -122,14 +126,18 @@ public class ScoreStyle {
     }
 
     public String getSelectColor(Selectable element) {
-        if (element.isSelected())
-            return getSelectColorByVoiceNumber(element.getVoice());
-        return "#000000";
+        if (!element.isSelected()) return "#000000";
+
+        return switch (element.getVoice()) {
+            case 1 -> voice1Color;
+            default -> voice2Color;
+        };
     }
 
-    public String getSelectColorByVoiceNumber(int voice) {
-        if (voice == 1) return voice1Color;
-        if (voice == 2) return voice2Color;
-        return "#000000";
+    public String getEditInsertColor(Selectable element) {
+        return switch (element.getVoice()) {
+            case 1 -> voice1InsertColor;
+            default -> voice2InsertColor;
+        };
     }
 }

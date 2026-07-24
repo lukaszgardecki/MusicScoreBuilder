@@ -1,5 +1,6 @@
 package org.example.musicscorebuilder.components.layout;
 
+import org.example.musicscorebuilder.components.layout.edit.CursorLayout;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.layout.util.NoteCollisionResolver;
 import org.example.musicscorebuilder.components.music.*;
@@ -118,6 +119,7 @@ public class SegmentLayout {
     }
     public double getHeight() { return height; }
     public boolean hasDynamicWidth() { return getElements().stream().anyMatch(ElementLayout::hasDynamicWidth); }
+    public MeasureLayout getParent() { return parent; }
     public ScoreStyle getScoreStyle() { return style; }
     public boolean isSystemGenerated() { return systemGenerated; }
     public CursorLayout getCursor() { return cursorLayout; }

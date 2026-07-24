@@ -2,6 +2,7 @@ package org.example.musicscorebuilder.components.views;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import org.example.musicscorebuilder.components.layout.edit.GhostNoteLayout;
 import org.example.musicscorebuilder.managers.FontManager;
 import org.example.musicscorebuilder.components.layout.BeamSingleLayout;
 
@@ -19,9 +20,11 @@ public class BeamSingleView extends ComponentView {
 
 //        fillBackground(gc, Util.generateRandomColor(), beamX, beamBoxY, widthPx, heightPx);
 
+        var color = beam.getParent() instanceof GhostNoteLayout ghost
+                ? ghost.getColor()
+                : beam.getScoreStyle().getSelectColor(beam);
         gc.setFont(FontManager.getLelandFont(fontSize));
-
-        gc.setFill(Color.web(beam.getScoreStyle().getSelectColor(beam)));
+        gc.setFill(Color.web(color));
         gc.fillText(beam.getCode(), beamX, beamY);
     }
 }

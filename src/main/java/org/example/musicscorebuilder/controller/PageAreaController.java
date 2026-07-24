@@ -7,6 +7,7 @@ import javafx.scene.input.MouseEvent;
 import org.example.musicscorebuilder.NoteDragHandler;
 import org.example.musicscorebuilder.ScoreService;
 import org.example.musicscorebuilder.ShortcutHandler;
+import org.example.musicscorebuilder.components.layout.edit.CursorLayout;
 import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.layout.engine.LayoutEngine;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;

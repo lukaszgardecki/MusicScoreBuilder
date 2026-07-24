@@ -60,4 +60,5 @@ public class BeamSingleLayout implements Selectable {
     public double getFontSize() { return 4 * style.getStaffLineSpacing(); }
     public String getCode() { return fontData.getCode(); }
     public ScoreStyle getScoreStyle() { return style; }
+    public NoteLayout getParent() { return parentNote; }
 }

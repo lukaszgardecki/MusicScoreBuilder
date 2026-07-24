@@ -3,6 +3,8 @@ package org.example.musicscorebuilder.components.views;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import org.example.musicscorebuilder.components.layout.*;
+import org.example.musicscorebuilder.components.layout.edit.GhostNoteLayout;
+import org.example.musicscorebuilder.managers.ModeManager;
 import org.example.musicscorebuilder.util.Util;
 
 public class SegmentView extends ComponentView {
@@ -26,6 +28,16 @@ public class SegmentView extends ComponentView {
                 selectElement(gc, element);
                 drawElement(gc, element, segmentX, segmentY, sp);
                 gc.restore();
+            }
+        }
+
+        ModeManager modeManager = ModeManager.getInstance();
+        if (modeManager.isShowGhost()) {
+            GhostNoteLayout ghost = modeManager.getGhostNote();
+            if (ghost != null) {
+                if (ghost.getSegment().equals(segment)) {
+                    noteView.draw(gc, ghost, segmentX, segmentY, sp);
+                }
             }
         }
     }

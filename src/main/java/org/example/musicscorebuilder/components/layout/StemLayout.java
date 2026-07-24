@@ -84,7 +84,7 @@ public class StemLayout implements Selectable {
     }
 
     public ScoreStyle getScoreStyle() { return style; }
-
+    public NoteLayout getParent()  { return parentNote; }
     public StemDirection getDirection() {
         int voice = parentNote.getNote().getVoice();
         int activeVoices = parentNote.getParent().getVoiceCountForStaff(parentNote.getStaff());

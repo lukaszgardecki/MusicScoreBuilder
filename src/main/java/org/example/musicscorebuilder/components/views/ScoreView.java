@@ -4,13 +4,17 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.stage.Screen;
-import org.example.musicscorebuilder.components.layout.PageLayout;
-import org.example.musicscorebuilder.components.layout.ScoreLayout;
+import org.example.musicscorebuilder.components.layout.*;
+import org.example.musicscorebuilder.components.layout.edit.GhostNoteLayout;
+import org.example.musicscorebuilder.components.music.SegmentType;
+import org.example.musicscorebuilder.managers.LayoutHitTester;
+import org.example.musicscorebuilder.managers.ModeManager;
 
 public class ScoreView extends Canvas {
     GraphicsContext gc = getGraphicsContext2D();
     private final PageView pageView = new PageView();
     private ScoreLayout scoreLayout;
+    private final ModeManager modeManager = ModeManager.getInstance();
     private final double baseSpatiumPx;
     private double offsetX = 0.0;
     private double offsetY = 0.0;
@@ -28,6 +32,38 @@ public class ScoreView extends Canvas {
 
         widthProperty().addListener(evt -> draw());
         heightProperty().addListener(evt -> draw());
+
+        enableGhostNoteTracking();
+    }
+
+    private void enableGhostNoteTracking() {
+        setOnMouseMoved(e -> {
+            if (!modeManager.isInsertMode()) return;
+            if (scoreLayout == null) return;
+
+            double modelX = (e.getX() - offsetX) / getActualSp();
+            double modelY = (e.getY() - offsetY) / getActualSp();
+
+            LayoutHitTester.SegmentStaffAndY target = LayoutHitTester.findSegmentAndStaffAt(
+                    scoreLayout.getPages(), modelX, modelY
+            );
+
+            GhostNoteLayout currentGhost = modeManager.getGhostNote();
+
+            if (target != null && target.segment().getType() == SegmentType.NOTEREST) {
+                if (currentGhost == null || !currentGhost.getSegment().equals(target.segment()) || currentGhost.getStaff() != target.staff()) {
+                    GhostNoteLayout ghost = new GhostNoteLayout(target.segment(), target.staff(), target.measureY());
+                    modeManager.setGhostNote(ghost);
+                    draw();
+                } else {
+                    double oldY = currentGhost.getY();
+                    currentGhost.updatePitchFromY(target.measureY());
+                    if (currentGhost.getY() != oldY) {
+                        draw();
+                    }
+                }
+            }
+        });
     }
 
     public void update(ScoreLayout newLayout) {
@@ -75,4 +111,8 @@ public class ScoreView extends Canvas {
 
     public ScoreLayout getScoreLayout() { return scoreLayout; }
     public double getBaseSpatiumPx() { return baseSpatiumPx; }
+
+    private double getActualSp() {
+        return zoom * getBaseSpatiumPx();
+    }
 }

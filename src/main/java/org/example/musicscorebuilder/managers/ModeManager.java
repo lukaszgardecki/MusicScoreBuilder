@@ -1,6 +1,7 @@
 package org.example.musicscorebuilder.managers;
 
-import org.example.musicscorebuilder.components.layout.CursorLayout;
+import org.example.musicscorebuilder.components.layout.edit.CursorLayout;
+import org.example.musicscorebuilder.components.layout.edit.GhostNoteLayout;
 import org.example.musicscorebuilder.components.music.Mode;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ public class ModeManager {
     private final ScoreStateManager stateManager = ScoreStateManager.getInstance();
     private final List<Consumer<Boolean>> listeners = new ArrayList<>();
     private CursorLayout cursorLayout;
+    private GhostNoteLayout ghostNote;
 
     private ModeManager() {}
 
@@ -33,6 +35,11 @@ public class ModeManager {
     public CursorLayout getLastCursor() { return cursorLayout; }
     public void setCursorLayout(CursorLayout newCursorLayout) { this.cursorLayout = newCursorLayout; }
 
+    public void setGhostNote(GhostNoteLayout ghostNote) { this.ghostNote = ghostNote; }
+    public void clearGhostNote() { this.ghostNote = null; }
+    public GhostNoteLayout getGhostNote() { return ghostNote; }
+    public boolean isShowGhost() { return isInsertMode() && ghostNote != null; }
+
     private void activateInsertMode() {
         if (mode != Mode.INSERT) {
             mode = Mode.INSERT;
@@ -44,6 +51,7 @@ public class ModeManager {
     private void deactivateInsertMode() {
         if (mode != Mode.DISPLAY) {
             mode = Mode.DISPLAY;
+            clearGhostNote();
             notifyListeners();
         }
     }
