@@ -4,6 +4,7 @@ import org.example.musicscorebuilder.components.layout.SegmentLayout;
 import org.example.musicscorebuilder.components.layout.Selectable;
 import org.example.musicscorebuilder.components.layout.StaffLayout;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
+import org.example.musicscorebuilder.managers.ModeManager;
 
 public class CursorLayout {
     private final SegmentLayout parent;
@@ -19,7 +20,8 @@ public class CursorLayout {
         this.element.setSelected(true);
 
         ScoreStyle style = parent.getScoreStyle();
-        this.color = style.getSelectColor(element);
+        int activeVoice = ModeManager.getInstance().getCurrentVoice();
+        this.color = style.getEditInsertColor(activeVoice);
         this.height = staff.getHeight() + 2 * style.getEditCursorPadding();
         this.thickness = style.getEditCursorWidth();
         this.y = staff.getY() - style.getEditCursorPadding();

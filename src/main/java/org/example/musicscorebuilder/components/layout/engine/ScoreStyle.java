@@ -140,4 +140,12 @@ public class ScoreStyle {
             default -> voice2InsertColor;
         };
     }
+
+    public String getEditInsertColor(int voice) {
+        return switch (voice) {
+            case 1 ->voice1InsertColor;
+            case 2 ->voice2InsertColor;
+            default -> "#000000";
+        };
+    }
 }

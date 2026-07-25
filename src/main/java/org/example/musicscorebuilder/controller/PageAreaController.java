@@ -105,7 +105,8 @@ public class PageAreaController {
     private void handleInsertModeActivation() {
         stateManager.getFirstSelectedNoteRest()
                 .map(CursorLayout::new)
-                .or(() -> Optional.ofNullable(scoreNavigator.getLastCursor()))
+                .or(() -> Optional.ofNullable(scoreNavigator.getLastCursor())
+                        .map(el -> new CursorLayout(el.getElement())))
                 .or(() -> Optional.ofNullable(currentScoreLayout)
                         .map(ScoreLayout::findFirstNoteElement)
                         .map(CursorLayout::new))

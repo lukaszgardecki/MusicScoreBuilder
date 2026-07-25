@@ -12,6 +12,7 @@ public class ModeManager {
     private final ScoreStateManager stateManager = ScoreStateManager.getInstance();
     private final List<Consumer<Boolean>> listeners = new ArrayList<>();
     private GhostNoteLayout ghostNote;
+    private int currentVoice = 1;
 
     private ModeManager() {}
 
@@ -63,7 +64,14 @@ public class ModeManager {
         listener.accept(isInsertMode());
     }
 
-    public boolean isInsertMode() {
-        return mode == Mode.INSERT;
+    public boolean isInsertMode() { return mode == Mode.INSERT; }
+    public int getCurrentVoice() { return currentVoice; }
+
+    public void setCurrentVoice(int voice) {
+        this.currentVoice = voice;
+        if (ghostNote != null) {
+            clearGhostNote();
+        }
+        notifyListeners();
     }
 }

@@ -60,7 +60,7 @@ public class ScoreView extends Canvas {
                 GhostNoteLayout currentGhost = modeManager.getGhostNote();
 
                 if (currentGhost == null || !currentGhost.getSegment().equals(target.segment()) || currentGhost.getStaff() != target.staff()) {
-                    GhostNoteLayout ghost = new GhostNoteLayout(voice, target.segment(), target.staff(), target.measureY());
+                    GhostNoteLayout ghost = new GhostNoteLayout(target.segment(), target.staff(), target.measureY());
                     modeManager.setGhostNote(ghost);
                     draw();
                 } else {

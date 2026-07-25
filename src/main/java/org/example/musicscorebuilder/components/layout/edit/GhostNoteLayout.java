@@ -8,7 +8,7 @@ import org.example.musicscorebuilder.components.music.BeamType;
 import org.example.musicscorebuilder.components.music.Note;
 import org.example.musicscorebuilder.components.music.NoteType;
 import org.example.musicscorebuilder.components.music.PitchStep;
-import org.example.musicscorebuilder.managers.ScoreNavigator;
+import org.example.musicscorebuilder.managers.ModeManager;
 
 public class GhostNoteLayout extends NoteLayout {
     private final SegmentLayout segment;
@@ -16,13 +16,24 @@ public class GhostNoteLayout extends NoteLayout {
     private final ScoreStyle style;
     private final String color;
 
-    public GhostNoteLayout(int voice, SegmentLayout segment, StaffLayout staff, double initialModelY) {
-        // tu trzeba dostarczyć też typ nuty
-        super(new Note(voice, PitchStep.C, 0, 4, NoteType.QUARTER, BeamType.NONE), staff, segment);
+    public GhostNoteLayout(SegmentLayout segment, StaffLayout staff, double initialModelY) {
+        super(
+                new Note(
+                        ModeManager.getInstance().getCurrentVoice(),
+                        PitchStep.C,
+                        0,
+                        4,
+                        NoteType.QUARTER,
+                        BeamType.NONE
+                ),
+                staff,
+                segment
+        );
         this.segment = segment;
         this.staff = staff;
         this.style = segment.getScoreStyle();
-        this.color = style.getEditInsertColor(ScoreNavigator.getInstance().getLastCursor().getElement());
+        int activeVoice = ModeManager.getInstance().getCurrentVoice();
+        this.color = style.getEditInsertColor(activeVoice);
         updatePitchFromY(initialModelY);
     }
 

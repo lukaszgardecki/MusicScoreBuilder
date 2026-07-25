@@ -18,9 +18,9 @@
     <Button styleClass="toolbar-btn" text="2" />
     <Button styleClass="toolbar-btn" text="1" />
     <Separator />
-    <Button styleClass="toolbar-btn" text="p1" />
-    <Button styleClass="toolbar-btn" text="p2" />
-    <Button styleClass="toolbar-btn" text="p3" />
+    <Button fx:id="voice1Button" styleClass="toolbar-btn" text="1" onAction="#activateVoice1"/>
+    <Button fx:id="voice2Button" styleClass="toolbar-btn" text="2" onAction="#activateVoice2"/>
+    <Button fx:id="voice3Button" styleClass="toolbar-btn" text="3" />
     <Separator />
     <Button fx:id="addMeasure" styleClass="toolbar-btn" text="+" onAction="#addMeasure"/>
     <Button fx:id="removeMeasure" styleClass="toolbar-btn" text="-" onAction="#removeMeasure"/>

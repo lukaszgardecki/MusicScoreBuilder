@@ -70,7 +70,7 @@ public class ScoreNavigator {
     private void assignFirstElOfVoiceToCursor(SegmentLayout startSegment, boolean forward) {
         SegmentLayout currentSegment = startSegment;
         var currentStaffLayout = cursorLayout.getStaff();
-        var voice = cursorLayout.getElement().getVoice();
+        var voice = ModeManager.getInstance().getCurrentVoice();
 
         int staffIndex = currentStaffLayout.getParent().getStaffs().indexOf(currentStaffLayout);
 
@@ -94,6 +94,25 @@ public class ScoreNavigator {
             }
 
             currentSegment = forward ? currentSegment.getNextSameType() : currentSegment.getPrevSameType();
+        }
+    }
+
+    public void switchToVoice(int targetVoice) {
+        if (cursorLayout == null || cursorLayout.getElement() == null) return;
+
+        var currentSegmentLayout = cursorLayout.getSegment();
+        var currentStaffLayout = cursorLayout.getStaff();
+
+        var elementsOnStaff = currentSegmentLayout.getElementsByStaff(currentStaffLayout);
+
+        var targetElement = elementsOnStaff.stream()
+                .filter(el -> el.getVoice() == targetVoice)
+                .findFirst();
+
+        if (targetElement.isPresent()) {
+            setCursorLayout(new CursorLayout(targetElement.get()));
+        } else {
+            setCursorLayout(new CursorLayout(cursorLayout.getElement()));
         }
     }
 }
