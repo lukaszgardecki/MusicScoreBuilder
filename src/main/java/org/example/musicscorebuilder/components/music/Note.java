@@ -12,11 +12,12 @@ public class Note extends Element {
         this.voice = voice;
         this.type = type;
         this.beam = beam;
-        this.duration = type.getSegments();
+        this.duration = type.getTicks();
     }
 
+    @Override public int getDuration() { return duration; }
+
     public Pitch getPitch() { return pitch; }
-    public int getDuration() { return duration; }
     public int getVoice() { return voice; }
     public NoteType getType() { return type; }
     public BeamType getBeam() { return beam; }
@@ -32,6 +33,6 @@ public class Note extends Element {
     }
     public void setType(NoteType type) {
         this.type = type;
-        this.duration = type.getSegments();
+        this.duration = type.getTicks();
     }
 }

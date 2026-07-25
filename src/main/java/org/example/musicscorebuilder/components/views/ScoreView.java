@@ -52,21 +52,15 @@ public class ScoreView extends Canvas {
                     scoreLayout.getPages(), modelX, modelY
             );
 
-            if (target != null) {
-                var voice = scoreNavigator.getLastCursor().getElement().getVoice();
-                boolean segmentHasSameVoiceNote = target.segment().getElementsForStaff(target.staff()).stream()
-                        .filter(NoteLayout.class::isInstance)
-                        .map(NoteLayout.class::cast)
-                        .map(NoteLayout::getNote)
-                        .anyMatch(n -> n.getVoice() == voice);
-                if (!segmentHasSameVoiceNote) return;
-            }
-
-            GhostNoteLayout currentGhost = modeManager.getGhostNote();
-
             if (target != null && target.segment().getType() == SegmentType.NOTEREST) {
+                var voice = scoreNavigator.getLastCursor().getElement().getVoice();
+                boolean segmentHasSameVoiceNote = target.segment().hasAnyNotesAtStaffByVoice(target.staff(), voice);
+                if (!segmentHasSameVoiceNote) return;
+
+                GhostNoteLayout currentGhost = modeManager.getGhostNote();
+
                 if (currentGhost == null || !currentGhost.getSegment().equals(target.segment()) || currentGhost.getStaff() != target.staff()) {
-                    GhostNoteLayout ghost = new GhostNoteLayout(target.segment(), target.staff(), target.measureY());
+                    GhostNoteLayout ghost = new GhostNoteLayout(voice, target.segment(), target.staff(), target.measureY());
                     modeManager.setGhostNote(ghost);
                     draw();
                 } else {

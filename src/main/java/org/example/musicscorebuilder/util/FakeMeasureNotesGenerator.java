@@ -19,10 +19,10 @@ public class FakeMeasureNotesGenerator {
 
     public static int getMeasureCapacityInSegments(TimeSignature timeSig) {
         int segmentsPerBeat = switch (timeSig.getBeatType()) {
-            case 1 -> NoteType.WHOLE.getSegments();
-            case 2 -> NoteType.HALF.getSegments();
-            case 4 -> NoteType.QUARTER.getSegments();
-            case 8 -> NoteType.EIGHTH.getSegments();
+            case 1 -> NoteType.WHOLE.getTicks();
+            case 2 -> NoteType.HALF.getTicks();
+            case 4 -> NoteType.QUARTER.getTicks();
+            case 8 -> NoteType.EIGHTH.getTicks();
             default -> 2;
         };
         return timeSig.getBeat() * segmentsPerBeat;
@@ -37,7 +37,7 @@ public class FakeMeasureNotesGenerator {
 
             if (makeBeamGroup) {
                 int count = (remainingSegments >= 4 && Math.random() < 0.5) ? 4 : 2;
-                int needed = count * NoteType.EIGHTH.getSegments();
+                int needed = count * NoteType.EIGHTH.getTicks();
 
                 if (remainingSegments >= needed) {
                     for (int i = 0; i < count; i++) {
@@ -61,7 +61,7 @@ public class FakeMeasureNotesGenerator {
             NoteType randomType = NoteType.getRandomFitting(remainingSegments);
             PitchStep randomStep = PitchStep.values()[(int) (Math.random() * PitchStep.values().length)];
             notes.add(new Note(voice, randomStep, 0, octave, randomType, BeamType.NONE));
-            remainingSegments -= randomType.getSegments();
+            remainingSegments -= randomType.getTicks();
         }
         return notes;
     }
@@ -78,7 +78,7 @@ public class FakeMeasureNotesGenerator {
         sortedOffsets.addAll(s2Map.keySet());
 
         for (int offset : sortedOffsets) {
-            Segment seg = new Segment(SegmentType.NOTEREST, staves);
+            Segment seg = new Segment(SegmentType.NOTEREST, measure);
 
             if (s1Map.containsKey(offset)) {
                 for (Note note : s1Map.get(offset)) {
@@ -107,7 +107,7 @@ public class FakeMeasureNotesGenerator {
         int currentOffset = 0;
         for (Note note : voiceNotes) {
             map.computeIfAbsent(currentOffset, k -> new ArrayList<>()).add(note);
-            currentOffset += note.getType().getSegments();
+            currentOffset += note.getType().getTicks();
         }
     }
 }

@@ -4,6 +4,9 @@ import javafx.scene.input.MouseEvent;
 import org.example.musicscorebuilder.components.layout.NoteLayout;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
 import org.example.musicscorebuilder.components.layout.Selectable;
+import org.example.musicscorebuilder.components.layout.edit.GhostNoteLayout;
+import org.example.musicscorebuilder.components.music.Measure;
+import org.example.musicscorebuilder.components.music.Segment;
 import org.example.musicscorebuilder.components.views.BackgroundView;
 import org.example.musicscorebuilder.managers.ModeManager;
 import org.example.musicscorebuilder.managers.ScoreStateManager;
@@ -80,13 +83,14 @@ public class NoteDragHandler {
 
     private void handleInsertModeClick(MouseEvent event) {
         event.consume();
-        double mouseModelX = container.toModelX(event.getX());
-        double mouseModelY = container.toModelY(event.getY());
+        GhostNoteLayout gN = modeManager.getGhostNote();
+        if (gN == null) return;
 
-        System.out.println("Tryb wstawiania: Kliknięto w modelX: " + mouseModelX + ", modelY: " + mouseModelY);
+        Segment segment = gN.getSegment().getSegment();
+        Measure measure = segment.getParent();
 
-        // TUTAJ PODPIĘCIE: szukanie segmentu / pięciolinii i dodawanie nowej nuty
-        // np. scoreModifier.insertNoteAt(mouseModelX, mouseModelY);
+        measure.insertNote(segment, gN.getStaff().getStaff(), gN.getNote());
+        ScoreStateManager.getInstance().notifyScoreChanged();
     }
 
     private void startNoteDragSession(NoteLayout note, MouseEvent event) {

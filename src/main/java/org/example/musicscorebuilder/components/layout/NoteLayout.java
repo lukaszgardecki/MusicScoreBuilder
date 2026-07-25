@@ -20,9 +20,9 @@ public class NoteLayout extends ElementLayout {
         super(true, parent, staff);
         this.note = note;
         this.fontData = switch (note.getType()) {
-            case EIGHTH, QUARTER -> Leland.NOTE_HEAD_BLACK;
             case HALF -> Leland.NOTE_HEAD_HALF;
             case WHOLE -> Leland.NOTE_HEAD_WHOLE;
+            default -> Leland.NOTE_HEAD_BLACK;
         };
         Clef clef = staff.getStaff().getDefaultClef();
         this.y = calculateY(clef) + staff.getY();

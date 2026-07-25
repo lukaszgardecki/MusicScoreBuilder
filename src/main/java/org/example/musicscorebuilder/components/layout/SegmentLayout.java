@@ -7,16 +7,22 @@ import org.example.musicscorebuilder.components.music.*;
 import java.util.*;
 
 public class SegmentLayout {
+    private Segment segment;
     private final ScoreStyle style;
     private SegmentLayout next;
     private SegmentLayout prev;
     private final MeasureLayout parent;
-    private final Map<StaffLayout, List<ElementLayout>> elementsByStaff = new HashMap<>();
+    private final Map<StaffLayout, List<ElementLayout>> staffElements = new HashMap<>();
     private SegmentType type;
     private double x, y = 0, height;
     private double extraWidth = 0.0;
     private CursorLayout cursorLayout;
     private boolean systemGenerated = false;
+
+    public SegmentLayout(Segment segment, MeasureLayout parent) {
+        this(segment.getType(), parent);
+        this.segment = segment;
+    }
 
     public SegmentLayout(SegmentType type, MeasureLayout parent) {
         this.style = parent.getScoreStyle();
@@ -24,12 +30,12 @@ public class SegmentLayout {
         this.type = type;
         this.height = parent.getHeight() - style.getStaffLineWidth();
         for (StaffLayout staffLayout : parent.getStaffs()) {
-            elementsByStaff.put(staffLayout, new ArrayList<>());
+            staffElements.put(staffLayout, new ArrayList<>());
         }
     }
 
     public void addByStaff(StaffLayout staffLayout, ElementLayout elementLayout) {
-        elementsByStaff.computeIfAbsent(staffLayout, k -> new ArrayList<>()).add(elementLayout);
+        staffElements.computeIfAbsent(staffLayout, k -> new ArrayList<>()).add(elementLayout);
 
         if (type == SegmentType.NOTEREST && elementLayout instanceof NoteLayout) {
             resolveCollisionsForStaff(staffLayout);
@@ -37,32 +43,32 @@ public class SegmentLayout {
     }
 
     public void addStartBarline(Barline startBarline) {
-        elementsByStaff.forEach((staff, elements) ->
+        staffElements.forEach((staff, elements) ->
                 elements.add(new BarlineLayout(startBarline, staff, this))
         );
     }
 
     public void addClef() {
-        elementsByStaff.forEach((staff, elements) ->
+        staffElements.forEach((staff, elements) ->
                 elements.add(new ClefLayout(staff.getStaff().getDefaultClef(), staff, this))
         );
     }
 
     public void addKeySignature(KeySignature keySignature) {
-        elementsByStaff.forEach((staff, elements) ->
+        staffElements.forEach((staff, elements) ->
                 elements.add(new KeySigLayout(keySignature, staff, this))
         );
     }
 
     public void addTimeSignature(TimeSignature timeSignature) {
-        elementsByStaff.forEach((staff, elements) ->
+        staffElements.forEach((staff, elements) ->
                 elements.add(new TimeSigLayout(timeSignature, staff, this))
         );
     }
 
     public void resolveCollisions() {
         if (type != SegmentType.NOTEREST) return;
-        for (StaffLayout staffLayout : elementsByStaff.keySet()) {
+        for (StaffLayout staffLayout : staffElements.keySet()) {
             resolveCollisionsForStaff(staffLayout);
         }
     }
@@ -70,7 +76,7 @@ public class SegmentLayout {
     private void resolveCollisionsForStaff(StaffLayout staffLayout) {
         if (type != SegmentType.NOTEREST) return;
 
-        List<ElementLayout> elements = elementsByStaff.get(staffLayout);
+        List<ElementLayout> elements = staffElements.get(staffLayout);
         if (elements == null) return;
 
         List<NoteLayout> notes = elements.stream()
@@ -81,21 +87,25 @@ public class SegmentLayout {
         NoteCollisionResolver.resolve(notes);
     }
 
-    public List<ElementLayout> getElementsForStaff(StaffLayout staffLayout) {
-        return elementsByStaff.getOrDefault(staffLayout, Collections.emptyList());
+    public List<ElementLayout> getElementsByStaff(StaffLayout staffLayout) {
+        return staffElements.getOrDefault(staffLayout, Collections.emptyList());
     }
 
-    public Map<StaffLayout, List<ElementLayout>> getElementsByStaff() {
-        return elementsByStaff;
+    public Map<StaffLayout, List<ElementLayout>> getStaffElements() {
+        return staffElements;
     }
 
     public List<ElementLayout> getElements() {
-        return elementsByStaff.values().stream()
+        return staffElements.values().stream()
                 .flatMap(List::stream)
                 .toList();
     }
     public int getVoiceCountForStaff(StaffLayout staff) {
         return parent.getVoiceCountForStaff(staff);
+    }
+
+    public boolean hasAnyNotesAtStaffByVoice(StaffLayout staff, int voice) {
+        return !segment.getNotesByStaffAndVoice(staff.getStaff(), voice).isEmpty();
     }
 
     public SegmentType getType() { return type; }
@@ -126,14 +136,7 @@ public class SegmentLayout {
     public boolean isSystemGenerated() { return systemGenerated; }
     public CursorLayout getCursor() { return cursorLayout; }
     public boolean hasActiveCursor() { return cursorLayout != null; }
-
-    public void setX(double x) { this.x = x; }
-    public void setExtraWidth(double extraWidth) {
-        this.extraWidth = extraWidth;
-    }
-    public void setType(SegmentType type) { this.type = type; }
-    public void setCursor(CursorLayout cursor) { this.cursorLayout = cursor; }
-    public void setSystemGenerated(boolean systemGenerated) { this.systemGenerated = systemGenerated; }
+    public Segment getSegment() { return segment; }
     public SegmentLayout getNext() { return next; }
     public SegmentLayout getPrev() { return prev; }
     public SegmentLayout getNextSameType() {
@@ -159,6 +162,13 @@ public class SegmentLayout {
     }
 
 
+    public void setX(double x) { this.x = x; }
+    public void setExtraWidth(double extraWidth) {
+        this.extraWidth = extraWidth;
+    }
+    public void setType(SegmentType type) { this.type = type; }
+    public void setCursor(CursorLayout cursor) { this.cursorLayout = cursor; }
+    public void setSystemGenerated(boolean systemGenerated) { this.systemGenerated = systemGenerated; }
     public void setNext(SegmentLayout next) { this.next = next; }
     public void setPrev(SegmentLayout prev) { this.prev = prev; }
 }

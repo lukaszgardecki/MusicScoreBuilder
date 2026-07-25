@@ -16,9 +16,9 @@ public class GhostNoteLayout extends NoteLayout {
     private final ScoreStyle style;
     private final String color;
 
-    public GhostNoteLayout(SegmentLayout segment, StaffLayout staff, double initialModelY) {
+    public GhostNoteLayout(int voice, SegmentLayout segment, StaffLayout staff, double initialModelY) {
         // tu trzeba dostarczyć też typ nuty
-        super(new Note(1, PitchStep.C, 0, 4, NoteType.QUARTER, BeamType.NONE), staff, segment);
+        super(new Note(voice, PitchStep.C, 0, 4, NoteType.QUARTER, BeamType.NONE), staff, segment);
         this.segment = segment;
         this.staff = staff;
         this.style = segment.getScoreStyle();

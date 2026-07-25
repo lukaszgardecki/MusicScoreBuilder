@@ -82,7 +82,7 @@ public class ScoreNavigator {
             }
             var targetStaffLayout = measureLayout.getStaffs().get(staffIndex);
 
-            var elementsOnStaff = currentSegment.getElementsForStaff(targetStaffLayout);
+            var elementsOnStaff = currentSegment.getElementsByStaff(targetStaffLayout);
 
             var targetElement = elementsOnStaff.stream()
                     .filter(el -> el.getVoice() == voice)

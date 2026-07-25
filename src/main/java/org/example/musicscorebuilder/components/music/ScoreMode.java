@@ -28,9 +28,13 @@ public class ScoreMode {
     }
 
     public void appendMeasure() {
-        Measure measure = new Measure(BarlineStyle.SINGLE, staves);
-        int targetSegments = FakeMeasureNotesGenerator.getMeasureCapacityInSegments(timeSignature);
-        FakeMeasureNotesGenerator.fillMeasureWithTwoVoices(measure, targetSegments);
+        Measure measure = new Measure(BarlineStyle.SINGLE, staves, timeSignature);
+//        int targetSegments = FakeMeasureNotesGenerator.getMeasureCapacityInSegments(timeSignature);
+//        FakeMeasureNotesGenerator.fillMeasureWithTwoVoices(measure, targetSegments);
+
+        Segment seg = new Segment(SegmentType.NOTEREST, measure);
+        seg.addElement(staves.getFirst(), new Note(1, PitchStep.A, 0, 4, NoteType.WHOLE, BeamType.NONE));
+        measure.getSegments().add(seg);
 
         if (!measures.isEmpty()) {
             Measure lastMeasure = measures.getLast();

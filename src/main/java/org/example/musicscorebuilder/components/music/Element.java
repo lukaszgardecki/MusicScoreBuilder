@@ -1,4 +1,5 @@
 package org.example.musicscorebuilder.components.music;
 
-public class Element {
+public abstract class Element {
+    public int getDuration() { return 0;}
 }

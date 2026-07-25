@@ -4,19 +4,44 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Measure {
+    private TimeSignature timeSignature;
     private Barline rightBarline;
     private boolean dirty = true;
     private final List<Staff> staves;
     private final List<Segment> segments = new ArrayList<>();
 
-    public Measure(BarlineStyle barlineStyle, List<Staff> staves) {
+    public Measure(BarlineStyle barlineStyle, List<Staff> staves, TimeSignature timeSignature) {
         this.staves = staves;
+        this.timeSignature = timeSignature;
         this.rightBarline = new Barline(barlineStyle, Barline.Type.END);
+    }
+
+    public void insertNote(Segment targetSegment, Staff staff, Note newNote) {
+        if (targetSegment.getType() != SegmentType.NOTEREST) return;
+
+        int targetIndex = segments.indexOf(targetSegment);
+        if (targetIndex == -1) return;
+
+        int noteTicks = newNote.getType().getTicks();
+        int segmentTicks = targetSegment.getDuration();
+
+        while (segmentTicks > noteTicks) {
+            int halfTicks = segmentTicks / 2;
+
+            Segment secondHalf = new Segment(SegmentType.NOTEREST, this);
+
+            secondHalf.addElement(staff, new Note(1, PitchStep.C, 0, 4, NoteType.fromTicks(halfTicks), BeamType.NONE));
+
+            segments.add(targetIndex + 1, secondHalf);
+            segmentTicks = halfTicks;
+        }
+        targetSegment.insertNote(staff, newNote);
+        setDirty(true);
     }
 
     public void addEndBarlineSegment(BarlineStyle style) {
         var element = new Barline(style, Barline.Type.END);
-        Segment seg = new Segment(SegmentType.BARLINE, staves);
+        Segment seg = new Segment(SegmentType.BARLINE, this);
 
         for (Staff staff : staves) {
             seg.addElement(staff, element);
@@ -35,7 +60,7 @@ public class Measure {
     }
 
     public void addChordRestSegmentAtEnd() {
-        Segment seg = new Segment(SegmentType.NOTEREST, staves);
+        Segment seg = new Segment(SegmentType.NOTEREST, this);
 
         var staff1 = staves.get(0);
         seg.addElement(staff1, new Note(1, PitchStep.C, 0, 4, NoteType.getRandom(), BeamType.NONE));

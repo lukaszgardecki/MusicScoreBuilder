@@ -58,7 +58,7 @@ public class BarlinesSectionController extends AbstractPaletteSectionController<
         };
 
         Staff mockStaff = new Staff(0, ClefType.G);
-        Measure mockMeasure = new Measure(item, List.of(mockStaff));
+        Measure mockMeasure = new Measure(item, List.of(mockStaff), new TimeSignature(4, 4));
 
         MeasureLayout mockMeasureLayout = new MeasureLayout(mockMeasure, 0, mockStyle) {
             @Override public double getWidth() { return 32.0; }

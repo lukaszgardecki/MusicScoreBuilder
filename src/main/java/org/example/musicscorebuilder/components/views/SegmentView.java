@@ -22,8 +22,8 @@ public class SegmentView extends ComponentView {
 
 //        fillBackground(gc, Util.generateRandomColor(0.3f), segmentX, segmentY, widthPx, heightPx);
 
-        for (StaffLayout staff : segment.getElementsByStaff().keySet()) {
-            for (ElementLayout element : segment.getElementsForStaff(staff)) {
+        for (StaffLayout staff : segment.getStaffElements().keySet()) {
+            for (ElementLayout element : segment.getElementsByStaff(staff)) {
                 gc.save();
                 selectElement(gc, element);
                 drawElement(gc, element, segmentX, segmentY, sp);

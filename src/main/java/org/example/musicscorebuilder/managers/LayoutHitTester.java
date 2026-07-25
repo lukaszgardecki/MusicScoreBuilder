@@ -191,7 +191,7 @@ public class LayoutHitTester {
                 if (firstChordRestIdx != -1) {
                     for (int i = firstChordRestIdx; i <= lastChordRestIdx; i++) {
                         SegmentLayout segment = segments.get(i);
-                        List<ElementLayout> staffElements = segment.getElementsForStaff(targetStaff);
+                        List<ElementLayout> staffElements = segment.getElementsByStaff(targetStaff);
 
                         for (ElementLayout element : staffElements) {
                             itemsToSelect.add(element);
