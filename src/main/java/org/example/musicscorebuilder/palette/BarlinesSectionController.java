@@ -57,8 +57,8 @@ public class BarlinesSectionController extends AbstractPaletteSectionController<
             @Override public double getBarlineDotRadius() { return 1.0; }
         };
 
-        Staff mockStaff = new Staff(0, ClefType.G);
-        Measure mockMeasure = new Measure(item, List.of(mockStaff), new TimeSignature(4, 4));
+        Staff mockStaff = new Staff(0, new Clef(ClefType.G));
+        Measure mockMeasure = new Measure(List.of(mockStaff));
 
         MeasureLayout mockMeasureLayout = new MeasureLayout(mockMeasure, 0, mockStyle) {
             @Override public double getWidth() { return 32.0; }
@@ -66,7 +66,7 @@ public class BarlinesSectionController extends AbstractPaletteSectionController<
 
         StaffLayout staffLayout = new StaffLayout(mockStaff, mockMeasureLayout, mockStyle);
         SegmentLayout mockParent = new SegmentLayout(SegmentType.BARLINE, mockMeasureLayout);
-        Barline mockBarline = new Barline(item, Barline.Type.START);
+        Barline mockBarline = new Barline(item, Barline.Type.START, mockMeasure);
 
         BarlineLayout mockLayout = new BarlineLayout(mockBarline, staffLayout, mockParent) {
             @Override

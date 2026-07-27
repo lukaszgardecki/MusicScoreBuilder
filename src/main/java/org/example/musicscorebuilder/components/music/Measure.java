@@ -5,15 +5,18 @@ import java.util.List;
 
 public class Measure {
     private TimeSignature timeSignature;
+    private KeySignature keySignature;
     private Barline rightBarline;
-    private boolean dirty = true;
     private final List<Staff> staves;
     private final List<Segment> segments = new ArrayList<>();
+    private boolean dirty = true;
 
-    public Measure(BarlineStyle barlineStyle, List<Staff> staves, TimeSignature timeSignature) {
+    public Measure(List<Staff> staves) {
         this.staves = staves;
-        this.timeSignature = timeSignature;
-        this.rightBarline = new Barline(barlineStyle, Barline.Type.END);
+        staves.forEach(staff -> staff.getDefaultClef().setParent(this));
+        this.timeSignature = new TimeSignature(4, 4, this);
+        this.keySignature = new KeySignature(-2, this);
+        this.rightBarline = new Barline(BarlineStyle.END, this);
     }
 
     public void insertNote(Segment targetSegment, Staff staff, Note newNote) {
@@ -30,7 +33,7 @@ public class Measure {
 
             Segment secondHalf = new Segment(SegmentType.NOTEREST, this);
 
-            secondHalf.addElement(staff, new Note(1, PitchStep.C, 0, 4, NoteType.fromTicks(halfTicks), BeamType.NONE));
+            secondHalf.addElement(staff, new Note(1, PitchStep.C, 0, 4, NoteType.fromTicks(halfTicks), BeamType.NONE, this));
 
             segments.add(targetIndex + 1, secondHalf);
             segmentTicks = halfTicks;
@@ -39,19 +42,12 @@ public class Measure {
         setDirty(true);
     }
 
-    public void addEndBarlineSegment(BarlineStyle style) {
-        var element = new Barline(style, Barline.Type.END);
-        Segment seg = new Segment(SegmentType.BARLINE, this);
-
-        for (Staff staff : staves) {
-            seg.addElement(staff, element);
-        }
-        segments.add(seg);
-        setDirty(true);
-    }
-
     public List<Staff> getStaves() { return staves; }
     public List<Segment> getSegments() { return segments; }
+    public Barline getRightBarline() { return rightBarline; }
+    public BarlineStyle getBarlineStyle() { return rightBarline.getStyle(); }
+    public TimeSignature getTimeSignature() { return timeSignature; }
+    public KeySignature getKeySignature() { return keySignature; }
     public int countVoicesByStaff(Staff staff) {
         return segments.stream()
                 .mapToInt(s -> s.getVoiceCountByStaff(staff))
@@ -63,13 +59,13 @@ public class Measure {
         Segment seg = new Segment(SegmentType.NOTEREST, this);
 
         var staff1 = staves.get(0);
-        seg.addElement(staff1, new Note(1, PitchStep.C, 0, 4, NoteType.getRandom(), BeamType.NONE));
-        seg.addElement(staff1, new Note(1, PitchStep.G, 0, 4, NoteType.getRandom(), BeamType.NONE));
+        seg.addElement(staff1, new Note(1, PitchStep.C, 0, 4, NoteType.getRandom(), BeamType.NONE, this));
+        seg.addElement(staff1, new Note(1, PitchStep.G, 0, 4, NoteType.getRandom(), BeamType.NONE, this));
 
         if (staves.size() == 2) {
             var staff2 = staves.get(1);
-            seg.addElement(staff2, new Note(1, PitchStep.A, 0, 3, NoteType.getRandom(), BeamType.NONE));
-            seg.addElement(staff2, new Note(1, PitchStep.D, 0, 3, NoteType.getRandom(), BeamType.NONE));
+            seg.addElement(staff2, new Note(1, PitchStep.A, 0, 3, NoteType.getRandom(), BeamType.NONE, this));
+            seg.addElement(staff2, new Note(1, PitchStep.D, 0, 3, NoteType.getRandom(), BeamType.NONE, this));
         }
 
         if (segments.isEmpty()) {
@@ -83,4 +79,17 @@ public class Measure {
 
     public boolean isDirty() { return dirty; }
     public void setDirty(boolean dirty) { this.dirty = dirty; }
+    public void setBarlineStyle(BarlineStyle barlineStyle) {
+        this.rightBarline.setStyle(barlineStyle);
+        setDirty(true);
+    }
+
+    public void setTimeSignature(TimeSignature timeSignature) {
+        this.timeSignature = timeSignature;
+        setDirty(true);
+    }
+    public void setKeySignature(KeySignature keySignature) {
+        this.keySignature = keySignature;
+        setDirty(true);
+    }
 }

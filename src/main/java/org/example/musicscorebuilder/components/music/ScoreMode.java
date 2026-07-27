@@ -1,6 +1,6 @@
 package org.example.musicscorebuilder.components.music;
 
-import org.example.musicscorebuilder.util.FakeMeasureNotesGenerator;
+import org.example.musicscorebuilder.palette.PreDefinedTimeSignature;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,17 +9,13 @@ public class ScoreMode {
     private final ModeType type;
     private final BraceType braceType;
     private final Barline startBarline;
-    private final KeySignature keySignature;
-    private final TimeSignature timeSignature;
     private final List<Staff> staves = new ArrayList<>();
     private final List<Measure> measures = new ArrayList<>();
 
     public ScoreMode(ModeType type) {
         this.type = type;
         this.braceType = type == ModeType.SOLO ? BraceType.NONE : BraceType.BRACE;
-        this.startBarline = type == ModeType.SOLO ? null : new Barline(BarlineStyle.SINGLE, Barline.Type.START);
-        this.keySignature = new KeySignature(-2);
-        this.timeSignature = new TimeSignature(4, 4);
+        this.startBarline = type == ModeType.SOLO ? null : new Barline(BarlineStyle.SINGLE, Barline.Type.START, null);
         addDefaultStaves();
     }
 
@@ -28,21 +24,21 @@ public class ScoreMode {
     }
 
     public void appendMeasure() {
-        Measure measure = new Measure(BarlineStyle.SINGLE, staves, timeSignature);
+        Measure measure = new Measure(staves);
 //        int targetSegments = FakeMeasureNotesGenerator.getMeasureCapacityInSegments(timeSignature);
 //        FakeMeasureNotesGenerator.fillMeasureWithTwoVoices(measure, targetSegments);
 
         Segment seg = new Segment(SegmentType.NOTEREST, measure);
-        seg.addElement(staves.getFirst(), new Note(1, PitchStep.A, 0, 4, NoteType.WHOLE, BeamType.NONE));
+        seg.addElement(staves.getFirst(), new Note(1, PitchStep.A, 0, 4, NoteType.WHOLE, BeamType.NONE, measure));
         measure.getSegments().add(seg);
 
         if (!measures.isEmpty()) {
             Measure lastMeasure = measures.getLast();
-            List<Segment> segments = lastMeasure.getSegments();
-            segments.removeLast();
-            lastMeasure.addEndBarlineSegment(BarlineStyle.SINGLE);
+            measure.setKeySignature(lastMeasure.getKeySignature());
+            measure.setTimeSignature(lastMeasure.getTimeSignature());
+            measure.setBarlineStyle(lastMeasure.getBarlineStyle());
+            lastMeasure.setBarlineStyle(BarlineStyle.SINGLE);
         }
-        measure.addEndBarlineSegment(BarlineStyle.END);
         measures.add(measure);
     }
 
@@ -50,37 +46,43 @@ public class ScoreMode {
         if (measures.isEmpty()) return;
         measures.removeLast();
         if (measures.isEmpty()) return;
-        Measure lastMeasure = measures.getLast();
-        List<Segment> segments = lastMeasure.getSegments();
-        segments.removeLast();
-        lastMeasure.addEndBarlineSegment(BarlineStyle.END);
+        measures.getLast().setBarlineStyle(BarlineStyle.END);
     }
 
-    public List<Staff> getStaves() { return staves; }
     public List<Measure> getMeasures() { return measures; }
     public BraceType getBraceType() { return braceType; }
     public Barline getStartBarline() { return startBarline; }
-    public KeySignature getKeySignature() { return keySignature; }
-    public TimeSignature getTimeSignature() { return timeSignature; }
 
-    public void setTimeSignature(TimeSignature timeSig) {
-        var currentBeat = this.timeSignature.getBeat();
-        var newBeat = timeSig.getBeat();
+    public void setTimeSignature(PreDefinedTimeSignature timeSig) {
+        if (measures.isEmpty()) return;
 
-        this.timeSignature.update(timeSig.getBeat(), timeSig.getBeatType(), timeSig.getType());
+        int newBeat = timeSig.getBeat();
+
         measures.forEach(m -> {
+            TimeSignature timeSignature = m.getTimeSignature();
+            timeSignature.update(timeSig.getBeat(), timeSig.getBeatType(), timeSig.getType());
+
             List<Segment> segments = m.getSegments();
 
-            if (currentBeat > newBeat) {
-                int diff = currentBeat - newBeat;
+            long noteRestCount = segments.stream()
+                    .filter(s -> s.getType() == SegmentType.NOTEREST)
+                    .count();
+
+            if (noteRestCount > newBeat) {
+                int diff = (int) (noteRestCount - newBeat);
                 for (int i = 0; i < diff; i++) {
-                    var lastBeatSegmentIdx = segments.size() - 2;
-                    segments.remove(lastBeatSegmentIdx);
+                    for (int idx = segments.size() - 1; idx >= 0; idx--) {
+                        if (segments.get(idx).getType() == SegmentType.NOTEREST) {
+                            segments.remove(idx);
+                            break;
+                        }
+                    }
                 }
-            } else {
-                int diff = newBeat - currentBeat;
+            } else if (noteRestCount < newBeat) {
+                int diff = (int) (newBeat - noteRestCount);
                 addSegments(diff, m);
             }
+            m.setDirty(true);
         });
     }
 
@@ -92,10 +94,10 @@ public class ScoreMode {
 
     private void addDefaultStaves() {
         switch (type) {
-            case SOLO -> staves.add(new Staff(0, ClefType.G));
+            case SOLO -> staves.add(new Staff(0, new Clef(ClefType.G)));
             case HARMONY -> {
-                staves.add(new Staff(0, ClefType.G));
-                staves.add(new Staff(1, ClefType.F));
+                staves.add(new Staff(0, new Clef(ClefType.G)));
+                staves.add(new Staff(1, new Clef(ClefType.F)));
             }
         }
     }

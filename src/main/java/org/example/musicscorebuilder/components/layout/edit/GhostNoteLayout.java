@@ -24,7 +24,8 @@ public class GhostNoteLayout extends NoteLayout {
                         0,
                         4,
                         NoteType.QUARTER,
-                        BeamType.NONE
+                        BeamType.NONE,
+                        null
                 ),
                 staff,
                 segment

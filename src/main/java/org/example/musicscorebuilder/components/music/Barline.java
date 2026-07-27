@@ -6,12 +6,21 @@ public class Barline extends Element {
     private BarlineStyle style;
     private Barline.Type type;
 
-    public Barline(BarlineStyle style, Barline.Type type) {
+    public Barline(BarlineStyle style, Measure parent) {
+        this(style, Type.END, parent);
+    }
+
+    public Barline(BarlineStyle style, Barline.Type type, Measure parent) {
+        super(parent);
         this.style = style;
         this.type = type;
     }
 
     public BarlineStyle getStyle() { return style; }
-    public void setStyle(BarlineStyle style) { this.style = style; }
     public Barline.Type getType() { return type; }
+
+    public void setStyle(BarlineStyle style) {
+        this.style = style;
+        super.hasChanged();
+    }
 }

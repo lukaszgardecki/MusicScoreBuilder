@@ -7,7 +7,8 @@ public class Note extends Element {
     private BeamType beam;
     private int duration;
 
-    public Note(int voice, PitchStep pitchStep, int alter, int octave, NoteType type, BeamType beam) {
+    public Note(int voice, PitchStep pitchStep, int alter, int octave, NoteType type, BeamType beam, Measure parent) {
+        super(parent);
         this.pitch = new Pitch(pitchStep, alter, octave);
         this.voice = voice;
         this.type = type;

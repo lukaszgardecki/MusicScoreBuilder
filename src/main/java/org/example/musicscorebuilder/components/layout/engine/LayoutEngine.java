@@ -103,6 +103,16 @@ public class LayoutEngine {
             }
             measureLayout.add(segmentLayout);
         }
+
+
+        Segment endBarlineSegment = new Segment(SegmentType.BARLINE, measure);
+        SegmentLayout endBarlineSegLayout = new SegmentLayout(endBarlineSegment, measureLayout);
+        for (StaffLayout staffLayout : measureLayout.getStaffs()) {
+            endBarlineSegment.addElement(staffLayout.getStaff(), measure.getRightBarline());
+            endBarlineSegLayout.addByStaff(staffLayout, new BarlineLayout(measure.getRightBarline(), staffLayout, endBarlineSegLayout));
+        }
+        measureLayout.add(endBarlineSegLayout);
+
         measureLayout.setBeamGroups(beamBuilder.build());
         return measureLayout;
     }
@@ -111,9 +121,9 @@ public class LayoutEngine {
         var isFirstMeasure = scoreLayout.getPages().size() == 1 && scoreLayout.getPages().get(0).getSystems().size() == 1;
 
         if (isFirstMeasure) {
-            measureLayout.addSystemTimeSignature(scoreMode.getTimeSignature());
+            measureLayout.addSystemTimeSignature(measureLayout.getMeasure().getTimeSignature());
         }
-        measureLayout.addSystemKeySignature(scoreMode.getKeySignature());
+        measureLayout.addSystemKeySignature(measureLayout.getMeasure().getKeySignature());
         measureLayout.addSystemClef();
         if (scoreMode.getStartBarline() == null) return;
         measureLayout.addSystemStartBarline(scoreMode.getStartBarline());

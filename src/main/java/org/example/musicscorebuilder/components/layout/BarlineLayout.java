@@ -45,5 +45,7 @@ public class BarlineLayout extends ElementLayout {
     public BarlineStyle getStyle() { return barline.getStyle(); }
     public Barline.Type getType() { return barline.getType(); }
 
-    public void setStyle(BarlineStyle style) { barline.setStyle(style); }
+    public void setStyle(BarlineStyle style) {
+        barline.setStyle(style);
+    }
 }

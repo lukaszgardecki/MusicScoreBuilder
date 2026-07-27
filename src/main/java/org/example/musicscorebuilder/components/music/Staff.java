@@ -5,9 +5,9 @@ public class Staff {
     private final int index;
     private Clef defaultClef;
 
-    public Staff(int index, ClefType defaultClef) {
+    public Staff(int index, Clef defaultClef) {
         this.index = index;
-        this.defaultClef = new Clef(defaultClef);
+        this.defaultClef = defaultClef;
     }
 
     public int getLinesNumber() { return linesNumber; }

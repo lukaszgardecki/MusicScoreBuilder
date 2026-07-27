@@ -4,6 +4,12 @@ public class Clef extends Element {
     private ClefType type;
 
     public Clef(ClefType type) {
+        super(null);
+        this.type = type;
+    }
+
+    public Clef(ClefType type, Measure parent) {
+        super(parent);
         this.type = type;
     }
 

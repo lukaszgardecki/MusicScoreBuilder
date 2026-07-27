@@ -7,22 +7,11 @@ public class TimeSignature extends Element {
     private int beatType;
     private Type type;
 
-    public TimeSignature(int beat, int beatType) {
+    public TimeSignature(int beat, int beatType, Measure parent) {
+        super(parent);
         this.beat = beat;
         this.beatType = beatType;
         this.type = Type.FRACTIONAL;
-    }
-
-    public static TimeSignature commonTime() {
-        TimeSignature ts = new TimeSignature(4, 4);
-        ts.type = Type.COMMON;
-        return ts;
-    }
-
-    public static TimeSignature cutTime() {
-        TimeSignature ts = new TimeSignature(2, 2);
-        ts.type = Type.CUT;
-        return ts;
     }
 
     public int getBeat() { return beat; }
@@ -36,5 +25,6 @@ public class TimeSignature extends Element {
         this.beat = beat;
         this.beatType = beatType;
         this.type = type;
+        super.hasChanged();
     }
 }

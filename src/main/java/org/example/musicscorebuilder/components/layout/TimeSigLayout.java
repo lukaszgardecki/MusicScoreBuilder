@@ -20,6 +20,18 @@ public class TimeSigLayout extends ElementLayout {
         this.height = staff.getHeight();
         this.y = staff.getY();
         this.scale = staff.getLineSpacing();
+
+        this.digitSigns = createDigitSigns(timeSignature, staff);
+        this.width = calculateWidth();
+    }
+
+    @Override public double getY() { return y; }
+    @Override public double getBoxY() { return getY(); }
+    @Override public double getWidth() { return this.width; }
+    @Override public double getHeight() { return height; }
+    @Override public int getVoice() { return 1; }
+
+    private DigitSign[][] createDigitSigns(TimeSignature timeSignature, StaffLayout staff) {
         double signOffsetY = 1 * staff.getLineSpacing();
 
         if (timeSignature.isFractional()) {
@@ -29,32 +41,34 @@ public class TimeSigLayout extends ElementLayout {
             int[] beatDigits = getDigitsMath(beat);
             int[] beatTypeDigits = getDigitsMath(beatType);
 
-            this.digitSigns = new DigitSign[2][];
-            double y = staff.getY() + signOffsetY;
-            this.digitSigns[0] = createDigitRow(beatDigits, y);
-            double bottomY = y + 2 * staff.getLineSpacing();
-            this.digitSigns[1] = createDigitRow(beatTypeDigits, bottomY);
+            DigitSign[][] signs = new DigitSign[2][];
+            double rowY = staff.getY() + signOffsetY;
+            signs[0] = createDigitRow(beatDigits, rowY);
+            double bottomY = rowY + 2 * staff.getLineSpacing();
+            signs[1] = createDigitRow(beatTypeDigits, bottomY);
 
-            double topWidth = getRowWidth(this.digitSigns[0]);
-            double bottomWidth = getRowWidth(this.digitSigns[1]);
-            this.width = Math.max(topWidth, bottomWidth);
+            double topWidth = getRowWidth(signs[0]);
+            double bottomWidth = getRowWidth(signs[1]);
+            alignRowsCenter(signs, topWidth, bottomWidth);
 
-            alignRowsCenter(topWidth, bottomWidth);
+            return signs;
         } else {
             Leland symbol = timeSignature.isCommon() ? Leland.TIME_COMMON : Leland.TIME_CUT;
-            double y = staff.getY() + signOffsetY + staff.getLineSpacing();
-            this.digitSigns = new DigitSign[1][1];
-            DigitSign sign = new DigitSign(symbol, this.getX(), y, scale);
-            this.digitSigns[0][0] = sign;
-            this.width = sign.getSignWidth();
+            double symbolY = staff.getY() + signOffsetY + staff.getLineSpacing();
+            DigitSign[][] signs = new DigitSign[1][1];
+            signs[0][0] = new DigitSign(symbol, this.getX(), symbolY, scale);
+            return signs;
         }
     }
 
-    @Override public double getY() { return y; }
-    @Override public double getBoxY() { return getY(); }
-    @Override public double getWidth() { return this.width; }
-    @Override public double getHeight() { return height; }
-    @Override public int getVoice() { return 1; }
+    private double calculateWidth() {
+        if (digitSigns.length == 1) {
+            return digitSigns[0][0].getSignWidth();
+        }
+        double topWidth = getRowWidth(this.digitSigns[0]);
+        double bottomWidth = getRowWidth(this.digitSigns[1]);
+        return Math.max(topWidth, bottomWidth);
+    }
 
     public double getFontSize() { return height; }
     public DigitSign[][] getDigitSigns() { return this.digitSigns; }
@@ -114,15 +128,15 @@ public class TimeSigLayout extends ElementLayout {
         return (lastSign.x() - this.getX()) + lastSign.getSignWidth();
     }
 
-    private void alignRowsCenter(double topWidth, double bottomWidth) {
+    private void alignRowsCenter(DigitSign[][] signs, double topWidth, double bottomWidth) {
         if (topWidth == bottomWidth) return;
 
         if (topWidth < bottomWidth) {
             double shift = (bottomWidth - topWidth) / 2.0;
-            shiftRow(this.digitSigns[0], shift);
+            shiftRow(signs[0], shift);
         } else {
             double shift = (topWidth - bottomWidth) / 2.0;
-            shiftRow(this.digitSigns[1], shift);
+            shiftRow(signs[1], shift);
         }
     }
 
