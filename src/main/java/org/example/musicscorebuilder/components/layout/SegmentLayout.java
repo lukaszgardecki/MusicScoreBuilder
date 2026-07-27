@@ -104,8 +104,8 @@ public class SegmentLayout {
         return parent.getVoiceCountForStaff(staff);
     }
 
-    public boolean hasAnyNotesAtStaffByVoice(StaffLayout staff, int voice) {
-        return !segment.getNotesByStaffAndVoice(staff.getStaff(), voice).isEmpty();
+    public boolean hasAnyNoteRestAtStaffByVoice(StaffLayout staff, int voice) {
+        return !segment.getNoteRestByStaffAndVoice(staff.getStaff(), voice).isEmpty();
     }
 
     public SegmentType getType() { return type; }

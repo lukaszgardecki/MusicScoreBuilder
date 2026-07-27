@@ -18,23 +18,28 @@ public class Segment {
     }
 
     public void insertNote(Staff staff, Note newNote) {
-        List<Note> currentNotesInVoice = getNotesByStaffAndVoice(staff, newNote.getVoice());
+        List<NoteRestElement> currentElements = getNoteRestByStaffAndVoice(staff, newNote.getVoice());
 
-        if (!currentNotesInVoice.isEmpty()) {
-            for (Note oldNote : currentNotesInVoice) {
-                if (oldNote.getType() != newNote.getType()) {
-                    removeElement(staff, oldNote);
-                }
+        if (!currentElements.isEmpty()) {
+            List<NoteRestElement> toRemove = currentElements.stream()
+                    .filter(oldElement -> {
+                        if (oldElement instanceof Rest) return true;
+                        if (oldElement instanceof Note oldNote) return oldNote.getType() != newNote.getType();
+                        return false;
+                    })
+                    .toList();
+            for (NoteRestElement elementToRemove : toRemove) {
+                removeElement(staff, elementToRemove);
             }
         }
 
         addElement(staff, newNote);
     }
 
-    public void removeElement(Staff staff, Element element) {
+    public void removeElement(Staff staff, NoteRestElement element) {
         List<Element> elements = staffElements.get(staff);
-        if (elements != null) {
-            elements.remove(element);
+        if (elements != null && element instanceof Element el) {
+            elements.remove(el);
         }
     }
 
@@ -55,11 +60,10 @@ public class Segment {
                 .count();
     }
 
-    public List<Note> getNotesByStaffAndVoice(Staff staff, int voice) {
+    public List<NoteRestElement> getNoteRestByStaffAndVoice(Staff staff, int voice) {
         return getElementsByStaff(staff).stream()
-                .filter(Note.class::isInstance)
-                .map(Note.class::cast)
-                .filter(n -> n.getVoice() == voice)
+                .filter(e -> e instanceof NoteRestElement nre && nre.getVoice() == voice)
+                .map(NoteRestElement.class::cast)
                 .toList();
     }
 

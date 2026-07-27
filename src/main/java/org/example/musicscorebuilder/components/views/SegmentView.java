@@ -13,6 +13,7 @@ public class SegmentView extends ComponentView {
     private final KeySigView keySigView = new KeySigView();
     private final TimeSigView timeSigView = new TimeSigView();
     private final NoteView noteView = new NoteView();
+    private final RestView restView = new RestView();
 
     public void draw(GraphicsContext gc, SegmentLayout segment, double measureX, double measureY, double sp) {
         double segmentX = segment.getX() * sp + measureX;
@@ -20,7 +21,7 @@ public class SegmentView extends ComponentView {
         double widthPx = segment.getWidth() * sp;
         double heightPx = segment.getHeight() * sp;
 
-//        fillBackground(gc, Util.generateRandomColor(0.3f), segmentX, segmentY, widthPx, heightPx);
+        fillBackground(gc, Util.generateRandomColor(0.3f), segmentX, segmentY, widthPx, heightPx);
 
         for (StaffLayout staff : segment.getStaffElements().keySet()) {
             for (ElementLayout element : segment.getElementsByStaff(staff)) {
@@ -54,6 +55,7 @@ public class SegmentView extends ComponentView {
             case KeySigLayout keySig -> keySigView.draw(gc, keySig, segmentX, segmentY, sp);
             case TimeSigLayout timeSig -> timeSigView.draw(gc, timeSig, segmentX, segmentY, sp);
             case NoteLayout note -> noteView.draw(gc, note, segmentX, segmentY, sp);
+            case RestLayout rest -> restView.draw(gc, rest, segmentX, segmentY, sp);
             default -> {}
         }
     }

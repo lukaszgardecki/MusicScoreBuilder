@@ -4,7 +4,6 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.stage.Screen;
-import org.example.musicscorebuilder.components.layout.NoteLayout;
 import org.example.musicscorebuilder.components.layout.PageLayout;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
 import org.example.musicscorebuilder.components.layout.edit.GhostNoteLayout;
@@ -54,7 +53,7 @@ public class ScoreView extends Canvas {
 
             if (target != null && target.segment().getType() == SegmentType.NOTEREST) {
                 var voice = scoreNavigator.getLastCursor().getElement().getVoice();
-                boolean segmentHasSameVoiceNote = target.segment().hasAnyNotesAtStaffByVoice(target.staff(), voice);
+                boolean segmentHasSameVoiceNote = target.segment().hasAnyNoteRestAtStaffByVoice(target.staff(), voice);
                 if (!segmentHasSameVoiceNote) return;
 
                 GhostNoteLayout currentGhost = modeManager.getGhostNote();

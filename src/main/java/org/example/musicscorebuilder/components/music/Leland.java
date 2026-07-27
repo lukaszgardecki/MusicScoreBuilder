@@ -28,7 +28,14 @@ public enum Leland {
     NOTE_HEAD_HALF("\uE0A3", 1.3, 0.528, 0.0, -0.532),
     NOTE_HEAD_BLACK("\uE0A4", 1.3, 0.528, 0.0, -0.532),
     NOTE_FLAG_8TH_UP("\uE240", 1.157, 0.048, 0.001, -3.268),
-    NOTE_FLAG_8TH_DOWN("\uE241", 1.235, 3.268, -0.0, -0.048);
+    NOTE_FLAG_8TH_DOWN("\uE241", 1.235, 3.268, -0.0, -0.048),
+
+    REST_WHOLE("\uE4E3", 1.3, 0.02, 0.0, -0.524),
+    REST_HALF("\uE4E4", 1.3, 0.528, 0.0, -0.016),
+    REST_QUARTER("\uE4E5", 0.94, 1.605, 0.0, -1.325),
+    REST_8TH("\uE4E6", 1.104, 0.814, 0.0, -1.022),
+    REST_16TH("\uE4E7", 1.376, 0.815, 0.004, -2.029),
+    REST_32ND("\uE4E8", 1.563, 1.839, 0.0, -2.029);
 
     private final String code;
     private final double NEx;

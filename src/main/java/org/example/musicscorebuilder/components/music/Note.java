@@ -1,6 +1,6 @@
 package org.example.musicscorebuilder.components.music;
 
-public class Note extends Element {
+public class Note extends Element implements NoteRestElement {
     private Pitch pitch;
     private int voice;
     private NoteType type;
@@ -16,11 +16,11 @@ public class Note extends Element {
         this.duration = type.getTicks();
     }
 
+    @Override public NoteType getType() { return type; }
+    @Override public int getVoice() { return voice; }
     @Override public int getDuration() { return duration; }
 
     public Pitch getPitch() { return pitch; }
-    public int getVoice() { return voice; }
-    public NoteType getType() { return type; }
     public BeamType getBeam() { return beam; }
     public boolean isBeamed() { return beam != null && beam != BeamType.NONE; }
     public PitchStep getStep() { return pitch.getStep(); }

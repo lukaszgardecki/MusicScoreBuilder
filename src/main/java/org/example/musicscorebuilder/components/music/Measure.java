@@ -33,7 +33,7 @@ public class Measure {
 
             Segment secondHalf = new Segment(SegmentType.NOTEREST, this);
 
-            secondHalf.addElement(staff, new Note(1, PitchStep.C, 0, 4, NoteType.fromTicks(halfTicks), BeamType.NONE, this));
+            secondHalf.addElement(staff, new Rest(newNote.getVoice(), NoteType.fromTicks(halfTicks), this));
 
             segments.add(targetIndex + 1, secondHalf);
             segmentTicks = halfTicks;

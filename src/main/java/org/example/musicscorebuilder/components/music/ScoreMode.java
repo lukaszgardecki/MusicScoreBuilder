@@ -29,7 +29,7 @@ public class ScoreMode {
 //        FakeMeasureNotesGenerator.fillMeasureWithTwoVoices(measure, targetSegments);
 
         Segment seg = new Segment(SegmentType.NOTEREST, measure);
-        seg.addElement(staves.getFirst(), new Note(1, PitchStep.A, 0, 4, NoteType.WHOLE, BeamType.NONE, measure));
+        seg.addElement(staves.getFirst(), new Rest(1, NoteType.WHOLE, measure));
         measure.getSegments().add(seg);
 
         if (!measures.isEmpty()) {

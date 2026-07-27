@@ -98,6 +98,9 @@ public class LayoutEngine {
                         NoteLayout noteLayout = new NoteLayout(note, staff, segmentLayout);
                         segmentLayout.addByStaff(staff, noteLayout);
                         if (note.isBeamed()) beamBuilder.add(noteLayout);
+                    } else if (element instanceof Rest rest) {
+                        RestLayout restLayout = new RestLayout(rest, staff, segmentLayout);
+                        segmentLayout.addByStaff(staff, restLayout);
                     }
                 }
             }
