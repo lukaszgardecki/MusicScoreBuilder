@@ -17,7 +17,7 @@ public class BraceLayout {
     }
 
     public double getHeight() { return parent.getHeight() - parent.getSpaceBelow(); }
-    public double getWidth() { return 1.2; }
+    public double getWidth() { return 1.6; }
     public String getCode() { return fontData.getCode(); }
     public double getX() { return 0; }
     public double getY() { return 0; }
