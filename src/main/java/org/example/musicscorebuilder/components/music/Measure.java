@@ -16,7 +16,7 @@ public class Measure {
         staves.forEach(staff -> staff.getDefaultClef().setParent(this));
         this.timeSignature = new TimeSignature(4, 4, this);
         this.keySignature = new KeySignature(-2, this);
-        this.rightBarline = new Barline(BarlineStyle.END, this);
+        this.rightBarline = new Barline(BarlineStyle.FINAL, this);
     }
 
     public void insertNote(Segment targetSegment, Staff staff, Note newNote) {

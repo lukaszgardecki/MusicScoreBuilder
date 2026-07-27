@@ -46,7 +46,7 @@ public class ScoreMode {
         if (measures.isEmpty()) return;
         measures.removeLast();
         if (measures.isEmpty()) return;
-        measures.getLast().setBarlineStyle(BarlineStyle.END);
+        measures.getLast().setBarlineStyle(BarlineStyle.FINAL);
     }
 
     public List<Measure> getMeasures() { return measures; }
