@@ -9,14 +9,14 @@
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-background-insets: 0;
-    -fx-min-width: 30;
-    -fx-pref-width: 30;
-    -fx-max-width: 30;
+    -fx-min-width: 35;
+    -fx-pref-width: 35;
+    -fx-max-width: 35;
 
-    -fx-min-height: 30;
-    -fx-pref-height: 30;
-    -fx-max-height: 30;
-    -fx-font-size: 10;
+    -fx-min-height: 35;
+    -fx-pref-height: 35;
+    -fx-max-height: 35;
+    -fx-font-size: 14;
 }
 
 .toolbar-btn:hover {
@@ -28,6 +28,5 @@
 }
 
 .toolbar-btn.active {
-    -fx-background-color: #0078d7;
-    -fx-text-fill: white;
+    -fx-background-color: rgba(0, 120, 215, 0.34);
 }

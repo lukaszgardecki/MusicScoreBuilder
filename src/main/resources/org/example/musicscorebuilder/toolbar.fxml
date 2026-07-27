@@ -8,19 +8,17 @@
     styleClass="main-toolbar"
 >
     <Separator />
-    <Button fx:id="modeButton" styleClass="toolbar-btn" text="IN" onAction="#toggleMode"/>
+    <Button fx:id="modeButton" styleClass="toolbar-btn" onAction="#toggleMode"/>
     <Separator />
-    <Button styleClass="toolbar-btn" text="64" />
-    <Button styleClass="toolbar-btn" text="32" />
-    <Button styleClass="toolbar-btn" text="16" />
-    <Button styleClass="toolbar-btn" text="8" />
-    <Button styleClass="toolbar-btn" text="4" />
-    <Button styleClass="toolbar-btn" text="2" />
-    <Button styleClass="toolbar-btn" text="1" />
+    <Button fx:id="btn32" styleClass="toolbar-btn"/>
+    <Button fx:id="btn16" styleClass="toolbar-btn"/>
+    <Button fx:id="btn8" styleClass="toolbar-btn"/>
+    <Button fx:id="btn4" styleClass="toolbar-btn"/>
+    <Button fx:id="btn2" styleClass="toolbar-btn"/>
+    <Button fx:id="btn1" styleClass="toolbar-btn"/>
     <Separator />
     <Button fx:id="voice1Button" styleClass="toolbar-btn" text="1" onAction="#activateVoice1"/>
     <Button fx:id="voice2Button" styleClass="toolbar-btn" text="2" onAction="#activateVoice2"/>
-    <Button fx:id="voice3Button" styleClass="toolbar-btn" text="3" />
     <Separator />
     <Button fx:id="addMeasure" styleClass="toolbar-btn" text="+" onAction="#addMeasure"/>
     <Button fx:id="removeMeasure" styleClass="toolbar-btn" text="-" onAction="#removeMeasure"/>
