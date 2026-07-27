@@ -9,8 +9,6 @@ import org.example.musicscorebuilder.managers.ScoreStateManager;
 import java.util.List;
 
 public abstract class AbstractPaletteSectionController<T> {
-    private static final int COLUMNS_COUNT = 6;
-
     protected final ScoreService scoreService = ScoreService.getInstance();
     protected final ScoreStateManager stateManager = ScoreStateManager.getInstance();
     protected final GridPane gridPane;
@@ -28,8 +26,8 @@ public abstract class AbstractPaletteSectionController<T> {
         for (T item : items) {
             Button btn = createPaletteButton(item);
 
-            int col = index % COLUMNS_COUNT;
-            int row = index / COLUMNS_COUNT;
+            int col = index % getColumnsCount();
+            int row = index / getColumnsCount();
             gridPane.add(btn, col, row);
             index++;
         }
@@ -69,6 +67,7 @@ public abstract class AbstractPaletteSectionController<T> {
         }
     }
 
+    protected abstract int getColumnsCount();
     protected abstract List<T> getItems();
     protected abstract Node createButtonGraphic(T item);
     protected abstract boolean applyToSelectedElement(T item);

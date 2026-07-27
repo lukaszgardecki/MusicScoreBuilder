@@ -23,6 +23,9 @@ public class BarlinesSectionController extends AbstractPaletteSectionController<
     }
 
     @Override
+    protected int getColumnsCount() { return 5; }
+
+    @Override
     protected List<BarlineStyle> getItems() {
         return Arrays.asList(BarlineStyle.values());
     }
@@ -72,10 +75,14 @@ public class BarlinesSectionController extends AbstractPaletteSectionController<
             @Override
             public double getWidth() {
                 return switch (item) {
-                    case SINGLE -> 2.0;
-                    case DOUBLE -> 4.0;
-                    case END -> 5.0;
+                    case SINGLE, SHORTER, SHORT, TICK_SHORT, TICK_LONG, DOTTED, DASHED -> 2.0;
+                    case DOUBLE_LIGHT -> 4.0;
+                    case DOUBLE_HEAVY -> 13.0;
+                    case FINAL, FINAL_REVERSED -> 5.0;
                     case REPEAT_LEFT, REPEAT_RIGHT -> 7.0;
+                    case REPEAT_BOTH -> 13.0;
+                    case HEAVY -> 6.0;
+                    case NONE -> 0;
                 };
             }
         };

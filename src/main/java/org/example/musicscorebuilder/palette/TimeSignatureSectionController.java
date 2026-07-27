@@ -19,6 +19,9 @@ public class TimeSignatureSectionController extends AbstractPaletteSectionContro
     }
 
     @Override
+    protected int getColumnsCount() { return 6; }
+
+    @Override
     protected List<PreDefinedTimeSignature> getItems() {
         return Arrays.asList(PreDefinedTimeSignature.values());
     }
