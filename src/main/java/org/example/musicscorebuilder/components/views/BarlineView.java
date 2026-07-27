@@ -1,6 +1,7 @@
 package org.example.musicscorebuilder.components.views;
 
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.StrokeLineCap;
 import org.example.musicscorebuilder.components.layout.BarlineLayout;
 
@@ -16,6 +17,7 @@ public class BarlineView {
         gc.setLineCap(StrokeLineCap.BUTT);
 
         switch (barline.getStyle()) {
+            case NONE -> drawNone(gc, barline, baseX, startY, endY, sp);
             case SINGLE -> drawSingle(gc, barline, baseX, startY, endY, sp);
             case DOUBLE_LIGHT -> drawDoubleLight(gc, barline, baseX, startY, endY, sp);
             case DOUBLE_HEAVY -> drawDoubleHeavy(gc, barline, baseX, startY, endY, sp);
@@ -32,6 +34,16 @@ public class BarlineView {
             case SHORTER -> drawShorter(gc, barline, baseX, startY, endY, sp);
             case SHORT -> drawShort(gc, barline, baseX, startY, endY, sp);
         }
+    }
+
+    private void drawNone(GraphicsContext gc, BarlineLayout barline, double x, double startY, double endY, double sp) {
+        double width = barline.getLightLineWidth() * sp;
+        gc.setLineWidth(width);
+        double correctedX = x + (width / 2.0);
+        gc.save();
+        gc.setStroke(Color.TRANSPARENT);
+        gc.strokeLine(correctedX, startY, correctedX, endY);
+        gc.restore();
     }
 
     private void drawSingle(GraphicsContext gc, BarlineLayout barline, double x, double startY, double endY, double sp) {

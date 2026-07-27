@@ -21,14 +21,13 @@ public class BarlineLayout extends ElementLayout {
         this.dotSpace = style.getBarlineDotSpace();
         this.dotRadius = style.getBarlineDotRadius();
         this.width = switch (barline.getStyle()) {
-            case SINGLE, SHORTER, SHORT, TICK_SHORT, TICK_LONG, DOTTED, DASHED -> lightLineWidth;
+            case SINGLE, SHORTER, SHORT, TICK_SHORT, TICK_LONG, DOTTED, DASHED, NONE -> lightLineWidth;
             case DOUBLE_LIGHT -> 2 * lightLineWidth + gap;
             case DOUBLE_HEAVY -> 2 * heavyLineWidth + gap;
             case FINAL, FINAL_REVERSED -> lightLineWidth + gap + heavyLineWidth;
             case REPEAT_LEFT, REPEAT_RIGHT -> heavyLineWidth + gap + lightLineWidth + dotSpace + 2 * dotRadius;
             case REPEAT_BOTH -> heavyLineWidth + 2 * (gap + lightLineWidth + dotSpace + 2 * dotRadius);
             case HEAVY -> heavyLineWidth;
-            case NONE -> 0;
         };
         this.height = staff.getHeight() + staff.getSpaceBelow();
         this.y = staff.getY() - 0.5 * staff.getLineWidth();
