@@ -64,7 +64,7 @@ public class BarlinesSectionController extends AbstractPaletteSectionController<
         Measure mockMeasure = new Measure(List.of(mockStaff));
 
         MeasureLayout mockMeasureLayout = new MeasureLayout(mockMeasure, 0, mockStyle) {
-            @Override public double getWidth() { return 32.0; }
+            @Override public double getWidth() { return 46.0; }
         };
 
         StaffLayout staffLayout = new StaffLayout(mockStaff, mockMeasureLayout, mockStyle);
@@ -76,12 +76,12 @@ public class BarlinesSectionController extends AbstractPaletteSectionController<
             public double getWidth() {
                 return switch (item) {
                     case SINGLE, SHORTER, SHORT, TICK_SHORT, TICK_LONG, DOTTED, DASHED -> 2.0;
-                    case DOUBLE_LIGHT -> 4.0;
-                    case DOUBLE_HEAVY -> 13.0;
-                    case FINAL, FINAL_REVERSED -> 5.0;
-                    case REPEAT_LEFT, REPEAT_RIGHT -> 7.0;
-                    case REPEAT_BOTH -> 13.0;
-                    case HEAVY -> 6.0;
+                    case HEAVY -> 4.0;
+                    case DOUBLE_LIGHT -> 2.0 * 2.0 + 3.0;
+                    case DOUBLE_HEAVY -> 2.0 * 4.0 + 3.0;
+                    case FINAL, FINAL_REVERSED -> 2.0 + 3.0 + 4.0;
+                    case REPEAT_LEFT, REPEAT_RIGHT -> (2.0 * 1.0) + 3.0 + 2.0 + 3.0 + 4.0;
+                    case REPEAT_BOTH -> 4.0 + 2.0 * (3.0 + 2.0 + 3.0 + (2.0 * 1.0));
                     case NONE -> 0;
                 };
             }
@@ -91,7 +91,7 @@ public class BarlinesSectionController extends AbstractPaletteSectionController<
         double sMeasureY = 8.5;
         double sp = 1.0;
 
-        drawStaff(gc, staffLayout, 4.0, sMeasureY, sp);
+        drawStaff(gc, staffLayout, 0, sMeasureY, sp);
         drawBarline(gc, mockLayout, sMeasureX, sMeasureY, sp);
         return canvas;
     }
