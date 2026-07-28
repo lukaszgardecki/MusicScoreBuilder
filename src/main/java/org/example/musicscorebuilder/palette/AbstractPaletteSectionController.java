@@ -20,14 +20,23 @@ public abstract class AbstractPaletteSectionController<T> {
 
     public void build() {
         gridPane.getChildren().clear();
-        List<T> items = getItems();
+        gridPane.getColumnConstraints().clear();
 
+        int columns = getColumnsCount();
+        for (int i = 0; i < columns; i++) {
+            javafx.scene.layout.ColumnConstraints colConstraints = new javafx.scene.layout.ColumnConstraints();
+            colConstraints.setPercentWidth(100.0 / columns);
+            colConstraints.setHgrow(javafx.scene.layout.Priority.ALWAYS);
+            gridPane.getColumnConstraints().add(colConstraints);
+        }
+
+        List<T> items = getItems();
         int index = 0;
         for (T item : items) {
             Button btn = createPaletteButton(item);
 
-            int col = index % getColumnsCount();
-            int row = index / getColumnsCount();
+            int col = index % columns;
+            int row = index / columns;
             gridPane.add(btn, col, row);
             index++;
         }

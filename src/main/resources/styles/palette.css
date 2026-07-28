@@ -47,11 +47,12 @@
     -fx-cursor: hand;
     -fx-alignment: center;
 
-    -fx-min-width: 45px;
+    -fx-min-width: 0px;
+    -fx-pref-width: Infinity;
+    -fx-max-width: Infinity;
+
     -fx-min-height: 40px;
-    -fx-pref-width: 45px;
     -fx-pref-height: 40px;
-    -fx-max-width: 45px;
     -fx-max-height: 40px;
 }
 
