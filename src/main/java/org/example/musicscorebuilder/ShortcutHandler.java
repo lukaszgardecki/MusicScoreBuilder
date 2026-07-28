@@ -3,6 +3,10 @@ package org.example.musicscorebuilder;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import org.example.musicscorebuilder.components.layout.NoteLayout;
+import org.example.musicscorebuilder.components.layout.RestLayout;
+import org.example.musicscorebuilder.components.layout.Selectable;
+import org.example.musicscorebuilder.components.music.NoteRestElement;
 import org.example.musicscorebuilder.components.music.NoteType;
 import org.example.musicscorebuilder.managers.ModeManager;
 import org.example.musicscorebuilder.managers.ScoreNavigator;
@@ -50,6 +54,21 @@ public class ShortcutHandler {
         };
 
         if (targetType != null) {
+            Selectable selected = scoreStateManager.getSelectedItem();
+            NoteRestElement currentNRE = null;
+            if (selected instanceof NoteLayout nl) {
+                currentNRE = nl.getNote();
+            } else if (selected instanceof RestLayout rl) {
+                currentNRE = rl.getRest();
+            }
+
+            // GŁÓWNA BLOKADA: Jeśli zaznaczony element JUŻ MA TEN SAM TYP,
+            // natychmiast przerywamy (konsumujemy event) i NIC NIE ROBIMY!
+            if (currentNRE != null && currentNRE.getType() == targetType) {
+                event.consume();
+                return;
+            }
+
             scoreStateManager.changeSelectedElementDuration(targetType);
             event.consume();
         }

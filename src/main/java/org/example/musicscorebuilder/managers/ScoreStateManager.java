@@ -107,17 +107,34 @@ public class ScoreStateManager {
 
     public void changeSelectedElementDuration(NoteType type) {
         Selectable selected = getSelectedItem();
+        if (selected == null) return;
+
+        Measure measure = null;
+        Staff staff = null;
+        Segment targetSegment = null;
+        NoteRestElement elementToChange = null;
 
         if (selected instanceof NoteLayout nl) {
-            Measure measure = nl.getParent().getSegment().getParent();
-            Staff staff = nl.getStaff().getStaff();
-            measure.changeElementDuration(nl.getParent().getSegment(), staff, nl.getNote(), type);
-            notifyScoreChanged();
+            targetSegment = nl.getParent().getSegment();
+            measure = targetSegment.getParent();
+            staff = nl.getStaff().getStaff();
+            elementToChange = nl.getNote();
         } else if (selected instanceof RestLayout restLayout) {
-            Measure measure = restLayout.getParent().getSegment().getParent();
-            Staff staff = restLayout.getStaff().getStaff();
-            measure.changeElementDuration(restLayout.getParent().getSegment(), staff, restLayout.getRest(), type);
-            notifyScoreChanged();
+            targetSegment = restLayout.getParent().getSegment();
+            measure = targetSegment.getParent();
+            staff = restLayout.getStaff().getStaff();
+            elementToChange = restLayout.getRest();
         }
+
+        if (measure == null || targetSegment == null || elementToChange == null) return;
+
+        if (elementToChange.getType() == type) {
+            return;
+        }
+
+        measure.changeElementDuration(targetSegment, staff, elementToChange, type);
+
+        notifyScoreChanged();
+        clearSelection();
     }
 }

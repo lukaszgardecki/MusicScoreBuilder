@@ -29,14 +29,14 @@ public class Segment {
                     })
                     .toList();
             for (NoteRestElement elementToRemove : toRemove) {
-                removeElement(staff, elementToRemove);
+                removeNoteRest(staff, elementToRemove);
             }
         }
 
         addElement(staff, newNote);
     }
 
-    public void removeElement(Staff staff, NoteRestElement element) {
+    public void removeNoteRest(Staff staff, NoteRestElement element) {
         List<Element> elements = staffElements.get(staff);
         if (elements != null && element instanceof Element el) {
             elements.remove(el);

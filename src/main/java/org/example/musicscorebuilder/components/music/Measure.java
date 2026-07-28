@@ -11,12 +11,55 @@ public class Measure {
     private final List<Segment> segments = new ArrayList<>();
     private boolean dirty = true;
 
+    // =========================================================
+    // AKTUALNA ROZDZIELCZOŚĆ TAKTU – POBIERANA BEZPOŚREDNIO Z SEGMENTÓW
+    // =========================================================
+    private int currentResolutionTicks;
+
     public Measure(List<Staff> staves) {
         this.staves = staves;
         staves.forEach(staff -> staff.getDefaultClef().setParent(this));
         this.timeSignature = new TimeSignature(4, 4, this);
         this.keySignature = new KeySignature(-2, this);
         this.rightBarline = new Barline(BarlineStyle.FINAL, this);
+
+        this.currentResolutionTicks = NoteType.WHOLE.getTicks();
+    }
+
+    // =========================================================
+    // POBIERAMY INFO BEZPOŚREDNIO Z METOD SEGMENTU (ZAMIAST PĘTLI I LICZENIA)
+    // =========================================================
+    public void updateResolutionFromSegments() {
+        if (segments.isEmpty()) {
+            if (timeSignature != null) {
+                this.currentResolutionTicks = timeSignature.getTotalTicks();
+            } else {
+                this.currentResolutionTicks = NoteType.WHOLE.getTicks();
+            }
+            return;
+        }
+
+        // Pobieramy gotową informację o czasie trwania bezpośrednio z każdego segmentu
+        int minSegmentDuration = Integer.MAX_VALUE;
+
+        for (Segment seg : segments) {
+            if (seg.getType() == SegmentType.NOTEREST) {
+                int segDuration = seg.getDuration(); // Pobieramy info bezpośrednio z segmentu!
+                if (segDuration > 0 && segDuration < minSegmentDuration) {
+                    minSegmentDuration = segDuration;
+                }
+            }
+        }
+
+        if (minSegmentDuration != Integer.MAX_VALUE) {
+            this.currentResolutionTicks = minSegmentDuration;
+        } else if (timeSignature != null) {
+            this.currentResolutionTicks = timeSignature.getTotalTicks();
+        }
+    }
+
+    public int getCurrentResolutionTicks() {
+        return currentResolutionTicks;
     }
 
     public void insertNote(Segment targetSegment, Staff staff, Note newNote) {
@@ -39,11 +82,15 @@ public class Measure {
             segmentTicks = halfTicks;
         }
         targetSegment.insertNote(staff, newNote);
+
+        updateResolutionFromSegments();
         setDirty(true);
     }
 
     public void changeElementDuration(Segment targetSegment, Staff staff, NoteRestElement elementToChange, NoteType newType) {
         MeasureDurationEditor.changeElementDuration(this, targetSegment, staff, elementToChange, newType);
+
+        updateResolutionFromSegments();
         setDirty(true);
     }
 
@@ -79,6 +126,7 @@ public class Measure {
             segments.add(segments.size() - 1, seg);
         }
 
+        updateResolutionFromSegments();
         setDirty(true);
     }
 
@@ -91,6 +139,7 @@ public class Measure {
 
     public void setTimeSignature(TimeSignature timeSignature) {
         this.timeSignature = timeSignature;
+        updateResolutionFromSegments();
         setDirty(true);
     }
     public void setKeySignature(KeySignature keySignature) {

@@ -1,146 +1,440 @@
 package org.example.musicscorebuilder.components.music;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class MeasureDurationEditor {
 
     public static void changeElementDuration(Measure measure, Segment targetSegment, Staff staff, NoteRestElement elementToChange, NoteType newType) {
         if (targetSegment.getType() != SegmentType.NOTEREST) return;
 
-        int targetIndex = measure.getSegments().indexOf(targetSegment);
+        var segments = measure.getSegments();
+        int targetIndex = segments.indexOf(targetSegment);
         if (targetIndex == -1) return;
 
-        var context = new OperationContext(measure, targetSegment, targetIndex, staff, elementToChange, newType);
-        context.execute();
-    }
+        int voice = elementToChange.getVoice();
+        int oldTicks = elementToChange.getType().getTicks();
+        int newTicks = newType.getTicks();
+        int diff = newTicks - oldTicks;
 
-    private static class OperationContext {
-        private final Measure measure;
-        private final List<Segment> segments;
-        private final Segment targetSegment;
-        private final int targetIndex;
-        private final Staff staff;
-        private final NoteRestElement elementToChange;
-        private final NoteType newType;
-        private final int voice;
-        private final int newTicks;
-        private final int currentSegmentTicks;
+        if (diff == 0) return;
 
-        public OperationContext(Measure measure, Segment targetSegment, int targetIndex, Staff staff, NoteRestElement elementToChange, NoteType newType) {
-            this.measure = measure;
-            this.segments = measure.getSegments();
-            this.targetSegment = targetSegment;
-            this.targetIndex = targetIndex;
-            this.staff = staff;
-            this.elementToChange = elementToChange;
-            this.newType = newType;
-            this.voice = elementToChange.getVoice();
-            this.newTicks = newType.getTicks();
-            this.currentSegmentTicks = targetSegment.getDuration();
-        }
+        // =========================================================================
+        // ŚCISŁA BRAMKA: Maksymalna dozwolona pojemność taktu w tickach!
+        // Pobieramy sztywny limit z metrum (TimeSignature) lub z bazowej rozdzielczości startowej.
+        // Żaden takt nie może przekroczyć tego limitu
+        // =========================================================================
+        int strictMaxMeasureTicks = getStrictMaxMeasureTicks(measure);
 
-        public void execute() {
-            targetSegment.removeElement(staff, elementToChange);
+        // Jeśli zmniejszamy (diff < 0)
+        if (diff < 0) {
+            targetSegment.removeNoteRest(staff, elementToChange);
+            Element replacement = (elementToChange instanceof Note note)
+                    ? new Note(voice, note.getStep(), note.getAlter(), note.getOctave(), newType, note.getBeam(), measure)
+                    : new Rest(voice, newType, measure);
+            targetSegment.addElement(staff, replacement);
 
-            if (newTicks > currentSegmentTicks) {
-                expand();
-            } else if (newTicks < currentSegmentTicks) {
-                shrink();
-            } else {
-                replace(newType);
+            int remaining = -diff;
+            int insertIndex = targetIndex + 1;
+
+            while (remaining > 0) {
+                NoteType fit = findStrictFitting(remaining);
+                if (fit.getTicks() <= 0) break;
+
+                Segment fillSeg = new Segment(SegmentType.NOTEREST, measure);
+                fillSeg.addElement(staff, new Rest(voice, fit, measure));
+
+                if (insertIndex >= segments.size()) {
+                    segments.add(fillSeg);
+                } else {
+                    segments.add(insertIndex, fillSeg);
+                }
+                insertIndex++;
+                remaining -= fit.getTicks();
             }
 
+            measure.updateResolutionFromSegments();
             measure.setDirty(true);
+            return;
         }
 
-        private void expand() {
-            int accumulatedTicks = currentSegmentTicks;
-            List<Segment> segmentsToRemove = new ArrayList<>();
+        // =========================================================================
+        // JEŚLI POWIĘKSZAMY (diff > 0):
+        // Sprawdzamy absolutny limit i pożeramy tylko tyle, ile trzeba, pilnując sumy!
+        // =========================================================================
 
-            for (int i = targetIndex + 1; i < segments.size() && accumulatedTicks < newTicks; i++) {
-                Segment nextSeg = segments.get(i);
-                if (nextSeg.getType() != SegmentType.NOTEREST) break;
+        int accumulatedTicks = 0;
+        int lastSegmentIndexToConsume = targetIndex;
 
-                int nextSegTicks = nextSeg.getDuration();
+        for (int i = targetIndex; i < segments.size(); i++) {
+            Segment seg = segments.get(i);
+            if (seg.getType() != SegmentType.NOTEREST) break;
 
-                if (accumulatedTicks + nextSegTicks > newTicks) {
-                    int excessTicks = (accumulatedTicks + nextSegTicks) - newTicks;
+            int voiceTicksInSeg = getVoiceTicksInSegmentForStaff(seg, staff, voice);
 
-                    for (NoteRestElement el : nextSeg.getNoteRestByStaffAndVoice(staff, voice)) {
-                        nextSeg.removeElement(staff, el);
+            var staffElements = seg.getElementsByStaff(staff);
+            if (staffElements != null && i > targetIndex) {
+                boolean hasNoteToAvoid = false;
+                for (Element el : staffElements) {
+                    if (el instanceof Note && el instanceof NoteRestElement nre && nre.getVoice() == voice) {
+                        hasNoteToAvoid = true;
+                        break;
                     }
-
-                    NoteType excessType = findBestFitNoteType(excessTicks);
-                    nextSeg.addElement(staff, new Rest(voice, excessType, measure));
-
-                    accumulatedTicks = newTicks;
+                }
+                if (hasNoteToAvoid) {
                     break;
                 }
+            }
 
-                for (NoteRestElement el : nextSeg.getNoteRestByStaffAndVoice(staff, voice)) {
-                    nextSeg.removeElement(staff, el);
+            accumulatedTicks += (i == targetIndex) ? oldTicks : voiceTicksInSeg;
+            lastSegmentIndexToConsume = i;
+
+            if (accumulatedTicks >= newTicks) {
+                break;
+            }
+        }
+
+        if (accumulatedTicks < newTicks) {
+            return; // Za mało miejsca / napotkano nutę
+        }
+
+        // 1. Usuwamy stare elementy dla tego głosu z pożartych segmentów
+        for (int i = lastSegmentIndexToConsume; i >= targetIndex; i--) {
+            Segment seg = segments.get(i);
+            var staffElements = seg.getElementsByStaff(staff);
+            if (staffElements != null) {
+                var copy = new java.util.ArrayList<>(staffElements);
+                for (Element el : copy) {
+                    if (el instanceof NoteRestElement nre && nre.getVoice() == voice) {
+                        seg.removeNoteRest(staff, nre);
+                    }
                 }
-
-                accumulatedTicks += nextSegTicks;
-                segmentsToRemove.add(nextSeg);
             }
 
-            segments.removeAll(segmentsToRemove);
-
-            NoteType finalType = findBestFitNoteType(accumulatedTicks);
-            replace(finalType);
-        }
-
-        private void shrink() {
-            replace(newType);
-
-            int segmentTicks = currentSegmentTicks;
-            while (segmentTicks > newTicks) {
-                int halfTicks = segmentTicks / 2;
-                NoteType halfType = findClosestNoteType(halfTicks);
-                if (halfType == null) break;
-
-                Segment secondHalf = new Segment(SegmentType.NOTEREST, measure);
-                secondHalf.addElement(staff, new Rest(voice, halfType, measure));
-
-                segments.add(targetIndex + 1, secondHalf);
-                segmentTicks = halfTicks;
+            boolean isEmpty = true;
+            for (Staff s : measure.getStaves()) {
+                var els = seg.getElementsByStaff(s);
+                if (els != null && !els.isEmpty()) {
+                    isEmpty = false;
+                    break;
+                }
+            }
+            if (isEmpty && i != targetIndex) {
+                segments.remove(i);
             }
         }
 
-        private void replace(NoteType type) {
-            Element replacement = createElement(type);
-            targetSegment.addElement(staff, replacement);
+        // 2. Wstawiamy powiększony element do targetSegment
+        Element replacement = (elementToChange instanceof Note note)
+                ? new Note(voice, note.getStep(), note.getAlter(), note.getOctave(), newType, note.getBeam(), measure)
+                : new Rest(voice, newType, measure);
+        targetSegment.addElement(staff, replacement);
+
+        // 3. Zwracamy nadmiar ticków jako pauzę, ALE PILNUJEMY, ABY SUMA W TAKCIE NIGDY NIE PRZEKROCZYŁA strictMaxMeasureTicks!
+        int excessTicks = accumulatedTicks - newTicks;
+        if (excessTicks > 0) {
+            // Najpierw sprawdzamy aktualną sumę ticków w takcie dla tego głosu
+            int currentVoiceTotal = 0;
+            for (Segment seg : segments) {
+                if (seg.getType() == SegmentType.NOTEREST) {
+                    currentVoiceTotal += getVoiceTicksInSegmentForStaff(seg, staff, voice);
+                }
+            }
+
+            // Dopuszczamy do wstawienia tylko tyle, ile faktycznie mieści się w limicie taktu!
+            int allowedExcess = Math.min(excessTicks, strictMaxMeasureTicks - currentVoiceTotal);
+
+            if (allowedExcess > 0) {
+                int insertIndex = targetSegment.equals(segments.get(targetIndex)) ? targetIndex + 1 : targetIndex + 2;
+                if (insertIndex > segments.size()) insertIndex = segments.size();
+
+                while (allowedExcess > 0) {
+                    NoteType fit = findStrictFitting(allowedExcess);
+                    if (fit.getTicks() <= 0) break;
+
+                    Segment fillSeg = new Segment(SegmentType.NOTEREST, measure);
+                    fillSeg.addElement(staff, new Rest(voice, fit, measure));
+
+                    segments.add(insertIndex, fillSeg);
+                    insertIndex++;
+                    allowedExcess -= fit.getTicks();
+                }
+            }
         }
 
-        private Element createElement(NoteType type) {
-            if (elementToChange instanceof Note note) {
-                return new Note(voice, note.getStep(), note.getAlter(), note.getOctave(), type, note.getBeam(), measure);
-            }
-            return new Rest(voice, type, measure);
-        }
+        measure.updateResolutionFromSegments();
+        measure.setDirty(true);
     }
 
-    private static NoteType findBestFitNoteType(int ticks) {
-        for (NoteType type : NoteType.values()) {
-            if (type.getTicks() == ticks) {
-                return type;
-            }
-        }
-        return findClosestNoteType(ticks);
-    }
-
-    private static NoteType findClosestNoteType(int ticks) {
+    private static int getStrictMaxMeasureTicks(Measure measure) {
         try {
-            return NoteType.fromTicks(ticks);
-        } catch (IllegalArgumentException e) {
-            for (NoteType type : NoteType.values()) {
-                if (type.getTicks() <= ticks) {
-                    return type;
+            var timeSig = measure.getTimeSignature();
+            if (timeSig != null) {
+                return timeSig.getTotalTicks(); // Zazwyczaj 3840 dla 4/4
+            }
+        } catch (Exception ignored) {}
+
+        return 3840; // Awaryjny standardowy limit 4/4
+    }
+
+    private static int getVoiceTicksInSegmentForStaff(Segment seg, Staff staff, int voice) {
+        int ticks = 0;
+        var elementsForStaff = seg.getElementsByStaff(staff);
+        if (elementsForStaff != null) {
+            for (Element el : elementsForStaff) {
+                if (el instanceof NoteRestElement nre && nre.getVoice() == voice) {
+                    ticks += nre.getType().getTicks();
                 }
             }
-            return NoteType.QUARTER;
         }
+        return ticks;
+    }
+
+    private static NoteType findStrictFitting(int ticks) {
+        if (ticks <= 0) {
+            return NoteType.THIRTY_SECOND;
+        }
+
+        NoteType best = NoteType.THIRTY_SECOND;
+        int minRemainder = Integer.MAX_VALUE;
+
+        for (NoteType type : NoteType.values()) {
+            if (type.getTicks() <= ticks) {
+                int remainder = ticks % type.getTicks();
+                if (remainder < minRemainder) {
+                    minRemainder = remainder;
+                    best = type;
+                } else if (remainder == minRemainder && type.getTicks() > best.getTicks()) {
+                    best = type;
+                }
+            }
+        }
+        return best;
     }
 }
+
+
+
+
+//package org.example.musicscorebuilder.components.music;
+//
+//public class MeasureDurationEditor {
+//
+//    public static void changeElementDuration(Measure measure, Segment targetSegment, Staff staff, NoteRestElement elementToChange, NoteType newType) {
+//        if (targetSegment.getType() != SegmentType.NOTEREST) return;
+//
+//        // =========================================================================
+//        // CAŁKOWITA BLOKADA: Jeśli element ma już dokładnie ten żądany typ,
+//        // wychodzimy natychmiast i nie dotykamy absolutnie niczego w takcie!
+//        // =========================================================================
+//        if (elementToChange.getType() == newType) {
+//            return;
+//        }
+//
+//        var segments = measure.getSegments();
+//        int targetIndex = segments.indexOf(targetSegment);
+//        if (targetIndex == -1) return;
+//
+//        int voice = elementToChange.getVoice();
+//        int oldTicks = elementToChange.getType().getTicks();
+//        int newTicks = newType.getTicks();
+//        int diff = newTicks - oldTicks;
+//
+//        if (diff == 0) return;
+//
+//        int strictMaxMeasureTicks = getStrictMaxMeasureTicks(measure);
+//
+//        // =========================================================================
+//        // PRZYPADEK 1: ZMNIEJSZAMY (np. z całej pauzy robimy ćwierćpauzę) -> diff < 0
+//        // =========================================================================
+//        if (diff < 0) {
+//            targetSegment.removeNoteRest(staff, elementToChange);
+//            Element replacement = (elementToChange instanceof Note note)
+//                    ? new Note(voice, note.getStep(), note.getAlter(), note.getOctave(), newType, note.getBeam(), measure)
+//                    : new Rest(voice, newType, measure);
+//            targetSegment.addElement(staff, replacement);
+//
+//            int remaining = -diff;
+//            int insertIndex = targetIndex + 1;
+//
+//            while (remaining > 0) {
+//                NoteType fit = findStrictFitting(remaining);
+//                if (fit.getTicks() <= 0) break;
+//
+//                Segment fillSeg = new Segment(SegmentType.NOTEREST, measure);
+//                fillSeg.addElement(staff, new Rest(voice, fit, measure));
+//
+//                if (insertIndex >= segments.size()) {
+//                    segments.add(fillSeg);
+//                } else {
+//                    segments.add(insertIndex, fillSeg);
+//                }
+//                insertIndex++;
+//                remaining -= fit.getTicks();
+//            }
+//
+//            measure.updateResolutionFromSegments();
+//            measure.setDirty(true);
+//            return;
+//        }
+//
+//        // =========================================================================
+//        // PRZYPADEK 2: ZWIĘKSZAMY (np. z ćwierćpauzy robimy półpauzę) -> diff > 0
+//        // =========================================================================
+//
+//        // Zabezpieczenie przed przekroczeniem limitu taktu
+//        int currentVoiceTotalTicks = 0;
+//        for (Segment seg : segments) {
+//            if (seg.getType() == SegmentType.NOTEREST) {
+//                currentVoiceTotalTicks += getVoiceTicksInSegmentForStaff(seg, staff, voice);
+//            }
+//        }
+//
+//        // Jeśli zwiększenie o `diff` przekroczyłoby pojemność taktu, ABORT!
+//        if (currentVoiceTotalTicks + diff > strictMaxMeasureTicks) {
+//            return;
+//        }
+//
+//        int accumulatedTicks = 0;
+//        int lastSegmentIndexToConsume = targetIndex;
+//
+//        for (int i = targetIndex; i < segments.size(); i++) {
+//            Segment seg = segments.get(i);
+//            if (seg.getType() != SegmentType.NOTEREST) break;
+//
+//            var staffElements = seg.getElementsByStaff(staff);
+//            if (staffElements != null && i > targetIndex) {
+//                boolean hasNoteToAvoid = false;
+//                for (Element el : staffElements) {
+//                    if (el instanceof Note && el instanceof NoteRestElement nre && nre.getVoice() == voice) {
+//                        hasNoteToAvoid = true;
+//                        break;
+//                    }
+//                }
+//                if (hasNoteToAvoid) {
+//                    break;
+//                }
+//            }
+//
+//            int voiceTicksInSeg = getVoiceTicksInSegmentForStaff(seg, staff, voice);
+//            accumulatedTicks += (i == targetIndex) ? oldTicks : voiceTicksInSeg;
+//            lastSegmentIndexToConsume = i;
+//
+//            if (accumulatedTicks >= newTicks) {
+//                break;
+//            }
+//        }
+//
+//        if (accumulatedTicks < newTicks) {
+//            return;
+//        }
+//
+//        // 1. Usuwamy stare elementy dla tego głosu z pożartych segmentów
+//        for (int i = lastSegmentIndexToConsume; i >= targetIndex; i--) {
+//            Segment seg = segments.get(i);
+//            var staffElements = seg.getElementsByStaff(staff);
+//            if (staffElements != null) {
+//                var copy = new java.util.ArrayList<>(staffElements);
+//                for (Element el : copy) {
+//                    if (el instanceof NoteRestElement nre && nre.getVoice() == voice) {
+//                        seg.removeNoteRest(staff, nre);
+//                    }
+//                }
+//            }
+//
+//            boolean isEmpty = true;
+//            for (Staff s : measure.getStaves()) {
+//                var els = seg.getElementsByStaff(s);
+//                if (els != null && !els.isEmpty()) {
+//                    isEmpty = false;
+//                    break;
+//                }
+//            }
+//            if (isEmpty && i != targetIndex) {
+//                segments.remove(i);
+//            }
+//        }
+//
+//        // 2. Wstawiamy powiększony element do targetSegment
+//        Element replacement = (elementToChange instanceof Note note)
+//                ? new Note(voice, note.getStep(), note.getAlter(), note.getOctave(), newType, note.getBeam(), measure)
+//                : new Rest(voice, newType, measure);
+//        targetSegment.addElement(staff, replacement);
+//
+//        // 3. Zwracamy nadmiar ticków jako pauzę
+//        int excessTicks = accumulatedTicks - newTicks;
+//        if (excessTicks > 0) {
+//            int recalcVoiceTotal = 0;
+//            for (Segment seg : segments) {
+//                if (seg.getType() == SegmentType.NOTEREST) {
+//                    recalcVoiceTotal += getVoiceTicksInSegmentForStaff(seg, staff, voice);
+//                }
+//            }
+//
+//            int allowedExcess = Math.min(excessTicks, strictMaxMeasureTicks - recalcVoiceTotal);
+//
+//            if (allowedExcess > 0) {
+//                int insertIndex = targetIndex + 1;
+//                if (insertIndex > segments.size()) insertIndex = segments.size();
+//
+//                while (allowedExcess > 0) {
+//                    NoteType fit = findStrictFitting(allowedExcess);
+//                    if (fit.getTicks() <= 0) break;
+//
+//                    Segment fillSeg = new Segment(SegmentType.NOTEREST, measure);
+//                    fillSeg.addElement(staff, new Rest(voice, fit, measure));
+//
+//                    segments.add(insertIndex, fillSeg);
+//                    insertIndex++;
+//                    allowedExcess -= fit.getTicks();
+//                }
+//            }
+//        }
+//
+//        measure.updateResolutionFromSegments();
+//        measure.setDirty(true);
+//    }
+//
+//    private static int getStrictMaxMeasureTicks(Measure measure) {
+//        try {
+//            var timeSig = measure.getTimeSignature();
+//            if (timeSig != null) {
+//                return timeSig.getTotalTicks();
+//            }
+//        } catch (Exception ignored) {}
+//
+//        return 3840;
+//    }
+//
+//    private static int getVoiceTicksInSegmentForStaff(Segment seg, Staff staff, int voice) {
+//        int ticks = 0;
+//        var elementsForStaff = seg.getElementsByStaff(staff);
+//        if (elementsForStaff != null) {
+//            for (Element el : elementsForStaff) {
+//                if (el instanceof NoteRestElement nre && nre.getVoice() == voice) {
+//                    ticks += nre.getType().getTicks();
+//                }
+//            }
+//        }
+//        return ticks;
+//    }
+//
+//    private static NoteType findStrictFitting(int ticks) {
+//        if (ticks <= 0) {
+//            return NoteType.THIRTY_SECOND;
+//        }
+//
+//        NoteType best = NoteType.THIRTY_SECOND;
+//        int minRemainder = Integer.MAX_VALUE;
+//
+//        for (NoteType type : NoteType.values()) {
+//            if (type.getTicks() <= ticks) {
+//                int remainder = ticks % type.getTicks();
+//                if (remainder < minRemainder) {
+//                    minRemainder = remainder;
+//                    best = type;
+//                } else if (remainder == minRemainder && type.getTicks() > best.getTicks()) {
+//                    best = type;
+//                }
+//            }
+//        }
+//        return best;
+//    }
+//}

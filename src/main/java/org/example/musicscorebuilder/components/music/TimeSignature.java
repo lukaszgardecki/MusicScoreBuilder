@@ -27,4 +27,10 @@ public class TimeSignature extends Element {
         this.type = type;
         super.hasChanged();
     }
+
+    public int getTotalTicks() {
+        // Bazujemy na standardowej rozdzielczości, gdzie ćwierćnuta = 960 ticków
+        // Wzór: (beat * (3840 / beatType))
+        return beat * (3840 / beatType);
+    }
 }
