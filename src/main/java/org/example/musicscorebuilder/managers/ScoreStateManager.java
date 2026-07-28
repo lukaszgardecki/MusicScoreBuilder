@@ -1,6 +1,7 @@
 package org.example.musicscorebuilder.managers;
 
 import org.example.musicscorebuilder.components.layout.Selectable;
+import org.example.musicscorebuilder.components.layout.SelectionChangeListener;
 import org.example.musicscorebuilder.components.music.Score;
 import org.example.musicscorebuilder.components.music.ScoreMode;
 import org.example.musicscorebuilder.components.music.SegmentType;
@@ -15,6 +16,7 @@ public class ScoreStateManager {
     private final List<ScoreChangeListener> scoreChangeListeners = new ArrayList<>();
     private final List<Selectable> selectedItems = new ArrayList<>();
     private int currentModeIndex = 0;
+    private final List<SelectionChangeListener> selectionChangeListeners = new ArrayList<>();
 
     private ScoreStateManager() {}
 
@@ -43,6 +45,11 @@ public class ScoreStateManager {
         List<Selectable> itemsToSelect = LayoutHitTester.resolveSelection(item);
         deselectAll();
         selectAll(itemsToSelect);
+
+        Selectable currentSelected = getSelectedItem();
+        for (SelectionChangeListener listener : selectionChangeListeners) {
+            listener.onSelectionChanged(currentSelected);
+        }
     }
 
     public void clearSelection() {
@@ -66,6 +73,10 @@ public class ScoreStateManager {
 
     public void addScoreChangeListener(ScoreChangeListener listener) {
         scoreChangeListeners.add(listener);
+    }
+
+    public void addSelectionChangeListener(SelectionChangeListener listener) {
+        selectionChangeListeners.add(listener);
     }
 
     public void notifyScoreChanged() {

@@ -31,6 +31,7 @@ public class RestLayout extends ElementLayout {
     @Override public double getBoxY() { return getY() - (fontData.getNEy() * style.getStaffLineSpacing()); }
     @Override public int getVoice() { return rest.getVoice(); }
 
+    public Rest getRest() { return rest; }
     public double getBoxX() { return getX(); }
     public double getFontSize() { return height; }
     public double getFontWidth() { return (fontData.getHeight() * fontData.getRatio()) * style.getStaffLineSpacing(); }

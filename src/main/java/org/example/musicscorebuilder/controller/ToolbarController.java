@@ -9,10 +9,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import org.example.musicscorebuilder.ScoreService;
-import org.example.musicscorebuilder.components.layout.MeasureLayout;
-import org.example.musicscorebuilder.components.layout.NoteLayout;
-import org.example.musicscorebuilder.components.layout.SegmentLayout;
-import org.example.musicscorebuilder.components.layout.StaffLayout;
+import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.music.*;
 import org.example.musicscorebuilder.components.views.NoteView;
@@ -56,6 +53,15 @@ public class ToolbarController {
             } else {
                 modeBtnClasses.remove("active");
             }
+        });
+
+        stateManager.addSelectionChangeListener(selectedItem -> {
+            NoteType type = switch (selectedItem) {
+                case NoteLayout note -> note.getNote().getType();
+                case RestLayout rest -> rest.getRest().getType();
+                case null, default -> null;
+            };
+            updateDurationButtonStyles(type);
         });
 
         setupModeButton();
@@ -131,6 +137,28 @@ public class ToolbarController {
             voice1Button.getStyleClass().add("active");
         } else if (activeVoice == 2) {
             voice2Button.getStyleClass().add("active");
+        }
+    }
+
+    private void updateDurationButtonStyles(NoteType selectedType) {
+        List.of(btn32, btn16, btn8, btn4, btn2, btn1).forEach(b -> {
+            if (b != null) b.getStyleClass().remove("active");
+        });
+
+        if (selectedType == null) return;
+
+        Button targetButton = switch (selectedType) {
+            case THIRTY_SECOND -> btn32;
+            case SIXTEENTH -> btn16;
+            case EIGHTH -> btn8;
+            case QUARTER -> btn4;
+            case HALF -> btn2;
+            case WHOLE -> btn1;
+            default -> null;
+        };
+
+        if (targetButton != null && !targetButton.getStyleClass().contains("active")) {
+            targetButton.getStyleClass().add("active");
         }
     }
 
