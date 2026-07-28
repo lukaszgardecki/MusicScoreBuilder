@@ -190,6 +190,26 @@ public class ToolbarController {
 
         noteView.draw(gc, noteLayout, 0.0, 0.0, noteScale);
         button.setGraphic(canvas);
+
+
+        button.setOnAction(event -> {
+            Selectable selected = stateManager.getSelectedItem();
+
+            if (selected instanceof NoteLayout nl) {
+                Measure measure = nl.getParent().getSegment().getParent();
+                Staff staff = nl.getStaff().getStaff();
+                measure.changeElementDuration(nl.getParent().getSegment(), staff, nl.getNote(), type);
+                stateManager.notifyScoreChanged();
+
+            } else if (selected instanceof RestLayout restLayout) {
+                Measure measure = restLayout.getParent().getSegment().getParent();
+                Staff staff = restLayout.getStaff().getStaff();
+                measure.changeElementDuration(restLayout.getParent().getSegment(), staff, restLayout.getRest(), type);
+                stateManager.notifyScoreChanged();
+            }
+
+            updateDurationButtonStyles(type);
+        });
     }
 
     private void setupVoiceButton(Button button, int voiceNumber) {

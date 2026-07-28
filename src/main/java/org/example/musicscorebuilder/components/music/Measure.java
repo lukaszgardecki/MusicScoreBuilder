@@ -42,6 +42,11 @@ public class Measure {
         setDirty(true);
     }
 
+    public void changeElementDuration(Segment targetSegment, Staff staff, NoteRestElement elementToChange, NoteType newType) {
+        MeasureDurationEditor.changeElementDuration(this, targetSegment, staff, elementToChange, newType);
+        setDirty(true);
+    }
+
     public List<Staff> getStaves() { return staves; }
     public List<Segment> getSegments() { return segments; }
     public Barline getRightBarline() { return rightBarline; }
