@@ -1,10 +1,10 @@
 package org.example.musicscorebuilder.managers;
 
+import org.example.musicscorebuilder.components.layout.NoteLayout;
+import org.example.musicscorebuilder.components.layout.RestLayout;
 import org.example.musicscorebuilder.components.layout.Selectable;
 import org.example.musicscorebuilder.components.layout.SelectionChangeListener;
-import org.example.musicscorebuilder.components.music.Score;
-import org.example.musicscorebuilder.components.music.ScoreMode;
-import org.example.musicscorebuilder.components.music.SegmentType;
+import org.example.musicscorebuilder.components.music.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -103,5 +103,21 @@ public class ScoreStateManager {
             }
         }
         selectedItems.clear();
+    }
+
+    public void changeSelectedElementDuration(NoteType type) {
+        Selectable selected = getSelectedItem();
+
+        if (selected instanceof NoteLayout nl) {
+            Measure measure = nl.getParent().getSegment().getParent();
+            Staff staff = nl.getStaff().getStaff();
+            measure.changeElementDuration(nl.getParent().getSegment(), staff, nl.getNote(), type);
+            notifyScoreChanged();
+        } else if (selected instanceof RestLayout restLayout) {
+            Measure measure = restLayout.getParent().getSegment().getParent();
+            Staff staff = restLayout.getStaff().getStaff();
+            measure.changeElementDuration(restLayout.getParent().getSegment(), staff, restLayout.getRest(), type);
+            notifyScoreChanged();
+        }
     }
 }
