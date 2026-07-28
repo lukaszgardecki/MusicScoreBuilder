@@ -2,7 +2,10 @@ package org.example.musicscorebuilder.managers;
 
 import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
+import org.example.musicscorebuilder.components.music.NoteRestElement;
+import org.example.musicscorebuilder.components.music.Segment;
 import org.example.musicscorebuilder.components.music.SegmentType;
+import org.example.musicscorebuilder.components.music.Staff;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -222,5 +225,35 @@ public class LayoutHitTester {
             itemsToSelect.add(clickedElement);
         }
         return itemsToSelect;
+    }
+
+    public static Selectable findSelectableForElement(List<PageLayout> pages, Segment targetSegment, Staff staff, NoteRestElement targetNre) {
+        if (pages == null || targetSegment == null || staff == null || targetNre == null) return null;
+
+        for (PageLayout page : pages) {
+            for (SystemLayout system : page.getSystems()) {
+                for (MeasureLayout measureLayout : system.getMeasures()) {
+                    for (SegmentLayout segLayout : measureLayout.getSegments()) {
+                        if (segLayout.getSegment() == targetSegment) {
+                            for (StaffLayout staffLayout : measureLayout.getStaffs()) {
+                                if (staffLayout.getStaff() == staff) {
+                                    List<ElementLayout> elements = segLayout.getElementsByStaff(staffLayout);
+                                    if (elements != null) {
+                                        for (ElementLayout el : elements) {
+                                            if (el instanceof NoteLayout nl && nl.getNote() == targetNre) {
+                                                return nl;
+                                            } else if (el instanceof RestLayout rl && rl.getRest() == targetNre) {
+                                                return rl;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

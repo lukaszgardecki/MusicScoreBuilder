@@ -1,15 +1,13 @@
 package org.example.musicscorebuilder.managers;
 
-import org.example.musicscorebuilder.components.layout.NoteLayout;
-import org.example.musicscorebuilder.components.layout.RestLayout;
-import org.example.musicscorebuilder.components.layout.Selectable;
-import org.example.musicscorebuilder.components.layout.SelectionChangeListener;
+import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.music.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class ScoreStateManager {
     private static ScoreStateManager instance;
@@ -17,6 +15,7 @@ public class ScoreStateManager {
     private final List<Selectable> selectedItems = new ArrayList<>();
     private int currentModeIndex = 0;
     private final List<SelectionChangeListener> selectionChangeListeners = new ArrayList<>();
+    private Consumer<ScoreLayout> postRefreshAction;
 
     private ScoreStateManager() {}
 
@@ -39,7 +38,6 @@ public class ScoreStateManager {
         }
         return score.getModes().get(currentModeIndex);
     }
-
 
     public void setSelected(Selectable item) {
         List<Selectable> itemsToSelect = LayoutHitTester.resolveSelection(item);
@@ -105,36 +103,58 @@ public class ScoreStateManager {
         selectedItems.clear();
     }
 
+    public void applyPostRefreshAction(ScoreLayout layout) {
+        if (postRefreshAction != null && layout != null) {
+            var action = postRefreshAction;
+            postRefreshAction = null;
+            action.accept(layout);
+        }
+    }
+
     public void changeSelectedElementDuration(NoteType type) {
         Selectable selected = getSelectedItem();
         if (selected == null) return;
 
-        Measure measure = null;
-        Staff staff = null;
-        Segment targetSegment = null;
-        NoteRestElement elementToChange = null;
+        final Segment targetSegment;
+        final Staff staff;
+        final NoteRestElement elementToChange;
+        final int targetVoice;
 
         if (selected instanceof NoteLayout nl) {
             targetSegment = nl.getParent().getSegment();
-            measure = targetSegment.getParent();
             staff = nl.getStaff().getStaff();
             elementToChange = nl.getNote();
+            targetVoice = nl.getNote().getVoice();
         } else if (selected instanceof RestLayout restLayout) {
             targetSegment = restLayout.getParent().getSegment();
-            measure = targetSegment.getParent();
             staff = restLayout.getStaff().getStaff();
             elementToChange = restLayout.getRest();
+            targetVoice = restLayout.getRest().getVoice();
+        } else {
+            return;
         }
-
-        if (measure == null || targetSegment == null || elementToChange == null) return;
 
         if (elementToChange.getType() == type) {
             return;
         }
 
-        measure.changeElementDuration(targetSegment, staff, elementToChange, type);
+        postRefreshAction = layout -> {
+            var staffElements = targetSegment.getElementsByStaff(staff);
+            if (staffElements != null) {
+                for (Element el : staffElements) {
+                    if (el instanceof NoteRestElement nre && nre.getVoice() == targetVoice) {
+                        Selectable newLayout = LayoutHitTester.findSelectableForElement(layout.getPages(), targetSegment, staff, nre);
+                        if (newLayout != null) {
+                            setSelected(newLayout);
+                        }
+                        break;
+                    }
+                }
+            }
+        };
 
+        Measure measure = targetSegment.getParent();
+        measure.changeElementDuration(targetSegment, staff, elementToChange, type);
         notifyScoreChanged();
-        clearSelection();
     }
 }

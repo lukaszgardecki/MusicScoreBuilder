@@ -145,6 +145,7 @@ public class PageAreaController {
         ScoreMode activeScoreMode = stateManager.getCurrentMode(score);
         if (activeScoreMode == null) return;
         this.currentScoreLayout = layoutEngine.compute(activeScoreMode);
+        stateManager.applyPostRefreshAction(this.currentScoreLayout);
         redraw();
     }
 
