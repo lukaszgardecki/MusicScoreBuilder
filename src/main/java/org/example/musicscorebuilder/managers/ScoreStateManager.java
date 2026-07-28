@@ -115,28 +115,31 @@ public class ScoreStateManager {
         Selectable selected = getSelectedItem();
         if (selected == null) return;
 
-        final Segment targetSegment;
-        final Staff staff;
+        SegmentLayout segLayout = selected.getSegment();
+        StaffLayout staffLayout = selected.getStaff();
+        if (segLayout == null || staffLayout == null) return;
+
+        final Segment targetSegment = segLayout.getSegment();
+        if (targetSegment == null) return;
+
+        final Staff staff = staffLayout.getStaff();
+        final Measure measure = targetSegment.getParent();
+
         final NoteRestElement elementToChange;
         final int targetVoice;
 
         if (selected instanceof NoteLayout nl) {
-            targetSegment = nl.getParent().getSegment();
-            staff = nl.getStaff().getStaff();
             elementToChange = nl.getNote();
             targetVoice = nl.getNote().getVoice();
-        } else if (selected instanceof RestLayout restLayout) {
-            targetSegment = restLayout.getParent().getSegment();
-            staff = restLayout.getStaff().getStaff();
-            elementToChange = restLayout.getRest();
-            targetVoice = restLayout.getRest().getVoice();
+        } else if (selected instanceof RestLayout rl) {
+            elementToChange = rl.getRest();
+            targetVoice = rl.getRest().getVoice();
         } else {
             return;
         }
 
-        if (elementToChange.getType() == type) {
-            return;
-        }
+        if (elementToChange == null || measure == null || staff == null) return;
+        if (elementToChange.getType() == type) return;
 
         postRefreshAction = layout -> {
             var staffElements = targetSegment.getElementsByStaff(staff);
@@ -153,8 +156,7 @@ public class ScoreStateManager {
             }
         };
 
-        Measure measure = targetSegment.getParent();
-        measure.changeElementDuration(targetSegment, staff, elementToChange, type);
+        MeasureDurationEditor.changeElementDuration(measure, targetSegment, staff, elementToChange, type);
         notifyScoreChanged();
     }
 }

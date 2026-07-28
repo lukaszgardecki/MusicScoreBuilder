@@ -16,20 +16,34 @@ public class MeasureDurationEditor {
 
         if (diff == 0) return;
 
-        // =========================================================================
-        // ŚCISŁA BRAMKA: Maksymalna dozwolona pojemność taktu w tickach!
-        // Pobieramy sztywny limit z metrum (TimeSignature) lub z bazowej rozdzielczości startowej.
-        // Żaden takt nie może przekroczyć tego limitu
-        // =========================================================================
         int strictMaxMeasureTicks = getStrictMaxMeasureTicks(measure);
 
-        // Jeśli zmniejszamy (diff < 0)
+        // Zbieramy elementy dla tego głosu (na wypadek, gdyby jednak było więcej nut)
+        java.util.List<NoteRestElement> voiceElements = new java.util.ArrayList<>();
+        var staffEls = targetSegment.getElementsByStaff(staff);
+        if (staffEls != null) {
+            for (Element el : staffEls) {
+                if (el instanceof NoteRestElement nre && nre.getVoice() == voice) {
+                    voiceElements.add(nre);
+                }
+            }
+        }
+
+        // Zabezpieczenie, jeśli jakimś cudem lista byłaby pusta
+        if (voiceElements.isEmpty()) voiceElements.add(elementToChange);
+
         if (diff < 0) {
-            targetSegment.removeNoteRest(staff, elementToChange);
-            Element replacement = (elementToChange instanceof Note note)
-                    ? new Note(voice, note.getStep(), note.getAlter(), note.getOctave(), newType, note.getBeam(), measure)
-                    : new Rest(voice, newType, measure);
-            targetSegment.addElement(staff, replacement);
+            for (NoteRestElement oldEl : voiceElements) {
+                targetSegment.removeNoteRest(staff, oldEl);
+                Element replacement;
+                if (oldEl instanceof Note note) {
+                    // Czyścimy ew. powiązanie z belką (null), by uniknąć błędów rysowania
+                    replacement = new Note(voice, note.getStep(), note.getAlter(), note.getOctave(), newType, null, measure);
+                } else {
+                    replacement = new Rest(voice, newType, measure);
+                }
+                targetSegment.addElement(staff, replacement);
+            }
 
             int remaining = -diff;
             int insertIndex = targetIndex + 1;
@@ -55,11 +69,7 @@ public class MeasureDurationEditor {
             return;
         }
 
-        // =========================================================================
-        // JEŚLI POWIĘKSZAMY (diff > 0):
-        // Sprawdzamy absolutny limit i pożeramy tylko tyle, ile trzeba, pilnując sumy!
-        // =========================================================================
-
+        // JEŚLI POWIĘKSZAMY (diff > 0)
         int accumulatedTicks = 0;
         int lastSegmentIndexToConsume = targetIndex;
 
@@ -68,20 +78,6 @@ public class MeasureDurationEditor {
             if (seg.getType() != SegmentType.NOTEREST) break;
 
             int voiceTicksInSeg = getVoiceTicksInSegmentForStaff(seg, staff, voice);
-
-            var staffElements = seg.getElementsByStaff(staff);
-            if (staffElements != null && i > targetIndex) {
-                boolean hasNoteToAvoid = false;
-                for (Element el : staffElements) {
-                    if (el instanceof Note && el instanceof NoteRestElement nre && nre.getVoice() == voice) {
-                        hasNoteToAvoid = true;
-                        break;
-                    }
-                }
-                if (hasNoteToAvoid) {
-                    break;
-                }
-            }
 
             accumulatedTicks += (i == targetIndex) ? oldTicks : voiceTicksInSeg;
             lastSegmentIndexToConsume = i;
@@ -92,15 +88,15 @@ public class MeasureDurationEditor {
         }
 
         if (accumulatedTicks < newTicks) {
-            return; // Za mało miejsca / napotkano nutę
+            return; // Za mało miejsca w takcie na powiększenie (blokada krawędzi taktu)
         }
 
-        // 1. Usuwamy stare elementy dla tego głosu z pożartych segmentów
+        // Usuwanie elementów, które wchłaniamy z kolejnych segmentów
         for (int i = lastSegmentIndexToConsume; i >= targetIndex; i--) {
             Segment seg = segments.get(i);
-            var staffElements = seg.getElementsByStaff(staff);
-            if (staffElements != null) {
-                var copy = new java.util.ArrayList<>(staffElements);
+            var currentStaffElements = seg.getElementsByStaff(staff);
+            if (currentStaffElements != null) {
+                var copy = new java.util.ArrayList<>(currentStaffElements);
                 for (Element el : copy) {
                     if (el instanceof NoteRestElement nre && nre.getVoice() == voice) {
                         seg.removeNoteRest(staff, nre);
@@ -108,29 +104,35 @@ public class MeasureDurationEditor {
                 }
             }
 
-            boolean isEmpty = true;
-            for (Staff s : measure.getStaves()) {
-                var els = seg.getElementsByStaff(s);
-                if (els != null && !els.isEmpty()) {
-                    isEmpty = false;
-                    break;
+            if (i != targetIndex) {
+                boolean isEmpty = true;
+                for (Staff s : measure.getStaves()) {
+                    var els = seg.getElementsByStaff(s);
+                    if (els != null && !els.isEmpty()) {
+                        isEmpty = false;
+                        break;
+                    }
                 }
-            }
-            if (isEmpty && i != targetIndex) {
-                segments.remove(i);
+                if (isEmpty) {
+                    segments.remove(i);
+                }
             }
         }
 
-        // 2. Wstawiamy powiększony element do targetSegment
-        Element replacement = (elementToChange instanceof Note note)
-                ? new Note(voice, note.getStep(), note.getAlter(), note.getOctave(), newType, note.getBeam(), measure)
-                : new Rest(voice, newType, measure);
-        targetSegment.addElement(staff, replacement);
+        // Wstawiamy powiększoną nutę / pauzę
+        for (NoteRestElement oldEl : voiceElements) {
+            Element replacement;
+            if (oldEl instanceof Note note) {
+                replacement = new Note(voice, note.getStep(), note.getAlter(), note.getOctave(), newType, null, measure);
+            } else {
+                replacement = new Rest(voice, newType, measure);
+            }
+            targetSegment.addElement(staff, replacement);
+        }
 
-        // 3. Zwracamy nadmiar ticków jako pauzę, ALE PILNUJEMY, ABY SUMA W TAKCIE NIGDY NIE PRZEKROCZYŁA strictMaxMeasureTicks!
+        // Dopełnianie reszty pauzami
         int excessTicks = accumulatedTicks - newTicks;
         if (excessTicks > 0) {
-            // Najpierw sprawdzamy aktualną sumę ticków w takcie dla tego głosu
             int currentVoiceTotal = 0;
             for (Segment seg : segments) {
                 if (seg.getType() == SegmentType.NOTEREST) {
@@ -138,7 +140,6 @@ public class MeasureDurationEditor {
                 }
             }
 
-            // Dopuszczamy do wstawienia tylko tyle, ile faktycznie mieści się w limicie taktu!
             int allowedExcess = Math.min(excessTicks, strictMaxMeasureTicks - currentVoiceTotal);
 
             if (allowedExcess > 0) {
@@ -167,11 +168,10 @@ public class MeasureDurationEditor {
         try {
             var timeSig = measure.getTimeSignature();
             if (timeSig != null) {
-                return timeSig.getTotalTicks(); // Zazwyczaj 3840 dla 4/4
+                return timeSig.getTotalTicks();
             }
         } catch (Exception ignored) {}
-
-        return 3840; // Awaryjny standardowy limit 4/4
+        return 3840;
     }
 
     private static int getVoiceTicksInSegmentForStaff(Segment seg, Staff staff, int voice) {
@@ -188,9 +188,7 @@ public class MeasureDurationEditor {
     }
 
     private static NoteType findStrictFitting(int ticks) {
-        if (ticks <= 0) {
-            return NoteType.THIRTY_SECOND;
-        }
+        if (ticks <= 0) return NoteType.THIRTY_SECOND;
 
         NoteType best = NoteType.THIRTY_SECOND;
         int minRemainder = Integer.MAX_VALUE;
