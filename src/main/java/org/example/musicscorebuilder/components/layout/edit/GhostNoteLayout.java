@@ -6,42 +6,32 @@ import org.example.musicscorebuilder.components.layout.StaffLayout;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.music.BeamType;
 import org.example.musicscorebuilder.components.music.Note;
-import org.example.musicscorebuilder.components.music.NoteType;
 import org.example.musicscorebuilder.components.music.PitchStep;
 import org.example.musicscorebuilder.managers.ModeManager;
 
 public class GhostNoteLayout extends NoteLayout {
-    private final SegmentLayout segment;
-    private final StaffLayout staff;
     private final ScoreStyle style;
     private final String color;
 
-    public GhostNoteLayout(SegmentLayout segment, StaffLayout staff, double initialModelY) {
+    public GhostNoteLayout(SegmentLayout segment, StaffLayout staff, double initialY) {
         super(
                 new Note(
                         ModeManager.getInstance().getCurrentVoice(),
                         PitchStep.C,
                         0,
                         4,
-                        NoteType.QUARTER,
+                        ModeManager.getInstance().getCurrentNoteType(),
                         BeamType.NONE,
                         null
                 ),
                 staff,
                 segment
         );
-        this.segment = segment;
-        this.staff = staff;
         this.style = segment.getScoreStyle();
-        int activeVoice = ModeManager.getInstance().getCurrentVoice();
-        this.color = style.getEditInsertColor(activeVoice);
-        updatePitchFromY(initialModelY);
+        this.color = style.getEditInsertColor(ModeManager.getInstance().getCurrentVoice());
+        updatePitchFromY(initialY);
     }
 
-    @Override public double getX() { return 0; }
-
-    public SegmentLayout getSegment() { return segment; }
-    public StaffLayout getStaff() { return staff; }
     public ScoreStyle getStyle() { return style; }
     public String getColor() { return color; }
 }

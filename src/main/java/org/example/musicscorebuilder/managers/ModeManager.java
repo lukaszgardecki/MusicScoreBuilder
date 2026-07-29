@@ -1,7 +1,10 @@
 package org.example.musicscorebuilder.managers;
 
+import org.example.musicscorebuilder.components.layout.SegmentLayout;
+import org.example.musicscorebuilder.components.layout.StaffLayout;
 import org.example.musicscorebuilder.components.layout.edit.GhostNoteLayout;
 import org.example.musicscorebuilder.components.music.Mode;
+import org.example.musicscorebuilder.components.music.NoteType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -13,6 +16,7 @@ public class ModeManager {
     private final List<Consumer<Boolean>> listeners = new ArrayList<>();
     private GhostNoteLayout ghostNote;
     private int currentVoice = 1;
+    private NoteType currentNoteType = NoteType.QUARTER;
 
     private ModeManager() {}
 
@@ -31,10 +35,42 @@ public class ModeManager {
         }
     }
 
-    public void setGhostNote(GhostNoteLayout ghostNote) { this.ghostNote = ghostNote; }
+    public NoteType getCurrentNoteType() {
+        return currentNoteType;
+    }
     public void clearGhostNote() { this.ghostNote = null; }
     public GhostNoteLayout getGhostNote() { return ghostNote; }
     public boolean isShowGhost() { return isInsertMode() && ghostNote != null; }
+    public void addModeChangeListener(Consumer<Boolean> listener) {
+        listeners.add(listener);
+        listener.accept(isInsertMode());
+    }
+    public boolean isInsertMode() { return mode == Mode.INSERT; }
+    public int getCurrentVoice() { return currentVoice; }
+
+    public void setGhostNote(GhostNoteLayout ghostNote) { this.ghostNote = ghostNote; }
+    public void setCurrentVoice(int voice) {
+        this.currentVoice = voice;
+        if (ghostNote != null) {
+            clearGhostNote();
+        }
+        notifyListeners();
+    }
+    public void setCurrentNoteType(NoteType noteType) {
+        this.currentNoteType = noteType;
+
+        if (ghostNote != null) {
+            StaffLayout staffLayout = ghostNote.getStaff();
+            SegmentLayout segmentLayout = ghostNote.getSegment();
+
+            if (staffLayout != null && segmentLayout != null) {
+                this.ghostNote = new GhostNoteLayout(segmentLayout, staffLayout, ghostNote.getY());
+            }
+        }
+
+        stateManager.notifyScoreChanged();
+        notifyListeners();
+    }
 
     private void activateInsertMode() {
         if (mode != Mode.INSERT) {
@@ -57,21 +93,5 @@ public class ModeManager {
         for (Consumer<Boolean> listener : listeners) {
             listener.accept(active);
         }
-    }
-
-    public void addModeChangeListener(Consumer<Boolean> listener) {
-        listeners.add(listener);
-        listener.accept(isInsertMode());
-    }
-
-    public boolean isInsertMode() { return mode == Mode.INSERT; }
-    public int getCurrentVoice() { return currentVoice; }
-
-    public void setCurrentVoice(int voice) {
-        this.currentVoice = voice;
-        if (ghostNote != null) {
-            clearGhostNote();
-        }
-        notifyListeners();
     }
 }

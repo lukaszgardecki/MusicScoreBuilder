@@ -29,17 +29,21 @@ public class ShortcutHandler {
         if (event.getCode() == KeyCode.N) {
             modeManager.toggleInsertMode();
             event.consume();
+            return;
         } else if (event.getCode() == KeyCode.ESCAPE) {
             scoreStateManager.clearSelection();
             if (modeManager.isInsertMode()) { modeManager.toggleInsertMode(); }
             event.consume();
+            return;
         } else if (modeManager.isInsertMode()) {
             if (event.getCode() == KeyCode.LEFT) {
                 scoreNavigator.moveCursorPrev();
                 event.consume();
+                return;
             } else if (event.getCode() == KeyCode.RIGHT) {
                 scoreNavigator.moveCursorNext();
                 event.consume();
+                return;
             }
         }
 
@@ -54,22 +58,24 @@ public class ShortcutHandler {
         };
 
         if (targetType != null) {
-            Selectable selected = scoreStateManager.getSelectedItem();
-            NoteRestElement currentNRE = null;
-            if (selected instanceof NoteLayout nl) {
-                currentNRE = nl.getNote();
-            } else if (selected instanceof RestLayout rl) {
-                currentNRE = rl.getRest();
-            }
+            if (modeManager.isInsertMode()) {
+                modeManager.setCurrentNoteType(targetType);
+            } else {
+                Selectable selected = scoreStateManager.getSelectedItem();
+                NoteRestElement currentNRE = null;
+                if (selected instanceof NoteLayout nl) {
+                    currentNRE = nl.getNote();
+                } else if (selected instanceof RestLayout rl) {
+                    currentNRE = rl.getRest();
+                }
 
-            // GŁÓWNA BLOKADA: Jeśli zaznaczony element JUŻ MA TEN SAM TYP,
-            // natychmiast przerywamy (konsumujemy event) i NIC NIE ROBIMY!
-            if (currentNRE != null && currentNRE.getType() == targetType) {
-                event.consume();
-                return;
-            }
+                if (currentNRE != null && currentNRE.getType() == targetType) {
+                    event.consume();
+                    return;
+                }
 
-            scoreStateManager.changeSelectedElementDuration(targetType);
+                scoreStateManager.changeSelectedElementDuration(targetType);
+            }
             event.consume();
         }
     }

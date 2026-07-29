@@ -193,7 +193,13 @@ public class ToolbarController {
 
 
         button.setOnAction(event -> {
-            stateManager.changeSelectedElementDuration(type);
+            ModeManager modeManager = ModeManager.getInstance();
+
+            if (modeManager.isInsertMode()) {
+                modeManager.setCurrentNoteType(type);
+            } else {
+                stateManager.changeSelectedElementDuration(type);
+            }
             updateDurationButtonStyles(type);
         });
     }
