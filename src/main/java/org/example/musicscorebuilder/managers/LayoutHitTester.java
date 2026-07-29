@@ -256,4 +256,38 @@ public class LayoutHitTester {
         }
         return null;
     }
+
+    public static Selectable findSelectableForSegmentAndStaff(List<PageLayout> pages, Segment targetSegment, Staff staff, int voice) {
+        if (pages == null || targetSegment == null || staff == null) return null;
+
+        for (PageLayout page : pages) {
+            for (SystemLayout system : page.getSystems()) {
+                for (MeasureLayout measureLayout : system.getMeasures()) {
+                    for (SegmentLayout segLayout : measureLayout.getSegments()) {
+                        if (segLayout.getSegment() == targetSegment) {
+                            for (StaffLayout staffLayout : measureLayout.getStaffs()) {
+                                if (staffLayout.getStaff() == staff) {
+                                    List<ElementLayout> elements = segLayout.getElementsByStaff(staffLayout);
+                                    if (elements != null && !elements.isEmpty()) {
+                                        // 1. Najpierw szukamy elementu przypisanego do wskazanego głosu
+                                        for (ElementLayout el : elements) {
+                                            if (el instanceof NoteLayout nl && nl.getNote().getVoice() == voice) {
+                                                return nl;
+                                            } else if (el instanceof RestLayout rl && rl.getRest().getVoice() == voice) {
+                                                return rl;
+                                            }
+                                        }
+                                        // 2. Fallback: jeśli ten głos jeszcze nie istnieje w nowym segmencie,
+                                        // zwracamy pierwszy dostępny element na tej pięciolinii (Głos 1)
+                                        return elements.get(0);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
 }

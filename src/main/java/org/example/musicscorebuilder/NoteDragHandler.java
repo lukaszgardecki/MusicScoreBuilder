@@ -4,11 +4,14 @@ import javafx.scene.input.MouseEvent;
 import org.example.musicscorebuilder.components.layout.NoteLayout;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
 import org.example.musicscorebuilder.components.layout.Selectable;
+import org.example.musicscorebuilder.components.layout.edit.CursorLayout;
 import org.example.musicscorebuilder.components.layout.edit.GhostNoteLayout;
-import org.example.musicscorebuilder.components.music.Measure;
-import org.example.musicscorebuilder.components.music.Segment;
+import org.example.musicscorebuilder.components.music.*;
+import org.example.musicscorebuilder.components.music.util.MeasureNoteInserter;
 import org.example.musicscorebuilder.components.views.BackgroundView;
+import org.example.musicscorebuilder.managers.LayoutHitTester;
 import org.example.musicscorebuilder.managers.ModeManager;
+import org.example.musicscorebuilder.managers.ScoreNavigator;
 import org.example.musicscorebuilder.managers.ScoreStateManager;
 
 import java.util.function.Function;
@@ -88,9 +91,29 @@ public class NoteDragHandler {
 
         Segment segment = gN.getSegment().getSegment();
         Measure measure = segment.getParent();
+        Staff staff = gN.getStaff().getStaff();
+        Note note = gN.getNote();
 
-        measure.insertNote(segment, gN.getStaff().getStaff(), gN.getNote());
-        ScoreStateManager.getInstance().notifyScoreChanged();
+        // 1. Wstawiamy nutę (dowolny głos) i pobieramy kolejny wolny segment
+        Segment nextSegment = MeasureNoteInserter.insertNote(measure, segment, staff, note);
+
+        // 2. Przeliczamy drzewo układu (Layout)
+        stateManager.notifyScoreChanged();
+
+        // 3. Ustawiamy kursor na nowej pozycji (działa dla głosu 1, 2, 3...)
+        ScoreLayout updatedLayout = layoutProvider.get();
+        if (nextSegment != null && updatedLayout != null) {
+            Selectable targetSelectable = LayoutHitTester.findSelectableForSegmentAndStaff(
+                    updatedLayout.getPages(),
+                    nextSegment,
+                    staff,
+                    note.getVoice()
+            );
+
+            if (targetSelectable != null) {
+                ScoreNavigator.getInstance().setCursorLayout(new CursorLayout(targetSelectable));
+            }
+        }
     }
 
     private void startNoteDragSession(NoteLayout note, MouseEvent event) {
