@@ -4,7 +4,6 @@ import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.music.Leland;
 
 public class BeamSingleLayout implements Selectable {
-    private final Leland fontData;
     private final ScoreStyle style;
     private final NoteLayout parentNote;
     private boolean selected;
@@ -12,9 +11,6 @@ public class BeamSingleLayout implements Selectable {
     public BeamSingleLayout(NoteLayout parentNote) {
         this.parentNote = parentNote;
         this.style = parentNote.getScoreStyle();
-        this.fontData = parentNote.getStem().getDirection() == StemDirection.UP
-                ? Leland.NOTE_FLAG_8TH_UP
-                : Leland.NOTE_FLAG_8TH_DOWN;
     }
 
     @Override public boolean isSelected() { return selected; }
@@ -48,17 +44,22 @@ public class BeamSingleLayout implements Selectable {
 
     public double getX() { return parentNote.getStem().getX(); }
     public double getY() { return parentNote.getStem().getEndY(); }
-    public double getBoxY() {return parentNote.getStem().getDirection() == StemDirection.UP ? getY() : getY() - getHeight(); }
+    public double getBoxY() { return parentNote.getStem().getDirection() == StemDirection.UP ? getY() : getY() - getHeight(); }
     public double getHeight() {
         double heightDiff = parentNote.getStem().getDirection() == StemDirection.UP
                 ? 0.75 * style.getStaffLineSpacing()
                 : style.getStaffLineSpacing();
         return getFontSize() - heightDiff;
     }
-
-    public double getFontWidth() { return (fontData.getHeight() * fontData.getRatio()) * style.getStaffLineSpacing(); }
+    private Leland getFontData() {
+        if (parentNote.getStem() != null && parentNote.getStem().getDirection() == StemDirection.DOWN) {
+            return Leland.NOTE_FLAG_8TH_DOWN;
+        }
+        return Leland.NOTE_FLAG_8TH_UP;
+    }
+    public double getFontWidth() { return (getFontData().getHeight() * getFontData().getRatio()) * style.getStaffLineSpacing(); }
     public double getFontSize() { return 4 * style.getStaffLineSpacing(); }
-    public String getCode() { return fontData.getCode(); }
+    public String getCode() { return getFontData().getCode(); }
     public ScoreStyle getScoreStyle() { return style; }
     public NoteLayout getParent() { return parentNote; }
 }
