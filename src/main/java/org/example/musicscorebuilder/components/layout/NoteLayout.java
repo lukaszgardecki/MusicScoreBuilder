@@ -27,7 +27,7 @@ public class NoteLayout extends ElementLayout {
         Clef clef = staff.getStaff().getDefaultClef();
         this.y = calculateY(clef) + staff.getY();
         this.stem = note.getType() == NoteType.WHOLE ? null : new StemLayout(this);
-        this.singleBeam = note.isBeamed() ? null : note.getType() == NoteType.EIGHTH ? new BeamSingleLayout(this) : null;
+        this.singleBeam = !note.isBeamed() && note.getType().hasFlag() ? new BeamSingleLayout(this) : null;
     }
 
     public void updatePitchFromY(double newY) {

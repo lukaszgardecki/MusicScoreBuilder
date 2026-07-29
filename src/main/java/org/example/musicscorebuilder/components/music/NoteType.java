@@ -30,6 +30,7 @@ public enum NoteType {
 
     public int getTicks() { return ticks; }
     public boolean isEighth() { return this == EIGHTH; }
+    public boolean hasFlag() { return List.of(EIGHTH, SIXTEENTH, THIRTY_SECOND).contains(this); }
     public boolean isHalf() { return this == HALF; }
     public boolean isBlack() { return  this != HALF && this != WHOLE; }
     public static NoteType getRandom() { return VALUES[ThreadLocalRandom.current().nextInt(VALUES.length)]; }

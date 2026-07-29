@@ -52,10 +52,15 @@ public class BeamSingleLayout implements Selectable {
         return getFontSize() - heightDiff;
     }
     private Leland getFontData() {
-        if (parentNote.getStem() != null && parentNote.getStem().getDirection() == StemDirection.DOWN) {
-            return Leland.NOTE_FLAG_8TH_DOWN;
-        }
-        return Leland.NOTE_FLAG_8TH_UP;
+        boolean isDown = parentNote.getStem() != null
+                && parentNote.getStem().getDirection() == StemDirection.DOWN;
+
+        return switch (parentNote.getNote().getType()) {
+            case EIGHTH -> isDown ? Leland.NOTE_FLAG_8TH_DOWN : Leland.NOTE_FLAG_8TH_UP;
+            case SIXTEENTH -> isDown ? Leland.NOTE_FLAG_16TH_DOWN : Leland.NOTE_FLAG_16TH_UP;
+            case THIRTY_SECOND -> isDown ? Leland.NOTE_FLAG_32ND_DOWN : Leland.NOTE_FLAG_32ND_UP;
+            default -> throw new IllegalArgumentException("Brak flagi dla wartości: " + parentNote.getNote().getType());
+        };
     }
     public double getFontWidth() { return (getFontData().getHeight() * getFontData().getRatio()) * style.getStaffLineSpacing(); }
     public double getFontSize() { return 4 * style.getStaffLineSpacing(); }

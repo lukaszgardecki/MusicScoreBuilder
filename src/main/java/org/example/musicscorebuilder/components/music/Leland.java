@@ -27,8 +27,13 @@ public enum Leland {
     NOTE_HEAD_WHOLE("\uE0A2", 1.492, 0.544, 0.0, -0.536),
     NOTE_HEAD_HALF("\uE0A3", 1.3, 0.528, 0.0, -0.532),
     NOTE_HEAD_BLACK("\uE0A4", 1.3, 0.528, 0.0, -0.532),
+
     NOTE_FLAG_8TH_UP("\uE240", 1.157, 0.048, 0.001, -3.268),
     NOTE_FLAG_8TH_DOWN("\uE241", 1.235, 3.268, -0.0, -0.048),
+    NOTE_FLAG_16TH_UP("\uE242", 1.116, 0.049, -0.0, -3.281),
+    NOTE_FLAG_16TH_DOWN("\uE243", 1.235, 3.213, -0.0, -0.104),
+    NOTE_FLAG_32ND_UP("\uE244", 1.117, 0.745, 0.0, -3.285),
+    NOTE_FLAG_32ND_DOWN("\uE245", 1.235, 3.214, -0.0, -0.863),
 
     REST_WHOLE("\uE4E3", 1.3, 0.02, 0.0, -0.524),
     REST_HALF("\uE4E4", 1.3, 0.528, 0.0, -0.016),
