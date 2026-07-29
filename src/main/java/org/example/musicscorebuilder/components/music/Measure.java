@@ -1,6 +1,7 @@
 package org.example.musicscorebuilder.components.music;
 
 import org.example.musicscorebuilder.components.music.util.MeasureDurationEditor;
+import org.example.musicscorebuilder.components.music.util.MeasureNoteInserter;
 import org.example.musicscorebuilder.components.music.util.MeasureTimeSignatureAdjuster;
 
 import java.util.ArrayList;
@@ -58,30 +59,7 @@ public class Measure {
     }
 
     public void insertNote(Segment targetSegment, Staff staff, Note newNote) {
-        if (targetSegment.getType() != SegmentType.NOTEREST) return;
-
-        int targetIndex = segments.indexOf(targetSegment);
-        if (targetIndex == -1) return;
-
-        int noteTicks = newNote.getType().getTicks();
-        int segmentTicks = targetSegment.getDuration();
-
-        while (segmentTicks > noteTicks) {
-            int halfTicks = segmentTicks / 2;
-
-            Segment secondHalf = new Segment(SegmentType.NOTEREST, this);
-
-            for (Staff s : staves) {
-                secondHalf.addElement(s, new Rest(newNote.getVoice(), findNoteTypeByTicks(halfTicks), this));
-            }
-
-            segments.add(targetIndex + 1, secondHalf);
-            segmentTicks = halfTicks;
-        }
-        targetSegment.insertNote(staff, newNote);
-
-        updateResolutionFromSegments();
-        setDirty(true);
+        MeasureNoteInserter.insertNote(this, targetSegment, staff, newNote);
     }
 
     public void changeElementDuration(Segment targetSegment, Staff staff, NoteRestElement elementToChange, NoteType newType) {

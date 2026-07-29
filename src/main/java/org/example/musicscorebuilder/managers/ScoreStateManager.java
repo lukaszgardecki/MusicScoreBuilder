@@ -157,7 +157,7 @@ public class ScoreStateManager {
             }
         };
 
-        MeasureDurationEditor.changeElementDuration(measure, targetSegment, staff, elementToChange, type);
+        measure.changeElementDuration(targetSegment, staff, elementToChange, type);
         notifyScoreChanged();
     }
 }
