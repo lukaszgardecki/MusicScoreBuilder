@@ -7,7 +7,7 @@ import org.example.musicscorebuilder.components.music.BeamType;
 
 import java.util.*;
 
-public class BeamBuilder {
+public class GroupBeamBuilder {
     private final List<NoteLayout> notesToProcess = new ArrayList<>();
 
     public void add(NoteLayout noteLayout) {

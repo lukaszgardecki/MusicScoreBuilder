@@ -1,7 +1,7 @@
 package org.example.musicscorebuilder.components.layout.engine;
 
 import org.example.musicscorebuilder.components.layout.*;
-import org.example.musicscorebuilder.components.layout.util.BeamBuilder;
+import org.example.musicscorebuilder.components.layout.util.GroupBeamBuilder;
 import org.example.musicscorebuilder.components.layout.util.SystemJustifier;
 import org.example.musicscorebuilder.components.music.*;
 
@@ -82,7 +82,7 @@ public class LayoutEngine {
 
     private MeasureLayout createMeasureLayout(Measure measure, SystemLayout systemLayout) {
         MeasureLayout measureLayout = new MeasureLayout(measure, systemLayout.getWidth(), style);
-        BeamBuilder beamBuilder = new BeamBuilder();
+        GroupBeamBuilder groupBeamBuilder = new GroupBeamBuilder();
 
         for (Staff staff : measure.getStaves()) {
             measureLayout.add(new StaffLayout(staff, measureLayout, style));
@@ -97,7 +97,7 @@ public class LayoutEngine {
                     } else if (element instanceof Note note) {
                         NoteLayout noteLayout = new NoteLayout(note, staff, segmentLayout);
                         segmentLayout.addByStaff(staff, noteLayout);
-                        if (note.isBeamed()) beamBuilder.add(noteLayout);
+                        if (note.isBeamed()) groupBeamBuilder.add(noteLayout);
                     } else if (element instanceof Rest rest) {
                         RestLayout restLayout = new RestLayout(rest, staff, segmentLayout);
                         segmentLayout.addByStaff(staff, restLayout);
@@ -116,7 +116,7 @@ public class LayoutEngine {
         }
         measureLayout.add(endBarlineSegLayout);
 
-        measureLayout.setBeamGroups(beamBuilder.build());
+        measureLayout.setBeamGroups(groupBeamBuilder.build());
         return measureLayout;
     }
 

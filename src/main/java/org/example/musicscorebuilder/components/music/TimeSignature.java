@@ -7,6 +7,13 @@ public class TimeSignature extends Element {
     private int beatType;
     private Type type;
 
+    public TimeSignature(int beat, int beatType, Type type, Measure parent) {
+        super(parent);
+        this.beat = beat;
+        this.beatType = beatType;
+        this.type = type;
+    }
+
     public TimeSignature(int beat, int beatType, Measure parent) {
         super(parent);
         this.beat = beat;
@@ -29,8 +36,6 @@ public class TimeSignature extends Element {
     }
 
     public int getTotalTicks() {
-        // Bazujemy na standardowej rozdzielczości, gdzie ćwierćnuta = 960 ticków
-        // Wzór: (beat * (3840 / beatType))
         return beat * (3840 / beatType);
     }
 }

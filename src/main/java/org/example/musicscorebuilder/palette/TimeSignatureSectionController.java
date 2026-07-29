@@ -44,11 +44,7 @@ public class TimeSignatureSectionController extends AbstractPaletteSectionContro
     @Override
     protected Node createButtonGraphic(PreDefinedTimeSignature sig) {
         SegmentLayout mockParent = new SegmentLayout(SegmentType.TIME_SIG, mockMeasureLayout);
-        TimeSignature mockTimeSig = new TimeSignature(sig.getBeat(), sig.getBeatType(), mockMeasure);
-        if (!sig.isFractional()) {
-            TimeSignature.Type tsType = (sig == PreDefinedTimeSignature.COMMON) ? TimeSignature.Type.COMMON : TimeSignature.Type.CUT;
-            mockTimeSig.update(sig.getBeat(), sig.getBeatType(), tsType);
-        }
+        TimeSignature mockTimeSig = new TimeSignature(sig.getBeat(), sig.getBeatType(), sig.getType(), mockMeasure);
         TimeSigLayout mockLayout = new TimeSigLayout(mockTimeSig, staffLayout, mockParent);
 
         Canvas canvas = createBaseCanvas(true);

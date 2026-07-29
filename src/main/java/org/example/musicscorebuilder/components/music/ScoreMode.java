@@ -34,7 +34,12 @@ public class ScoreMode {
             measure.setKeySignature(lastMeasure.getKeySignature());
 
             TimeSignature lastTimeSig = lastMeasure.getTimeSignature();
-            measure.setTimeSignature(new TimeSignature(lastTimeSig.getBeat(), lastTimeSig.getBeatType(), measure));
+            measure.setTimeSignature(new TimeSignature(
+                    lastTimeSig.getBeat(),
+                    lastTimeSig.getBeatType(),
+                    lastTimeSig.getType(),
+                    measure
+            ));
 
             measure.setBarlineStyle(lastMeasure.getBarlineStyle());
             lastMeasure.setBarlineStyle(BarlineStyle.SINGLE);
@@ -60,8 +65,12 @@ public class ScoreMode {
         if (measures.isEmpty()) return;
 
         measures.forEach(m -> {
-            TimeSignature newTimeSig = new TimeSignature(timeSig.getBeat(), timeSig.getBeatType(), m);
-            m.setTimeSignature(newTimeSig);
+            m.setTimeSignature(new TimeSignature(
+                    timeSig.getBeat(),
+                    timeSig.getBeatType(),
+                    timeSig.getType(),
+                    m
+            ));
         });
     }
 
