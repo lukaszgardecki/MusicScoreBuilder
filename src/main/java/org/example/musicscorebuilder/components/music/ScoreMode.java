@@ -27,20 +27,21 @@ public class ScoreMode {
 
     public void appendMeasure() {
         Measure measure = new Measure(staves);
-//        int targetSegments = FakeMeasureNotesGenerator.getMeasureCapacityInSegments(timeSignature);
-//        FakeMeasureNotesGenerator.fillMeasureWithTwoVoices(measure, targetSegments);
-
-        Segment seg = new Segment(SegmentType.NOTEREST, measure);
-        seg.addElement(staves.getFirst(), new Rest(1, NoteType.WHOLE, measure));
-        measure.getSegments().add(seg);
 
         if (!measures.isEmpty()) {
             Measure lastMeasure = measures.getLast();
             measure.setKeySignature(lastMeasure.getKeySignature());
-            measure.setTimeSignature(lastMeasure.getTimeSignature());
+
+            TimeSignature lastTimeSig = lastMeasure.getTimeSignature();
+            measure.setTimeSignature(new TimeSignature(lastTimeSig.getBeat(), lastTimeSig.getBeatType(), measure));
+
             measure.setBarlineStyle(lastMeasure.getBarlineStyle());
             lastMeasure.setBarlineStyle(BarlineStyle.SINGLE);
+        } else {
+            // Pierwszy takt buduje segmenty zgodnie ze swoim domyślnym metrum (4/4 -> 4 segmenty)
+            measure.adjustSegmentsToTimeSignature();
         }
+
         measures.add(measure);
     }
 
@@ -58,40 +59,10 @@ public class ScoreMode {
     public void setTimeSignature(PreDefinedTimeSignature timeSig) {
         if (measures.isEmpty()) return;
 
-        int newBeat = timeSig.getBeat();
-
         measures.forEach(m -> {
-            TimeSignature timeSignature = m.getTimeSignature();
-            timeSignature.update(timeSig.getBeat(), timeSig.getBeatType(), timeSig.getType());
-
-            List<Segment> segments = m.getSegments();
-
-            long noteRestCount = segments.stream()
-                    .filter(s -> s.getType() == SegmentType.NOTEREST)
-                    .count();
-
-            if (noteRestCount > newBeat) {
-                int diff = (int) (noteRestCount - newBeat);
-                for (int i = 0; i < diff; i++) {
-                    for (int idx = segments.size() - 1; idx >= 0; idx--) {
-                        if (segments.get(idx).getType() == SegmentType.NOTEREST) {
-                            segments.remove(idx);
-                            break;
-                        }
-                    }
-                }
-            } else if (noteRestCount < newBeat) {
-                int diff = (int) (newBeat - noteRestCount);
-                addSegments(diff, m);
-            }
-            m.setDirty(true);
+            TimeSignature newTimeSig = new TimeSignature(timeSig.getBeat(), timeSig.getBeatType(), m);
+            m.setTimeSignature(newTimeSig);
         });
-    }
-
-    private void addSegments(int count, Measure measure) {
-        for (int i = 0; i < count; i++) {
-            measure.addChordRestSegmentAtEnd();
-        }
     }
 
     private void addDefaultStaves() {

@@ -11,9 +11,6 @@ public class Measure {
     private final List<Segment> segments = new ArrayList<>();
     private boolean dirty = true;
 
-    // =========================================================
-    // AKTUALNA ROZDZIELCZOŚĆ TAKTU – POBIERANA BEZPOŚREDNIO Z SEGMENTÓW
-    // =========================================================
     private int currentResolutionTicks;
 
     public Measure(List<Staff> staves) {
@@ -26,9 +23,6 @@ public class Measure {
         this.currentResolutionTicks = NoteType.WHOLE.getTicks();
     }
 
-    // =========================================================
-    // POBIERAMY INFO BEZPOŚREDNIO Z METOD SEGMENTU (ZAMIAST PĘTLI I LICZENIA)
-    // =========================================================
     public void updateResolutionFromSegments() {
         if (segments.isEmpty()) {
             if (timeSignature != null) {
@@ -39,12 +33,11 @@ public class Measure {
             return;
         }
 
-        // Pobieramy gotową informację o czasie trwania bezpośrednio z każdego segmentu
         int minSegmentDuration = Integer.MAX_VALUE;
 
         for (Segment seg : segments) {
             if (seg.getType() == SegmentType.NOTEREST) {
-                int segDuration = seg.getDuration(); // Pobieramy info bezpośrednio z segmentu!
+                int segDuration = seg.getDuration();
                 if (segDuration > 0 && segDuration < minSegmentDuration) {
                     minSegmentDuration = segDuration;
                 }
@@ -76,7 +69,9 @@ public class Measure {
 
             Segment secondHalf = new Segment(SegmentType.NOTEREST, this);
 
-            secondHalf.addElement(staff, new Rest(newNote.getVoice(), NoteType.fromTicks(halfTicks), this));
+            for (Staff s : staves) {
+                secondHalf.addElement(s, new Rest(newNote.getVoice(), findNoteTypeByTicks(halfTicks), this));
+            }
 
             segments.add(targetIndex + 1, secondHalf);
             segmentTicks = halfTicks;
@@ -94,6 +89,79 @@ public class Measure {
         setDirty(true);
     }
 
+
+
+    /**
+     * Dopasowuje segmenty do metrum taktu:
+     * 1. Zachowuje istniejące segmenty, które mieszczą się w limicie tików.
+     * 2. Brakujące tiki dopełnia NAJWIĘKSZYMI możliwymi pauzami (chciwie: WHOLE -> HALF -> QUARTER ...).
+     */
+    public void adjustSegmentsToTimeSignature() {
+        if (timeSignature == null) return;
+
+        int targetTicks = timeSignature.getTotalTicks();
+        int currentTicks = 0;
+
+        List<Segment> validSegments = new ArrayList<>();
+
+        // 1. Zostawiamy istniejące segmenty, dopóki mieszczą się w targetTicks
+        for (Segment seg : segments) {
+            int segTicks = seg.getDuration();
+            if (currentTicks + segTicks <= targetTicks) {
+                validSegments.add(seg);
+                currentTicks += segTicks;
+            } else {
+                break; // Nadmiarowe segmenty przekraczające limit są odrzucane
+            }
+        }
+
+        segments.clear();
+        segments.addAll(validSegments);
+
+        // 2. Wypełniamy pozostałe miejsce największą pasującą pauzą
+        int remainingTicks = targetTicks - currentTicks;
+
+        while (remainingTicks > 0) {
+            NoteType fit = findLargestFittingNoteType(remainingTicks);
+            if (fit == null) break;
+
+            Segment fillSeg = new Segment(SegmentType.NOTEREST, this);
+            for (Staff staff : staves) {
+                fillSeg.addElement(staff, new Rest(1, fit, this));
+            }
+            segments.add(fillSeg);
+
+            remainingTicks -= fit.getTicks();
+        }
+    }
+
+    /**
+     * Znajduje największy NoteType, który mieści się w podanej liczbie tików.
+     */
+    private NoteType findLargestFittingNoteType(int remainingTicks) {
+        NoteType best = null;
+        for (NoteType type : NoteType.values()) {
+            if (type.getTicks() <= remainingTicks) {
+                if (best == null || type.getTicks() > best.getTicks()) {
+                    best = type;
+                }
+            }
+        }
+        return best;
+    }
+
+    /**
+     * Pomocnicze pobieranie NoteType po tikach dla podziałów w insertNote.
+     */
+    private NoteType findNoteTypeByTicks(int ticks) {
+        for (NoteType type : NoteType.values()) {
+            if (type.getTicks() == ticks) {
+                return type;
+            }
+        }
+        return findLargestFittingNoteType(ticks);
+    }
+
     public List<Staff> getStaves() { return staves; }
     public List<Segment> getSegments() { return segments; }
     public Barline getRightBarline() { return rightBarline; }
@@ -107,29 +175,6 @@ public class Measure {
                 .orElse(0);
     }
 
-    public void addChordRestSegmentAtEnd() {
-        Segment seg = new Segment(SegmentType.NOTEREST, this);
-
-        var staff1 = staves.get(0);
-        seg.addElement(staff1, new Note(1, PitchStep.C, 0, 4, NoteType.getRandom(), BeamType.NONE, this));
-        seg.addElement(staff1, new Note(1, PitchStep.G, 0, 4, NoteType.getRandom(), BeamType.NONE, this));
-
-        if (staves.size() == 2) {
-            var staff2 = staves.get(1);
-            seg.addElement(staff2, new Note(1, PitchStep.A, 0, 3, NoteType.getRandom(), BeamType.NONE, this));
-            seg.addElement(staff2, new Note(1, PitchStep.D, 0, 3, NoteType.getRandom(), BeamType.NONE, this));
-        }
-
-        if (segments.isEmpty()) {
-            segments.add(seg);
-        } else {
-            segments.add(segments.size() - 1, seg);
-        }
-
-        updateResolutionFromSegments();
-        setDirty(true);
-    }
-
     public boolean isDirty() { return dirty; }
     public void setDirty(boolean dirty) { this.dirty = dirty; }
     public void setBarlineStyle(BarlineStyle barlineStyle) {
@@ -139,9 +184,11 @@ public class Measure {
 
     public void setTimeSignature(TimeSignature timeSignature) {
         this.timeSignature = timeSignature;
+        adjustSegmentsToTimeSignature();
         updateResolutionFromSegments();
         setDirty(true);
     }
+
     public void setKeySignature(KeySignature keySignature) {
         this.keySignature = keySignature;
         setDirty(true);

@@ -5,12 +5,12 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public enum NoteType {
-    WHOLE(1920),
-    HALF(960),
-    QUARTER(480),
-    EIGHTH(240),
-    SIXTEENTH(120),
-    THIRTY_SECOND(60);
+    THIRTY_SECOND(120),
+    SIXTEENTH(240),
+    EIGHTH(480),
+    QUARTER(960),
+    HALF(1920),
+    WHOLE(3840);
 
     private static final NoteType[] VALUES = values();
     private final int ticks;
