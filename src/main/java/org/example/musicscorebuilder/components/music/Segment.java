@@ -98,6 +98,11 @@ public class Segment {
         return null;
     }
 
+    public boolean isEmpty() {
+        return staffElements.values().stream().allMatch(list -> list == null || list.isEmpty());
+    }
+
+
     public void setNext(Segment next) { this.next = next; }
     public void setPrev(Segment prev) { this.prev = prev; }
 }
