@@ -1,4 +1,6 @@
-package org.example.musicscorebuilder.components.music;
+package org.example.musicscorebuilder.components.music.util;
+
+import org.example.musicscorebuilder.components.music.*;
 
 public class MeasureDurationEditor {
 

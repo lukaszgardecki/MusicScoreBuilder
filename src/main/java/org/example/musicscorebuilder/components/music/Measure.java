@@ -1,5 +1,8 @@
 package org.example.musicscorebuilder.components.music;
 
+import org.example.musicscorebuilder.components.music.util.MeasureDurationEditor;
+import org.example.musicscorebuilder.components.music.util.MeasureTimeSignatureAdjuster;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +13,6 @@ public class Measure {
     private final List<Staff> staves;
     private final List<Segment> segments = new ArrayList<>();
     private boolean dirty = true;
-
     private int currentResolutionTicks;
 
     public Measure(List<Staff> staves) {
@@ -89,79 +91,6 @@ public class Measure {
         setDirty(true);
     }
 
-
-
-    /**
-     * Dopasowuje segmenty do metrum taktu:
-     * 1. Zachowuje istniejące segmenty, które mieszczą się w limicie tików.
-     * 2. Brakujące tiki dopełnia NAJWIĘKSZYMI możliwymi pauzami (chciwie: WHOLE -> HALF -> QUARTER ...).
-     */
-    public void adjustSegmentsToTimeSignature() {
-        if (timeSignature == null) return;
-
-        int targetTicks = timeSignature.getTotalTicks();
-        int currentTicks = 0;
-
-        List<Segment> validSegments = new ArrayList<>();
-
-        // 1. Zostawiamy istniejące segmenty, dopóki mieszczą się w targetTicks
-        for (Segment seg : segments) {
-            int segTicks = seg.getDuration();
-            if (currentTicks + segTicks <= targetTicks) {
-                validSegments.add(seg);
-                currentTicks += segTicks;
-            } else {
-                break; // Nadmiarowe segmenty przekraczające limit są odrzucane
-            }
-        }
-
-        segments.clear();
-        segments.addAll(validSegments);
-
-        // 2. Wypełniamy pozostałe miejsce największą pasującą pauzą
-        int remainingTicks = targetTicks - currentTicks;
-
-        while (remainingTicks > 0) {
-            NoteType fit = findLargestFittingNoteType(remainingTicks);
-            if (fit == null) break;
-
-            Segment fillSeg = new Segment(SegmentType.NOTEREST, this);
-            for (Staff staff : staves) {
-                fillSeg.addElement(staff, new Rest(1, fit, this));
-            }
-            segments.add(fillSeg);
-
-            remainingTicks -= fit.getTicks();
-        }
-    }
-
-    /**
-     * Znajduje największy NoteType, który mieści się w podanej liczbie tików.
-     */
-    private NoteType findLargestFittingNoteType(int remainingTicks) {
-        NoteType best = null;
-        for (NoteType type : NoteType.values()) {
-            if (type.getTicks() <= remainingTicks) {
-                if (best == null || type.getTicks() > best.getTicks()) {
-                    best = type;
-                }
-            }
-        }
-        return best;
-    }
-
-    /**
-     * Pomocnicze pobieranie NoteType po tikach dla podziałów w insertNote.
-     */
-    private NoteType findNoteTypeByTicks(int ticks) {
-        for (NoteType type : NoteType.values()) {
-            if (type.getTicks() == ticks) {
-                return type;
-            }
-        }
-        return findLargestFittingNoteType(ticks);
-    }
-
     public List<Staff> getStaves() { return staves; }
     public List<Segment> getSegments() { return segments; }
     public Barline getRightBarline() { return rightBarline; }
@@ -184,7 +113,7 @@ public class Measure {
 
     public void setTimeSignature(TimeSignature timeSignature) {
         this.timeSignature = timeSignature;
-        adjustSegmentsToTimeSignature();
+        MeasureTimeSignatureAdjuster.adjustSegmentsToTimeSignature(this);
         updateResolutionFromSegments();
         setDirty(true);
     }
@@ -192,5 +121,12 @@ public class Measure {
     public void setKeySignature(KeySignature keySignature) {
         this.keySignature = keySignature;
         setDirty(true);
+    }
+
+    private NoteType findNoteTypeByTicks(int ticks) {
+        for (NoteType type : NoteType.values()) {
+            if (type.getTicks() == ticks) return type;
+        }
+        return MeasureTimeSignatureAdjuster.findLargestFittingNoteType(ticks);
     }
 }

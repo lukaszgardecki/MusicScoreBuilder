@@ -2,6 +2,7 @@ package org.example.musicscorebuilder.managers;
 
 import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.music.*;
+import org.example.musicscorebuilder.components.music.util.MeasureDurationEditor;
 
 import java.util.ArrayList;
 import java.util.Collection;

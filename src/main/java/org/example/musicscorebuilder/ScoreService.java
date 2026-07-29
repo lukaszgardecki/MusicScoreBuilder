@@ -1,6 +1,6 @@
 package org.example.musicscorebuilder;
 
-import org.example.musicscorebuilder.components.music.ScoreFactory;
+import org.example.musicscorebuilder.components.music.util.ScoreFactory;
 import org.example.musicscorebuilder.components.music.Score;
 
 public class ScoreService {

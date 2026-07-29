@@ -1,4 +1,8 @@
-package org.example.musicscorebuilder.components.music;
+package org.example.musicscorebuilder.components.music.util;
+
+import org.example.musicscorebuilder.components.music.ModeType;
+import org.example.musicscorebuilder.components.music.Score;
+import org.example.musicscorebuilder.components.music.ScoreMode;
 
 public class ScoreFactory {
     private static final int measuresCount = 32;

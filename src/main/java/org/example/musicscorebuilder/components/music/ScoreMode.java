@@ -1,5 +1,6 @@
 package org.example.musicscorebuilder.components.music;
 
+import org.example.musicscorebuilder.components.music.util.MeasureTimeSignatureAdjuster;
 import org.example.musicscorebuilder.palette.PreDefinedTimeSignature;
 
 import java.util.ArrayList;
@@ -38,8 +39,7 @@ public class ScoreMode {
             measure.setBarlineStyle(lastMeasure.getBarlineStyle());
             lastMeasure.setBarlineStyle(BarlineStyle.SINGLE);
         } else {
-            // Pierwszy takt buduje segmenty zgodnie ze swoim domyślnym metrum (4/4 -> 4 segmenty)
-            measure.adjustSegmentsToTimeSignature();
+            MeasureTimeSignatureAdjuster.adjustSegmentsToTimeSignature(measure);
         }
 
         measures.add(measure);
