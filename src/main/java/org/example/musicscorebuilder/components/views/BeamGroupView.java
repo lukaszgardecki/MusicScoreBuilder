@@ -44,7 +44,7 @@ public class BeamGroupView extends ComponentView {
 
         int maxBeams = 0;
         for (NoteLayout nl : notes) {
-            maxBeams = Math.max(maxBeams, getBeamCount(nl.getNote().getType()));
+            maxBeams = Math.max(maxBeams, nl.getNote().getType().getBeamCount());
         }
 
         gc.setFill(Color.web(style.getSelectColor(beamGroup)));
@@ -95,22 +95,12 @@ public class BeamGroupView extends ComponentView {
         }
     }
 
-    private int getBeamCount(NoteType type) {
-        if (type == null) return 0;
-        return switch (type) {
-            case EIGHTH -> 1;
-            case SIXTEENTH -> 2;
-            case THIRTY_SECOND -> 3;
-            default -> 0;
-        };
-    }
-
     private List<List<NoteLayout>> findSubGroupsForLevel(List<NoteLayout> notes, int level) {
         List<List<NoteLayout>> result = new ArrayList<>();
         List<NoteLayout> currentSubGroup = new ArrayList<>();
 
         for (NoteLayout nl : notes) {
-            if (getBeamCount(nl.getNote().getType()) > level) {
+            if (nl.getNote().getType().getBeamCount() > level) {
                 currentSubGroup.add(nl);
             } else {
                 if (!currentSubGroup.isEmpty()) {

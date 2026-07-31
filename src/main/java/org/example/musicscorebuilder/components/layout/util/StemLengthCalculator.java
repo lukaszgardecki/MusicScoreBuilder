@@ -3,6 +3,7 @@ package org.example.musicscorebuilder.components.layout.util;
 import org.example.musicscorebuilder.components.layout.BeamGroupLayout;
 import org.example.musicscorebuilder.components.layout.NoteLayout;
 import org.example.musicscorebuilder.components.layout.StemDirection;
+import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 
 public final class StemLengthCalculator {
 
@@ -94,18 +95,10 @@ public final class StemLengthCalculator {
         }
 
         double beamYAtNote = calculateBeamYAtNote(parentNote, middleY, spacing);
-        double noteY = parentNote.getY();
-        boolean crossed = (isUp && beamYAtNote > noteY) || (!isUp && beamYAtNote < noteY);
-
-        if (crossed) {
-            return beamYAtNote;
-        }
-
         return beamYAtNote;
     }
 
     private static double calculateBeamedFactor(NoteLayout parentNote, BeamGroupLayout beamGroup, double middleY, double spacing) {
-        var noteStemMinHeight = parentNote.getScoreStyle().getNoteStemMinHeight();
         double beamYAtNoteX = calculateBeamYAtNote(parentNote, middleY, spacing);
         double noteHeadY = parentNote.getY();
         boolean isUp = isStemUp(parentNote);
@@ -113,13 +106,9 @@ public final class StemLengthCalculator {
         double rawPixelLength = calculateRawPixelLength(noteHeadY, beamYAtNoteX, isUp);
         double calculatedFactor = Math.abs(rawPixelLength) / spacing;
 
-        NoteLayout first = beamGroup.getFirstNote();
-        NoteLayout last = beamGroup.getLastNote();
-        if (parentNote == first || parentNote == last) {
-            return Math.max(calculatedFactor, noteStemMinHeight);
-        }
+        double minRequiredFactor = calculateRequiredStemLength(parentNote, spacing) / spacing;
 
-        return calculatedFactor;
+        return Math.max(calculatedFactor, minRequiredFactor);
     }
 
     private static double resolveStemWidth(NoteLayout note) {
@@ -157,24 +146,44 @@ public final class StemLengthCalculator {
 
     private static BeamEndpoints enforceConstraints(NoteLayout first, NoteLayout last, double x1, double y1, double x2, double y2, double middleY, double spacing) {
         boolean firstIsUp = isStemUp(first);
-        var noteStemMinHeight = first.getScoreStyle().getNoteStemMinHeight();
-        double minStemPixels = noteStemMinHeight * spacing;
+        BeamGroupLayout beamGroup = first.getBeamGroup();
+        double shiftNeeded = 0.0;
 
-        double targetY1 = firstIsUp ? first.getY() - minStemPixels : first.getY() + minStemPixels;
-        double shift1 = firstIsUp ? Math.min(0, targetY1 - y1) : Math.max(0, targetY1 - y1);
+        // 1. Sprawdzamy WSZYSTKIE nuty w grupie i wyznaczamy największe potrzebne przesunięcie belki
+        if (beamGroup != null && beamGroup.getNotes() != null) {
+            double stemWidth = resolveStemWidth(first);
 
-        double targetY2 = lastIsUpHelper(last) ? last.getY() - minStemPixels : last.getY() + minStemPixels;
-        double shift2 = lastIsUpHelper(last) ? Math.min(0, targetY2 - y2) : Math.max(0, targetY2 - y2);
+            for (NoteLayout note : beamGroup.getNotes()) {
+                double requiredStem = calculateRequiredStemLength(note, spacing);
+                double noteX = resolveNoteX(note, stemWidth);
+                double currentBeamY = interpolateBeamY(x1, y1, x2, y2, noteX);
 
-        double totalShift = firstIsUp ? Math.min(shift1, shift2) : Math.max(shift1, shift2);
-        y1 += totalShift;
-        y2 += totalShift;
+                if (firstIsUp) {
+                    double targetY = note.getY() - requiredStem;
+                    double shift = targetY - currentBeamY;
+                    if (shift < shiftNeeded) {
+                        shiftNeeded = shift; // Przesunięcie w górę (ujemne Y)
+                    }
+                } else {
+                    double targetY = note.getY() + requiredStem;
+                    double shift = targetY - currentBeamY;
+                    if (shift > shiftNeeded) {
+                        shiftNeeded = shift; // Przesunięcie w dół (dodatnie Y)
+                    }
+                }
+            }
+        }
 
+        y1 += shiftNeeded;
+        y2 += shiftNeeded;
+
+        // 2. Korekta dla pojedynczego głosu przekraczającego środkową linię
         int activeVoices = first.getParent().getVoiceCountForStaff(first.getStaff());
-        if (activeVoices == 1) {
-            for (NoteLayout note : first.getBeamGroup().getNotes()) {
+        if (activeVoices == 1 && beamGroup != null && beamGroup.getNotes() != null) {
+            double stemWidth = resolveStemWidth(first);
+            for (NoteLayout note : beamGroup.getNotes()) {
                 boolean noteIsUp = isStemUp(note);
-                double noteX = resolveNoteX(note, resolveStemWidth(note));
+                double noteX = resolveNoteX(note, stemWidth);
                 double currentBeamY = interpolateBeamY(x1, y1, x2, y2, noteX);
 
                 if (noteIsUp && currentBeamY > middleY) {
@@ -194,8 +203,25 @@ public final class StemLengthCalculator {
         return new BeamEndpoints(y1, y2);
     }
 
-    private static boolean lastIsUpHelper(NoteLayout last) {
-        return isStemUp(last);
+    /**
+     * Oblicza minimalną wymaganą długość laseczki w pikselach dla konkretnej nuty,
+     * uwzględniając ilość belek (np. 16-tka ma 2 belki, 32-jka ma 3 belki).
+     */
+    private static double calculateRequiredStemLength(NoteLayout note, double spacing) {
+        ScoreStyle style = note.getScoreStyle();
+        double minStemPixels = style.getNoteStemMinHeight() * spacing;
+
+        int beamCount = note.getNote().getType().getBeamCount();
+        if (beamCount > 1) {
+            double beamThickness = style.getNoteBeamThickness() * spacing;
+            double beamGap = style.getNoteBeamGap() * spacing;
+            double beamStep = beamThickness + beamGap;
+
+            // Każda dodatkowa belka wymaga zwiększenia odległości od główki o `beamStep`
+            minStemPixels += (beamCount - 1) * beamStep;
+        }
+
+        return minStemPixels;
     }
 
     private static double interpolateBeamY(double x1, double y1, double x2, double y2, double targetX) {
