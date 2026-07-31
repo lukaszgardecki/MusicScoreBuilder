@@ -36,4 +36,7 @@ public class Note extends Element implements NoteRestElement {
         this.type = type;
         this.duration = type.getTicks();
     }
+    public void setBeamType(BeamType beam) {
+        this.beam = beam;
+    }
 }

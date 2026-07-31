@@ -38,12 +38,10 @@ public class MeasureNoteInserter {
         // 4. Wstawiamy nową nutę do docelowego segmentu
         actualTarget.insertNote(staff, newNote);
 
-        // 5. Regeneracja pauz we wszystkich głosach
+        // 5. Regeneracja pauz oraz aktualizacja Wiązań (Beams) we wszystkich głosach
         cleanAndFillVoiceGaps(measure);
 
-        measure.updateResolutionFromSegments();
         measure.setDirty(true);
-
         return findNextFreeSegment(measure, targetEndTick);
     }
 
@@ -80,6 +78,89 @@ public class MeasureNoteInserter {
                     // Głos aktywny -> czyszczenie pauz i odbudowa luki po luce
                     removeAllRestsInVoice(measure, staff, voice);
                     fillGapsForActiveVoice(measure, staff, voice);
+                }
+            }
+        }
+
+        updateBeams(measure);
+    }
+
+    private static void updateBeams(Measure measure) {
+        for (Staff staff : measure.getStaves()) {
+            for (int voice = 1; voice <= 4; voice++) {
+                updateBeamsForVoice(measure, staff, voice);
+            }
+        }
+    }
+
+    private static void updateBeamsForVoice(Measure measure, Staff staff, int voice) {
+        List<Note> currentGroup = new ArrayList<>();
+        int beatTicks = getBeatUnitTicks(measure.getTimeSignature());
+        int currentTick = 0;
+
+        for (Segment seg : measure.getSegments()) {
+            if (!seg.isNoteRest()) {
+                currentTick += seg.getDuration();
+                continue;
+            }
+
+            List<NoteRestElement> nres = seg.getNoteRestByStaffAndVoice(staff, voice);
+            for (NoteRestElement nre : nres) {
+                if (nre instanceof Note note && isBeamable(note)) {
+                    // Jeśli nuta rozpoczyna się na granicy miary taktu (i nie jest to pierwsza nuta w takcie),
+                    // zamykamy poprzednią grupę i rozpoczynamy nową.
+                    if (currentTick > 0 && currentTick % beatTicks == 0 && !currentGroup.isEmpty()) {
+                        applyBeamTypeToGroup(currentGroup);
+                        currentGroup.clear();
+                    }
+                    currentGroup.add(note);
+                } else {
+                    // Cisza (pauza) lub nuta nie-belkowalna (ćwierćnuta/półnuta/cała) zamyka grupę
+                    applyBeamTypeToGroup(currentGroup);
+                    currentGroup.clear();
+
+                    if (nre instanceof Note nonBeamableNote) {
+                        nonBeamableNote.setBeamType(BeamType.NONE);
+                    }
+                }
+            }
+            currentTick += seg.getDuration();
+        }
+
+        applyBeamTypeToGroup(currentGroup);
+    }
+
+    private static int getBeatUnitTicks(TimeSignature ts) {
+        if (ts == null) return NoteType.QUARTER.getTicks();
+
+        int num = ts.getBeat();
+        int den = ts.getBeatType();
+
+        return switch (den) {
+            case 8 -> (num % 3 == 0) ? 3 * NoteType.EIGHTH.getTicks() : NoteType.EIGHTH.getTicks();
+            case 4 -> NoteType.QUARTER.getTicks();
+            case 2 -> NoteType.HALF.getTicks();
+            default -> NoteType.QUARTER.getTicks();
+        };
+    }
+
+    private static boolean isBeamable(Note note) {
+        return note != null && note.getType() != null && note.getType().hasFlag();
+    }
+
+    private static void applyBeamTypeToGroup(List<Note> group) {
+        if (group.isEmpty()) return;
+
+        if (group.size() == 1) {
+            group.getFirst().setBeamType(BeamType.NONE);
+        } else {
+            for (int i = 0; i < group.size(); i++) {
+                if (i == 0) {
+                    group.get(i).setBeamType(BeamType.BEGIN);
+                } else if (i == group.size() - 1) {
+                    group.get(i).setBeamType(BeamType.END);
+                } else {
+                    group.get(i).setBeamType(BeamType.CONTINUE);
                 }
             }
         }

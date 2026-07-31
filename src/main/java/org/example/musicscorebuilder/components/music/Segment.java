@@ -9,7 +9,6 @@ public class Segment {
     private final SegmentType type;
     private final Map<Staff, List<Element>> staffElements = new HashMap<>();
     private int duration;
-    private int startTick;
 
     public Segment(SegmentType type, Measure parent) {
         this.type = type;
@@ -79,24 +78,8 @@ public class Segment {
 
     public Measure getParent() { return parent; }
     public SegmentType getType() { return type; }
-//    public int getDuration() {
-//        return staffElements.values().stream()
-//                .filter(list -> !list.isEmpty())
-//                .flatMap(List::stream)
-//                .mapToInt(Element::getDuration)
-//                .min()
-//                .orElse(0);
-//    }
-
     public int getDuration() { return duration; }
     public void setDuration(int d) { duration = d; }
-    public int getStartTick() {
-        return startTick;
-    }
-
-    public void setStartTick(int tick) {
-        this.startTick = tick;
-    }
 
     public Segment getNextSameType() {
         Segment current = this.next;

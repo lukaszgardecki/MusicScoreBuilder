@@ -66,7 +66,6 @@ public class MeasureDurationEditor {
                 remaining -= fit.getTicks();
             }
 
-            measure.updateResolutionFromSegments();
             measure.setDirty(true);
             return;
         }
@@ -161,8 +160,6 @@ public class MeasureDurationEditor {
                 }
             }
         }
-
-        measure.updateResolutionFromSegments();
         measure.setDirty(true);
     }
 

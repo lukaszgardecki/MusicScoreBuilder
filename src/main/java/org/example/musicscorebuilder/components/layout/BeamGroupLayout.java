@@ -2,6 +2,7 @@ package org.example.musicscorebuilder.components.layout;
 
 import javafx.scene.shape.Polygon;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
+import org.example.musicscorebuilder.components.music.NoteType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,29 +20,75 @@ public class BeamGroupLayout implements Selectable {
 
         NoteLayout first = getFirstNote();
         NoteLayout last = getLastNote();
-        if (first == null || last == null) return false;
+        if (first == null || last == null || first.getStem() == null || last.getStem() == null) return false;
 
         ScoreStyle style = first.getScoreStyle();
 
         var stemWidth = style.getNoteStemWidth();
-        var halfBeamThickness = 0.5 * style.getNoteBeamThickness();
+        var beamThickness = style.getNoteBeamThickness();
+        var halfBeamThickness = 0.5 * beamThickness;
+        var beamGap = style.getNoteBeamGap();
+        var beamStep = beamThickness + beamGap;
 
-        double firstStemLocalX = (first.getStem().getDirection() == StemDirection.UP) ? first.getBoxWidth() - first.getStem().getWidth() : 0;
-        double startX = first.getParent().getX() + first.getX() + firstStemLocalX;
+        StemDirection stemDir = first.getStem().getDirection();
+        int offsetDirection = (stemDir == StemDirection.UP) ? 1 : -1;
 
-        double lastStemLocalX = (last.getStem().getDirection() == StemDirection.UP) ? last.getBoxWidth() - last.getStem().getWidth() : 0;
-        double endX = last.getParent().getX() + last.getX() + lastStemLocalX + stemWidth;
+        double firstStemLocalX = (stemDir == StemDirection.UP) ? first.getBoxWidth() - first.getStem().getWidth() : 0;
+        double baseStartX = first.getParent().getX() + first.getX() + firstStemLocalX;
 
-        double startY = first.getParent().getY() + first.getStem().getEndY();
-        double endY = last.getParent().getY() + last.getStem().getEndY();
+        double lastStemLocalX = (stemDir == StemDirection.UP) ? last.getBoxWidth() - last.getStem().getWidth() : 0;
+        double baseEndX = last.getParent().getX() + last.getX() + lastStemLocalX + stemWidth;
 
-        Polygon poly = new Polygon(
-                startX, startY - halfBeamThickness,
-                endX, endY - halfBeamThickness,
-                endX, endY + halfBeamThickness,
-                startX, startY + halfBeamThickness
-        );
-        return poly.contains(measureX, measureY);
+        double baseStartY = first.getParent().getY() + first.getStem().getEndY();
+        double baseEndY = last.getParent().getY() + last.getStem().getEndY();
+
+        int maxBeams = 0;
+        for (NoteLayout nl : notes) {
+            maxBeams = Math.max(maxBeams, getBeamCount(nl.getNote().getType()));
+        }
+
+        for (int level = 0; level < maxBeams; level++) {
+            List<List<NoteLayout>> subGroups = findSubGroupsForLevel(notes, level);
+
+            for (List<NoteLayout> subGroup : subGroups) {
+                if (subGroup.isEmpty()) continue;
+
+                NoteLayout subFirst = subGroup.getFirst();
+                NoteLayout subLast = subGroup.getLast();
+
+                double subFirstStemX = (stemDir == StemDirection.UP) ? subFirst.getBoxWidth() - subFirst.getStem().getWidth() : 0;
+                double startX = subFirst.getParent().getX() + subFirst.getX() + subFirstStemX;
+
+                double subLastStemX = (stemDir == StemDirection.UP) ? subLast.getBoxWidth() - subLast.getStem().getWidth() : 0;
+                double endX = subLast.getParent().getX() + subLast.getX() + subLastStemX + stemWidth;
+
+                double levelOffsetY = level * beamStep * offsetDirection;
+
+                if (subGroup.size() == 1) {
+                    double stubLength = style.getNoteBeamStubLength();
+
+                    if (subFirst == first) {
+                        endX = startX + stubLength;
+                    } else {
+                        startX = endX - stubLength;
+                    }
+                }
+
+                double startY = interpolateY(baseStartX, baseStartY, baseEndX, baseEndY, startX) + levelOffsetY;
+                double endY = interpolateY(baseStartX, baseStartY, baseEndX, baseEndY, endX) + levelOffsetY;
+
+                Polygon poly = new Polygon(
+                        startX, startY - halfBeamThickness,
+                        endX, endY - halfBeamThickness,
+                        endX, endY + halfBeamThickness,
+                        startX, startY + halfBeamThickness
+                );
+
+                if (poly.contains(measureX, measureY)) return true;
+            }
+        }
+
+        return false;
     }
     @Override public SegmentLayout getSegment() { return notes.getFirst().getSegment(); }
     @Override public StaffLayout getStaff() { return notes.isEmpty() ? null : notes.getFirst().getStaff(); }
@@ -70,4 +117,40 @@ public class BeamGroupLayout implements Selectable {
 
     public int size() { return notes.size(); }
     public boolean isEmpty() { return notes.isEmpty(); }
+
+    private int getBeamCount(NoteType type) {
+        if (type == null) return 0;
+        return switch (type) {
+            case EIGHTH -> 1;
+            case SIXTEENTH -> 2;
+            case THIRTY_SECOND -> 3;
+            default -> 0;
+        };
+    }
+
+    private List<List<NoteLayout>> findSubGroupsForLevel(List<NoteLayout> notes, int level) {
+        List<List<NoteLayout>> result = new ArrayList<>();
+        List<NoteLayout> currentSubGroup = new ArrayList<>();
+
+        for (NoteLayout nl : notes) {
+            if (getBeamCount(nl.getNote().getType()) > level) {
+                currentSubGroup.add(nl);
+            } else {
+                if (!currentSubGroup.isEmpty()) {
+                    result.add(new ArrayList<>(currentSubGroup));
+                    currentSubGroup.clear();
+                }
+            }
+        }
+        if (!currentSubGroup.isEmpty()) {
+            result.add(currentSubGroup);
+        }
+        return result;
+    }
+
+    private double interpolateY(double x1, double y1, double x2, double y2, double targetX) {
+        if (Math.abs(x2 - x1) < 0.0001) return y1;
+        double t = (targetX - x1) / (x2 - x1);
+        return y1 + t * (y2 - y1);
+    }
 }
