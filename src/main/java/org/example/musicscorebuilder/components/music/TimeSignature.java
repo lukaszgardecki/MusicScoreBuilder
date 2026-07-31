@@ -36,6 +36,11 @@ public class TimeSignature extends Element {
     }
 
     public int getTotalTicks() {
-        return beat * (3840 / beatType);
+        int base = 3840 / beatType;
+
+        if (beatType == 8 && beat % 3 == 0) {
+            return (beat / 3) * (base * 3);
+        }
+        return beat * base;
     }
 }

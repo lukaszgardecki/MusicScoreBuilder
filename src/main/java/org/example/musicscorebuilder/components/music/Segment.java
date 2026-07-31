@@ -71,6 +71,7 @@ public class Segment {
     public SegmentType getType() { return type; }
     public int getDuration() {
         return staffElements.values().stream()
+                .filter(list -> !list.isEmpty())
                 .flatMap(List::stream)
                 .mapToInt(Element::getDuration)
                 .min()
@@ -101,6 +102,7 @@ public class Segment {
     public boolean isEmpty() {
         return staffElements.values().stream().allMatch(list -> list == null || list.isEmpty());
     }
+    public boolean isNoteRest() { return type == SegmentType.NOTEREST; }
 
 
     public void setNext(Segment next) { this.next = next; }
