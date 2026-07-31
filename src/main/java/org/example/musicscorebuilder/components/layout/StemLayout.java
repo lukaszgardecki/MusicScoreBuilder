@@ -85,23 +85,66 @@ public class StemLayout implements Selectable {
 
     public ScoreStyle getScoreStyle() { return style; }
     public NoteLayout getParent()  { return parentNote; }
+
     public StemDirection getDirection() {
         int voice = parentNote.getNote().getVoice();
         int activeVoices = parentNote.getParent().getVoiceCountForStaff(parentNote.getStaff());
 
+        // 1. Wielogłosowość: nieparzyste głosy w górę (UP), parzyste w dół (DOWN)
         if (activeVoices > 1) {
             return (voice % 2 == 1) ? StemDirection.UP : StemDirection.DOWN;
         }
 
-        Clef clef = parentNote.getStaff().getStaff().getDefaultClef();
+        // 2. Jeśli nuta leży w grupie belkowej – spójny kierunek dla całej grupy
+        if (parentNote.getBeamGroup() != null && !parentNote.getBeamGroup().isEmpty()) {
+            return calculateBeamGroupDirection(parentNote.getBeamGroup());
+        }
+
+        // 3. Pojedyncza nuta (bez belki)
+        return calculateSingleNoteDirection(parentNote);
+    }
+
+    private StemDirection calculateSingleNoteDirection(NoteLayout note) {
+        Clef clef = note.getStaff().getStaff().getDefaultClef();
         ClefType clefType = clef.getType();
 
-        int noteStep = parentNote.getNote().getPitch().getAbsoluteDiatonicStep();
+        int noteStep = note.getNote().getPitch().getAbsoluteDiatonicStep();
         int clefMiddleStep = clefType.getDiatonicStep() + 2;
 
-        return (noteStep >= clefMiddleStep)
-                ? StemDirection.DOWN
-                : StemDirection.UP;
+        return (noteStep >= clefMiddleStep) ? StemDirection.DOWN : StemDirection.UP;
+    }
+
+    private StemDirection calculateBeamGroupDirection(BeamGroupLayout beamGroup) {
+        Clef clef = parentNote.getStaff().getStaff().getDefaultClef();
+        ClefType clefType = clef.getType();
+        int clefMiddleStep = clefType.getDiatonicStep() + 2;
+
+        int maxDistAbove = 0;
+        int maxDistBelow = 0;
+        int totalStepOffset = 0;
+
+        for (NoteLayout note : beamGroup.getNotes()) {
+            int noteStep = note.getNote().getPitch().getAbsoluteDiatonicStep();
+            int offset = noteStep - clefMiddleStep;
+
+            totalStepOffset += offset;
+
+            if (offset > 0) {
+                maxDistAbove = Math.max(maxDistAbove, offset);
+            } else if (offset < 0) {
+                maxDistBelow = Math.max(maxDistBelow, Math.abs(offset));
+            }
+        }
+
+        // Zasada nuty najbardziej oddalonej od środka pięciolinii
+        if (maxDistAbove > maxDistBelow) {
+            return StemDirection.DOWN;
+        } else if (maxDistBelow > maxDistAbove) {
+            return StemDirection.UP;
+        }
+
+        // W przypadku remisu decyduje wypadkowa suma pozycji (średnia wysokość)
+        return (totalStepOffset >= 0) ? StemDirection.DOWN : StemDirection.UP;
     }
 
     private double getMiddleLineY() {
