@@ -43,6 +43,7 @@ public class MeasureTimeSignatureAdjuster {
                 for (Staff staff : staves) {
                     fillSeg.addElement(staff, new Rest(1, type, measure));
                 }
+                fillSeg.setDuration(type.getTicks());
                 segments.add(fillSeg);
             }
             return;
@@ -58,6 +59,7 @@ public class MeasureTimeSignatureAdjuster {
             for (Staff staff : staves) {
                 fillSeg.addElement(staff, new Rest(1, fit, measure));
             }
+            fillSeg.setDuration(fit.getTicks());
             segments.add(fillSeg);
 
             remainingTicks -= fit.getTicks();

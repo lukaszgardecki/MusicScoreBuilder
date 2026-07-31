@@ -5,133 +5,196 @@ import org.example.musicscorebuilder.components.music.*;
 import org.example.musicscorebuilder.managers.ScoreStateManager;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class MeasureNoteInserter {
 
     public static Segment insertNote(Measure measure, Segment targetSegment, Staff staff, Note newNote) {
-        if (targetSegment.getType() != SegmentType.NOTEREST) return null;
+        if (targetSegment == null || !targetSegment.isNoteRest()) return null;
 
         int voice = newNote.getVoice();
         int newTicks = newNote.getType().getTicks();
 
-        // 1. Obliczamy punkt startowy oraz całkowity czas taktu oparty w 100% na gridzie
-        int startTick = 0;
-        int totalMeasureTicks = 0;
-//        int totalMeasureTicks = measure.getTimeSignature().getTotalTicks();
-        boolean targetFound = false;
+        // 1. Obliczamy pozycję startową docelowego segmentu
+        int startTick = measure.getStartTickOfSegment(targetSegment);
+        if (startTick < 0) return null;
 
-        for (Segment seg : measure.getSegments()) {
-            if (seg.isNoteRest()) {
-                if (seg == targetSegment) {
-                    targetFound = true;
-                }
-                if (!targetFound) {
-                    startTick += seg.getDuration();
-                }
-                totalMeasureTicks += seg.getDuration();
-            }
-        }
-        System.out.println("startTick: " + startTick);
-        System.out.println("totalMeasureTicks: " + totalMeasureTicks);
-        if (!targetFound) return null;
-
+        int totalMeasureTicks = measure.getTimeSignature().getTotalTicks();
         int targetEndTick = startTick + newTicks;
-        System.out.println("targetEndTick: " + targetEndTick);
-        if (targetEndTick > totalMeasureTicks) return null; // Nuta przekracza ramy taktu
+        if (targetEndTick > totalMeasureTicks) return null;
 
+        // 2. Podział siatki taktu w punktach startTick oraz targetEndTick
+        ensureSegmentBoundaryAt(measure, startTick);
+        ensureSegmentBoundaryAt(measure, targetEndTick);
 
+        // Odświeżamy referencję do segmentu po cięciu siatki
+        Segment actualTarget = findSegmentAtTick(measure, startTick);
+        if (actualTarget == null) return null;
 
+        // 3. Usuwamy kolizje (nuty i pauzy) w edytowanym głosie w przedziale [startTick, targetEndTick)
+        removeCollisions(measure, staff, voice, startTick, targetEndTick);
 
+        // 4. Wstawiamy nową nutę do docelowego segmentu
+        actualTarget.insertNote(staff, newNote);
 
-//        int startTick = measure.getStartTickOfSegment(targetSegment);
-//        System.out.println("startTick: " + startTick);
-//        if (startTick < 0) return null;
-//
-//        int totalMeasureTicks = measure.getTimeSignature().getTotalTicks();
-//        System.out.println("totalMeasureTicks: " + totalMeasureTicks);
-//        int targetEndTick = startTick + newTicks;
-//        System.out.println("targetEndTick: " + targetEndTick);
-//        if (targetEndTick > totalMeasureTicks) return null; // Nuta przekracza ramy taktu
-//        System.out.println("Przechodzi nulla");
-
-
-
-
-
-
-
-
-
-
-
-        // 2. Tniemy siatkę idealnie na końcu naszej nowej nuty (aby następna miała gdzie wylądować)
-        ensureSegmentBoundaryAt(measure, targetEndTick, staff, voice);
-
-        // 3. Wycinamy wszystko w edytowanym głosie, co wchodzi w kolizję z naszą nową nutą
-        int currentTick = 0;
-        for (Segment seg : measure.getSegments()) {
-            if (seg.isNoteRest()) {
-                int segDuration = seg.getDuration();
-
-                if (currentTick >= startTick && currentTick < targetEndTick) {
-                    List<NoteRestElement> nres = seg.getNoteRestByStaffAndVoice(staff, voice);
-                    for (NoteRestElement el : new ArrayList<>(nres)) {
-                        seg.removeNoteRest(staff, el);
-                    }
-                }
-                currentTick += segDuration;
-            }
-        }
-
-        // 4. Czyste wstawienie nowej nuty
-        targetSegment.insertNote(staff, newNote);
-
-        measure.getSegments().removeIf(seg -> seg.isNoteRest() && seg.isEmpty());
-
-        // 5. INTELIGENTNE WYPŁNIANIE TAKTU: Naprawia braki pauz i nigdy nie rozpycha siatki!
-        fillVoiceGaps(measure, staff, voice);
+        // 5. Regeneracja pauz we wszystkich głosach
+        cleanAndFillVoiceGaps(measure);
 
         measure.updateResolutionFromSegments();
         measure.setDirty(true);
 
-
-        System.out.println("SEGMENTY:");
-        int i = 0;
-        for (Segment s : measure.getSegments()) {
-            System.out.println(i++ + ": dur=" + s.getDuration() + " type=" + s.getType());
-        }
-
         return findNextFreeSegment(measure, targetEndTick);
     }
 
-    private static void fillVoiceGaps(Measure measure, Staff staff, int voice) {
+    private static void removeCollisions(Measure measure, Staff staff, int voice, int startTick, int targetEndTick) {
         int currentTick = 0;
-        int activeUntil = 0;
-
         for (Segment seg : measure.getSegments()) {
             if (seg.isNoteRest()) {
-                int segDuration = seg.getDuration();
-
+                int segDur = seg.getDuration();
                 List<NoteRestElement> nres = seg.getNoteRestByStaffAndVoice(staff, voice);
 
-                if (!nres.isEmpty()) {
-                    activeUntil = Math.max(activeUntil, currentTick + nres.get(0).getType().getTicks());
-                } else {
-                    if (currentTick >= activeUntil && segDuration > 0) {
-                        NoteType fillType = MeasureTimeSignatureAdjuster.findLargestFittingNoteType(segDuration);
-                        if (fillType != null) {
-                            seg.addElement(staff, new Rest(voice, fillType, measure));
-                            activeUntil = currentTick + fillType.getTicks();
-                        }
+                for (NoteRestElement el : new ArrayList<>(nres)) {
+                    int elStart = currentTick;
+                    int elEnd = currentTick + el.getType().getTicks();
+
+                    if (elStart < targetEndTick && elEnd > startTick) {
+                        seg.removeNoteRest(staff, el);
                     }
                 }
-                currentTick += segDuration;
+                currentTick += segDur;
             }
         }
     }
 
-    private static void ensureSegmentBoundaryAt(Measure measure, int targetTick, Staff targetStaff, int targetVoice) {
+    private static void cleanAndFillVoiceGaps(Measure measure) {
+        for (Staff staff : measure.getStaves()) {
+            for (int voice = 1; voice <= 4; voice++) {
+                boolean hasNotes = hasNotesInVoice(measure, staff, voice);
+                boolean active = (voice == 1) || hasNotes;
+
+                if (!active) {
+                    // Głos nieaktywny -> czyszczenie wszystkich elementów
+                    removeAllElementsInVoice(measure, staff, voice);
+                } else {
+                    // Głos aktywny -> czyszczenie pauz i odbudowa luki po luce
+                    removeAllRestsInVoice(measure, staff, voice);
+                    fillGapsForActiveVoice(measure, staff, voice);
+                }
+            }
+        }
+    }
+
+    private static void removeAllRestsInVoice(Measure measure, Staff staff, int voice) {
+        for (Segment seg : measure.getSegments()) {
+            if (seg.isNoteRest()) {
+                List<NoteRestElement> nres = seg.getNoteRestByStaffAndVoice(staff, voice);
+                for (NoteRestElement el : new ArrayList<>(nres)) {
+                    if (el instanceof Rest) {
+                        seg.removeNoteRest(staff, el);
+                    }
+                }
+            }
+        }
+    }
+
+    private static void removeAllElementsInVoice(Measure measure, Staff staff, int voice) {
+        for (Segment seg : measure.getSegments()) {
+            if (seg.isNoteRest()) {
+                List<NoteRestElement> nres = seg.getNoteRestByStaffAndVoice(staff, voice);
+                for (NoteRestElement el : new ArrayList<>(nres)) {
+                    seg.removeNoteRest(staff, el);
+                }
+            }
+        }
+    }
+
+    /**
+     * Oblicza dokładne przedziały ciszy (gapy) i wypełnia je pełną sekwencją pauz.
+     */
+    private static void fillGapsForActiveVoice(Measure measure, Staff staff, int voice) {
+        int totalTicks = measure.getTimeSignature().getTotalTicks();
+
+        // 1. Zbieramy przedziały czasowe zajęte przez NUTY
+        List<int[]> noteIntervals = new ArrayList<>();
+        int currentTick = 0;
+        for (Segment seg : measure.getSegments()) {
+            if (seg.isNoteRest()) {
+                int segDur = seg.getDuration();
+                for (NoteRestElement el : seg.getNoteRestByStaffAndVoice(staff, voice)) {
+                    if (el instanceof Note note) {
+                        int noteStart = currentTick;
+                        int noteEnd = currentTick + note.getType().getTicks();
+                        noteIntervals.add(new int[]{noteStart, noteEnd});
+                    }
+                }
+                currentTick += segDur;
+            }
+        }
+
+        // Łączymy nakładające się przedziały nut
+        noteIntervals.sort(Comparator.comparingInt(a -> a[0]));
+        List<int[]> mergedNotes = new ArrayList<>();
+        for (int[] interval : noteIntervals) {
+            if (mergedNotes.isEmpty()) {
+                mergedNotes.add(interval);
+            } else {
+                int[] last = mergedNotes.get(mergedNotes.size() - 1);
+                if (interval[0] < last[1]) {
+                    last[1] = Math.max(last[1], interval[1]);
+                } else {
+                    mergedNotes.add(interval);
+                }
+            }
+        }
+
+        // 2. Wyznaczamy przedziały CISZY (LUKI)
+        List<int[]> gapIntervals = new ArrayList<>();
+        int searchStart = 0;
+        for (int[] noteInt : mergedNotes) {
+            if (noteInt[0] > searchStart) {
+                gapIntervals.add(new int[]{searchStart, noteInt[0]});
+            }
+            searchStart = Math.max(searchStart, noteInt[1]);
+        }
+        if (searchStart < totalTicks) {
+            gapIntervals.add(new int[]{searchStart, totalTicks});
+        }
+
+        // 3. Wypełniamy każdą lukę KOMPLETEM pauz
+        for (int[] gap : gapIntervals) {
+            int gapStart = gap[0];
+            int gapEnd = gap[1];
+            int gapDuration = gapEnd - gapStart;
+
+            List<NoteType> restTypes = decomposeTicksToNoteTypes(gapDuration).reversed();
+            int restStartTick = gapStart;
+
+            for (NoteType restType : restTypes) {
+                ensureSegmentBoundaryAt(measure, restStartTick);
+                Segment seg = findSegmentAtTick(measure, restStartTick);
+                if (seg != null) {
+                    seg.addElement(staff, new Rest(voice, restType, measure));
+                }
+                restStartTick += restType.getTicks();
+            }
+        }
+    }
+
+    private static boolean hasNotesInVoice(Measure measure, Staff staff, int voice) {
+        for (Segment seg : measure.getSegments()) {
+            for (NoteRestElement nre : seg.getNoteRestByStaffAndVoice(staff, voice)) {
+                if (nre instanceof Note) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static void ensureSegmentBoundaryAt(Measure measure, int targetTick) {
+        if (targetTick <= 0 || targetTick >= measure.getTimeSignature().getTotalTicks()) return;
+
         List<Segment> segments = measure.getSegments();
         int currentTick = 0;
 
@@ -149,54 +212,17 @@ public class MeasureNoteInserter {
                 int part1Ticks = targetTick - currentTick;
                 int part2Ticks = segEnd - targetTick;
 
-                List<NoteType> part1Types = decomposeTicksToNoteTypes(part1Ticks);
                 List<NoteType> part2Types = decomposeTicksToNoteTypes(part2Ticks);
+                if (part2Types.isEmpty()) return;
 
-                if (part1Types.isEmpty()) return;
-                NoteType firstType = part1Types.getFirst();
+                seg.setDuration(part1Ticks);
 
-                // A. Modyfikujemy dotychczasowy segment
-                for (Staff s : measure.getStaves()) {
-                    for (int v = 1; v <= 4; v++) {
-                        List<NoteRestElement> nres = seg.getNoteRestByStaffAndVoice(s, v);
-                        boolean isTarget = (s == targetStaff && v == targetVoice);
-
-                        if (!nres.isEmpty() && nres.getFirst() instanceof Rest rest) {
-                            seg.removeNoteRest(s, rest);
-                            seg.addElement(s, new Rest(v, firstType, measure));
-                        } else if (isTarget) {
-                            // Stabilizator siatki dla edytowanego głosu
-                            seg.addElement(s, new Rest(v, firstType, measure));
-                        }
-                    }
-                }
-
-                // B. Tworzymy nowe segmenty (dla reszty czasu)
                 int insertIndex = i + 1;
-                List<NoteType> combined = allTypesCombined(part1Types, part2Types);
-
-                for (int k = 1; k < combined.size(); k++) {
-                    NoteType subType = combined.get(k);
-                    Segment fillSeg = new Segment(SegmentType.NOTEREST, measure);
-                    boolean addedAny = false;
-
-                    for (Staff s : measure.getStaves()) {
-                        for (int v = 1; v <= 4; v++) {
-                            List<NoteRestElement> nres = seg.getNoteRestByStaffAndVoice(s, v);
-                            if (!nres.isEmpty()) {
-                                NoteRestElement oldEl = nres.getFirst();
-                                if (oldEl instanceof Rest) {
-                                    fillSeg.addElement(s, new Rest(v, subType, measure));
-                                    addedAny = true;
-                                }
-                            }
-                        }
-                    }
-
-                    if (addedAny) {
-                        segments.add(insertIndex, fillSeg);
-                        insertIndex++;
-                    }
+                for (NoteType subType : part2Types) {
+                    Segment tailSeg = new Segment(SegmentType.NOTEREST, measure);
+                    tailSeg.setDuration(subType.getTicks());
+                    segments.add(insertIndex, tailSeg);
+                    insertIndex++;
                 }
                 return;
             }
@@ -204,10 +230,17 @@ public class MeasureNoteInserter {
         }
     }
 
-    private static List<NoteType> allTypesCombined(List<NoteType> t1, List<NoteType> t2) {
-        List<NoteType> combined = new ArrayList<>(t1);
-        combined.addAll(t2);
-        return combined;
+    private static Segment findSegmentAtTick(Measure measure, int targetTick) {
+        int currentTick = 0;
+        for (Segment seg : measure.getSegments()) {
+            if (seg.isNoteRest()) {
+                if (currentTick == targetTick) {
+                    return seg;
+                }
+                currentTick += seg.getDuration();
+            }
+        }
+        return null;
     }
 
     private static List<NoteType> decomposeTicksToNoteTypes(int totalTicks) {
@@ -225,7 +258,7 @@ public class MeasureNoteInserter {
     public static Segment findNextFreeSegment(Measure measure, int targetEndTick) {
         int currentTick = 0;
         for (Segment seg : measure.getSegments()) {
-            if (seg.getType() == SegmentType.NOTEREST) {
+            if (seg.isNoteRest()) {
                 if (currentTick >= targetEndTick) {
                     return seg;
                 }
@@ -243,7 +276,7 @@ public class MeasureNoteInserter {
             if (currentIndex != -1 && currentIndex + 1 < measures.size()) {
                 Measure nextMeasure = measures.get(currentIndex + 1);
                 for (Segment seg : nextMeasure.getSegments()) {
-                    if (seg.getType() == SegmentType.NOTEREST) {
+                    if (seg.isNoteRest()) {
                         return seg;
                     }
                 }
