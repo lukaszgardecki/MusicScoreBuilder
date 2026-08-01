@@ -5,6 +5,7 @@ import org.example.musicscorebuilder.components.layout.StaffLayout;
 import org.example.musicscorebuilder.components.layout.edit.GhostNoteLayout;
 import org.example.musicscorebuilder.components.music.Mode;
 import org.example.musicscorebuilder.components.music.NoteType;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -13,7 +14,10 @@ public class ModeManager {
     private static ModeManager instance;
     private Mode mode = Mode.DISPLAY;
     private final ScoreStateManager stateManager = ScoreStateManager.getInstance();
-    private final List<Consumer<Boolean>> listeners = new ArrayList<>();
+
+    private final List<Consumer<Boolean>> modeListeners = new ArrayList<>();
+    private final List<Consumer<NoteType>> noteTypeListeners = new ArrayList<>();
+
     private GhostNoteLayout ghostNote;
     private int currentVoice = 1;
     private NoteType currentNoteType = NoteType.QUARTER;
@@ -38,17 +42,26 @@ public class ModeManager {
     public NoteType getCurrentNoteType() {
         return currentNoteType;
     }
+
     public void clearGhostNote() { this.ghostNote = null; }
     public GhostNoteLayout getGhostNote() { return ghostNote; }
     public boolean isShowGhost() { return isInsertMode() && ghostNote != null; }
+
     public void addModeChangeListener(Consumer<Boolean> listener) {
-        listeners.add(listener);
+        modeListeners.add(listener);
         listener.accept(isInsertMode());
     }
+
+    public void addNoteTypeChangeListener(Consumer<NoteType> listener) {
+        noteTypeListeners.add(listener);
+        listener.accept(currentNoteType);
+    }
+
     public boolean isInsertMode() { return mode == Mode.INSERT; }
     public int getCurrentVoice() { return currentVoice; }
 
     public void setGhostNote(GhostNoteLayout ghostNote) { this.ghostNote = ghostNote; }
+
     public void setCurrentVoice(int voice) {
         this.currentVoice = voice;
         if (ghostNote != null) {
@@ -56,6 +69,7 @@ public class ModeManager {
         }
         notifyListeners();
     }
+
     public void setCurrentNoteType(NoteType noteType) {
         this.currentNoteType = noteType;
 
@@ -68,6 +82,7 @@ public class ModeManager {
             }
         }
 
+        notifyNoteTypeListeners();
         stateManager.notifyScoreChanged();
         notifyListeners();
     }
@@ -90,8 +105,14 @@ public class ModeManager {
 
     private void notifyListeners() {
         boolean active = isInsertMode();
-        for (Consumer<Boolean> listener : listeners) {
+        for (Consumer<Boolean> listener : modeListeners) {
             listener.accept(active);
+        }
+    }
+
+    private void notifyNoteTypeListeners() {
+        for (Consumer<NoteType> listener : noteTypeListeners) {
+            listener.accept(currentNoteType);
         }
     }
 }
