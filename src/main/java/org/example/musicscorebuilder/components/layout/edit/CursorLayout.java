@@ -11,7 +11,7 @@ public class CursorLayout {
     private final StaffLayout staff;
     private final String color;
     private final Selectable element;
-    private final double y, height, thickness;
+    private final double y, height, thickness, width;
 
     public CursorLayout(Selectable element) {
         this.element = element;
@@ -23,13 +23,14 @@ public class CursorLayout {
         int activeVoice = ModeManager.getInstance().getCurrentVoice();
         this.color = style.getEditInsertColor(activeVoice);
         this.height = staff.getHeight() + 2 * style.getEditCursorPadding();
-        this.thickness = style.getEditCursorWidth();
+        this.width = style.getEditCursorBoxWidth();
+        this.thickness = style.getEditCursorLineThickness();
         this.y = staff.getY() - style.getEditCursorPadding();
     }
 
     public double getX() { return parent.getX() - getThickness(); }
     public double getY() { return y; }
-    public double getWidth() { return parent.getWidth(); }
+    public double getWidth() { return width; }
     public double getHeight() { return height; }
     public double getThickness() { return thickness; }
     public String getColor() { return color; }
