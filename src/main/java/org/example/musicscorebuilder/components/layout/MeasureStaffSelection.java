@@ -46,13 +46,13 @@ public class MeasureStaffSelection implements Selectable {
             }
             currentX += seg.getWidth();
         }
-        return currentX - measure.getScoreStyle().getSegmentRightMargin();
+        return currentX - measure.getScoreStyle().getSegmentBarlineRightMargin();
     }
 
     public double getElementsWidth() {
         return measure.getSegments().stream()
                 .filter(seg -> seg.getType() == SegmentType.NOTEREST)
                 .mapToDouble(SegmentLayout::getWidth)
-                .sum() + measure.getScoreStyle().getSegmentRightMargin();
+                .sum() + measure.getScoreStyle().getSegmentBarlineRightMargin();
     }
 }

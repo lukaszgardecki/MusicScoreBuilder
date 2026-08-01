@@ -20,7 +20,13 @@ public class ScoreStyle {
     private static final double BARLINE_DOT_SPACE = 0.37;
     private static final double BARLINE_DOT_RADIUS = 0.2;
 
-    private static final double SEGMENT_RIGHT_MARGIN = 0.7;
+    private static final double SEG_DEF_NOTEREST_R_MARGIN = 0.7;
+    private static final double SEG_DEF_CLEF_R_MARGIN = 0.5;
+    private static final double SEG_DEF_TIME_SIG_R_MARGIN = 1.5;
+    private static final double SEG_DEF_KEY_SIG_R_MARGIN = 0.7;
+    private static final double SEG_DEF_START_BARLINE_R_MARGIN = 0.5;
+    private static final double SEG_DEF_BARLINE_R_MARGIN = 1.0;
+    private static final double SEG_DEF_END_BARLINE_R_MARGIN = 0;
 
     private static final double KEY_SIGNATURE_SIGN_SPACE = 0.12;
 
@@ -63,7 +69,13 @@ public class ScoreStyle {
     private double barlineDotSpace = BARLINE_DOT_SPACE;
     private double barlineDotRadius = BARLINE_DOT_RADIUS;
 
-    private double segmentRightMargin = SEGMENT_RIGHT_MARGIN;
+    private double segmentNoteRestRightMargin = SEG_DEF_NOTEREST_R_MARGIN;
+    private double segmentClefRightMargin = SEG_DEF_CLEF_R_MARGIN;
+    private double segmentTimeSigRightMargin = SEG_DEF_TIME_SIG_R_MARGIN;
+    private double segmentKeySigRightMargin = SEG_DEF_KEY_SIG_R_MARGIN;
+    private double segmentStartBarlineRightMargin = SEG_DEF_START_BARLINE_R_MARGIN;
+    private double segmentBarlineRightMargin = SEG_DEF_BARLINE_R_MARGIN;
+    private double segmentEndBarlineRightMargin = SEG_DEF_END_BARLINE_R_MARGIN;
 
     private double keySignatureSignSpace = KEY_SIGNATURE_SIGN_SPACE;
 
@@ -103,7 +115,13 @@ public class ScoreStyle {
     public double getBarlineDotSpace() { return staffSpacingScale * barlineDotSpace; }
     public double getBarlineDotRadius() { return staffSpacingScale * barlineDotRadius; }
 
-    public double getSegmentRightMargin() { return staffSpacingScale * segmentRightMargin; }
+    public double getSegmentNoteRestRightMargin() { return staffSpacingScale * segmentNoteRestRightMargin; }
+    public double getSegmentClefRightMargin() { return staffSpacingScale * segmentClefRightMargin; }
+    public double getSegmentTimeSigRightMargin() { return staffSpacingScale * segmentTimeSigRightMargin; }
+    public double getSegmentKeySigRightMargin() { return staffSpacingScale * segmentKeySigRightMargin; }
+    public double getSegmentStartBarlineRightMargin() { return staffSpacingScale * segmentStartBarlineRightMargin; }
+    public double getSegmentBarlineRightMargin() { return staffSpacingScale * segmentBarlineRightMargin; }
+    public double getSegmentEndBarlineRightMargin() { return  staffSpacingScale * segmentEndBarlineRightMargin; }
 
     public double getKeySignatureSignSpace() { return staffSpacingScale * keySignatureSignSpace; }
 

@@ -126,8 +126,17 @@ public class SegmentLayout {
                 .max()
                 .orElse(0);
 
-        var margin = type == SegmentType.END_BARLINE ? 0 : style.getSegmentRightMargin();
-        return maxRight + margin + extraWidth;
+        var margin = switch(type) {
+            case CLEF -> style.getSegmentClefRightMargin();
+            case START_BARLINE -> style.getSegmentStartBarlineRightMargin();
+            case BARLINE -> style.getSegmentBarlineRightMargin();
+            case END_BARLINE -> style.getSegmentEndBarlineRightMargin();
+            case NOTEREST -> style.getSegmentNoteRestRightMargin();
+            case KEY_SIG -> style.getSegmentKeySigRightMargin();
+            case TIME_SIG -> style.getSegmentTimeSigRightMargin();
+        };
+        double f = type == SegmentType.NOTEREST ? calculateNoteRestWidthFactor() : 1;
+        return maxRight + margin * f + extraWidth;
     }
     public double getHeight() { return height; }
     public boolean hasDynamicWidth() { return getElements().stream().anyMatch(ElementLayout::hasDynamicWidth); }
@@ -171,4 +180,24 @@ public class SegmentLayout {
     public void setSystemGenerated(boolean systemGenerated) { this.systemGenerated = systemGenerated; }
     public void setNext(SegmentLayout next) { this.next = next; }
     public void setPrev(SegmentLayout prev) { this.prev = prev; }
+
+    private double calculateNoteRestWidthFactor() {
+        Optional<NoteType> shortestNoteType = getElements().stream()
+                .map(e -> switch (e) {
+                    case NoteLayout nl -> nl.getNote().getType();
+                    case RestLayout rl -> rl.getRest().getType();
+                    default -> null;
+                })
+                .filter(Objects::nonNull)
+                .min(Comparator.comparingInt(NoteType::getTicks));
+
+        return shortestNoteType.map(noteType -> switch (noteType) {
+            case WHOLE -> 8.0;
+            case HALF -> 4.0;
+            case QUARTER -> 2.0;
+            case EIGHTH -> 1.0;
+            case SIXTEENTH -> 0.75;
+            case THIRTY_SECOND -> 0.5;
+        }).orElse(1.0);
+    }
 }
