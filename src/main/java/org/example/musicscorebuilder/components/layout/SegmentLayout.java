@@ -121,8 +121,8 @@ public class SegmentLayout {
         List<ElementLayout> allElements = getElements();
         if (allElements.isEmpty()) return 0;
 
-        double maxRight = allElements.stream()
-                .mapToDouble(e -> e.getX() + e.getWidth())
+        double maxElementWidth = allElements.stream()
+                .mapToDouble(ElementLayout::getWidth)
                 .max()
                 .orElse(0);
 
@@ -135,8 +135,8 @@ public class SegmentLayout {
             case KEY_SIG -> style.getSegmentKeySigRightMargin();
             case TIME_SIG -> style.getSegmentTimeSigRightMargin();
         };
-        double f = type == SegmentType.NOTEREST ? calculateNoteRestWidthFactor() : 1;
-        return maxRight + margin * f + extraWidth;
+        double f = type == SegmentType.NOTEREST ? calculateNoteRestWidthFactor() : 1.0;
+        return maxElementWidth + margin * f + extraWidth;
     }
     public double getHeight() { return height; }
     public boolean hasDynamicWidth() { return getElements().stream().anyMatch(ElementLayout::hasDynamicWidth); }

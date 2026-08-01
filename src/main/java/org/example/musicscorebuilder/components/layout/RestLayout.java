@@ -3,6 +3,9 @@ package org.example.musicscorebuilder.components.layout;
 import org.example.musicscorebuilder.components.music.Leland;
 import org.example.musicscorebuilder.components.music.NoteType;
 import org.example.musicscorebuilder.components.music.Rest;
+import org.example.musicscorebuilder.components.music.SegmentType;
+
+import java.util.List;
 
 public class RestLayout extends ElementLayout {
     private final Leland fontData;
@@ -23,6 +26,41 @@ public class RestLayout extends ElementLayout {
             case THIRTY_SECOND -> Leland.REST_32ND;
         };
         y = (rest.getType() == NoteType.WHOLE ? 1 : 2) * staff.getLineSpacing() + staff.getY();
+    }
+
+    @Override
+    public double getX() {
+        SegmentLayout segment = getParent();
+        MeasureLayout measureLayout = segment.getParent();
+
+        if (rest.getType() == NoteType.WHOLE && isOnlyElementInVoice(measureLayout)) {
+            List<SegmentLayout> noteRestSegments = measureLayout.getSegments().stream()
+                    .filter(seg -> seg.getType() == SegmentType.NOTEREST)
+                    .toList();
+
+            if (!noteRestSegments.isEmpty()) {
+                SegmentLayout firstNoteRestSeg = noteRestSegments.getFirst();
+                double totalNoteRestWidth = noteRestSegments.stream()
+                        .mapToDouble(SegmentLayout::getWidth)
+                        .sum();
+
+                double restWidth = getFontWidth();
+                double offsetFromFirst = segment.getX() - firstNoteRestSeg.getX();
+                double barlineRMargin = segment.getScoreStyle().getSegmentBarlineRightMargin();
+                return Math.max(0, (totalNoteRestWidth - restWidth - barlineRMargin) / 2.0 - offsetFromFirst);
+            }
+        }
+        return 0.0;
+    }
+
+    private boolean isOnlyElementInVoice(MeasureLayout measureLayout) {
+        long count = measureLayout.getSegments().stream()
+                .filter(seg -> seg.getType() == SegmentType.NOTEREST)
+                .flatMap(seg -> seg.getElementsByStaff(getStaff()).stream())
+                .filter(elem -> elem.getVoice() == getVoice())
+                .count();
+
+        return count <= 1;
     }
 
     @Override public double getY() { return y; }
