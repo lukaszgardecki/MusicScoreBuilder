@@ -30,10 +30,10 @@ public class KeySignatureSectionController extends AbstractPaletteSectionControl
     protected List<Integer> getItems() { return List.of(1, 2, 3, 4, 5, 6, 7, -7, -6, -5, -4, -3, -2, -1, 0); }
 
     @Override
-    protected boolean applyToSelectedElement(Integer beatValue) {
+    protected boolean applyToSelectedElement(Integer key) {
         Selectable item = stateManager.getSelectedItem();
-
-        if (item instanceof KeySignature) {
+        if (item instanceof KeySigLayout) {
+            scoreService.getScore().getModes().forEach(mode -> mode.setKeySignature(key));
             return true;
         }
         return false;

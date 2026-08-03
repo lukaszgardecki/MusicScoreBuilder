@@ -74,6 +74,11 @@ public class ScoreMode {
         });
     }
 
+    public void setKeySignature(Integer key) {
+        if (measures.isEmpty()) return;
+        measures.forEach(m -> m.setKeySignature(new KeySignature(key, m)));
+    }
+
     private void addDefaultStaves() {
         switch (type) {
             case SOLO -> staves.add(new Staff(0, new Clef(ClefType.G)));
