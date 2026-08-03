@@ -14,7 +14,7 @@ public class MeasureNoteInserter {
         if (targetSegment == null || !targetSegment.isNoteRest()) return null;
 
         int voice = newNote.getVoice();
-        int newTicks = newNote.getType().getTicks();
+        int newTicks = getElementTicks(newNote);
 
         // 1. Obliczamy pozycję startową docelowego segmentu
         int startTick = measure.getStartTickOfSegment(targetSegment);
@@ -54,7 +54,7 @@ public class MeasureNoteInserter {
 
                 for (NoteRestElement el : new ArrayList<>(nres)) {
                     int elStart = currentTick;
-                    int elEnd = currentTick + el.getType().getTicks();
+                    int elEnd = currentTick + getElementTicks(el);
 
                     if (elStart < targetEndTick && elEnd > startTick) {
                         seg.removeNoteRest(staff, el);
@@ -205,7 +205,7 @@ public class MeasureNoteInserter {
                 for (NoteRestElement el : seg.getNoteRestByStaffAndVoice(staff, voice)) {
                     if (el instanceof Note note) {
                         int noteStart = currentTick;
-                        int noteEnd = currentTick + note.getType().getTicks();
+                        int noteEnd = currentTick + getElementTicks(note);
                         noteIntervals.add(new int[]{noteStart, noteEnd});
                     }
                 }
@@ -365,5 +365,19 @@ public class MeasureNoteInserter {
         }
 
         return null;
+    }
+
+    private static int getElementTicks(NoteRestElement element) {
+        if (element == null || element.getType() == null) return 0;
+        int baseTicks = element.getType().getTicks();
+        int dots = element.getDots();
+        int totalTicks = baseTicks;
+        int currentDotValue = baseTicks;
+
+        for (int i = 0; i < dots; i++) {
+            currentDotValue /= 2;
+            totalTicks += currentDotValue;
+        }
+        return totalTicks;
     }
 }

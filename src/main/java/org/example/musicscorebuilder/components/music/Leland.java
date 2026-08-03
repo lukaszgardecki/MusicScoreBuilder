@@ -35,6 +35,8 @@ public enum Leland {
     NOTE_FLAG_32ND_UP("\uE244", 1.117, 0.745, 0.0, -3.285),
     NOTE_FLAG_32ND_DOWN("\uE245", 1.235, 3.214, -0.0, -0.863),
 
+    AUGMENTATION_DOT("\uE1E7", 0.4, 0.2, 0.0, -0.2),
+
     REST_WHOLE("\uE4E3", 1.3, 0.02, 0.0, -0.524),
     REST_HALF("\uE4E4", 1.3, 0.528, 0.0, -0.016),
     REST_QUARTER("\uE4E5", 0.94, 1.605, 0.0, -1.325),

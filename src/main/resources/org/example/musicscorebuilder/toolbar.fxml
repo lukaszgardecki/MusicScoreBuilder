@@ -17,6 +17,8 @@
     <Button fx:id="btn2" styleClass="toolbar-btn"/>
     <Button fx:id="btn1" styleClass="toolbar-btn"/>
     <Separator />
+    <Button fx:id="btnDot" styleClass="toolbar-btn" onAction="#toggleDot"/>
+    <Separator />
     <Button fx:id="voice1Button" styleClass="toolbar-btn" text="1" onAction="#activateVoice1"/>
     <Button fx:id="voice2Button" styleClass="toolbar-btn" text="2" onAction="#activateVoice2"/>
     <Separator />

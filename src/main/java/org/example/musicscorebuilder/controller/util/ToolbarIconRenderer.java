@@ -34,23 +34,24 @@ public class ToolbarIconRenderer {
         button.setGraphic(canvas);
     }
 
-    public void renderNoteTypeIcon(Button button, NoteType type) {
+    public void renderNoteTypeIcon(Button button, NoteType type, boolean dotted) {
         if (button == null) return;
 
         double width = 25;
         double height = 25;
         double noteScale = 4.75;
+        int dots = dotted ? 1 : 0;
 
         Canvas canvas = new Canvas(width, height);
         GraphicsContext gc = canvas.getGraphicsContext2D();
         gc.clearRect(0, 0, width, height);
 
         Measure dummyMeasure = new Measure(List.of(new Staff(0, new Clef(ClefType.G))));
-        Staff dummyStaff = dummyMeasure.getStaves().get(0);
+        Staff dummyStaff = dummyMeasure.getStaves().getFirst();
         ScoreStyle style = new ScoreStyle();
         MeasureLayout measureLayout = new MeasureLayout(dummyMeasure, 0, style);
         StaffLayout staffLayout = new StaffLayout(dummyStaff, measureLayout, style);
-        Note dummyNote = new Note(1, PitchStep.F, 0, 4, type, BeamType.NONE, dummyMeasure);
+        Note dummyNote = new Note(1, PitchStep.F, 0, 4, type, BeamType.NONE, dots, dummyMeasure);
         Segment dummySegment = new Segment(SegmentType.NOTEREST, dummyMeasure);
         SegmentLayout segmentLayout = new SegmentLayout(dummySegment, measureLayout);
 
@@ -62,6 +63,10 @@ public class ToolbarIconRenderer {
 
         noteView.draw(gc, noteLayout, 0.0, 0.0, noteScale);
         button.setGraphic(canvas);
+    }
+
+    public void renderNoteDottedIcon(Button button) {
+        renderNoteTypeIcon(button, NoteType.QUARTER, true);
     }
 
     public void renderVoiceIcon(Button button, int voiceNumber) {

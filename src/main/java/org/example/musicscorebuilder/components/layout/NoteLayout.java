@@ -10,11 +10,15 @@ public class NoteLayout extends ElementLayout {
     private final Note note;
     private final StemLayout stem;
     private final BeamSingleLayout singleBeam;
+    private final List<DotLayout> dots = new ArrayList<>();
     private BeamGroupLayout beamGroup;
     private double y;
     private double xOffset = 0.0;
 
     public record LedgerLine(double startX, double endX, double y, double thickness) {}
+    public record DotLayout(double x, double y) {
+        public static String code = Leland.AUGMENTATION_DOT.getCode();
+    }
 
     public NoteLayout(Note note, StaffLayout staff, SegmentLayout parent) {
         super(true, parent, staff);
@@ -28,6 +32,30 @@ public class NoteLayout extends ElementLayout {
         this.y = calculateY(clef) + staff.getY();
         this.stem = note.getType() == NoteType.WHOLE ? null : new StemLayout(this);
         this.singleBeam = !note.isBeamed() && note.getType().hasFlag() ? new BeamSingleLayout(this) : null;
+
+        calculateDots(clef);
+    }
+
+    private void calculateDots(Clef clef) {
+        dots.clear();
+        if (note.getDots() <= 0) return;
+
+        ClefType clefType = clef.getType();
+        int stepDifference = note.getPitch().getAbsoluteDiatonicStep() - clefType.getDiatonicStep();
+
+        double spacing = style.getStaffLineSpacing();
+        double halfSpacing = 0.5 * spacing;
+
+        boolean isOnLine = (stepDifference % 2 == 0);
+        double relY = isOnLine ? -halfSpacing : 0.0;
+
+        double headWidth = getFontWidth();
+        double startRelX = headWidth + style.getNoteDotMargin();
+
+        for (int i = 0; i < note.getDots(); i++) {
+            double dotRelX = startRelX + (i * style.getNoteDotSpacing());
+            dots.add(new DotLayout(dotRelX, relY));
+        }
     }
 
     public void updatePitchFromY(double newY) {
@@ -48,7 +76,6 @@ public class NoteLayout extends ElementLayout {
         int stepDifference = (int) Math.round((referenceY - relativeY) / halfSpacing);
         int targetDiatonicStep = stepDifference + clefType.getDiatonicStep();
 
-
         int currentDiatonicStep = this.note.getOctave() * 7 + this.note.getStep().ordinal();
         if (targetDiatonicStep == currentDiatonicStep) return;
 
@@ -63,6 +90,7 @@ public class NoteLayout extends ElementLayout {
         this.note.setPitch(PitchStep.values()[stepValue], octave);
         this.y = calculateY(clef) + staff.getY();
 
+        calculateDots(clef);
         parent.resolveCollisions();
     }
 
@@ -72,7 +100,8 @@ public class NoteLayout extends ElementLayout {
     @Override public double getWidth() {
         var headWidth = getFontWidth();
         var flagWidth = getBeamSingle() == null ? 0 : getStem().getDirection() == StemDirection.UP ? getBeamSingle().getFontWidth() : 0;
-        return headWidth + flagWidth;
+        double dotsExtent = dots.isEmpty() ? 0 : (dots.getLast().x() + getDotWidth());
+        return Math.max(headWidth + flagWidth, dotsExtent);
     }
     @Override public double getHeight() { return style.getStaffLineSpacing(); }
     @Override public int getVoice() { return note.getVoice(); }
@@ -93,6 +122,8 @@ public class NoteLayout extends ElementLayout {
     public double getBoxWidth() { return getFontWidth(); }
     public double getFontSize() { return 4 * style.getStaffLineSpacing(); }
     public String getCode() { return fontData.getCode(); }
+    public double getDotWidth() { return (Leland.AUGMENTATION_DOT.getHeight() * Leland.AUGMENTATION_DOT.getRatio()) * style.getStaffLineSpacing(); }
+    public List<DotLayout> getDots() { return dots; }
     public int getDiatonicStep() { return note.getPitch().getAbsoluteDiatonicStep(); }
     public StemLayout getStem() { return stem; }
     public BeamSingleLayout getBeamSingle() { return singleBeam; }
@@ -100,8 +131,7 @@ public class NoteLayout extends ElementLayout {
 
     private double calculateY(Clef clef) {
         ClefType clefType = clef.getType();
-        int noteDiatonicStep = (note.getOctave() * 7) + note.getStepValue();
-        int stepDifference = noteDiatonicStep - clefType.getDiatonicStep();
+        int stepDifference = note.getPitch().getAbsoluteDiatonicStep() - clefType.getDiatonicStep();
         double referenceY = clefType.getOffsetY() * style.getStaffLineSpacing();
         double halfSpacing = 0.5 * style.getStaffLineSpacing();
         return referenceY - (stepDifference * halfSpacing);

@@ -23,6 +23,7 @@ public class ToolbarController {
 
     @FXML private Button modeButton;
     @FXML private Button btn32, btn16, btn8, btn4, btn2, btn1;
+    @FXML private Button btnDot;
     @FXML private Button voice1Button;
     @FXML private Button voice2Button;
 
@@ -42,6 +43,25 @@ public class ToolbarController {
     @FXML
     private void toggleMode() {
         modeManager.toggleInsertMode();
+    }
+
+    @FXML
+    private void toggleDot() {
+        if (modeManager.isInsertMode()) {
+            modeManager.toggleDot();
+        } else {
+            Selectable selected = stateManager.getSelectedItem();
+            if (selected instanceof NoteLayout noteLayout) {
+                int currentDots = noteLayout.getNote().getDots();
+                int newDots = currentDots > 0 ? 0 : 1;
+                stateManager.changeSelectedElementDots(newDots);
+            } else if (selected instanceof RestLayout restLayout) {
+                int currentDots = restLayout.getRest().getDots();
+                int newDots = currentDots > 0 ? 0 : 1;
+                stateManager.changeSelectedElementDots(newDots);
+            }
+        }
+        updateDotButtonState();
     }
 
     @FXML
@@ -89,15 +109,18 @@ public class ToolbarController {
 
     private void setupToolbarUI() {
         iconRenderer.renderModeIcon(modeButton);
+        iconRenderer.renderNoteDottedIcon(btnDot);
         iconRenderer.renderVoiceIcon(voice1Button, 1);
         iconRenderer.renderVoiceIcon(voice2Button, 2);
 
         durationButtons.forEach((type, button) -> {
             if (button != null) {
-                iconRenderer.renderNoteTypeIcon(button, type);
+                iconRenderer.renderNoteTypeIcon(button, type, false);
                 button.setOnAction(event -> handleDurationButtonClick(type));
             }
         });
+
+        updateDotButtonState();
     }
 
     // ----------------------------------------------------
@@ -112,17 +135,20 @@ public class ToolbarController {
                 : extractNoteType(stateManager.getSelectedItem());
 
         updateDurationButtonStyles(typeToHighlight);
+        updateDotButtonState();
     }
 
     private void handleNoteTypeChange(NoteType noteType) {
         if (modeManager.isInsertMode()) {
             updateDurationButtonStyles(noteType);
+            updateDotButtonState();
         }
     }
 
     private void handleSelectionChange(Selectable selectedItem) {
         if (!modeManager.isInsertMode()) {
             updateDurationButtonStyles(extractNoteType(selectedItem));
+            updateDotButtonState();
         }
     }
 
@@ -138,6 +164,23 @@ public class ToolbarController {
     // ----------------------------------------------------
     // ----------------- Helper Methods -------------------
     // ----------------------------------------------------
+
+    private void updateDotButtonState() {
+        boolean isDotted;
+
+        if (modeManager.isInsertMode()) {
+            isDotted = modeManager.isDotted();
+        } else {
+            Selectable selected = stateManager.getSelectedItem();
+            isDotted = switch (selected) {
+                case NoteLayout note -> note.getNote().isDotted();
+                case RestLayout rest -> rest.getRest().isDotted();
+                case null, default -> false;
+            };
+        }
+
+        setButtonActive(btnDot, isDotted);
+    }
 
     private void activateVoice(int voiceNumber) {
         modeManager.setCurrentVoice(voiceNumber);

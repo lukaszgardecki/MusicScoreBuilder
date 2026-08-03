@@ -41,6 +41,8 @@ public class ScoreStyle {
     private static final double NOTE_BEAM_THICKNESS = 0.5;
     private static final double NOTE_BEAM_STUB_LENGTH = 1.0;
     private static final double NOTE_BEAM_GAP = 0.3;
+    private static final double NOTE_DOT_MARGIN = 0.55;
+    private static final double NOTE_DOT_SPACING = 0.3;
 
     private static final String VOICE_1_COLOR = "#0066cc";
     private static final String VOICE_1_INSERT_COLOR = "#3399ff";
@@ -91,6 +93,8 @@ public class ScoreStyle {
     private double noteBeamThickness = NOTE_BEAM_THICKNESS;
     private double noteBeamStubLength = NOTE_BEAM_STUB_LENGTH;
     private double noteBeamGap = NOTE_BEAM_GAP;
+    private double noteDotMargin = NOTE_DOT_MARGIN;
+    private double noteDotSpacing  = NOTE_DOT_SPACING;
 
     private String voice1Color = VOICE_1_COLOR;
     private String voice1InsertColor = VOICE_1_INSERT_COLOR;
@@ -135,8 +139,10 @@ public class ScoreStyle {
     public double getNoteStemMinHeight() { return staffSpacingScale * noteStemMinHeight; }
     public double getNoteStemHeightDiffFactor() { return noteStemHeightDiffFactor * getStaffLineSpacing(); }
     public double getNoteBeamThickness() { return staffSpacingScale * noteBeamThickness; }
-    public double  getNoteBeamStubLength() { return staffSpacingScale * noteBeamStubLength; }
+    public double getNoteBeamStubLength() { return staffSpacingScale * noteBeamStubLength; }
     public double getNoteBeamGap() { return staffSpacingScale * noteBeamGap; }
+    public double getNoteDotMargin() { return  staffSpacingScale * noteDotMargin; }
+    public double getNoteDotSpacing() { return  staffSpacingScale * noteDotSpacing; }
 
     public double getSelectionFrameWidth() { return staffSpacingScale * selectionFrameWidth; }
     public double getSelectionFrameExtraHeight() { return staffSpacingScale * selectionFrameExtraHeight; }

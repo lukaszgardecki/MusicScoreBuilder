@@ -1,24 +1,19 @@
 package org.example.musicscorebuilder.components.music;
 
-public class Note extends Element implements NoteRestElement {
+public class Note extends NoteRestElement {
     private Pitch pitch;
-    private int voice;
-    private NoteType type;
     private BeamType beam;
-    private int duration;
 
-    public Note(int voice, PitchStep pitchStep, int alter, int octave, NoteType type, BeamType beam, Measure parent) {
-        super(parent);
+    public Note(int voice, PitchStep pitchStep, int alter, int octave, NoteType type, BeamType beam, int dots, Measure parent) {
+        super(parent, voice, type);
         this.pitch = new Pitch(pitchStep, alter, octave);
-        this.voice = voice;
-        this.type = type;
         this.beam = beam;
-        this.duration = type.getTicks();
+        this.dots = dots;
     }
 
-    @Override public NoteType getType() { return type; }
-    @Override public int getVoice() { return voice; }
-    @Override public int getDuration() { return duration; }
+    public Note(int voice, PitchStep pitchStep, int alter, int octave, NoteType type, BeamType beam, Measure parent) {
+        this(voice, pitchStep, alter, octave, type, beam, 0, parent);
+    }
 
     public Pitch getPitch() { return pitch; }
     public BeamType getBeam() { return beam; }
@@ -31,10 +26,6 @@ public class Note extends Element implements NoteRestElement {
     public void setPitch(PitchStep step, int octave) {
         pitch.setStep(step);
         pitch.setOctave(octave);
-    }
-    public void setType(NoteType type) {
-        this.type = type;
-        this.duration = type.getTicks();
     }
     public void setBeamType(BeamType beam) {
         this.beam = beam;

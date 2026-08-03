@@ -1,6 +1,43 @@
 package org.example.musicscorebuilder.components.music;
 
-public interface NoteRestElement {
-    NoteType getType();
-    int getVoice();
+public abstract class NoteRestElement extends Element {
+    private int voice;
+    private NoteType type;
+    private int duration;
+    protected int dots;
+
+    public NoteRestElement(Measure parent, int voice, NoteType type) {
+        super(parent);
+        this.voice = voice;
+        this.type = type;
+        this.duration = calculateDuration();
+    }
+
+    @Override public int getDuration() { return duration; }
+
+    public int getVoice() { return voice; }
+    public NoteType getType() { return type; }
+    public int getDots() { return dots; }
+    public boolean isDotted() { return dots > 0; }
+
+    public void setType(NoteType type) {
+        this.type = type;
+        this.duration = calculateDuration();
+    }
+    public void setDots(int dots) {
+        this.dots = dots;
+        this.duration = calculateDuration();
+    }
+
+    protected int calculateDuration() {
+        int baseTicks = type.getTicks();
+        int totalTicks = baseTicks;
+        int addedTicks = baseTicks / 2;
+
+        for (int i = 0; i < dots; i++) {
+            totalTicks += addedTicks;
+            addedTicks /= 2;
+        }
+        return totalTicks;
+    }
 }

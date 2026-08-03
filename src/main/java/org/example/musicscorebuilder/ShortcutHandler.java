@@ -35,6 +35,25 @@ public class ShortcutHandler {
             if (modeManager.isInsertMode()) { modeManager.toggleInsertMode(); }
             event.consume();
             return;
+        } else if (event.getCode() == KeyCode.PERIOD || event.getCode() == KeyCode.DECIMAL) {
+            if (modeManager.isInsertMode()) {
+                modeManager.toggleDot();
+            } else {
+                Selectable selected = scoreStateManager.getSelectedItem();
+                NoteRestElement currentNRE = null;
+                if (selected instanceof NoteLayout nl) {
+                    currentNRE = nl.getNote();
+                } else if (selected instanceof RestLayout rl) {
+                    currentNRE = rl.getRest();
+                }
+
+                if (currentNRE != null) {
+                    int newDots = currentNRE.getDots() > 0 ? 0 : 1;
+                    scoreStateManager.changeSelectedElementDots(newDots);
+                }
+            }
+            event.consume();
+            return;
         } else if (modeManager.isInsertMode()) {
             if (event.getCode() == KeyCode.LEFT) {
                 scoreNavigator.moveCursorPrev();

@@ -22,6 +22,7 @@ public class GhostNoteLayout extends NoteLayout {
                         4,
                         ModeManager.getInstance().getCurrentNoteType(),
                         BeamType.NONE,
+                        ModeManager.getInstance().isDotted() ? 1 : 0,
                         null
                 ),
                 staff,

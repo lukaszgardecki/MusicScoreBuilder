@@ -21,6 +21,7 @@ public class ModeManager {
     private GhostNoteLayout ghostNote;
     private int currentVoice = 1;
     private NoteType currentNoteType = NoteType.QUARTER;
+    private boolean dotted = false;
 
     private ModeManager() {}
 
@@ -41,6 +42,22 @@ public class ModeManager {
 
     public NoteType getCurrentNoteType() {
         return currentNoteType;
+    }
+
+    public boolean isDotted() {
+        return dotted;
+    }
+
+    public void toggleDot() {
+        setDotted(!this.dotted);
+    }
+
+    public void setDotted(boolean dotted) {
+        this.dotted = dotted;
+        rebuildGhostNote();
+        notifyNoteTypeListeners();
+        stateManager.notifyScoreChanged();
+        notifyListeners();
     }
 
     public void clearGhostNote() { this.ghostNote = null; }
@@ -72,7 +89,15 @@ public class ModeManager {
 
     public void setCurrentNoteType(NoteType noteType) {
         this.currentNoteType = noteType;
+        this.dotted = false;
+        rebuildGhostNote();
 
+        notifyNoteTypeListeners();
+        stateManager.notifyScoreChanged();
+        notifyListeners();
+    }
+
+    private void rebuildGhostNote() {
         if (ghostNote != null) {
             StaffLayout staffLayout = ghostNote.getStaff();
             SegmentLayout segmentLayout = ghostNote.getSegment();
@@ -81,10 +106,6 @@ public class ModeManager {
                 this.ghostNote = new GhostNoteLayout(segmentLayout, staffLayout, ghostNote.getY());
             }
         }
-
-        notifyNoteTypeListeners();
-        stateManager.notifyScoreChanged();
-        notifyListeners();
     }
 
     private void activateInsertMode() {

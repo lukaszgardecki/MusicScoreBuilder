@@ -2,7 +2,6 @@ package org.example.musicscorebuilder.managers;
 
 import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.music.*;
-import org.example.musicscorebuilder.components.music.util.MeasureDurationEditor;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -158,6 +157,54 @@ public class ScoreStateManager {
         };
 
         measure.changeElementDuration(targetSegment, staff, elementToChange, type);
+        notifyScoreChanged();
+    }
+
+    public void changeSelectedElementDots(int dots) {
+        Selectable selected = getSelectedItem();
+        if (selected == null) return;
+
+        SegmentLayout segLayout = selected.getSegment();
+        StaffLayout staffLayout = selected.getStaff();
+        if (segLayout == null || staffLayout == null) return;
+
+        final Segment targetSegment = segLayout.getSegment();
+        if (targetSegment == null) return;
+
+        final Staff staff = staffLayout.getStaff();
+
+        final NoteRestElement elementToChange;
+        final int targetVoice;
+
+        if (selected instanceof NoteLayout nl) {
+            elementToChange = nl.getNote();
+            targetVoice = nl.getNote().getVoice();
+        } else if (selected instanceof RestLayout rl) {
+            elementToChange = rl.getRest();
+            targetVoice = rl.getRest().getVoice();
+        } else {
+            return;
+        }
+
+        if (elementToChange == null || staff == null) return;
+        if (elementToChange.getDots() == dots) return;
+
+        postRefreshAction = layout -> {
+            var staffElements = targetSegment.getElementsByStaff(staff);
+            if (staffElements != null) {
+                for (Element el : staffElements) {
+                    if (el instanceof NoteRestElement nre && nre.getVoice() == targetVoice) {
+                        Selectable newLayout = LayoutHitTester.findSelectableForElement(layout.getPages(), targetSegment, staff, nre);
+                        if (newLayout != null) {
+                            setSelected(newLayout);
+                        }
+                        break;
+                    }
+                }
+            }
+        };
+
+        elementToChange.setDots(dots);
         notifyScoreChanged();
     }
 }
