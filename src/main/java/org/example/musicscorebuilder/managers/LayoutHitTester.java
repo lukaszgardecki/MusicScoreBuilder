@@ -49,6 +49,11 @@ public class LayoutHitTester {
                                 if (noteLayout.getStem() != null && noteLayout.getStem().contains(segmentMusicX, segmentMusicY)) {
                                     return noteLayout.getStem();
                                 }
+                                if (!noteLayout.getDots().isEmpty()) {
+                                    for (DotLayout dot : noteLayout.getDots()) {
+                                        if (dot.contains(segmentMusicX,  segmentMusicY)) return dot;
+                                    }
+                                }
                             }
 
                             if (element.contains(segmentMusicX, segmentMusicY)) {
@@ -166,6 +171,8 @@ public class LayoutHitTester {
             } else {
                 itemsToSelect.add(element);
             }
+        } else if (clickedElement instanceof DotLayout dot) {
+            itemsToSelect.add(dot);
         } else if (clickedElement instanceof StemLayout stem) {
             itemsToSelect.add(stem);
         } else if (clickedElement instanceof BeamGroupLayout beam) {
@@ -204,6 +211,9 @@ public class LayoutHitTester {
                                 }
                                 if (noteLayout.getBeamSingle() != null) {
                                     itemsToSelect.add(noteLayout.getBeamSingle());
+                                }
+                                if (!noteLayout.getDots().isEmpty()) {
+                                    itemsToSelect.addAll(noteLayout.getDots());
                                 }
                             }
                         }

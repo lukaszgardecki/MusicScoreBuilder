@@ -16,9 +16,6 @@ public class NoteLayout extends ElementLayout {
     private double xOffset = 0.0;
 
     public record LedgerLine(double startX, double endX, double y, double thickness) {}
-    public record DotLayout(double x, double y) {
-        public static String code = Leland.AUGMENTATION_DOT.getCode();
-    }
 
     public NoteLayout(Note note, StaffLayout staff, SegmentLayout parent) {
         super(true, parent, staff);
@@ -34,28 +31,6 @@ public class NoteLayout extends ElementLayout {
         this.singleBeam = !note.isBeamed() && note.getType().hasFlag() ? new BeamSingleLayout(this) : null;
 
         calculateDots(clef);
-    }
-
-    private void calculateDots(Clef clef) {
-        dots.clear();
-        if (note.getDots() <= 0) return;
-
-        ClefType clefType = clef.getType();
-        int stepDifference = note.getPitch().getAbsoluteDiatonicStep() - clefType.getDiatonicStep();
-
-        double spacing = style.getStaffLineSpacing();
-        double halfSpacing = 0.5 * spacing;
-
-        boolean isOnLine = (stepDifference % 2 == 0);
-        double relY = isOnLine ? -halfSpacing : 0.0;
-
-        double headWidth = getFontWidth();
-        double startRelX = headWidth + style.getNoteDotMargin();
-
-        for (int i = 0; i < note.getDots(); i++) {
-            double dotRelX = startRelX + (i * style.getNoteDotSpacing());
-            dots.add(new DotLayout(dotRelX, relY));
-        }
     }
 
     public void updatePitchFromY(double newY) {
@@ -100,20 +75,20 @@ public class NoteLayout extends ElementLayout {
     @Override public double getWidth() {
         var headWidth = getFontWidth();
         var flagWidth = getBeamSingle() == null ? 0 : getStem().getDirection() == StemDirection.UP ? getBeamSingle().getFontWidth() : 0;
-        double dotsExtent = dots.isEmpty() ? 0 : (dots.getLast().x() + getDotWidth());
+        double dotsExtent = dots.isEmpty() ? 0 : (dots.getLast().getX() + dots.getLast().getWidth());
         return Math.max(headWidth + flagWidth, dotsExtent);
     }
     @Override public double getHeight() { return style.getStaffLineSpacing(); }
     @Override public int getVoice() { return note.getVoice(); }
     @Override
-    public boolean contains(double segmentMusicX, double segmentMusicY) {
+    public boolean contains(double x, double y) {
         double noteMinX = getBoxX();
         double noteMaxX = noteMinX + getBoxWidth();
 
         double noteMinY = getBoxY();
         double noteMaxY = noteMinY + getHeight();
-        return segmentMusicX >= noteMinX && segmentMusicX <= noteMaxX &&
-                segmentMusicY >= noteMinY && segmentMusicY <= noteMaxY;
+        return x >= noteMinX && x <= noteMaxX &&
+                y >= noteMinY && y <= noteMaxY;
     }
 
     public Note getNote() { return note; }
@@ -122,21 +97,11 @@ public class NoteLayout extends ElementLayout {
     public double getBoxWidth() { return getFontWidth(); }
     public double getFontSize() { return 4 * style.getStaffLineSpacing(); }
     public String getCode() { return fontData.getCode(); }
-    public double getDotWidth() { return (Leland.AUGMENTATION_DOT.getHeight() * Leland.AUGMENTATION_DOT.getRatio()) * style.getStaffLineSpacing(); }
     public List<DotLayout> getDots() { return dots; }
     public int getDiatonicStep() { return note.getPitch().getAbsoluteDiatonicStep(); }
     public StemLayout getStem() { return stem; }
     public BeamSingleLayout getBeamSingle() { return singleBeam; }
     public BeamGroupLayout getBeamGroup() { return beamGroup; }
-
-    private double calculateY(Clef clef) {
-        ClefType clefType = clef.getType();
-        int stepDifference = note.getPitch().getAbsoluteDiatonicStep() - clefType.getDiatonicStep();
-        double referenceY = clefType.getOffsetY() * style.getStaffLineSpacing();
-        double halfSpacing = 0.5 * style.getStaffLineSpacing();
-        return referenceY - (stepDifference * halfSpacing);
-    }
-
     public List<LedgerLine> getLedgerLines() {
         List<LedgerLine> lines = new ArrayList<>();
 
@@ -172,4 +137,34 @@ public class NoteLayout extends ElementLayout {
 
     public void setXOffset(double xOffset) { this.xOffset = xOffset; }
     public void setBeamGroup(BeamGroupLayout beamGroup) { this.beamGroup = beamGroup; }
+
+    private double calculateY(Clef clef) {
+        ClefType clefType = clef.getType();
+        int stepDifference = note.getPitch().getAbsoluteDiatonicStep() - clefType.getDiatonicStep();
+        double referenceY = clefType.getOffsetY() * style.getStaffLineSpacing();
+        double halfSpacing = 0.5 * style.getStaffLineSpacing();
+        return referenceY - (stepDifference * halfSpacing);
+    }
+
+    private void calculateDots(Clef clef) {
+        dots.clear();
+        if (note.getDots() <= 0) return;
+
+        ClefType clefType = clef.getType();
+        int stepDifference = note.getPitch().getAbsoluteDiatonicStep() - clefType.getDiatonicStep();
+
+        double spacing = style.getStaffLineSpacing();
+        double halfSpacing = 0.5 * spacing;
+
+        boolean isOnLine = (stepDifference % 2 == 0);
+        double relY = isOnLine ? -halfSpacing : 0.0;
+
+        double headWidth = getFontWidth();
+        double startRelX = headWidth + style.getNoteDotMargin();
+
+        for (int i = 0; i < note.getDots(); i++) {
+            double dotRelX = startRelX + (i * style.getNoteDotSpacing());
+            dots.add(new DotLayout(this, dotRelX, relY));
+        }
+    }
 }

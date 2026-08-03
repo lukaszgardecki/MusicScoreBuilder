@@ -3,12 +3,14 @@ package org.example.musicscorebuilder.components.views;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import org.example.musicscorebuilder.components.layout.BeamSingleLayout;
+import org.example.musicscorebuilder.components.layout.DotLayout;
 import org.example.musicscorebuilder.components.layout.NoteLayout;
 import org.example.musicscorebuilder.components.layout.edit.GhostNoteLayout;
 import org.example.musicscorebuilder.managers.FontManager;
 
 public class NoteView extends ComponentView {
     private final LedgerLineView ledgerLineView = new LedgerLineView();
+    private final AugmentationDotView dotView = new AugmentationDotView();
     private final StemView stemView = new StemView();
     private final BeamSingleView beamSingleView = new BeamSingleView();
 
@@ -20,27 +22,22 @@ public class NoteView extends ComponentView {
         double widthPx = note.getBoxWidth() * sp;
         double heightPx = note.getHeight() * sp;
         double fontSize = note.getFontSize() * sp;
-        var color = note instanceof GhostNoteLayout ghost
-                ? ghost.getColor()
-                : note.getScoreStyle().getSelectColor(note);
 
         for (NoteLayout.LedgerLine ledgerLine : note.getLedgerLines()) {
             ledgerLineView.draw(gc, ledgerLine, segmentX, segmentY, sp);
         }
 
-        for (NoteLayout.DotLayout dot : note.getDots()) {
-            double dotX = noteX + dot.x() * sp;
-            double dotY = noteY + dot.y() * sp;
-
-            gc.setFont(FontManager.getLelandFont(fontSize));
-            gc.setFill(Color.web(color));
-            gc.fillText(NoteLayout.DotLayout.code, dotX, dotY);
+        for (DotLayout dot : note.getDots()) {
+            dotView.draw(gc, dot, noteX, noteY, sp);
         }
 
         stemView.draw(gc, note.getStem(), segmentX, segmentY, sp);
 
         if (note.getBeamSingle() instanceof BeamSingleLayout single) beamSingleView.draw(gc, single, segmentX, segmentY, sp);
 
+        var color = note instanceof GhostNoteLayout ghost
+                ? ghost.getColor()
+                : note.getScoreStyle().getSelectColor(note);
         gc.setFont(FontManager.getLelandFont(fontSize));
         gc.setFill(Color.web(color));
         gc.fillText(note.getCode(), noteX, noteY);
