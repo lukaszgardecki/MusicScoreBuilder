@@ -122,7 +122,10 @@ public class SegmentLayout {
         if (allElements.isEmpty()) return 0;
 
         double maxElementWidth = allElements.stream()
-                .mapToDouble(ElementLayout::getWidth)
+                .mapToDouble(el -> {
+                    if (el instanceof NoteLayout nl) return nl.getX() + nl.getWidth();
+                    return el.getWidth();
+                })
                 .max()
                 .orElse(0);
 
