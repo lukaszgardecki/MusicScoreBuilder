@@ -4,9 +4,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import org.example.musicscorebuilder.components.layout.BeamGroupLayout;
 import org.example.musicscorebuilder.components.layout.NoteLayout;
-import org.example.musicscorebuilder.components.layout.StemDirection;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
-import org.example.musicscorebuilder.components.music.NoteType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,14 +27,14 @@ public class BeamGroupView extends ComponentView {
         var halfBeamThickness = 0.5 * beamThickness;
         var beamStep = beamThickness + style.getNoteBeamGap() * sp;
 
-        StemDirection stemDir = first.getStem().getDirection();
-        int offsetDirection = (stemDir == StemDirection.UP) ? 1 : -1;
+        boolean stemIsUp = first.getStem().isUp();
+        int offsetDirection = (stemIsUp) ? 1 : -1;
 
         // Punkty bazowe głównej belki (poziom 0)
-        double firstStemLocalX = (stemDir == StemDirection.UP) ? first.getBoxWidth() - first.getStem().getWidth() : 0;
+        double firstStemLocalX = (stemIsUp) ? first.getBoxWidth() - first.getStem().getWidth() : 0;
         double baseStartX = measureX + first.getParent().getX() * sp + first.getX() * sp + firstStemLocalX * sp;
 
-        double lastStemLocalX = (stemDir == StemDirection.UP) ? last.getBoxWidth() - last.getStem().getWidth() : 0;
+        double lastStemLocalX = (stemIsUp) ? last.getBoxWidth() - last.getStem().getWidth() : 0;
         double baseEndX = measureX + last.getParent().getX() * sp + last.getX() * sp + lastStemLocalX * sp + stemWidth;
 
         double baseStartY = measureY + first.getParent().getY() * sp + first.getStem().getEndY() * sp;
@@ -58,10 +56,10 @@ public class BeamGroupView extends ComponentView {
                 NoteLayout subFirst = subGroup.getFirst();
                 NoteLayout subLast = subGroup.getLast();
 
-                double subFirstStemX = (stemDir == StemDirection.UP) ? subFirst.getBoxWidth() - subFirst.getStem().getWidth() : 0;
+                double subFirstStemX = (stemIsUp) ? subFirst.getBoxWidth() - subFirst.getStem().getWidth() : 0;
                 double startX = measureX + subFirst.getParent().getX() * sp + subFirst.getX() * sp + subFirstStemX * sp;
 
-                double subLastStemX = (stemDir == StemDirection.UP) ? subLast.getBoxWidth() - subLast.getStem().getWidth() : 0;
+                double subLastStemX = (stemIsUp) ? subLast.getBoxWidth() - subLast.getStem().getWidth() : 0;
                 double endX = measureX + subLast.getParent().getX() * sp + subLast.getX() * sp + subLastStemX * sp + stemWidth;
 
                 double levelOffsetY = level * beamStep * offsetDirection;

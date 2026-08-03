@@ -207,4 +207,58 @@ public class ScoreStateManager {
         elementToChange.setDots(dots);
         notifyScoreChanged();
     }
+
+    public void toggleTieForSelectedNote() {
+        Selectable selected = getSelectedItem();
+        if (!(selected instanceof NoteLayout noteLayout)) return;
+
+        Note currentNote = noteLayout.getNote();
+        SegmentLayout segLayout = noteLayout.getSegment();
+        StaffLayout staffLayout = noteLayout.getStaff();
+
+        if (currentNote == null || segLayout == null || staffLayout == null) return;
+
+        Staff staff = staffLayout.getStaff();
+
+        if (currentNote.isTieStart()) {
+            currentNote.setTieStart(false);
+            NoteLayout nextNoteLayout = findNextNoteInVoice(segLayout, staff, currentNote.getVoice());
+            if (nextNoteLayout != null && isSamePitch(currentNote, nextNoteLayout.getNote())) {
+                nextNoteLayout.getNote().setTieStop(false);
+            }
+        } else {
+            NoteLayout nextNoteLayout = findNextNoteInVoice(segLayout, staff, currentNote.getVoice());
+            if (nextNoteLayout != null && isSamePitch(currentNote, nextNoteLayout.getNote())) {
+                currentNote.setTieStart(true);
+                nextNoteLayout.getNote().setTieStop(true);
+            }
+        }
+
+        notifyScoreChanged();
+    }
+
+    private boolean isSamePitch(Note n1, Note n2) {
+        return n1.getStep() == n2.getStep()
+                && n1.getAlter() == n2.getAlter()
+                && n1.getOctave() == n2.getOctave();
+    }
+
+    private NoteLayout findNextNoteInVoice(SegmentLayout startSegmentLayout, Staff staff, int voice) {
+        SegmentLayout currentLayout = startSegmentLayout.getNext();
+
+        while (currentLayout != null) {
+            for (ElementLayout el : currentLayout.getElements()) {
+                if (el.getStaff() != null && el.getStaff().getStaff() == staff && el.getVoice() == voice) {
+                    if (el instanceof NoteLayout nextNoteLayout) {
+                        return nextNoteLayout;
+                    } else if (el instanceof RestLayout) {
+                        return null;
+                    }
+                }
+            }
+            currentLayout = currentLayout.getNext();
+        }
+
+        return null;
+    }
 }

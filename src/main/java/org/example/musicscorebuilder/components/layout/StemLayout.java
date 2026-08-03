@@ -9,6 +9,7 @@ public class StemLayout implements Selectable {
     private final ScoreStyle style;
     private final NoteLayout parentNote;
     private boolean selected;
+    private enum StemDirection { UP, DOWN }
 
     public StemLayout(NoteLayout parentNote) {
         this.parentNote = parentNote;
@@ -32,7 +33,7 @@ public class StemLayout implements Selectable {
     @Override public StaffLayout getStaff() { return parentNote.getStaff(); }
 
     public double getX() {
-        boolean isUp = (getDirection() == StemDirection.UP);
+        boolean isUp = isUp();
         double stemWidth = getWidth();
         double localStemX = isUp ? parentNote.getBoxWidth() - stemWidth : 0;
 
@@ -54,8 +55,7 @@ public class StemLayout implements Selectable {
     public double getStartY() {
         double diff = parentNote.getScoreStyle().getNoteStemHeightDiffFactor();
         double noteY = parentNote.getY();
-        StemDirection direction = getDirection();
-        boolean isUp = (direction == StemDirection.UP);
+        boolean isUp = isUp();
 
         if (parentNote.getBeamGroup() != null) {
             double spacing = style.getStaffLineSpacing();
@@ -85,7 +85,8 @@ public class StemLayout implements Selectable {
 
     public ScoreStyle getScoreStyle() { return style; }
     public NoteLayout getParent()  { return parentNote; }
-
+    public boolean isUp() { return getDirection() == StemDirection.UP; }
+    public boolean isDown() {  return getDirection() == StemDirection.DOWN; }
     public StemDirection getDirection() {
         int voice = parentNote.getNote().getVoice();
         int activeVoices = parentNote.getParent().getVoiceCountForStaff(parentNote.getStaff());

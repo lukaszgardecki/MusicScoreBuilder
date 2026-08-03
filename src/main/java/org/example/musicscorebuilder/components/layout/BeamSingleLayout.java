@@ -31,7 +31,7 @@ public class BeamSingleLayout implements Selectable {
         boolean hitX = segmentX >= startX && segmentX <= startX + width;
         boolean hitY;
 
-        if (parentNote.getStem().getDirection() == StemDirection.UP) {
+        if (parentNote.getStem().isUp()) {
             hitY = segmentY >= y && segmentY <= y + height;
         } else {
             hitY = segmentY >= y - height && segmentY <= y;
@@ -44,16 +44,16 @@ public class BeamSingleLayout implements Selectable {
 
     public double getX() { return parentNote.getStem().getX(); }
     public double getY() { return parentNote.getStem().getEndY(); }
-    public double getBoxY() { return parentNote.getStem().getDirection() == StemDirection.UP ? getY() : getY() - getHeight(); }
+    public double getBoxY() { return parentNote.getStem().isUp() ? getY() : getY() - getHeight(); }
     public double getHeight() {
-        double heightDiff = parentNote.getStem().getDirection() == StemDirection.UP
+        double heightDiff = parentNote.getStem().isUp()
                 ? 0.75 * style.getStaffLineSpacing()
                 : style.getStaffLineSpacing();
         return getFontSize() - heightDiff;
     }
     private Leland getFontData() {
         boolean isDown = parentNote.getStem() != null
-                && parentNote.getStem().getDirection() == StemDirection.DOWN;
+                && parentNote.getStem().isDown();
 
         return switch (parentNote.getNote().getType()) {
             case EIGHTH -> isDown ? Leland.NOTE_FLAG_8TH_DOWN : Leland.NOTE_FLAG_8TH_UP;

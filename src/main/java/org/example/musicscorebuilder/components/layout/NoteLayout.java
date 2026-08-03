@@ -74,7 +74,7 @@ public class NoteLayout extends ElementLayout {
     @Override public double getBoxY() { return y - (0.5 * style.getStaffLineSpacing()); }
     @Override public double getWidth() {
         var headWidth = getFontWidth();
-        var flagWidth = getBeamSingle() == null ? 0 : getStem().getDirection() == StemDirection.UP ? getBeamSingle().getFontWidth() : 0;
+        var flagWidth = getBeamSingle() == null ? 0 : getStem().isUp() ? getBeamSingle().getFontWidth() : 0;
         double dotsExtent = dots.isEmpty() ? 0 : (dots.getLast().getX() + dots.getLast().getWidth());
         return Math.max(headWidth + flagWidth, dotsExtent);
     }

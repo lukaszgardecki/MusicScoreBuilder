@@ -1,7 +1,6 @@
 package org.example.musicscorebuilder.components.layout.util;
 
 import org.example.musicscorebuilder.components.layout.NoteLayout;
-import org.example.musicscorebuilder.components.layout.StemDirection;
 import org.example.musicscorebuilder.components.layout.StemLayout;
 import org.example.musicscorebuilder.components.music.NoteType;
 
@@ -26,7 +25,7 @@ public final class NoteCollisionResolver {
                 .toList();
 
         StemLayout stemLayout = sortedNotes.getFirst().getStem();
-        StemDirection stemDirection = stemLayout != null ? stemLayout.getDirection() : StemDirection.UP;
+        boolean stemIsUp = stemLayout == null || sortedNotes.getFirst().getStem().isUp();
 
         for (int i = 0; i < sortedNotes.size() - 1; i++) {
             NoteLayout currentNote = sortedNotes.get(i);
@@ -35,7 +34,7 @@ public final class NoteCollisionResolver {
             if (shouldOffset(nextNote, currentNote)) {
                 double offsetWidth = currentNote.getBoxWidth();
 
-                if (stemDirection == StemDirection.UP) {
+                if (stemIsUp) {
                     nextNote.setXOffset(offsetWidth);
                 } else {
                     currentNote.setXOffset(offsetWidth);

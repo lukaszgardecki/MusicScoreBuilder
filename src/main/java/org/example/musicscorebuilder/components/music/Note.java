@@ -3,6 +3,8 @@ package org.example.musicscorebuilder.components.music;
 public class Note extends NoteRestElement {
     private Pitch pitch;
     private BeamType beam;
+    private boolean tieStart;
+    private boolean tieStop;
 
     public Note(int voice, PitchStep pitchStep, int alter, int octave, NoteType type, BeamType beam, int dots, Measure parent) {
         super(parent, voice, type);
@@ -22,6 +24,8 @@ public class Note extends NoteRestElement {
     public int getStepValue() { return pitch.getStepValue(); }
     public int getAlter() { return pitch.getAlter(); }
     public int getOctave() { return pitch.getOctave(); }
+    public boolean isTieStart() { return tieStart; }
+    public boolean isTieStop() { return tieStop; }
 
     public void setPitch(PitchStep step, int octave) {
         pitch.setStep(step);
@@ -30,4 +34,6 @@ public class Note extends NoteRestElement {
     public void setBeamType(BeamType beam) {
         this.beam = beam;
     }
+    public void setTieStart(boolean tieStart) { this.tieStart = tieStart; }
+    public void setTieStop(boolean tieStop) { this.tieStop = tieStop; }
 }

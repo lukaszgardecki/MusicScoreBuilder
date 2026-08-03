@@ -65,6 +65,7 @@ public class LayoutEngine {
         systemJustifier.justify(newSystem);
 
         linkAllSegments(scoreLayout);
+        buildTies(scoreLayout);
         return scoreLayout;
     }
 
@@ -81,7 +82,7 @@ public class LayoutEngine {
     }
 
     private MeasureLayout createMeasureLayout(Measure measure, SystemLayout systemLayout) {
-        MeasureLayout measureLayout = new MeasureLayout(measure, systemLayout.getWidth(), style);
+        MeasureLayout measureLayout = new MeasureLayout(measure, systemLayout, style);
         GroupBeamBuilder groupBeamBuilder = new GroupBeamBuilder();
 
         for (Staff staff : measure.getStaves()) {
@@ -152,5 +153,61 @@ public class LayoutEngine {
                 current.setNext(allSegments.get(i + 1));
             }
         }
+    }
+
+    private void buildTies(ScoreLayout scoreLayout) {
+        for (PageLayout page : scoreLayout.getPages()) {
+            for (SystemLayout system : page.getSystems()) {
+                system.getTies().clear();
+            }
+        }
+
+        for (PageLayout page : scoreLayout.getPages()) {
+            for (SystemLayout system : page.getSystems()) {
+                for (MeasureLayout measure : system.getMeasures()) {
+                    for (SegmentLayout segment : measure.getSegments()) {
+                        for (ElementLayout element : segment.getElements()) {
+
+                            if (element instanceof NoteLayout startNote && startNote.getNote().isTieStart()) {
+                                createTieForNote(startNote);
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void createTieForNote(NoteLayout startNote) {
+        NoteLayout endNote = findNextNoteInVoice(startNote);
+        if (endNote == null) return;
+
+        SystemLayout startSystem = startNote.getSegment().getParent().getParent();
+        SystemLayout endSystem = endNote.getSegment().getParent().getParent();
+
+        if (startSystem == endSystem) {
+            startSystem.addTie(new TieLayout(startSystem, startNote, endNote));
+        } else {
+            startSystem.addTie(new TieLayout(startSystem, startNote, null));
+            endSystem.addTie(new TieLayout(endSystem, null, endNote));
+        }
+    }
+
+    private NoteLayout findNextNoteInVoice(NoteLayout startNote) {
+        SegmentLayout current = startNote.getSegment().getNext();
+        Staff staff = startNote.getStaff().getStaff();
+        int voice = startNote.getVoice();
+
+        while (current != null) {
+            for (ElementLayout el : current.getElements()) {
+                if (el.getStaff() != null && el.getStaff().getStaff() == staff && el.getVoice() == voice) {
+                    if (el instanceof NoteLayout note) return note;
+                    if (el instanceof RestLayout) return null; // Pauza rozrywa łuk!
+                }
+            }
+            current = current.getNext();
+        }
+        return null;
     }
 }

@@ -2,7 +2,7 @@ package org.example.musicscorebuilder.components.layout.util;
 
 import org.example.musicscorebuilder.components.layout.BeamGroupLayout;
 import org.example.musicscorebuilder.components.layout.NoteLayout;
-import org.example.musicscorebuilder.components.layout.StemDirection;
+import org.example.musicscorebuilder.components.layout.StemLayout;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 
 public final class StemLengthCalculator {
@@ -15,19 +15,13 @@ public final class StemLengthCalculator {
         }
 
         int activeVoices = parentNote.getParent().getVoiceCountForStaff(parentNote.getStaff());
-
-        if (activeVoices == 1) {
-            return calculateSingleVoiceFactor(parentNote, middleY, spacing);
-        }
+        if (activeVoices == 1) return calculateSingleVoiceFactor(parentNote, middleY, spacing);
 
         int stepsFromMiddle = calculateStepsFromMiddle(parentNote.getY(), middleY, spacing);
-        StemDirection direction = parentNote.getStem() != null ? parentNote.getStem().getDirection() : StemDirection.UP;
+        StemLayout stem = parentNote.getStem();
 
-        if (parentNote.getNote().getType().isEighth()) {
-            return calculateEighthFactor(direction, stepsFromMiddle);
-        }
-
-        return calculateMultiVoiceStandardFactor(direction, stepsFromMiddle);
+        if (parentNote.getNote().getType().isEighth()) return calculateEighthFactor(stem, stepsFromMiddle);
+        return calculateMultiVoiceStandardFactor(stem, stepsFromMiddle);
     }
 
     public static double calculateBeamYAtNote(NoteLayout parentNote, double middleY, double spacing) {
@@ -64,12 +58,12 @@ public final class StemLengthCalculator {
             double diff = parentNote.getScoreStyle().getNoteStemHeightDiffFactor();
             double stemLengthFactor = calculate(parentNote, middleY, spacing);
             double standardStemHeight = (stemLengthFactor * spacing) - diff;
-            StemDirection direction = parentNote.getStem() != null ? parentNote.getStem().getDirection() : StemDirection.UP;
+            boolean stemIsUp = parentNote.getStem() == null || parentNote.getStem().isUp();
 
             double stemHeight = standardStemHeight;
             double distanceToMiddle = Math.abs(middleY - startY);
 
-            if (direction == StemDirection.UP) {
+            if (stemIsUp) {
                 if (startY > middleY && distanceToMiddle > standardStemHeight) {
                     stemHeight = distanceToMiddle;
                 }
@@ -79,9 +73,7 @@ public final class StemLengthCalculator {
                 }
             }
 
-            return direction == StemDirection.UP
-                    ? startY - stemHeight
-                    : startY + stemHeight;
+            return stemIsUp ? startY - stemHeight : startY + stemHeight;
         }
 
         NoteLayout first = beamGroup.getFirstNote();
@@ -116,7 +108,7 @@ public final class StemLengthCalculator {
     }
 
     private static boolean isStemUp(NoteLayout note) {
-        return note.getStem() != null && note.getStem().getDirection() == StemDirection.UP;
+        return note.getStem() != null && note.getStem().isUp();
     }
 
     private static double resolveNoteX(NoteLayout note, double stemWidth) {
@@ -248,19 +240,16 @@ public final class StemLengthCalculator {
         return (int) Math.round(pixelOffset / stepSize);
     }
 
-    private static double calculateEighthFactor(StemDirection direction, int stepsFromMiddle) {
-        boolean isUpperDirectionCondition = (direction == StemDirection.UP && stepsFromMiddle >= 0);
-        boolean isLowerDirectionCondition = (direction == StemDirection.DOWN && stepsFromMiddle <= 0);
-
-        if (isUpperDirectionCondition || isLowerDirectionCondition) {
-            return 3.25;
-        }
-        return 3.5;
+    private static double calculateEighthFactor(StemLayout stem, int stepsFromMiddle) {
+        boolean isUpperDirectionCondition = stem.isUp() && stepsFromMiddle >= 0;
+        boolean isLowerDirectionCondition = !stem.isUp() && stepsFromMiddle <= 0;
+        return isUpperDirectionCondition || isLowerDirectionCondition ? 3.25 : 3.5;
     }
 
-    private static double calculateMultiVoiceStandardFactor(StemDirection direction, int stepsFromMiddle) {
-        if (direction == StemDirection.UP && stepsFromMiddle > 1) return 2.5;
-        if (direction == StemDirection.DOWN && stepsFromMiddle < -1) return 2.5;
+    private static double calculateMultiVoiceStandardFactor(StemLayout stem, int stepsFromMiddle) {
+        boolean stemIsUp = stem == null || stem.isUp();
+        if (stemIsUp && stepsFromMiddle > 1) return 2.5;
+        if (!stemIsUp && stepsFromMiddle < -1) return 2.5;
 
         if (stepsFromMiddle == 1) return 2.75;
         if (stepsFromMiddle == 0) return 3.0;

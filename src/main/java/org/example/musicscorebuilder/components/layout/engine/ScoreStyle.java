@@ -44,6 +44,14 @@ public class ScoreStyle {
     private static final double NOTE_DOT_MARGIN = 0.55;
     private static final double NOTE_DOT_SPACING = 0.3;
 
+    private static final double BOW_MID_THICKNESS = 0.18;
+    private static final double BOW_TIP_ROUNDING_FACTOR = 0.05;
+    private static final double BOW_MAX_DX_RATIO = 0.20;
+    private static final double BOW_HEIGHT_FACTOR = 1.0;
+    private static final double BOW_Y_NOTE_SPACE = 0.2;
+    private static final double BOW_X_NOTE_SPACE = 0.2;
+    private static final double BOW_SYSTEM_BREAK_START_X = 1.7;
+
     private static final String VOICE_1_COLOR = "#0066cc";
     private static final String VOICE_1_INSERT_COLOR = "#3399ff";
     private static final String VOICE_2_COLOR = "#007a1a";
@@ -96,6 +104,14 @@ public class ScoreStyle {
     private double noteDotMargin = NOTE_DOT_MARGIN;
     private double noteDotSpacing  = NOTE_DOT_SPACING;
 
+    private double bowMidThickness = BOW_MID_THICKNESS;
+    private double bowTipRoundingFactor = BOW_TIP_ROUNDING_FACTOR;
+    private double bowMaxDxRatio = BOW_MAX_DX_RATIO;
+    private double bowHeightFactor = BOW_HEIGHT_FACTOR;
+    private double bowYNoteSpace = BOW_Y_NOTE_SPACE;
+    private double bowXNoteSpace = BOW_X_NOTE_SPACE;
+    private double bowSystemBreakStartX = BOW_SYSTEM_BREAK_START_X;
+
     private String voice1Color = VOICE_1_COLOR;
     private String voice1InsertColor = VOICE_1_INSERT_COLOR;
     private String voice2Color = VOICE_2_COLOR;
@@ -143,6 +159,14 @@ public class ScoreStyle {
     public double getNoteBeamGap() { return staffSpacingScale * noteBeamGap; }
     public double getNoteDotMargin() { return  staffSpacingScale * noteDotMargin; }
     public double getNoteDotSpacing() { return  staffSpacingScale * noteDotSpacing; }
+
+    public double getBowMidThickness() { return staffSpacingScale * bowMidThickness; }
+    public double getBowTipRoundingFactor() { return staffSpacingScale * bowTipRoundingFactor; }
+    public double getBowMaxDxRatio() { return bowMaxDxRatio; }
+    public double getBowHeightFactor() { return staffSpacingScale * bowHeightFactor; }
+    public double getBowYNoteSpace() { return  staffSpacingScale * bowYNoteSpace; }
+    public double getBowXNoteSpace() { return staffSpacingScale * bowXNoteSpace; }
+    public double getBowSystemBreakStartX() { return staffSpacingScale * bowSystemBreakStartX; }
 
     public double getSelectionFrameWidth() { return staffSpacingScale * selectionFrameWidth; }
     public double getSelectionFrameExtraHeight() { return staffSpacingScale * selectionFrameExtraHeight; }

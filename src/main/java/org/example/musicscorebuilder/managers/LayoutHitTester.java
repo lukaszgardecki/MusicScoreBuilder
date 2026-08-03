@@ -24,6 +24,14 @@ public class LayoutHitTester {
                 double systemX = pageX - system.getX();
                 double systemY = pageY - system.getY();
 
+                if (system.getTies() != null) {
+                    for (TieLayout tie : system.getTies()) {
+                        if (tie.contains(systemX, systemY)) {
+                            return tie;
+                        }
+                    }
+                }
+
                 for (MeasureLayout measure : system.getMeasures()) {
                     double measureX = systemX - measure.getX();
                     double measureY = systemY - measure.getY();
@@ -177,6 +185,8 @@ public class LayoutHitTester {
             itemsToSelect.add(stem);
         } else if (clickedElement instanceof BeamGroupLayout beam) {
             itemsToSelect.add(beam);
+        } else if (clickedElement instanceof TieLayout tie) {
+            itemsToSelect.add(tie);
         } else if (clickedElement instanceof MeasureStaffSelection selection) {
             itemsToSelect.add(selection);
 
@@ -226,6 +236,17 @@ public class LayoutHitTester {
                             StaffLayout groupStaff = beamGroup.getFirstNote().getStaff();
                             if (groupStaff == targetStaff) {
                                 itemsToSelect.add(beamGroup);
+                            }
+                        }
+                    }
+                }
+
+                SystemLayout system = measure.getParent();
+                if (system != null && system.getTies() != null) {
+                    for (TieLayout tie : system.getTies()) {
+                        if (tie.getStartNote() != null && tie.getEndNote() != null) {
+                            if (itemsToSelect.contains(tie.getStartNote()) && itemsToSelect.contains(tie.getEndNote())) {
+                                itemsToSelect.add(tie);
                             }
                         }
                     }

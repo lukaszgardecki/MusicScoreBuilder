@@ -10,6 +10,7 @@ public class SystemLayout {
     private final PageLayout pageLayout;
     private final Optional<BraceLayout> braceLayout;
     private final List<MeasureLayout> measures = new ArrayList<>();
+    private final List<TieLayout> ties = new ArrayList<>();
     private double spaceBelow;
     private double x, y;
 
@@ -25,7 +26,9 @@ public class SystemLayout {
 
     public void add(MeasureLayout measureLayout) {
         measures.add(measureLayout);
+        measureLayout.setParent(this);
     }
+    public void addTie(TieLayout tie) { ties.add(tie); }
 
     public PageLayout getPageLayout() { return pageLayout; }
     public Optional<BraceLayout> getBraceLayout() { return braceLayout; }
@@ -42,5 +45,7 @@ public class SystemLayout {
     public double getSpaceBelow() { return spaceBelow; }
     public double getX() { return x; }
     public double getY() { return y; }
+    public List<TieLayout> getTies() { return ties; }
+
     public void setSpaceBelow(double spaceBelow) { this.spaceBelow = spaceBelow; }
 }

@@ -8,14 +8,24 @@ import java.util.List;
 
 public class MeasureLayout {
     private final ScoreStyle style;
+    private SystemLayout parent;
     private final Measure measure;
     private final List<StaffLayout> staves = new ArrayList<>();
     private final List<SegmentLayout> segments = new ArrayList<>();
     private List<BeamGroupLayout> beams = new ArrayList<>();
     private double x, y;
 
+    public MeasureLayout(Measure measure, SystemLayout parent, ScoreStyle scoreStyle) {
+        this.style = scoreStyle;
+        this.parent = parent;
+        this.measure = measure;
+        this.x = parent.getWidth();
+        this.y = 0;
+    }
+
     public MeasureLayout(Measure measure, double x, ScoreStyle scoreStyle) {
         this.style = scoreStyle;
+        this.parent = null;
         this.measure = measure;
         this.x = x;
         this.y = 0;
@@ -75,6 +85,7 @@ public class MeasureLayout {
     }
 
     public ScoreStyle getScoreStyle() { return style; }
+    public SystemLayout getParent() { return parent; }
     public Measure getMeasure() { return measure; }
     public List<SegmentLayout> getSegments() { return segments; }
     public List<StaffLayout> getStaffs() { return staves; }
@@ -88,7 +99,6 @@ public class MeasureLayout {
         double totalSpacing = (staves.size() - 1) * style.getStaffSpacing();
         return totalStavesHeight + totalSpacing;
     }
-
     public int getVoiceCountForStaff(StaffLayout staffLayout) {
         Staff staff = staffLayout.getStaff();
         return measure.countVoicesByStaff(staff);
@@ -96,4 +106,7 @@ public class MeasureLayout {
 
     public void setX(double x) { this.x = x; }
     public void setBeamGroups(List<BeamGroupLayout> beamGroups) { this.beams = beamGroups; }
+    public void setParent(SystemLayout parent) {
+        this.parent = parent;
+    }
 }

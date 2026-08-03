@@ -23,7 +23,7 @@ public class ToolbarController {
 
     @FXML private Button modeButton;
     @FXML private Button btn32, btn16, btn8, btn4, btn2, btn1;
-    @FXML private Button btnDot;
+    @FXML private Button btnDot, btnTie;
     @FXML private Button voice1Button;
     @FXML private Button voice2Button;
 
@@ -62,6 +62,15 @@ public class ToolbarController {
             }
         }
         updateDotButtonState();
+    }
+
+    @FXML
+    private void addTie() {
+        if (modeManager.isInsertMode()) {
+
+        } else {
+            stateManager.toggleTieForSelectedNote();
+        }
     }
 
     @FXML
