@@ -35,6 +35,14 @@ public class ShortcutHandler {
             if (modeManager.isInsertMode()) { modeManager.toggleInsertMode(); }
             event.consume();
             return;
+        } else if (event.getCode() == KeyCode.T) {
+            if (modeManager.isInsertMode()) {
+
+            } else {
+                scoreStateManager.toggleTieForSelectedNote();
+            }
+            event.consume();
+            return;
         } else if (event.getCode() == KeyCode.PERIOD || event.getCode() == KeyCode.DECIMAL) {
             if (modeManager.isInsertMode()) {
                 modeManager.toggleDot();
