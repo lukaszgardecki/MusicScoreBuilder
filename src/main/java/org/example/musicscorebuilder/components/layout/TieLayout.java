@@ -89,7 +89,7 @@ public class TieLayout implements Selectable {
         MeasureLayout measure = startNote.getSegment().getParent();
         double absoluteNoteX = measure.getX() + startNote.getSegment().getX() + startNote.getX();
         double headWidth = startNote.getFontWidth();
-        double correctedX = startNote.getStem().isUp() && isCurveUp() ? headWidth : headWidth * 0.5;
+        double correctedX = headWidth * ((startNote.getStem() != null && startNote.getStem().isUp() && isCurveUp()) ? 1.0 : 0.5);
         return absoluteNoteX + correctedX + getScoreStyle().getBowXNoteSpace();
     }
 
@@ -99,7 +99,7 @@ public class TieLayout implements Selectable {
         MeasureLayout measure = endNote.getSegment().getParent();
         double absoluteNoteX = measure.getX() + endNote.getSegment().getX() + endNote.getX();
         double headWidth = endNote.getFontWidth();
-        double correctedX = endNote.getStem().isDown() && !isCurveUp() ? 0.0 : headWidth * 0.5;
+        double correctedX = headWidth * ((endNote.getStem() != null && endNote.getStem().isDown() && !isCurveUp()) ? 0.0 : 0.5);
         return absoluteNoteX + correctedX - getScoreStyle().getBowXNoteSpace();
     }
 
