@@ -26,6 +26,7 @@ public class Note extends NoteRestElement {
     public int getOctave() { return pitch.getOctave(); }
     public boolean isTieStart() { return tieStart; }
     public boolean isTieStop() { return tieStop; }
+    public boolean hasTie() { return isTieStart() || isTieStop(); }
 
     public void setPitch(PitchStep step, int octave) {
         pitch.setStep(step);

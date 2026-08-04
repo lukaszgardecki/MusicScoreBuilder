@@ -8,7 +8,6 @@ import org.example.musicscorebuilder.components.layout.NoteLayout;
 import org.example.musicscorebuilder.components.layout.RestLayout;
 import org.example.musicscorebuilder.components.layout.Selectable;
 import org.example.musicscorebuilder.components.music.NoteType;
-import org.example.musicscorebuilder.components.views.NoteView;
 import org.example.musicscorebuilder.controller.util.ToolbarIconRenderer;
 import org.example.musicscorebuilder.managers.ModeManager;
 import org.example.musicscorebuilder.managers.ScoreNavigator;
@@ -21,7 +20,7 @@ public class ToolbarController {
     private final ScoreStateManager stateManager = ScoreStateManager.getInstance();
     private final ModeManager modeManager = ModeManager.getInstance();
     private final ScoreNavigator scoreNavigator = ScoreNavigator.getInstance();
-    private final ToolbarIconRenderer iconRenderer = new ToolbarIconRenderer(new NoteView());
+    private final ToolbarIconRenderer iconRenderer = new ToolbarIconRenderer();
 
     @FXML private Button modeButton;
     @FXML private Button btn32, btn16, btn8, btn4, btn2, btn1;
@@ -73,6 +72,7 @@ public class ToolbarController {
         } else {
             stateManager.toggleTieForSelectedNote();
         }
+        updateTieButtonState();
     }
 
     @FXML
@@ -121,6 +121,7 @@ public class ToolbarController {
     private void setupToolbarUI() {
         iconRenderer.renderModeIcon(modeButton);
         iconRenderer.renderNoteDottedIcon(btnDot);
+        iconRenderer.renderTieIcon(btnTie);
         iconRenderer.renderVoiceIcon(voice1Button, 1);
         iconRenderer.renderVoiceIcon(voice2Button, 2);
 
@@ -132,6 +133,7 @@ public class ToolbarController {
         });
 
         updateDotButtonState();
+        updateTieButtonState();
     }
 
     // ----------------------------------------------------
@@ -147,12 +149,14 @@ public class ToolbarController {
 
         updateDurationButtonStyles(typeToHighlight);
         updateDotButtonState();
+        updateTieButtonState();
     }
 
     private void handleNoteTypeChange(NoteType noteType) {
         if (modeManager.isInsertMode()) {
             updateDurationButtonStyles(noteType);
             updateDotButtonState();
+            updateTieButtonState();
         }
     }
 
@@ -160,6 +164,7 @@ public class ToolbarController {
         if (!modeManager.isInsertMode()) {
             updateDurationButtonStyles(extractNoteType(selectedItem));
             updateDotButtonState();
+            updateTieButtonState();
         }
     }
 
@@ -191,6 +196,22 @@ public class ToolbarController {
         }
 
         setButtonActive(btnDot, isDotted);
+    }
+
+    private void updateTieButtonState() {
+        boolean isTied;
+
+        if (modeManager.isInsertMode()) {
+            isTied = false;
+        } else {
+            Selectable selected = stateManager.getSelectedItem();
+            isTied = switch (selected) {
+                case NoteLayout noteLayout -> noteLayout.getNote().hasTie();
+                case null, default -> false;
+            };
+        }
+
+        setButtonActive(btnTie, isTied);
     }
 
     private void activateVoice(int voiceNumber) {
