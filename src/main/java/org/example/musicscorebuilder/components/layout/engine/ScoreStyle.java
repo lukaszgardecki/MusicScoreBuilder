@@ -64,6 +64,21 @@ public class ScoreStyle {
     private static final double EDIT_CURSOR_BOX_WIDTH = 2.0;
     private static final double EDIT_CURSOR_PADDING = 0.8;
 
+    private static final double HEADER_DEF_NUMBER_NEW_FONT_SIZE = 3.3;
+    private static final double HEADER_DEF_NUMBER_OLD_FONT_SIZE = 2.5;
+    private static final double HEADER_DEF_TITLE_FONT_SIZE = 3.3;
+    private static final double HEADER_DEF_SUBTITLE_FONT_SIZE = 2.5;
+    private static final double HEADER_DEF_COMPOSER_FONT_SIZE = 2.0;
+    private static final double HEADER_DEF_MIN_WIDTH = 9.0;
+    private static final double HEADER_DEF_MIN_HEIGHT = 7.0;
+    private static final double HEADER_DEF_NUM_BOX_RADIUS = 1.0;
+    private static final double HEADER_DEF_NUM_BOX_STROKE_WIDTH = 0.05;
+    private static final double HEADER_DEF_NUM_BOX_SPACING = 0.8;
+    private static final double HEADER_DEF_NUM_BOX_PADDING_X = 0.5;
+    private static final double HEADER_DEF_NUM_BOX_PADDING_Y = 0.5;
+
+    private static final double FOOTER_DEF_PAGE_NUM_FONT_SIZE = 2.0;
+
     private double pageSpacing = PAGE_SPACING;
     private double staffSpacing = STAFF_SPACING;
     private double systemSpacing = SYSTEM_SPACING;
@@ -102,7 +117,7 @@ public class ScoreStyle {
     private double noteBeamStubLength = NOTE_BEAM_STUB_LENGTH;
     private double noteBeamGap = NOTE_BEAM_GAP;
     private double noteDotMargin = NOTE_DOT_MARGIN;
-    private double noteDotSpacing  = NOTE_DOT_SPACING;
+    private double noteDotSpacing = NOTE_DOT_SPACING;
 
     private double bowMidThickness = BOW_MID_THICKNESS;
     private double bowTipRoundingFactor = BOW_TIP_ROUNDING_FACTOR;
@@ -116,10 +131,24 @@ public class ScoreStyle {
     private String voice1InsertColor = VOICE_1_INSERT_COLOR;
     private String voice2Color = VOICE_2_COLOR;
     private String voice2InsertColor = VOICE_2_INSERT_COLOR;
-    private double selectionFrameWidth =  SELECTION_FRAME_WIDTH;
+    private double selectionFrameWidth = SELECTION_FRAME_WIDTH;
     private double selectionFrameExtraHeight = SELECTION_FRAME_EXTRA_HEIGHT;
     private double selectionFrameRadius = SELECTION_FRAME_RADIUS;
 
+    private double headerDefNumberNewFontSize = HEADER_DEF_NUMBER_NEW_FONT_SIZE;
+    private double headerDefNumberOldFontSize = HEADER_DEF_NUMBER_OLD_FONT_SIZE;
+    private double headerDefTitleFontSize = HEADER_DEF_TITLE_FONT_SIZE;
+    private double headerDefSubtitleFontSize = HEADER_DEF_SUBTITLE_FONT_SIZE;
+    private double headerDefComposerFontSize = HEADER_DEF_COMPOSER_FONT_SIZE;
+    private double headerDefMinWidth = HEADER_DEF_MIN_WIDTH;
+    private double headerDefMinHeight = HEADER_DEF_MIN_HEIGHT;
+    private double headerDefNumBoxRadius = HEADER_DEF_NUM_BOX_RADIUS;
+    private double headerDefNumBoxStrokeWidth = HEADER_DEF_NUM_BOX_STROKE_WIDTH;
+    private double headerDefNumBoxSpacing = HEADER_DEF_NUM_BOX_SPACING;
+    private double headerDefNumBoxPaddingX = HEADER_DEF_NUM_BOX_PADDING_X;
+    private double headerDefNumBoxPaddingY = HEADER_DEF_NUM_BOX_PADDING_Y;
+
+    private double footerDefPageNumFontSize = FOOTER_DEF_PAGE_NUM_FONT_SIZE;
 
     public double getPageSpacing() { return staffSpacingScale * pageSpacing; }
     public double getStaffSpacing() { return staffSpacingScale * staffSpacing; }
@@ -175,6 +204,21 @@ public class ScoreStyle {
     public double getEditCursorLineThickness() { return staffSpacingScale * EDIT_CURSOR_LINE_THICKNESS; }
     public double getEditCursorBoxWidth() { return staffSpacingScale * EDIT_CURSOR_BOX_WIDTH; }
     public double getEditCursorPadding() { return staffSpacingScale * EDIT_CURSOR_PADDING * getStaffLineSpacing(); }
+
+    public double getHeaderDefNumberNewFontSize() { return staffSpacingScale * headerDefNumberNewFontSize; }
+    public double getHeaderDefNumberOldFontSize() { return staffSpacingScale * headerDefNumberOldFontSize; }
+    public double getHeaderDefTitleFontSize() { return staffSpacingScale * headerDefTitleFontSize; }
+    public double getHeaderDefSubtitleFontSize() { return staffSpacingScale * headerDefSubtitleFontSize; }
+    public double getHeaderDefComposerFontSize() { return staffSpacingScale * headerDefComposerFontSize; }
+    public double getHeaderDefMinWidth() { return staffSpacingScale * headerDefMinWidth; }
+    public double getHeaderDefMinHeight() { return staffSpacingScale * headerDefMinHeight; }
+    public double getHeaderDefNumBoxRadius() { return staffSpacingScale * headerDefNumBoxRadius; }
+    public double getHeaderDefNumBoxStrokeWidth() { return staffSpacingScale * headerDefNumBoxStrokeWidth; }
+    public double getHeaderDefNumBoxSpacing() { return staffSpacingScale * headerDefNumBoxSpacing; }
+    public double getHeaderDefNumBoxPaddingX() { return staffSpacingScale * headerDefNumBoxPaddingX; }
+    public double getHeaderDefNumBoxPaddingY() { return staffSpacingScale * headerDefNumBoxPaddingY; }
+
+    public double getFooterDefPageNumFontSize() { return staffSpacingScale * footerDefPageNumFontSize; }
 
     public double toSp(double valueInMm) {
         if (spatiumMm <= 0) return 0;

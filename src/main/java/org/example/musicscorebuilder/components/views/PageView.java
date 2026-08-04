@@ -8,7 +8,9 @@ import org.example.musicscorebuilder.components.layout.SystemLayout;
 public class PageView {
     private static final Color PAGE_BACKGROUND_COLOR = Color.rgb(249,249,249);
     private static final Color PAGE_BORDER_COLOR = Color.rgb(170, 170, 170);
+    private final HeaderView headerView = new HeaderView();
     private final SystemView systemView = new SystemView();
+    private final FooterView footerView = new FooterView();
 
     public void draw(GraphicsContext gc, PageLayout page, double offsetX, double offsetY, double sp) {
         double pageX = offsetX + page.getX() * sp;
@@ -23,6 +25,9 @@ public class PageView {
         gc.setStroke(PAGE_BORDER_COLOR);
         gc.setLineWidth(0.1 * sp);
         gc.strokeRoundRect(pageX, pageY, cardWidthPx, cardHeightPx, cornerRadius, cornerRadius);
+
+        if (page.getHeader() != null) headerView.draw(gc, page.getHeader(), pageX, pageY, sp);
+        footerView.draw(gc, page.getFooter(), pageX, pageY, sp);
 
         var canvasHeight = gc.getCanvas().getHeight();
         for (SystemLayout system : page.getSystems()) {

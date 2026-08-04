@@ -21,7 +21,7 @@ public class LayoutEngine {
     }
 
     public ScoreLayout compute(ScoreMode scoreMode) {
-        ScoreLayout scoreLayout = new ScoreLayout(style);
+        ScoreLayout scoreLayout = new ScoreLayout(scoreMode.getScore(), style);
         PageLayout currentPage = createPageLayout(scoreLayout);
         scoreLayout.addPageLayout(currentPage);
 
@@ -78,7 +78,7 @@ public class LayoutEngine {
 
     private PageLayout createPageLayout(ScoreLayout scoreLayout) {
         int pageIndex = scoreLayout.getPages().size();
-        return new PageLayout(page, style, pageIndex);
+        return new PageLayout(page, scoreLayout, pageIndex);
     }
 
     private MeasureLayout createMeasureLayout(Measure measure, SystemLayout systemLayout) {

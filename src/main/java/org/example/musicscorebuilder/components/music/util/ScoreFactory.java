@@ -7,22 +7,22 @@ import org.example.musicscorebuilder.components.music.ScoreMode;
 public class ScoreFactory {
     private static final int measuresCount = 32;
 
-    public static ScoreMode createSoloMode() {
-        ScoreMode scoreMode = new ScoreMode(ModeType.SOLO);
+    public static ScoreMode createSoloMode(Score score) {
+        ScoreMode scoreMode = new ScoreMode(score, ModeType.SOLO);
         scoreMode.appendMeasures(measuresCount);
         return scoreMode;
     }
 
-    public static ScoreMode createHarmonyMode() {
-        ScoreMode scoreMode = new ScoreMode(ModeType.HARMONY);
+    public static ScoreMode createHarmonyMode(Score score) {
+        ScoreMode scoreMode = new ScoreMode(score, ModeType.HARMONY);
         scoreMode.appendMeasures(measuresCount);
         return scoreMode;
     }
 
     public static Score createScore() {
-        Score score = new Score();
-        score.add(createSoloMode());
-        score.add(createHarmonyMode());
+        Score score = new Score("251", "245", "O milcząca Hostio biała", "Podtytuł", "t. i m.: (Siedl.)");
+        score.add(createSoloMode(score));
+        score.add(createHarmonyMode(score));
         return score;
     }
 }

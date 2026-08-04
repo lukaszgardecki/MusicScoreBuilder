@@ -7,13 +7,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ScoreMode {
+    private final Score score;
     private final ModeType type;
     private final BraceType braceType;
     private final Barline startBarline;
     private final List<Staff> staves = new ArrayList<>();
     private final List<Measure> measures = new ArrayList<>();
 
-    public ScoreMode(ModeType type) {
+    public ScoreMode(Score score, ModeType type) {
+        this.score = score;
         this.type = type;
         this.braceType = type == ModeType.SOLO ? BraceType.NONE : BraceType.BRACE;
         this.startBarline = type == ModeType.SOLO
@@ -57,6 +59,7 @@ public class ScoreMode {
         measures.getLast().setBarlineStyle(BarlineStyle.FINAL);
     }
 
+    public Score getScore() { return score; }
     public List<Measure> getMeasures() { return measures; }
     public BraceType getBraceType() { return braceType; }
     public Barline getStartBarline() { return startBarline; }

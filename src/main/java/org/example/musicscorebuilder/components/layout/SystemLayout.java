@@ -17,7 +17,7 @@ public class SystemLayout {
     public SystemLayout(PageLayout parent, BraceType braceType) {
         this.pageLayout = parent;
         this.x = pageLayout.getMarginLeft();
-        this.y = pageLayout.getMarginTop() + pageLayout.getOccupiedHeight();
+        this.y = pageLayout.getEffectiveY() + pageLayout.getOccupiedHeight();
         this.braceLayout = switch(braceType) {
             case NONE -> Optional.empty();
             case BRACE, BRACKET -> Optional.of(new BraceLayout(braceType, this));
