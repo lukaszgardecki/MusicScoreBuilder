@@ -18,6 +18,8 @@
     <Button fx:id="btn1" styleClass="toolbar-btn"/>
     <Separator />
     <Button fx:id="btnDot" styleClass="toolbar-btn" onAction="#toggleDot"/>
+    <Button fx:id="btnRest" styleClass="toolbar-btn" onAction="#createRest"/>
+    <Separator />
     <Button fx:id="btnTie" styleClass="toolbar-btn" onAction="#addTie"/>
     <Separator />
     <Button fx:id="voice1Button" styleClass="toolbar-btn" text="1" onAction="#activateVoice1"/>

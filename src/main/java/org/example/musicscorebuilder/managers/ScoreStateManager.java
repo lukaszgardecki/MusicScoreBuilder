@@ -111,6 +111,48 @@ public class ScoreStateManager {
         }
     }
 
+    public void convertSelectedNoteToRest() {
+        Selectable selected = getSelectedItem();
+        if (!(selected instanceof NoteLayout noteLayout)) return;
+
+        Note currentNote = noteLayout.getNote();
+        SegmentLayout segLayout = noteLayout.getSegment();
+        StaffLayout staffLayout = noteLayout.getStaff();
+
+        if (currentNote == null || segLayout == null || staffLayout == null) return;
+
+        Segment targetSegment = segLayout.getSegment();
+        Staff staff = staffLayout.getStaff();
+        if (targetSegment == null || staff == null) return;
+
+        Measure measure = targetSegment.getParent();
+        if (measure == null) return;
+
+        int targetVoice = currentNote.getVoice();
+
+        if (currentNote.isTieStart()) {
+            toggleTieForSelectedNote();
+        }
+
+        postRefreshAction = layout -> {
+            var staffElements = targetSegment.getElementsByStaff(staff);
+            if (staffElements != null) {
+                for (Element el : staffElements) {
+                    if (el instanceof NoteRestElement nre && nre.getVoice() == targetVoice) {
+                        Selectable newLayout = LayoutHitTester.findSelectableForElement(layout.getPages(), targetSegment, staff, nre);
+                        if (newLayout != null) {
+                            setSelected(newLayout);
+                        }
+                        break;
+                    }
+                }
+            }
+        };
+
+        measure.convertNoteToRest(targetSegment, staff, currentNote);
+        notifyScoreChanged();
+    }
+
     public void changeSelectedElementDuration(NoteType type) {
         Selectable selected = getSelectedItem();
         if (selected == null) return;

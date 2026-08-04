@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Score {
-    private String numberNew = "", numberOld = "", title = "", subtitle = "", composer = "";
+    private String numberNew, numberOld, title, subtitle, composer;
     private final PageFormat pageFormat = PageFormat.A4_V;
     private final List<ScoreMode> scoreModes = new ArrayList<>();
 
-    public Score() {}
+    public Score() {
+        this("", "", "", "", "");
+    }
 
     public Score(String newNum, String oldNum, String title, String subtitle, String composer) {
         this.numberNew = newNum;

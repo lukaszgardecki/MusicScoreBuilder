@@ -48,6 +48,16 @@ public class Segment {
         staffElements.computeIfAbsent(staff, k -> new ArrayList<>()).add(element);
     }
 
+    public void replaceElement(Staff staff, Element oldElement, Element newElement) {
+        List<Element> elements = staffElements.get(staff);
+        if (elements != null) {
+            int index = elements.indexOf(oldElement);
+            if (index != -1) {
+                elements.set(index, newElement);
+            }
+        }
+    }
+
     public List<Element> getElementsByStaff(Staff staff) {
         return staffElements.getOrDefault(staff, Collections.emptyList());
     }
@@ -106,7 +116,6 @@ public class Segment {
         return staffElements.values().stream().allMatch(list -> list == null || list.isEmpty());
     }
     public boolean isNoteRest() { return type == SegmentType.NOTEREST; }
-
 
     public void setNext(Segment next) { this.next = next; }
     public void setPrev(Segment prev) { this.prev = prev; }

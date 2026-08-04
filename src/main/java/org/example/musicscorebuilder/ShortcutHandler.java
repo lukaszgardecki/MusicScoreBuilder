@@ -35,6 +35,14 @@ public class ShortcutHandler {
             if (modeManager.isInsertMode()) { modeManager.toggleInsertMode(); }
             event.consume();
             return;
+        } else if (event.getCode() == KeyCode.DIGIT0 || event.getCode() == KeyCode.NUMPAD0) {
+            if (modeManager.isInsertMode()) {
+
+            } else {
+                scoreStateManager.convertSelectedNoteToRest();
+            }
+            event.consume();
+            return;
         } else if (event.getCode() == KeyCode.T) {
             if (modeManager.isInsertMode()) {
 

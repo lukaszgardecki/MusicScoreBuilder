@@ -24,7 +24,7 @@ public class ToolbarController {
 
     @FXML private Button modeButton;
     @FXML private Button btn32, btn16, btn8, btn4, btn2, btn1;
-    @FXML private Button btnDot, btnTie;
+    @FXML private Button btnDot, btnRest, btnTie;
     @FXML private Button voice1Button;
     @FXML private Button voice2Button;
 
@@ -63,6 +63,16 @@ public class ToolbarController {
             }
         }
         updateDotButtonState();
+    }
+
+    @FXML
+    private void createRest() {
+        if (modeManager.isInsertMode()) {
+
+        } else {
+            stateManager.convertSelectedNoteToRest();
+        }
+        updateRestButtonState();
     }
 
     @FXML
@@ -121,6 +131,7 @@ public class ToolbarController {
     private void setupToolbarUI() {
         iconRenderer.renderModeIcon(modeButton);
         iconRenderer.renderNoteDottedIcon(btnDot);
+        iconRenderer.renderRestIcon(btnRest);
         iconRenderer.renderTieIcon(btnTie);
         iconRenderer.renderVoiceIcon(voice1Button, 1);
         iconRenderer.renderVoiceIcon(voice2Button, 2);
@@ -133,6 +144,7 @@ public class ToolbarController {
         });
 
         updateDotButtonState();
+        updateRestButtonState();
         updateTieButtonState();
     }
 
@@ -149,6 +161,7 @@ public class ToolbarController {
 
         updateDurationButtonStyles(typeToHighlight);
         updateDotButtonState();
+        updateRestButtonState();
         updateTieButtonState();
     }
 
@@ -156,6 +169,7 @@ public class ToolbarController {
         if (modeManager.isInsertMode()) {
             updateDurationButtonStyles(noteType);
             updateDotButtonState();
+            updateRestButtonState();
             updateTieButtonState();
         }
     }
@@ -164,6 +178,7 @@ public class ToolbarController {
         if (!modeManager.isInsertMode()) {
             updateDurationButtonStyles(extractNoteType(selectedItem));
             updateDotButtonState();
+            updateRestButtonState();
             updateTieButtonState();
         }
     }
@@ -196,6 +211,19 @@ public class ToolbarController {
         }
 
         setButtonActive(btnDot, isDotted);
+    }
+
+    private void updateRestButtonState() {
+        boolean isRest;
+
+        if (modeManager.isInsertMode()) {
+            isRest = false;
+        } else {
+            Selectable selected = stateManager.getSelectedItem();
+            isRest = selected instanceof RestLayout;
+        }
+
+        setButtonActive(btnRest, isRest);
     }
 
     private void updateTieButtonState() {

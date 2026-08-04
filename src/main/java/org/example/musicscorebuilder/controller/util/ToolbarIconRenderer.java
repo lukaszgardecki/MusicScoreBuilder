@@ -10,16 +10,19 @@ import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.music.*;
 import org.example.musicscorebuilder.components.views.NoteView;
+import org.example.musicscorebuilder.components.views.RestView;
 import org.example.musicscorebuilder.components.views.TieView;
 
 import java.util.List;
 
 public class ToolbarIconRenderer {
     private final NoteView noteView;
+    private final RestView restView;
     private final TieView tieView;
 
     public ToolbarIconRenderer() {
         this.noteView = new NoteView();
+        this.restView = new RestView();
         this.tieView = new TieView();
     }
 
@@ -70,6 +73,41 @@ public class ToolbarIconRenderer {
 
     public void renderNoteDottedIcon(Button button) {
         renderNoteTypeIcon(button, NoteType.QUARTER, true);
+    }
+
+    public void renderRestIcon(Button button) {
+        if (button == null) return;
+
+        double width = 25;
+        double height = 25;
+        double noteScale = 4.75;
+
+        Canvas canvas = new Canvas(width, height);
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        gc.clearRect(0, 0, width, height);
+
+        Measure dummyMeasure = new Measure(List.of(new Staff(0, new Clef(ClefType.G))));
+        Staff dummyStaff = dummyMeasure.getStaves().getFirst();
+        ScoreStyle style = new ScoreStyle();
+        MeasureLayout measureLayout = new MeasureLayout(dummyMeasure, 0, style);
+        StaffLayout staffLayout = new StaffLayout(dummyStaff, measureLayout, style);
+
+        Rest dummyRest = new Rest(1, NoteType.QUARTER, dummyMeasure);
+
+        Segment dummySegment = new Segment(SegmentType.NOTEREST, dummyMeasure);
+        SegmentLayout segmentLayout = new SegmentLayout(dummySegment, measureLayout);
+
+        RestLayout restLayout = new RestLayout(dummyRest, staffLayout, segmentLayout);
+
+        double restWidthPx = restLayout.getBoxWidth() * noteScale;
+        double restHeightPx = restLayout.getHeight() * noteScale;
+        double currentCenterX = (restLayout.getBoxX() * noteScale) + (restWidthPx / 2.0);
+        double currentCenterY = (restLayout.getBoxY() * noteScale) + (restHeightPx / 2.0);
+        double drawX = (width / 2.0) - currentCenterX;
+        double drawY = (height / 2.0) - currentCenterY;
+
+        restView.draw(gc, restLayout, drawX, drawY, noteScale);
+        button.setGraphic(canvas);
     }
 
     public void renderVoiceIcon(Button button, int voiceNumber) {

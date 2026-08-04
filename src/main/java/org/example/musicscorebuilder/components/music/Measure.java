@@ -46,6 +46,20 @@ public class Measure {
         setDirty(true);
     }
 
+    public void convertNoteToRest(Segment targetSegment, Staff staff, Note noteToConvert) {
+        if (targetSegment == null || staff == null || noteToConvert == null) return;
+
+        if (noteToConvert.isBeamed()) {
+            adjustBeamsOnNoteRemoval(targetSegment, staff, noteToConvert);
+        }
+
+        Rest newRest = new Rest(noteToConvert.getVoice(), noteToConvert.getType(), this);
+        newRest.setDots(noteToConvert.getDots());
+
+        targetSegment.replaceElement(staff, noteToConvert, newRest);
+        setDirty(true);
+    }
+
     public List<Staff> getStaves() { return staves; }
     public List<Segment> getSegments() { return segments; }
     public Barline getRightBarline() { return rightBarline; }
@@ -87,5 +101,85 @@ public class Measure {
     public void setKeySignature(KeySignature keySignature) {
         this.keySignature = keySignature;
         setDirty(true);
+    }
+
+    private void adjustBeamsOnNoteRemoval(Segment targetSegment, Staff staff, Note note) {
+        BeamType currentBeam = note.getBeam();
+        int voice = note.getVoice();
+
+        Note prevNote = findPreviousNoteInVoice(targetSegment, staff, voice);
+        Note nextNote = findNextNoteInVoice(targetSegment, staff, voice);
+
+        switch (currentBeam) {
+            case BEGIN -> {
+                if (nextNote != null && nextNote.isBeamed()) {
+                    if (nextNote.getBeam() == BeamType.CONTINUE) {
+                        nextNote.setBeamType(BeamType.BEGIN);
+                    } else if (nextNote.getBeam() == BeamType.END) {
+                        nextNote.setBeamType(BeamType.NONE);
+                    }
+                }
+            }
+            case END -> {
+                if (prevNote != null && prevNote.isBeamed()) {
+                    if (prevNote.getBeam() == BeamType.CONTINUE) {
+                        prevNote.setBeamType(BeamType.END);
+                    } else if (prevNote.getBeam() == BeamType.BEGIN) {
+                        prevNote.setBeamType(BeamType.NONE);
+                    }
+                }
+            }
+            case CONTINUE -> {
+                if (prevNote != null && prevNote.isBeamed()) {
+                    if (prevNote.getBeam() == BeamType.BEGIN) {
+                        prevNote.setBeamType(BeamType.NONE);
+                    } else if (prevNote.getBeam() == BeamType.CONTINUE) {
+                        prevNote.setBeamType(BeamType.END);
+                    }
+                }
+                if (nextNote != null && nextNote.isBeamed()) {
+                    if (nextNote.getBeam() == BeamType.END) {
+                        nextNote.setBeamType(BeamType.NONE);
+                    } else if (nextNote.getBeam() == BeamType.CONTINUE) {
+                        nextNote.setBeamType(BeamType.BEGIN);
+                    }
+                }
+            }
+            default -> {}
+        }
+    }
+
+    private Note findPreviousNoteInVoice(Segment targetSegment, Staff staff, int voice) {
+        int index = segments.indexOf(targetSegment);
+        if (index <= 0) return null;
+
+        for (int i = index - 1; i >= 0; i--) {
+            Segment seg = segments.get(i);
+            if (seg.isNoteRest()) {
+                for (Element el : seg.getElementsByStaff(staff)) {
+                    if (el instanceof Note note && note.getVoice() == voice) {
+                        return note;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private Note findNextNoteInVoice(Segment targetSegment, Staff staff, int voice) {
+        int index = segments.indexOf(targetSegment);
+        if (index == -1 || index >= segments.size() - 1) return null;
+
+        for (int i = index + 1; i < segments.size(); i++) {
+            Segment seg = segments.get(i);
+            if (seg.isNoteRest()) {
+                for (Element el : seg.getElementsByStaff(staff)) {
+                    if (el instanceof Note note && note.getVoice() == voice) {
+                        return note;
+                    }
+                }
+            }
+        }
+        return null;
     }
 }
