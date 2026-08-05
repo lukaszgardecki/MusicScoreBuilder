@@ -2,6 +2,7 @@ package org.example.musicscorebuilder.managers;
 
 import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.music.*;
+import org.example.musicscorebuilder.components.music.util.PitchTransposer;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -281,6 +282,54 @@ public class ScoreStateManager {
         notifyScoreChanged();
     }
 
+    public void transposeSelectedNoteUp() {
+        Selectable selected = getSelectedItem();
+        if (!(selected instanceof NoteLayout noteLayout)) return;
+
+        Note note = noteLayout.getNote();
+        if (note == null || note.getPitch() == null) return;
+
+        Clef clef = noteLayout.getStaff().getStaff().getDefaultClef();
+        int maxLedgers = noteLayout.getScoreStyle().getNoteMaxLedgerLines();
+
+        Pitch currentPitch = note.getPitch();
+        Pitch candidate = new Pitch(currentPitch.getStep(), currentPitch.getAlter(), currentPitch.getOctave());
+
+        PitchTransposer.transposeUp(candidate);
+
+        if (isPitchWithinLedgerBounds(candidate, clef, maxLedgers)) {
+            currentPitch.setStep(candidate.getStep());
+            currentPitch.setAlter(candidate.getAlter());
+            currentPitch.setOctave(candidate.getOctave());
+            noteLayout.refresh();
+            notifyScoreChanged();
+        }
+    }
+
+    public void transposeSelectedNoteDown() {
+        Selectable selected = getSelectedItem();
+        if (!(selected instanceof NoteLayout noteLayout)) return;
+
+        Note note = noteLayout.getNote();
+        if (note == null || note.getPitch() == null) return;
+
+        Clef clef = noteLayout.getStaff().getStaff().getDefaultClef();
+        int maxLedgers = noteLayout.getScoreStyle().getNoteMaxLedgerLines();
+
+        Pitch currentPitch = note.getPitch();
+        Pitch candidate = new Pitch(currentPitch.getStep(), currentPitch.getAlter(), currentPitch.getOctave());
+
+        PitchTransposer.transposeDown(candidate);
+
+        if (isPitchWithinLedgerBounds(candidate, clef, maxLedgers)) {
+            currentPitch.setStep(candidate.getStep());
+            currentPitch.setAlter(candidate.getAlter());
+            currentPitch.setOctave(candidate.getOctave());
+            noteLayout.refresh();
+            notifyScoreChanged();
+        }
+    }
+
     private boolean isSamePitch(Note n1, Note n2) {
         return n1.getStep() == n2.getStep()
                 && n1.getAlter() == n2.getAlter()
@@ -304,5 +353,14 @@ public class ScoreStateManager {
         }
 
         return null;
+    }
+
+    private boolean isPitchWithinLedgerBounds(Pitch pitch, Clef clef, int maxLedgerLines) {
+        ClefType clefType = clef.getType();
+        int stepDifference = pitch.getAbsoluteDiatonicStep() - clefType.getDiatonicStep();
+        double relativeYInSpaces = clefType.getOffsetY() - (stepDifference * 0.5);
+        double minAllowedRelativeY = -maxLedgerLines;
+        double maxAllowedRelativeY = 4.0 + maxLedgerLines;
+        return relativeYInSpaces >= minAllowedRelativeY && relativeYInSpaces <= maxAllowedRelativeY;
     }
 }

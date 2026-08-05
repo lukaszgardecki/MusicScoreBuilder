@@ -116,7 +116,7 @@ public class ToolbarIconRenderer {
         double width = 25;
         double height = 25;
         double noteScale = 4.75;
-        var pitch = voiceNumber % 2 == 1 ? PitchStep.F : PitchStep.H;
+        var pitch = voiceNumber % 2 == 1 ? PitchStep.F : PitchStep.B;
 
         Canvas canvas = new Canvas(width, height);
         GraphicsContext gc = canvas.getGraphicsContext2D();

@@ -35,6 +35,8 @@ public class ShortcutHandler {
             case PERIOD, DECIMAL -> handleDot();
             case LEFT            -> scoreNavigator.movePrev();
             case RIGHT           -> scoreNavigator.moveNext();
+            case UP              -> scoreStateManager.transposeSelectedNoteUp();
+            case DOWN            -> scoreStateManager.transposeSelectedNoteDown();
 
             case DIGIT2, NUMPAD2 -> handleNoteDuration(NoteType.THIRTY_SECOND);
             case DIGIT3, NUMPAD3 -> handleNoteDuration(NoteType.SIXTEENTH);

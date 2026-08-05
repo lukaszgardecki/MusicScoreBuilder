@@ -12,7 +12,6 @@ public class NoteLayout extends ElementLayout {
     private final BeamSingleLayout singleBeam;
     private final List<DotLayout> dots = new ArrayList<>();
     private BeamGroupLayout beamGroup;
-    private double y;
     private double xOffset = 0.0;
 
     public record LedgerLine(double startX, double endX, double y, double thickness) {}
@@ -25,11 +24,14 @@ public class NoteLayout extends ElementLayout {
             case WHOLE -> Leland.NOTE_HEAD_WHOLE;
             default -> Leland.NOTE_HEAD_BLACK;
         };
-        Clef clef = staff.getStaff().getDefaultClef();
-        this.y = calculateY(clef) + staff.getY();
         this.stem = note.getType() == NoteType.WHOLE ? null : new StemLayout(this);
         this.singleBeam = !note.isBeamed() && note.getType().hasFlag() ? new BeamSingleLayout(this) : null;
 
+        refresh();
+    }
+
+    public void refresh() {
+        Clef clef = staff.getStaff().getDefaultClef();
         calculateDots(clef);
     }
 
@@ -63,15 +65,19 @@ public class NoteLayout extends ElementLayout {
         }
 
         this.note.setPitch(PitchStep.values()[stepValue], octave);
-        this.y = calculateY(clef) + staff.getY();
-
-        calculateDots(clef);
+        refresh();
         parent.resolveCollisions();
     }
 
     @Override public double getX() { return xOffset; }
-    @Override public double getY() { return y; }
-    @Override public double getBoxY() { return y - (0.5 * style.getStaffLineSpacing()); }
+
+    @Override
+    public double getY() {
+        Clef clef = staff.getStaff().getDefaultClef();
+        return calculateY(clef) + staff.getY();
+    }
+
+    @Override public double getBoxY() { return getY() - (0.5 * style.getStaffLineSpacing()); }
     @Override public double getWidth() {
         var headWidth = getFontWidth();
         var flagWidth = getBeamSingle() == null ? 0 : getStem().isUp() ? getBeamSingle().getFontWidth() : 0;
@@ -116,17 +122,18 @@ public class NoteLayout extends ElementLayout {
         double targetWidth = boxWidth * lengthFactor;
         double startX = centerX - (targetWidth / 2.0);
         double endX = centerX + (targetWidth / 2.0);
+        double currentY = getY();
 
-        if (this.y < topLineY - (0.25 * spacing)) {
+        if (currentY < topLineY - (0.25 * spacing)) {
             double currentLineY = topLineY - spacing;
-            while (currentLineY >= this.y - (0.25 * spacing)) {
+            while (currentLineY >= currentY - (0.25 * spacing)) {
                 lines.add(new LedgerLine(startX, endX, currentLineY, thickness));
                 currentLineY -= spacing;
             }
         }
-        else if (this.y > bottomLineY + (0.25 * spacing)) {
+        else if (currentY > bottomLineY + (0.25 * spacing)) {
             double currentLineY = bottomLineY + spacing;
-            while (currentLineY <= this.y + (0.25 * spacing)) {
+            while (currentLineY <= currentY + (0.25 * spacing)) {
                 lines.add(new LedgerLine(startX, endX, currentLineY, thickness));
                 currentLineY += spacing;
             }
