@@ -146,12 +146,8 @@ public class LayoutEngine {
 
         for (int i = 0; i < allSegments.size(); i++) {
             SegmentLayout current = allSegments.get(i);
-            if (i > 0) {
-                current.setPrev(allSegments.get(i - 1));
-            }
-            if (i < allSegments.size() - 1) {
-                current.setNext(allSegments.get(i + 1));
-            }
+            current.setPrev(i > 0 ? allSegments.get(i - 1) : null);
+            current.setNext(i < allSegments.size() - 1 ? allSegments.get(i + 1) : null);
         }
     }
 

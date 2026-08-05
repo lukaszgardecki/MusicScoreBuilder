@@ -69,6 +69,9 @@ public class MeasureLayout {
         this.x = 0.0;
         for (SegmentLayout segment : segments) {
             segment.setExtraWidth(0.0);
+            if (segment.getType() == SegmentType.END_BARLINE) {
+                segment.setType(SegmentType.BARLINE);
+            }
         }
     }
 
