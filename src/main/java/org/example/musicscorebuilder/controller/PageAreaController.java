@@ -41,6 +41,7 @@ public class PageAreaController {
         initListeners();
         initViewModeToggle();
         initLayoutEngine();
+        MidiInputService.getInstance().startListening();
 
         refreshView();
     }

@@ -55,6 +55,14 @@ public class ScoreNavigator {
     public CursorLayout getLastCursor() { return cursorLayout; }
 
     public void setCursorLayout(CursorLayout newCursorLayout) {
+        setCursorLayout(newCursorLayout, true);
+    }
+
+    public void setCursorLayoutQuietly(CursorLayout newCursorLayout) {
+        setCursorLayout(newCursorLayout, false);
+    }
+
+    public void setCursorLayout(CursorLayout newCursorLayout, boolean notify) {
         if (this.cursorLayout != null) {
             if (this.cursorLayout.getElement() != null) {
                 this.cursorLayout.getElement().setSelected(false);
@@ -69,7 +77,10 @@ public class ScoreNavigator {
         if (this.cursorLayout != null && this.cursorLayout.getSegment() != null) {
             this.cursorLayout.getSegment().setCursor(newCursorLayout);
         }
-        scoreStateManager.notifyScoreChanged();
+
+        if (notify) {
+            scoreStateManager.notifyScoreChanged();
+        }
     }
 
     public void switchToVoice(int targetVoice) {

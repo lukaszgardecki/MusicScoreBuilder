@@ -6,6 +6,7 @@ module org.example.musicscorebuilder {
     requires com.dlsc.formsfx;
     requires net.synedra.validatorfx;
     requires javafx.graphics;
+    requires java.desktop;
 
     opens org.example.musicscorebuilder to javafx.fxml;
     opens org.example.musicscorebuilder.components.music to javafx.fxml;

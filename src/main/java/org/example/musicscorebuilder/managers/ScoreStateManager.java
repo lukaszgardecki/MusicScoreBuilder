@@ -51,6 +51,10 @@ public class ScoreStateManager {
         }
     }
 
+    public void setPostRefreshAction(Consumer<ScoreLayout> action) {
+        this.postRefreshAction = action;
+    }
+
     public void clearSelection() {
         setSelected(null);
     }
