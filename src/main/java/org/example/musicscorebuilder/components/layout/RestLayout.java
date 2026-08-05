@@ -92,14 +92,23 @@ public class RestLayout extends ElementLayout {
         MeasureLayout measureLayout = segment.getParent();
         if (measureLayout == null) return baseOffset;
 
-        int totalVoices = measureLayout.getVoiceCountForStaff(getStaff());
+        List<Integer> activeVoices = measureLayout.getSegments().stream()
+                .filter(seg -> seg.getType() == SegmentType.NOTEREST)
+                .flatMap(seg -> seg.getElementsByStaff(getStaff()).stream())
+                .map(ElementLayout::getVoice)
+                .distinct()
+                .sorted()
+                .toList();
+
+        int totalVoices = activeVoices.size();
         if (totalVoices <= 1) return baseOffset;
 
-        int v = getVoice();
+        int rank = activeVoices.indexOf(getVoice()) + 1;
+        if (rank <= 0) return baseOffset;
 
         return baseOffset + switch (totalVoices) {
             case 2 -> {
-                if (v <= 1) yield switch(restType) {
+                if (rank == 1) yield switch(restType) {
                     case NoteType.WHOLE, NoteType.HALF, NoteType.EIGHTH -> -1.0;
                     default -> -2.0;
                 };
@@ -110,24 +119,24 @@ public class RestLayout extends ElementLayout {
                 };
             }
             case 3 -> {
-                if (v <= 1) yield switch(restType) {
+                if (rank == 1) yield switch(restType) {
                     case NoteType.WHOLE, NoteType.HALF, NoteType.EIGHTH -> -3.0;
                     default -> -4.0;
                 };
-                if (v == 2) yield baseOffset;
+                if (rank == 2) yield 0.0;
                 yield restType == NoteType.HALF ? 3.0 : 4.0;
             }
             default -> {
-                if (v <= 1) yield switch(restType) {
+                if (rank == 1) yield switch(restType) {
                     case NoteType.WHOLE, NoteType.HALF -> -4.0;
                     case NoteType.EIGHTH -> -5.0;
                     default -> -6.0;
                 };
-                if (v == 2) yield switch(restType) {
+                if (rank == 2) yield switch(restType) {
                     case NoteType.WHOLE, NoteType.HALF, NoteType.EIGHTH -> -1.0;
                     default -> -2.0;
                 };
-                if (v == 3) yield switch(restType) {
+                if (rank == 3) yield switch(restType) {
                     case NoteType.HALF -> 1.0;
                     case NoteType.THIRTY_SECOND -> 3.0;
                     default -> 2.0;
