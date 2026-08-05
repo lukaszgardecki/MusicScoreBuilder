@@ -49,8 +49,6 @@ public class ScoreStateManager {
         for (SelectionChangeListener listener : selectionChangeListeners) {
             listener.onSelectionChanged(currentSelected);
         }
-
-        notifyScoreChanged();
     }
 
     public void clearSelection() {

@@ -89,7 +89,7 @@ public class PageAreaController {
 
     private void initListeners() {
         stateManager.addScoreChangeListener(this::refreshView);
-
+        stateManager.addSelectionChangeListener(selectedItem -> redraw());
         container.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (oldScene != null) shortcutHandler.unregister(oldScene);
             if (newScene != null) shortcutHandler.register(newScene);
