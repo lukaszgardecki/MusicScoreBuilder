@@ -25,8 +25,7 @@ public class ToolbarController {
     @FXML private Button modeButton;
     @FXML private Button btn32, btn16, btn8, btn4, btn2, btn1;
     @FXML private Button btnDot, btnRest, btnTie;
-    @FXML private Button voice1Button;
-    @FXML private Button voice2Button;
+    @FXML private Button voice1Button, voice2Button, voice3Button, voice4Button;
 
     private Map<NoteType, Button> durationButtons;
 
@@ -85,15 +84,10 @@ public class ToolbarController {
         updateTieButtonState();
     }
 
-    @FXML
-    private void activateVoice1() {
-        activateVoice(1);
-    }
-
-    @FXML
-    private void activateVoice2() {
-        activateVoice(2);
-    }
+    @FXML private void activateVoice1() { activateVoice(1); }
+    @FXML private void activateVoice2() { activateVoice(2); }
+    @FXML private void activateVoice3() { activateVoice(3); }
+    @FXML private void activateVoice4() { activateVoice(4); }
 
     @FXML
     private void addMeasure() {
@@ -135,6 +129,8 @@ public class ToolbarController {
         iconRenderer.renderTieIcon(btnTie);
         iconRenderer.renderVoiceIcon(voice1Button, 1);
         iconRenderer.renderVoiceIcon(voice2Button, 2);
+        iconRenderer.renderVoiceIcon(voice3Button, 3);
+        iconRenderer.renderVoiceIcon(voice4Button, 4);
 
         durationButtons.forEach((type, button) -> {
             if (button != null) {
@@ -259,6 +255,8 @@ public class ToolbarController {
         int activeVoice = isInsert ? modeManager.getCurrentVoice() : 0;
         setButtonActive(voice1Button, activeVoice == 1);
         setButtonActive(voice2Button, activeVoice == 2);
+        setButtonActive(voice3Button, activeVoice == 3);
+        setButtonActive(voice4Button, activeVoice == 4);
     }
 
     private void updateDurationButtonStyles(NoteType selectedType) {

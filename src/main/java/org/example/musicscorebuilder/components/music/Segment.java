@@ -72,9 +72,9 @@ public class Segment {
 
     public int getVoiceCountByStaff(Staff staff) {
         return (int) getElementsByStaff(staff).stream()
-                .filter(Note.class::isInstance)
-                .map(Note.class::cast)
-                .map(Note::getVoice)
+                .filter(NoteRestElement.class::isInstance)
+                .map(NoteRestElement.class::cast)
+                .map(NoteRestElement::getVoice)
                 .distinct()
                 .count();
     }

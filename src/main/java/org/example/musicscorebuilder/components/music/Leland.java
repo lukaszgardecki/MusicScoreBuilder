@@ -38,7 +38,9 @@ public enum Leland {
     AUGMENTATION_DOT("\uE1E7", 0.4, 0.2, 0.0, -0.2),
 
     REST_WHOLE("\uE4E3", 1.3, 0.02, 0.0, -0.524),
+    REST_WHOLE_LEDGER_LINE("\uE4F4", 1.856, 0.056, -0.556, -0.488),
     REST_HALF("\uE4E4", 1.3, 0.528, 0.0, -0.016),
+    REST_HALF_LEDGER_LINE("\uE4F5", 1.856, 0.488, -0.556, -0.056),
     REST_QUARTER("\uE4E5", 0.94, 1.605, 0.0, -1.325),
     REST_8TH("\uE4E6", 1.104, 0.814, 0.0, -1.022),
     REST_16TH("\uE4E7", 1.376, 0.815, 0.004, -2.029),

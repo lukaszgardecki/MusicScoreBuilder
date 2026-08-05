@@ -53,9 +53,13 @@ public class ScoreStyle {
     private static final double BOW_SYSTEM_BREAK_START_X = 1.7;
 
     private static final String VOICE_1_COLOR = "#0066cc";
-    private static final String VOICE_1_INSERT_COLOR = "#3399ff";
     private static final String VOICE_2_COLOR = "#007a1a";
+    private static final String VOICE_3_COLOR = "#c53f00";
+    private static final String VOICE_4_COLOR = "#c31989";
+    private static final String VOICE_1_INSERT_COLOR = "#3399ff";
     private static final String VOICE_2_INSERT_COLOR = "#00b32d";
+    private static final String VOICE_3_INSERT_COLOR = "#f45409";
+    private static final String VOICE_4_INSERT_COLOR = "#f326ad";
     private static final double SELECTION_FRAME_WIDTH = 2 * STAFF_LINE_WIDTH;
     private static final double SELECTION_FRAME_EXTRA_HEIGHT = STAFF_LINE_SPACING;
     private static final double SELECTION_FRAME_RADIUS = 0.4;
@@ -128,9 +132,13 @@ public class ScoreStyle {
     private double bowSystemBreakStartX = BOW_SYSTEM_BREAK_START_X;
 
     private String voice1Color = VOICE_1_COLOR;
-    private String voice1InsertColor = VOICE_1_INSERT_COLOR;
     private String voice2Color = VOICE_2_COLOR;
+    private String voice3Color = VOICE_3_COLOR;
+    private String voice4Color = VOICE_4_COLOR;
+    private String voice1InsertColor = VOICE_1_INSERT_COLOR;
     private String voice2InsertColor = VOICE_2_INSERT_COLOR;
+    private String voice3InsertColor = VOICE_3_INSERT_COLOR;
+    private String voice4InsertColor = VOICE_4_INSERT_COLOR;
     private double selectionFrameWidth = SELECTION_FRAME_WIDTH;
     private double selectionFrameExtraHeight = SELECTION_FRAME_EXTRA_HEIGHT;
     private double selectionFrameRadius = SELECTION_FRAME_RADIUS;
@@ -230,7 +238,9 @@ public class ScoreStyle {
 
         return switch (element.getVoice()) {
             case 1 -> voice1Color;
-            default -> voice2Color;
+            case 2 -> voice2Color;
+            case 3 -> voice3Color;
+            default -> voice4Color;
         };
     }
 
@@ -243,8 +253,10 @@ public class ScoreStyle {
 
     public String getEditInsertColor(int voice) {
         return switch (voice) {
-            case 1 ->voice1InsertColor;
-            case 2 ->voice2InsertColor;
+            case 1 -> voice1InsertColor;
+            case 2 -> voice2InsertColor;
+            case 3 -> voice3InsertColor;
+            case 4 -> voice4InsertColor;
             default -> "#000000";
         };
     }

@@ -17,15 +17,9 @@ public class RestLayout extends ElementLayout {
         super(true, parent, staff);
         this.rest = rest;
         this.height = staff.getHeight();
-        this.fontData = switch (rest.getType()) {
-            case WHOLE -> Leland.REST_WHOLE;
-            case HALF -> Leland.REST_HALF;
-            case QUARTER -> Leland.REST_QUARTER;
-            case EIGHTH -> Leland.REST_8TH;
-            case SIXTEENTH -> Leland.REST_16TH;
-            case THIRTY_SECOND -> Leland.REST_32ND;
-        };
-        y = (rest.getType() == NoteType.WHOLE ? 1 : 2) * staff.getLineSpacing() + staff.getY();
+        double yOffset = calculateYOffset();
+        this.y = yOffset * staff.getLineSpacing() + staff.getY();
+        this.fontData = resolveFontData(rest.getType(), yOffset);
     }
 
     @Override
@@ -75,4 +69,75 @@ public class RestLayout extends ElementLayout {
     public double getFontWidth() { return (fontData.getHeight() * fontData.getRatio()) * style.getStaffLineSpacing(); }
     public double getBoxWidth() { return getFontWidth(); }
     public String getCode() { return fontData.getCode(); }
+
+    private Leland resolveFontData(NoteType type, double yOffset) {
+        boolean isOutsideStaff = yOffset < 0.0 || yOffset > 4.0;
+
+        return switch (type) {
+            case WHOLE -> isOutsideStaff ? Leland.REST_WHOLE_LEDGER_LINE : Leland.REST_WHOLE;
+            case HALF -> isOutsideStaff ? Leland.REST_HALF_LEDGER_LINE : Leland.REST_HALF;
+            case QUARTER -> Leland.REST_QUARTER;
+            case EIGHTH -> Leland.REST_8TH;
+            case SIXTEENTH -> Leland.REST_16TH;
+            case THIRTY_SECOND -> Leland.REST_32ND;
+        };
+    }
+
+    private double calculateYOffset() {
+        var restType = rest.getType();
+        double baseOffset = restType == NoteType.WHOLE ? 1.0 : 2.0;
+
+        SegmentLayout segment = getParent();
+        if (segment == null) return baseOffset;
+        MeasureLayout measureLayout = segment.getParent();
+        if (measureLayout == null) return baseOffset;
+
+        int totalVoices = measureLayout.getVoiceCountForStaff(getStaff());
+        if (totalVoices <= 1) return baseOffset;
+
+        int v = getVoice();
+
+        return baseOffset + switch (totalVoices) {
+            case 2 -> {
+                if (v <= 1) yield switch(restType) {
+                    case NoteType.WHOLE, NoteType.HALF, NoteType.EIGHTH -> -1.0;
+                    default -> -2.0;
+                };
+                yield switch(restType) {
+                    case NoteType.HALF -> 1.0;
+                    case NoteType.THIRTY_SECOND -> 3.0;
+                    default -> 2.0;
+                };
+            }
+            case 3 -> {
+                if (v <= 1) yield switch(restType) {
+                    case NoteType.WHOLE, NoteType.HALF, NoteType.EIGHTH -> -3.0;
+                    default -> -4.0;
+                };
+                if (v == 2) yield baseOffset;
+                yield restType == NoteType.HALF ? 3.0 : 4.0;
+            }
+            default -> {
+                if (v <= 1) yield switch(restType) {
+                    case NoteType.WHOLE, NoteType.HALF -> -4.0;
+                    case NoteType.EIGHTH -> -5.0;
+                    default -> -6.0;
+                };
+                if (v == 2) yield switch(restType) {
+                    case NoteType.WHOLE, NoteType.HALF, NoteType.EIGHTH -> -1.0;
+                    default -> -2.0;
+                };
+                if (v == 3) yield switch(restType) {
+                    case NoteType.HALF -> 1.0;
+                    case NoteType.THIRTY_SECOND -> 3.0;
+                    default -> 2.0;
+                };
+                yield switch(restType) {
+                    case NoteType.HALF -> 5.0;
+                    case NoteType.THIRTY_SECOND -> 7.0;
+                    default -> 6.0;
+                };
+            }
+        };
+    }
 }
