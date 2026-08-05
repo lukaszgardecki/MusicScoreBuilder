@@ -1,12 +1,18 @@
 package org.example.musicscorebuilder.managers;
 
+import org.example.musicscorebuilder.components.layout.ElementLayout;
 import org.example.musicscorebuilder.components.layout.SegmentLayout;
+import org.example.musicscorebuilder.components.layout.Selectable;
+import org.example.musicscorebuilder.components.layout.StaffLayout;
 import org.example.musicscorebuilder.components.layout.edit.CursorLayout;
+
+import java.util.List;
 
 public class ScoreNavigator {
     private static ScoreNavigator instance;
     private CursorLayout cursorLayout;
     private final ScoreStateManager scoreStateManager = ScoreStateManager.getInstance();
+    private final ModeManager modeManager = ModeManager.getInstance();
 
     private ScoreNavigator() {}
 
@@ -17,22 +23,20 @@ public class ScoreNavigator {
         return instance;
     }
 
-    public void moveCursorNext() {
-        if (cursorLayout == null) return;
-        var currentSegment = cursorLayout.getSegment();
-        if (currentSegment == null) return;
-
-        var nextSegment = currentSegment.getNextSameType();
-        assignFirstElOfVoiceToCursor(nextSegment, true);
+    public void moveNext() {
+        if (modeManager.isInsertMode()) {
+            moveCursorNext();
+        } else {
+            moveSelection(true);
+        }
     }
 
-    public void moveCursorPrev() {
-        if (cursorLayout == null) return;
-        var currentSegment = cursorLayout.getSegment();
-        if (currentSegment == null) return;
-
-        var prevSegment = currentSegment.getPrevSameType();
-        assignFirstElOfVoiceToCursor(prevSegment, false);
+    public void movePrev() {
+        if (modeManager.isInsertMode()) {
+            moveCursorPrev();
+        } else {
+            moveSelection(false);
+        }
     }
 
     public void clearCursor() {
@@ -49,6 +53,7 @@ public class ScoreNavigator {
     }
 
     public CursorLayout getLastCursor() { return cursorLayout; }
+
     public void setCursorLayout(CursorLayout newCursorLayout) {
         if (this.cursorLayout != null) {
             if (this.cursorLayout.getElement() != null) {
@@ -65,36 +70,6 @@ public class ScoreNavigator {
             this.cursorLayout.getSegment().setCursor(newCursorLayout);
         }
         scoreStateManager.notifyScoreChanged();
-    }
-
-    private void assignFirstElOfVoiceToCursor(SegmentLayout startSegment, boolean forward) {
-        SegmentLayout currentSegment = startSegment;
-        var currentStaffLayout = cursorLayout.getStaff();
-        var voice = ModeManager.getInstance().getCurrentVoice();
-
-        int staffIndex = currentStaffLayout.getParent().getStaffs().indexOf(currentStaffLayout);
-
-        while (currentSegment != null) {
-            var measureLayout = currentSegment.getParent();
-            if (staffIndex < 0 || staffIndex >= measureLayout.getStaffs().size()) {
-                currentSegment = forward ? currentSegment.getNextSameType() : currentSegment.getPrevSameType();
-                continue;
-            }
-            var targetStaffLayout = measureLayout.getStaffs().get(staffIndex);
-
-            var elementsOnStaff = currentSegment.getElementsByStaff(targetStaffLayout);
-
-            var targetElement = elementsOnStaff.stream()
-                    .filter(el -> el.getVoice() == voice)
-                    .findFirst();
-
-            if (targetElement.isPresent()) {
-                setCursorLayout(new CursorLayout(targetElement.get()));
-                return;
-            }
-
-            currentSegment = forward ? currentSegment.getNextSameType() : currentSegment.getPrevSameType();
-        }
     }
 
     public void switchToVoice(int targetVoice) {
@@ -114,5 +89,66 @@ public class ScoreNavigator {
         } else {
             setCursorLayout(new CursorLayout(cursorLayout.getElement()));
         }
+    }
+
+    private void moveCursorNext() {
+        if (cursorLayout == null || cursorLayout.getSegment() == null) return;
+        var nextSegment = cursorLayout.getSegment().getNextSameType();
+        assignFirstElOfVoiceToCursor(nextSegment, true);
+    }
+
+    private void moveCursorPrev() {
+        if (cursorLayout == null || cursorLayout.getSegment() == null) return;
+        var prevSegment = cursorLayout.getSegment().getPrevSameType();
+        assignFirstElOfVoiceToCursor(prevSegment, false);
+    }
+
+    private void moveSelection(boolean forward) {
+        Selectable selected = scoreStateManager.getSelectedItem();
+        if (selected == null) return;
+
+        SegmentLayout currentSegment = selected.getSegment();
+        StaffLayout currentStaff = selected.getStaff();
+        if (currentSegment == null || currentStaff == null) return;
+
+        int currentVoice = selected.getVoice();
+        SegmentLayout startSeg = forward ? currentSegment.getNextSameType() : currentSegment.getPrevSameType();
+
+        ElementLayout targetElement = findAdjacentElement(startSeg, currentStaff, currentVoice, forward);
+        if (targetElement instanceof Selectable selectableTarget) {
+            scoreStateManager.setSelected(selectableTarget);
+        }
+    }
+
+    private void assignFirstElOfVoiceToCursor(SegmentLayout startSegment, boolean forward) {
+        if (cursorLayout == null) return;
+        int voice = ModeManager.getInstance().getCurrentVoice();
+
+        ElementLayout targetElement = findAdjacentElement(startSegment, cursorLayout.getStaff(), voice, forward);
+        if (targetElement != null) {
+            setCursorLayout(new CursorLayout(targetElement));
+        }
+    }
+
+    private ElementLayout findAdjacentElement(SegmentLayout startSegment, StaffLayout currentStaffLayout, int preferredVoice, boolean forward) {
+        SegmentLayout currentSegment = startSegment;
+        int staffIndex = currentStaffLayout.getParent().getStaffs().indexOf(currentStaffLayout);
+
+        while (currentSegment != null) {
+            var measureLayout = currentSegment.getParent();
+            if (staffIndex >= 0 && staffIndex < measureLayout.getStaffs().size()) {
+                StaffLayout targetStaffLayout = measureLayout.getStaffs().get(staffIndex);
+                List<ElementLayout> elementsOnStaff = currentSegment.getElementsByStaff(targetStaffLayout);
+
+                if (!elementsOnStaff.isEmpty()) {
+                    return elementsOnStaff.stream()
+                            .filter(el -> el.getVoice() == preferredVoice)
+                            .findFirst()
+                            .orElseGet(elementsOnStaff::getFirst);
+                }
+            }
+            currentSegment = forward ? currentSegment.getNextSameType() : currentSegment.getPrevSameType();
+        }
+        return null;
     }
 }
