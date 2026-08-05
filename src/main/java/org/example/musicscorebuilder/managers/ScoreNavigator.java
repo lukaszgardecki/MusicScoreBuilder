@@ -141,10 +141,11 @@ public class ScoreNavigator {
                 List<ElementLayout> elementsOnStaff = currentSegment.getElementsByStaff(targetStaffLayout);
 
                 if (!elementsOnStaff.isEmpty()) {
-                    return elementsOnStaff.stream()
+                    var voiceMatch = elementsOnStaff.stream()
                             .filter(el -> el.getVoice() == preferredVoice)
-                            .findFirst()
-                            .orElseGet(elementsOnStaff::getFirst);
+                            .findFirst();
+
+                    if (voiceMatch.isPresent()) return voiceMatch.get();
                 }
             }
             currentSegment = forward ? currentSegment.getNextSameType() : currentSegment.getPrevSameType();
