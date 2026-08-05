@@ -39,12 +39,16 @@ public class RestLayout extends ElementLayout {
                         .sum();
 
                 double restWidth = getFontWidth();
-                double offsetFromFirst = segment.getX() - firstNoteRestSeg.getX();
                 double barlineRMargin = segment.getScoreStyle().getSegmentBarlineRightMargin();
-                return Math.max(0, (totalNoteRestWidth - restWidth - barlineRMargin) / 2.0 - offsetFromFirst);
+
+                double usableWidth = totalNoteRestWidth - barlineRMargin;
+                double targetXFromFirst = (usableWidth - restWidth) / 2.0;
+                targetXFromFirst = Math.max(firstNoteRestSeg.getMarginLeft(), targetXFromFirst);
+                double offsetFromFirst = segment.getX() - firstNoteRestSeg.getX();
+                return targetXFromFirst - offsetFromFirst;
             }
         }
-        return 0.0;
+        return parent.getMarginLeft();
     }
 
     private boolean isOnlyElementInVoice(MeasureLayout measureLayout) {

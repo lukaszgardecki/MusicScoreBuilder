@@ -62,6 +62,10 @@ public class LayoutHitTester {
                                         if (dot.contains(segmentMusicX,  segmentMusicY)) return dot;
                                     }
                                 }
+                                if (noteLayout.getAccidental() != null) {
+                                    var acc =  noteLayout.getAccidental();
+                                    if (acc.contains(segmentMusicX, segmentMusicY)) return acc;
+                                }
                             }
 
                             if (element.contains(segmentMusicX, segmentMusicY)) {
@@ -181,6 +185,8 @@ public class LayoutHitTester {
             }
         } else if (clickedElement instanceof DotLayout dot) {
             itemsToSelect.add(dot);
+        } else if (clickedElement instanceof AccidentalLayout accidental) {
+            itemsToSelect.add(accidental);
         } else if (clickedElement instanceof StemLayout stem) {
             itemsToSelect.add(stem);
         } else if (clickedElement instanceof BeamGroupLayout beam) {
@@ -224,6 +230,9 @@ public class LayoutHitTester {
                                 }
                                 if (!noteLayout.getDots().isEmpty()) {
                                     itemsToSelect.addAll(noteLayout.getDots());
+                                }
+                                if (noteLayout.getAccidental() != null) {
+                                    itemsToSelect.add(noteLayout.getAccidental());
                                 }
                             }
                         }

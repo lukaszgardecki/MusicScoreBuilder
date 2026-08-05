@@ -4,10 +4,8 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import org.example.musicscorebuilder.ScoreService;
-import org.example.musicscorebuilder.components.layout.NoteLayout;
-import org.example.musicscorebuilder.components.layout.RestLayout;
-import org.example.musicscorebuilder.components.layout.Selectable;
-import org.example.musicscorebuilder.components.music.NoteType;
+import org.example.musicscorebuilder.components.layout.*;
+import org.example.musicscorebuilder.components.music.*;
 import org.example.musicscorebuilder.controller.util.ToolbarIconRenderer;
 import org.example.musicscorebuilder.managers.ModeManager;
 import org.example.musicscorebuilder.managers.ScoreNavigator;
@@ -25,13 +23,16 @@ public class ToolbarController {
     @FXML private Button modeButton;
     @FXML private Button btn32, btn16, btn8, btn4, btn2, btn1;
     @FXML private Button btnDot, btnRest, btnTie;
+    @FXML private Button btnDoubleFlat, btnFlat, btnNatural, btnSharp, btnDoubleSharp;
     @FXML private Button voice1Button, voice2Button, voice3Button, voice4Button;
 
     private Map<NoteType, Button> durationButtons;
+    private Map<Integer, Button> accidentalButtons;
 
     @FXML
     public void initialize() {
         initDurationButtonsMap();
+        initAccidentalButtonsMap();
         registerListeners();
         setupToolbarUI();
     }
@@ -53,12 +54,10 @@ public class ToolbarController {
             Selectable selected = stateManager.getSelectedItem();
             if (selected instanceof NoteLayout noteLayout) {
                 int currentDots = noteLayout.getNote().getDots();
-                int newDots = currentDots > 0 ? 0 : 1;
-                stateManager.changeSelectedElementDots(newDots);
+                stateManager.changeSelectedElementDots(currentDots > 0 ? 0 : 1);
             } else if (selected instanceof RestLayout restLayout) {
                 int currentDots = restLayout.getRest().getDots();
-                int newDots = currentDots > 0 ? 0 : 1;
-                stateManager.changeSelectedElementDots(newDots);
+                stateManager.changeSelectedElementDots(currentDots > 0 ? 0 : 1);
             }
         }
         updateDotButtonState();
@@ -73,6 +72,12 @@ public class ToolbarController {
         }
         updateRestButtonState();
     }
+
+    @FXML private void toggleDoubleFlat()  { toggleAccidental(-2); }
+    @FXML private void toggleFlat()        { toggleAccidental(-1); }
+    @FXML private void toggleNatural()     { toggleAccidental(0); }
+    @FXML private void toggleSharp()       { toggleAccidental(1); }
+    @FXML private void toggleDoubleSharp() { toggleAccidental(2); }
 
     @FXML
     private void addTie() {
@@ -116,16 +121,32 @@ public class ToolbarController {
         );
     }
 
+    private void initAccidentalButtonsMap() {
+        accidentalButtons = Map.of(
+                -2, btnDoubleFlat,
+                -1, btnFlat,
+                0, btnNatural,
+                1, btnSharp,
+                2, btnDoubleSharp
+        );
+    }
+
     private void registerListeners() {
         modeManager.addModeChangeListener(this::handleModeChange);
         modeManager.addNoteTypeChangeListener(this::handleNoteTypeChange);
         stateManager.addSelectionChangeListener(this::handleSelectionChange);
+        stateManager.addScoreChangeListener(this::handleScoreChange);
     }
 
     private void setupToolbarUI() {
         iconRenderer.renderModeIcon(modeButton);
         iconRenderer.renderNoteDottedIcon(btnDot);
         iconRenderer.renderRestIcon(btnRest);
+        iconRenderer.renderAccidentalIcon(btnDoubleFlat, -2);
+        iconRenderer.renderAccidentalIcon(btnFlat, -1);
+        iconRenderer.renderAccidentalIcon(btnNatural, 0);
+        iconRenderer.renderAccidentalIcon(btnSharp, 1);
+        iconRenderer.renderAccidentalIcon(btnDoubleSharp, 2);
         iconRenderer.renderTieIcon(btnTie);
         iconRenderer.renderVoiceIcon(voice1Button, 1);
         iconRenderer.renderVoiceIcon(voice2Button, 2);
@@ -142,6 +163,7 @@ public class ToolbarController {
         updateDotButtonState();
         updateRestButtonState();
         updateTieButtonState();
+        updateAccidentalButtonState();
     }
 
     // ----------------------------------------------------
@@ -167,6 +189,7 @@ public class ToolbarController {
             updateDotButtonState();
             updateRestButtonState();
             updateTieButtonState();
+            updateAccidentalButtonState();
         }
     }
 
@@ -176,6 +199,18 @@ public class ToolbarController {
             updateDotButtonState();
             updateRestButtonState();
             updateTieButtonState();
+            updateAccidentalButtonState();
+        }
+    }
+
+    private void handleScoreChange() {
+        if (!modeManager.isInsertMode()) {
+            Selectable selected = stateManager.getSelectedItem();
+            updateDurationButtonStyles(extractNoteType(selected));
+            updateDotButtonState();
+            updateRestButtonState();
+            updateTieButtonState();
+            updateAccidentalButtonState();
         }
     }
 
@@ -238,6 +273,32 @@ public class ToolbarController {
         setButtonActive(btnTie, isTied);
     }
 
+    private void updateAccidentalButtonState() {
+        Integer activeAlter = null;
+
+        if (!modeManager.isInsertMode()) {
+            Selectable selected = stateManager.getSelectedItem();
+            if (selected instanceof NoteLayout noteLayout) {
+                AccidentalLayout acc = noteLayout.getAccidental();
+                if (acc != null && acc.isVisible()) {
+                    activeAlter = noteLayout.getNote().getPitch().getAlter();
+                }
+            } else if (selected instanceof AccidentalLayout accLayout && accLayout.isVisible()) {
+                String code = accLayout.getCode();
+                if (Leland.ACC_DOUBLE_FLAT.getCode().equals(code)) activeAlter = -2;
+                else if (Leland.ACC_FLAT.getCode().equals(code)) activeAlter = -1;
+                else if (Leland.ACC_NATURAL.getCode().equals(code)) activeAlter = 0;
+                else if (Leland.ACC_SHARP.getCode().equals(code)) activeAlter = 1;
+                else if (Leland.ACC_DOUBLE_SHARP.getCode().equals(code)) activeAlter = 2;
+            }
+        }
+
+        final Integer selectedAlter = activeAlter;
+        accidentalButtons.forEach((alter, button) ->
+                setButtonActive(button, selectedAlter != null && selectedAlter.equals(alter))
+        );
+    }
+
     private void activateVoice(int voiceNumber) {
         modeManager.setCurrentVoice(voiceNumber);
         modeManager.clearGhostNote();
@@ -251,7 +312,6 @@ public class ToolbarController {
 
     private void updateModeAndVoiceButtons(boolean isInsert) {
         setButtonActive(modeButton, isInsert);
-
         int activeVoice = isInsert ? modeManager.getCurrentVoice() : 0;
         setButtonActive(voice1Button, activeVoice == 1);
         setButtonActive(voice2Button, activeVoice == 2);
@@ -273,14 +333,43 @@ public class ToolbarController {
 
     private void setButtonActive(Button button, boolean active) {
         if (button == null) return;
-
         ObservableList<String> classes = button.getStyleClass();
         if (active) {
-            if (!classes.contains("active")) {
-                classes.add("active");
-            }
+            if (!classes.contains("active")) classes.add("active");
         } else {
             classes.remove("active");
         }
+    }
+
+    private void toggleAccidental(int targetAlter) {
+        if (modeManager.isInsertMode()) return;
+
+        NoteLayout noteLayout = switch (stateManager.getSelectedItem()) {
+            case NoteLayout nl -> nl;
+            case AccidentalLayout al -> al.getSegment().getElements().stream()
+                    .filter(NoteLayout.class::isInstance)
+                    .map(NoteLayout.class::cast)
+                    .filter(n -> n.getAccidental() == al)
+                    .findFirst()
+                    .orElse(null);
+            case null, default -> null;
+        };
+
+        if (noteLayout == null || noteLayout.getNote() == null) return;
+        Pitch pitch = noteLayout.getNote().getPitch();
+        if (pitch == null) return;
+
+        SegmentLayout targetSegLayout = noteLayout.getParent();
+        Measure measure = (targetSegLayout != null && targetSegLayout.getSegment() != null)
+                ? targetSegLayout.getSegment().getParent()
+                : null;
+
+        int oldAlter = pitch.getAlter();
+        int keyAlter = (measure != null) ? measure.getKeySignatureAlterForStep(pitch.getStep()) : 0;
+        int newAlter = (oldAlter == targetAlter) ? keyAlter : targetAlter;
+
+        pitch.setAlter(newAlter);
+        noteLayout.refreshMeasureAccidentals();
+        stateManager.notifyScoreChanged();
     }
 }

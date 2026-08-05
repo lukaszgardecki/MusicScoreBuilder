@@ -66,12 +66,46 @@ public class Measure {
     public BarlineStyle getBarlineStyle() { return rightBarline.getStyle(); }
     public TimeSignature getTimeSignature() { return timeSignature; }
     public KeySignature getKeySignature() { return keySignature; }
+    public int getKeySignatureAlterForStep(PitchStep step) {
+        return keySignature != null ? keySignature.getAlterForStep(step) : 0;
+    }
+
+    public int getEffectiveAlterBefore(Segment targetSegment, Staff staff, PitchStep step, int octave) {
+        int activeAlter = getKeySignatureAlterForStep(step);
+
+        if (targetSegment == null) {
+            return activeAlter;
+        }
+
+
+        for (Segment seg : segments) {
+            if (seg == targetSegment) break;
+            if (!seg.isNoteRest()) continue;
+
+            List<Element> elements = seg.getElementsByStaff(staff);
+
+            for (Element el : elements) {
+                if (el instanceof Note prevNote) {
+                    Pitch prevPitch = prevNote.getPitch();
+                    if (prevPitch != null
+                            && prevPitch.getStep() == step
+                            && prevPitch.getOctave() == octave) {
+                        activeAlter = prevPitch.getAlter();
+                    }
+                }
+            }
+        }
+
+        return activeAlter;
+    }
+
     public int countVoicesByStaff(Staff staff) {
         return segments.stream()
                 .mapToInt(s -> s.getVoiceCountByStaff(staff))
                 .max()
                 .orElse(0);
     }
+
     public int getStartTickOfSegment(Segment target) {
         int tick = 0;
         for (Segment seg : getSegments()) {

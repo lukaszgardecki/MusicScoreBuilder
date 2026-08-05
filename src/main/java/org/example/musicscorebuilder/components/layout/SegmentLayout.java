@@ -117,19 +117,37 @@ public class SegmentLayout {
         return prevSeg.getX() + prevSeg.getWidth();
     }
     public double getY() { return y; }
+    public double getMarginLeft() {
+        if (type != SegmentType.NOTEREST) {
+            return 0.0;
+        }
+
+        double minMargin = style.getSegmentNoteRestLeftMargin();
+        double maxAccidentalSpace = getElements().stream()
+                .filter(NoteLayout.class::isInstance)
+                .map(NoteLayout.class::cast)
+                .map(NoteLayout::getAccidental)
+                .filter(Objects::nonNull)
+                .filter(AccidentalLayout::isVisible)
+                .mapToDouble(acc -> acc.getWidth() + style.getNoteAccSpacing())
+                .max()
+                .orElse(0.0);
+
+        return Math.max(minMargin, maxAccidentalSpace);
+    }
     public double getWidth() {
         List<ElementLayout> allElements = getElements();
         if (allElements.isEmpty()) return 0;
-
-        double maxElementWidth = allElements.stream()
+        double marginLeft = getMarginLeft();
+        double maxContentWidth = allElements.stream()
                 .mapToDouble(el -> {
-                    if (el instanceof NoteLayout nl) return nl.getX() + nl.getWidth();
+                    if (el instanceof NoteLayout nl) return (nl.getX() - marginLeft) + nl.getWidth();
                     return el.getWidth();
                 })
                 .max()
                 .orElse(0);
 
-        var margin = switch(type) {
+        var marginRight = switch(type) {
             case CLEF -> style.getSegmentClefRightMargin();
             case START_BARLINE -> style.getSegmentStartBarlineRightMargin();
             case BARLINE -> style.getSegmentBarlineRightMargin();
@@ -139,7 +157,7 @@ public class SegmentLayout {
             case TIME_SIG -> style.getSegmentTimeSigRightMargin();
         };
         double f = type == SegmentType.NOTEREST ? calculateNoteRestWidthFactor() : 1.0;
-        return maxElementWidth + margin * f + extraWidth;
+        return marginLeft + maxContentWidth + (marginRight * f) + extraWidth;
     }
     public double getHeight() { return height; }
     public boolean hasDynamicWidth() { return getElements().stream().anyMatch(ElementLayout::hasDynamicWidth); }
@@ -195,12 +213,12 @@ public class SegmentLayout {
                 .min(Comparator.comparingInt(NoteType::getTicks));
 
         return shortestNoteType.map(noteType -> switch (noteType) {
-            case WHOLE -> 8.0;
-            case HALF -> 4.0;
-            case QUARTER -> 2.0;
-            case EIGHTH -> 1.0;
-            case SIXTEENTH -> 0.75;
-            case THIRTY_SECOND -> 0.5;
+            case WHOLE -> 1.0;
+            case HALF -> 0.5;
+            case QUARTER -> 0.25;
+            case EIGHTH -> 0.125;
+            case SIXTEENTH -> 0.06;
+            case THIRTY_SECOND -> 0.03;
         }).orElse(1.0);
     }
 }

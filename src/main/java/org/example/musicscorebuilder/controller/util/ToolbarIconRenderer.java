@@ -9,6 +9,7 @@ import javafx.scene.text.FontWeight;
 import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.music.*;
+import org.example.musicscorebuilder.components.views.AccidentalView;
 import org.example.musicscorebuilder.components.views.NoteView;
 import org.example.musicscorebuilder.components.views.RestView;
 import org.example.musicscorebuilder.components.views.TieView;
@@ -19,11 +20,13 @@ public class ToolbarIconRenderer {
     private final NoteView noteView;
     private final RestView restView;
     private final TieView tieView;
+    private final AccidentalView accView;
 
     public ToolbarIconRenderer() {
         this.noteView = new NoteView();
         this.restView = new RestView();
         this.tieView = new TieView();
+        this.accView = new AccidentalView();
     }
 
     public void renderModeIcon(Button button) {
@@ -65,7 +68,7 @@ public class ToolbarIconRenderer {
 
         double noteWidth = noteLayout.getBoxWidth() * noteScale;
         double centeredX = (width - noteWidth) / 2.0;
-        noteLayout.setXOffset(centeredX / noteScale);
+        noteLayout.setXOffset((centeredX / noteScale) - segmentLayout.getMarginLeft());
 
         noteView.draw(gc, noteLayout, 0.0, 0.0, noteScale);
         button.setGraphic(canvas);
@@ -123,7 +126,7 @@ public class ToolbarIconRenderer {
         gc.clearRect(0, 0, width, height);
 
         Measure dummyMeasure = new Measure(List.of(new Staff(0, new Clef(ClefType.G))));
-        Staff dummyStaff = dummyMeasure.getStaves().get(0);
+        Staff dummyStaff = dummyMeasure.getStaves().getFirst();
         ScoreStyle style = new ScoreStyle();
         MeasureLayout measureLayout = new MeasureLayout(dummyMeasure, 0, style);
         StaffLayout staffLayout = new StaffLayout(dummyStaff, measureLayout, style);
@@ -131,6 +134,7 @@ public class ToolbarIconRenderer {
         Segment dummySegment = new Segment(SegmentType.NOTEREST, dummyMeasure);
         SegmentLayout segmentLayout = new SegmentLayout(dummySegment, measureLayout);
         NoteLayout noteLayout = new NoteLayout(dummyNote, staffLayout, segmentLayout);
+        noteLayout.setXOffset(-segmentLayout.getMarginLeft());
 
         noteView.draw(gc, noteLayout, 0.0, 0.0, noteScale);
 
@@ -179,10 +183,10 @@ public class ToolbarIconRenderer {
         double startX = 4;
         double endX = 24;
         noteLayout1.setX(startX / noteScale);
-        noteLayout1.setXOffset(startX / noteScale);
+        noteLayout1.setXOffset((startX / noteScale) - segmentLayout1.getMarginLeft());
 
         noteLayout2.setX(endX / noteScale);
-        noteLayout2.setXOffset(endX / noteScale);
+        noteLayout2.setXOffset((endX / noteScale) - segmentLayout2.getMarginLeft());
 
         TieLayout tieLayout = new TieLayout(dummySystem, noteLayout1, noteLayout2);
         double tieOffsetX = -measureLayout.getX() * noteScale;
@@ -196,6 +200,50 @@ public class ToolbarIconRenderer {
         tieView.draw(gc, tieLayout, tieOffsetX, tieOffsetY, noteScale);
 
         gc.restore();
+
+        button.setGraphic(canvas);
+    }
+
+    public void renderAccidentalIcon(Button button, int alter) {
+        if (button == null) return;
+
+        double width = 25;
+        double height = 25;
+        double accScale = 7.0;
+
+        Canvas canvas = new Canvas(width, height);
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        gc.clearRect(0, 0, width, height);
+
+        Measure dummyMeasure = new Measure(List.of(new Staff(0, new Clef(ClefType.G))));
+
+        if (alter == 0) {
+            dummyMeasure.setKeySignature(new KeySignature(1, dummyMeasure));
+        }
+
+        Staff dummyStaff = dummyMeasure.getStaves().getFirst();
+        ScoreStyle style = new ScoreStyle();
+        MeasureLayout measureLayout = new MeasureLayout(dummyMeasure, 0, style);
+        StaffLayout staffLayout = new StaffLayout(dummyStaff, measureLayout, style);
+
+        Note dummyNote = new Note(1, PitchStep.F, alter, 4, NoteType.QUARTER, BeamType.NONE, dummyMeasure);
+        Segment dummySegment = new Segment(SegmentType.NOTEREST, dummyMeasure);
+        SegmentLayout segmentLayout = new SegmentLayout(dummySegment, measureLayout);
+        NoteLayout noteLayout = new NoteLayout(dummyNote, staffLayout, segmentLayout);
+
+        AccidentalLayout acc = noteLayout.getAccidental();
+        if (acc != null && acc.isVisible()) {
+            double accWidthPx = acc.getWidth() * accScale;
+            double targetAccX = (width - accWidthPx) / 2.0;
+            double noteX = targetAccX - (acc.getX() * accScale);
+            double offsetY = switch (alter) {
+                case -1, -2 -> 1.5; // Delikatne przesunięcie bemola w dół
+                default -> 0.0;
+            };
+            double noteY = (height / 2.0) + offsetY;
+
+            accView.draw(gc, acc, noteX, noteY, accScale);
+        }
 
         button.setGraphic(canvas);
     }

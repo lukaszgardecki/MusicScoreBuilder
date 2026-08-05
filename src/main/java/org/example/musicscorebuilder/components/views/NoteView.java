@@ -13,6 +13,7 @@ public class NoteView extends ComponentView {
     private final AugmentationDotView dotView = new AugmentationDotView();
     private final StemView stemView = new StemView();
     private final BeamSingleView beamSingleView = new BeamSingleView();
+    private final AccidentalView accidentalView = new AccidentalView();
 
     public void draw(GraphicsContext gc, NoteLayout note, double segmentX, double segmentY, double sp) {
         double noteX = segmentX + note.getX() * sp;
@@ -32,8 +33,8 @@ public class NoteView extends ComponentView {
         }
 
         stemView.draw(gc, note.getStem(), segmentX, segmentY, sp);
-
         if (note.getBeamSingle() instanceof BeamSingleLayout single) beamSingleView.draw(gc, single, segmentX, segmentY, sp);
+        accidentalView.draw(gc, note.getAccidental(), noteX, noteY, sp);
 
         var color = note instanceof GhostNoteLayout ghost
                 ? ghost.getColor()

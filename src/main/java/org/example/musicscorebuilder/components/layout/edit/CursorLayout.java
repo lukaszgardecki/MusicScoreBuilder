@@ -28,7 +28,7 @@ public class CursorLayout {
         this.y = staff.getY() - style.getEditCursorPadding();
     }
 
-    public double getX() { return parent.getX() - getThickness(); }
+    public double getX() { return parent.getX() + parent.getMarginLeft() - getThickness(); }
     public double getY() { return y; }
     public double getWidth() { return width; }
     public double getHeight() { return height; }

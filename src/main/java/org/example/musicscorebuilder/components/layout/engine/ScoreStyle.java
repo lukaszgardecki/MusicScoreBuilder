@@ -4,84 +4,86 @@ import org.example.musicscorebuilder.components.layout.Selectable;
 
 public class ScoreStyle {
 
-    private static final double PAGE_SPACING = 4.0;
-    private static final double STAFF_SPACING = 7.0;
-    private static final double SYSTEM_SPACING = 8.0;
-    private static final double SPATIUM_MM = 1.564;
-    private static final double SYSTEM_MIN_FULLNESS_RATIO = 0.5;
+    private static final double PAGE_SPACING                                = 4.0;
+    private static final double STAFF_SPACING                               = 7.0;
+    private static final double SYSTEM_SPACING                              = 8.0;
+    private static final double SPATIUM_MM                                  = 1.564;
+    private static final double SYSTEM_MIN_FULLNESS_RATIO                   = 0.5;
 
-    private static final double STAFF_SPACING_SCALE = 1.3;
-    private static final double STAFF_LINE_SPACING = 1.0;
-    private static final double STAFF_LINE_WIDTH = 0.11;
+    private static final double STAFF_SPACING_SCALE                         = 1.3;
+    private static final double STAFF_LINE_SPACING                          = 1.0;
+    private static final double STAFF_LINE_WIDTH                            = 0.11;
 
-    private static final double BARLINE_LIGHT_WIDTH = 0.18;
-    private static final double BARLINE_HEAVY_WIDTH = 0.55;
-    private static final double BARLINE_GAP = 0.37;
-    private static final double BARLINE_DOT_SPACE = 0.37;
-    private static final double BARLINE_DOT_RADIUS = 0.2;
+    private static final double BARLINE_LIGHT_WIDTH                         = 0.18;
+    private static final double BARLINE_HEAVY_WIDTH                         = 0.55;
+    private static final double BARLINE_GAP                                 = 0.37;
+    private static final double BARLINE_DOT_SPACE                           = 0.37;
+    private static final double BARLINE_DOT_RADIUS                          = 0.2;
 
-    private static final double SEG_DEF_NOTEREST_R_MARGIN = 0.7;
-    private static final double SEG_DEF_CLEF_R_MARGIN = 0.5;
-    private static final double SEG_DEF_TIME_SIG_R_MARGIN = 1.5;
-    private static final double SEG_DEF_KEY_SIG_R_MARGIN = 0.7;
-    private static final double SEG_DEF_START_BARLINE_R_MARGIN = 0.5;
-    private static final double SEG_DEF_BARLINE_R_MARGIN = 1.0;
-    private static final double SEG_DEF_END_BARLINE_R_MARGIN = 0;
+    private static final double KEY_SIGNATURE_SIGN_SPACE                    = 0.12;
 
-    private static final double KEY_SIGNATURE_SIGN_SPACE = 0.12;
+    private static final double NOTE_LEDGER_LINE_LENGTH_FACTOR              = 1.35;
+    private static final double NOTE_LEDGER_LINE_THICKNESS                  = 0.16;
+    private static final int NOTE_MAX_LEDGER_LINES                          = 3;
+    private static final double NOTE_STEM_WIDTH                             = 0.1;
+    private static final double NOTE_STEM_SINGLE_DEFAULT_HEIGHT             = 3.5;
+    private static final double NOTE_STEM_BEAMED_DEFAULT_HEIGHT             = 3.0;
+    private static final double NOTE_STEM_MIN_HEIGHT                        = 2.25;
+    private static final double NOTE_STEM_HEIGHT_DIFF_FACTOR                = 0.2;
+    private static final double NOTE_BEAM_THICKNESS                         = 0.5;
+    private static final double NOTE_BEAM_STUB_LENGTH                       = 1.0;
+    private static final double NOTE_BEAM_GAP                               = 0.3;
+    private static final double NOTE_DOT_MARGIN                             = 0.55;
+    private static final double NOTE_DOT_SPACING                            = 0.3;
+    private static final double NOTE_ACC_SPACING                            = 0.15;
 
-    private static final double NOTE_LEDGER_LINE_LENGTH_FACTOR = 1.35;
-    private static final double NOTE_LEDGER_LINE_THICKNESS = 0.16;
-    private static final int NOTE_MAX_LEDGER_LINES = 3;
-    private static final double NOTE_STEM_WIDTH = 0.1;
-    private static final double NOTE_STEM_SINGLE_DEFAULT_HEIGHT = 3.5;
-    private static final double NOTE_STEM_BEAMED_DEFAULT_HEIGHT = 3.0;
-    private static final double NOTE_STEM_MIN_HEIGHT = 2.25;
-    private static final double NOTE_STEM_HEIGHT_DIFF_FACTOR = 0.2;
-    private static final double NOTE_BEAM_THICKNESS = 0.5;
-    private static final double NOTE_BEAM_STUB_LENGTH = 1.0;
-    private static final double NOTE_BEAM_GAP = 0.3;
-    private static final double NOTE_DOT_MARGIN = 0.55;
-    private static final double NOTE_DOT_SPACING = 0.3;
+    private static final double BOW_MID_THICKNESS                           = 0.18;
+    private static final double BOW_TIP_ROUNDING_FACTOR                     = 0.05;
+    private static final double BOW_MAX_DX_RATIO                            = 0.20;
+    private static final double BOW_HEIGHT_FACTOR                           = 1.0;
+    private static final double BOW_Y_NOTE_SPACE                            = 0.2;
+    private static final double BOW_X_NOTE_SPACE                            = 0.2;
+    private static final double BOW_SYSTEM_BREAK_START_X                    = 1.7;
 
-    private static final double BOW_MID_THICKNESS = 0.18;
-    private static final double BOW_TIP_ROUNDING_FACTOR = 0.05;
-    private static final double BOW_MAX_DX_RATIO = 0.20;
-    private static final double BOW_HEIGHT_FACTOR = 1.0;
-    private static final double BOW_Y_NOTE_SPACE = 0.2;
-    private static final double BOW_X_NOTE_SPACE = 0.2;
-    private static final double BOW_SYSTEM_BREAK_START_X = 1.7;
+    private static final String VOICE_1_COLOR                               = "#0066cc";
+    private static final String VOICE_2_COLOR                               = "#007a1a";
+    private static final String VOICE_3_COLOR                               = "#c53f00";
+    private static final String VOICE_4_COLOR                               = "#c31989";
+    private static final String VOICE_1_INSERT_COLOR                        = "#3399ff";
+    private static final String VOICE_2_INSERT_COLOR                        = "#00b32d";
+    private static final String VOICE_3_INSERT_COLOR                        = "#f45409";
+    private static final String VOICE_4_INSERT_COLOR                        = "#f326ad";
+    private static final double SELECTION_FRAME_WIDTH                       = 2 * STAFF_LINE_WIDTH;
+    private static final double SELECTION_FRAME_EXTRA_HEIGHT                = STAFF_LINE_SPACING;
+    private static final double SELECTION_FRAME_RADIUS                      = 0.4;
 
-    private static final String VOICE_1_COLOR = "#0066cc";
-    private static final String VOICE_2_COLOR = "#007a1a";
-    private static final String VOICE_3_COLOR = "#c53f00";
-    private static final String VOICE_4_COLOR = "#c31989";
-    private static final String VOICE_1_INSERT_COLOR = "#3399ff";
-    private static final String VOICE_2_INSERT_COLOR = "#00b32d";
-    private static final String VOICE_3_INSERT_COLOR = "#f45409";
-    private static final String VOICE_4_INSERT_COLOR = "#f326ad";
-    private static final double SELECTION_FRAME_WIDTH = 2 * STAFF_LINE_WIDTH;
-    private static final double SELECTION_FRAME_EXTRA_HEIGHT = STAFF_LINE_SPACING;
-    private static final double SELECTION_FRAME_RADIUS = 0.4;
+    private static final double SEG_DEF_NOTEREST_L_MARGIN                   = 1.1 + NOTE_ACC_SPACING;
+    private static final double SEG_DEF_NOTEREST_R_MARGIN                   = 8;
+    private static final double SEG_DEF_CLEF_R_MARGIN                       = 0.5;
+    private static final double SEG_DEF_TIME_SIG_R_MARGIN                   = 1.0;
+    private static final double SEG_DEF_KEY_SIG_R_MARGIN                    = 0.7;
+    private static final double SEG_DEF_START_BARLINE_R_MARGIN              = 0.5;
+    private static final double SEG_DEF_BARLINE_R_MARGIN                    = 0.5;
+    private static final double SEG_DEF_END_BARLINE_R_MARGIN                = 0;
 
-    private static final double EDIT_CURSOR_LINE_THICKNESS = 0.2;
-    private static final double EDIT_CURSOR_BOX_WIDTH = 2.0;
-    private static final double EDIT_CURSOR_PADDING = 0.8;
+    private static final double EDIT_CURSOR_LINE_THICKNESS                  = 0.2;
+    private static final double EDIT_CURSOR_BOX_WIDTH                       = 2.0;
+    private static final double EDIT_CURSOR_PADDING                         = 0.8;
 
-    private static final double HEADER_DEF_NUMBER_NEW_FONT_SIZE = 3.3;
-    private static final double HEADER_DEF_NUMBER_OLD_FONT_SIZE = 2.5;
-    private static final double HEADER_DEF_TITLE_FONT_SIZE = 3.3;
-    private static final double HEADER_DEF_SUBTITLE_FONT_SIZE = 2.5;
-    private static final double HEADER_DEF_COMPOSER_FONT_SIZE = 2.0;
-    private static final double HEADER_DEF_MIN_WIDTH = 9.0;
-    private static final double HEADER_DEF_MIN_HEIGHT = 7.0;
-    private static final double HEADER_DEF_NUM_BOX_RADIUS = 1.0;
-    private static final double HEADER_DEF_NUM_BOX_STROKE_WIDTH = 0.05;
-    private static final double HEADER_DEF_NUM_BOX_SPACING = 0.8;
-    private static final double HEADER_DEF_NUM_BOX_PADDING_X = 0.5;
-    private static final double HEADER_DEF_NUM_BOX_PADDING_Y = 0.5;
+    private static final double HEADER_DEF_NUMBER_NEW_FONT_SIZE             = 3.3;
+    private static final double HEADER_DEF_NUMBER_OLD_FONT_SIZE             = 2.5;
+    private static final double HEADER_DEF_TITLE_FONT_SIZE                  = 3.3;
+    private static final double HEADER_DEF_SUBTITLE_FONT_SIZE               = 2.5;
+    private static final double HEADER_DEF_COMPOSER_FONT_SIZE               = 2.0;
+    private static final double HEADER_DEF_MIN_WIDTH                        = 9.0;
+    private static final double HEADER_DEF_MIN_HEIGHT                       = 7.0;
+    private static final double HEADER_DEF_NUM_BOX_RADIUS                   = 1.0;
+    private static final double HEADER_DEF_NUM_BOX_STROKE_WIDTH             = 0.05;
+    private static final double HEADER_DEF_NUM_BOX_SPACING                  = 0.8;
+    private static final double HEADER_DEF_NUM_BOX_PADDING_X                = 0.5;
+    private static final double HEADER_DEF_NUM_BOX_PADDING_Y                = 0.5;
 
-    private static final double FOOTER_DEF_PAGE_NUM_FONT_SIZE = 2.0;
+    private static final double FOOTER_DEF_PAGE_NUM_FONT_SIZE               = 2.0;
 
     private double pageSpacing = PAGE_SPACING;
     private double staffSpacing = STAFF_SPACING;
@@ -99,6 +101,7 @@ public class ScoreStyle {
     private double barlineDotSpace = BARLINE_DOT_SPACE;
     private double barlineDotRadius = BARLINE_DOT_RADIUS;
 
+    private double segmentNoteRestLeftMargin = SEG_DEF_NOTEREST_L_MARGIN;
     private double segmentNoteRestRightMargin = SEG_DEF_NOTEREST_R_MARGIN;
     private double segmentClefRightMargin = SEG_DEF_CLEF_R_MARGIN;
     private double segmentTimeSigRightMargin = SEG_DEF_TIME_SIG_R_MARGIN;
@@ -122,6 +125,7 @@ public class ScoreStyle {
     private double noteBeamGap = NOTE_BEAM_GAP;
     private double noteDotMargin = NOTE_DOT_MARGIN;
     private double noteDotSpacing = NOTE_DOT_SPACING;
+    private double noteAccSpacing = NOTE_ACC_SPACING;
 
     private double bowMidThickness = BOW_MID_THICKNESS;
     private double bowTipRoundingFactor = BOW_TIP_ROUNDING_FACTOR;
@@ -173,6 +177,7 @@ public class ScoreStyle {
     public double getBarlineDotSpace() { return staffSpacingScale * barlineDotSpace; }
     public double getBarlineDotRadius() { return staffSpacingScale * barlineDotRadius; }
 
+    public double getSegmentNoteRestLeftMargin() { return staffSpacingScale * segmentNoteRestLeftMargin; }
     public double getSegmentNoteRestRightMargin() { return staffSpacingScale * segmentNoteRestRightMargin; }
     public double getSegmentClefRightMargin() { return staffSpacingScale * segmentClefRightMargin; }
     public double getSegmentTimeSigRightMargin() { return staffSpacingScale * segmentTimeSigRightMargin; }
@@ -196,6 +201,7 @@ public class ScoreStyle {
     public double getNoteBeamGap() { return staffSpacingScale * noteBeamGap; }
     public double getNoteDotMargin() { return  staffSpacingScale * noteDotMargin; }
     public double getNoteDotSpacing() { return  staffSpacingScale * noteDotSpacing; }
+    public double getNoteAccSpacing() { return  staffSpacingScale * noteAccSpacing; }
 
     public double getBowMidThickness() { return staffSpacingScale * bowMidThickness; }
     public double getBowTipRoundingFactor() { return staffSpacingScale * bowTipRoundingFactor; }

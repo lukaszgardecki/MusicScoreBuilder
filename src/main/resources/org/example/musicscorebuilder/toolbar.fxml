@@ -20,6 +20,12 @@
     <Button fx:id="btnDot" styleClass="toolbar-btn" onAction="#toggleDot"/>
     <Button fx:id="btnRest" styleClass="toolbar-btn" onAction="#createRest"/>
     <Separator />
+    <Button fx:id="btnDoubleFlat" styleClass="toolbar-btn" onAction="#toggleDoubleFlat"/>
+    <Button fx:id="btnFlat" styleClass="toolbar-btn" onAction="#toggleFlat"/>
+    <Button fx:id="btnNatural" styleClass="toolbar-btn" onAction="#toggleNatural"/>
+    <Button fx:id="btnSharp" styleClass="toolbar-btn" onAction="#toggleSharp"/>
+    <Button fx:id="btnDoubleSharp" styleClass="toolbar-btn" onAction="#toggleDoubleSharp"/>
+    <Separator />
     <Button fx:id="btnTie" styleClass="toolbar-btn" onAction="#addTie"/>
     <Separator />
     <Button fx:id="voice1Button" styleClass="toolbar-btn" text="1" onAction="#activateVoice1"/>
