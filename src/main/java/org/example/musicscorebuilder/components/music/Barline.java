@@ -6,6 +6,12 @@ public class Barline extends Element {
     private BarlineStyle style;
     private Barline.Type type;
 
+
+    @SuppressWarnings("unused")
+    private Barline() {
+        super(null);
+    }
+
     public Barline(BarlineStyle style, Measure parent) {
         this(style, Type.END, parent);
     }

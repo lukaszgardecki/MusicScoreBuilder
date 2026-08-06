@@ -1,10 +1,19 @@
 package org.example.musicscorebuilder.components.music;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 public abstract class NoteRestElement extends Element {
     private int voice;
     private NoteType type;
     private int duration;
+
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     protected int dots;
+
+    protected NoteRestElement() {
+        super(null);
+    }
 
     public NoteRestElement(Measure parent, int voice, NoteType type) {
         super(parent);
@@ -13,11 +22,11 @@ public abstract class NoteRestElement extends Element {
         this.duration = calculateDuration();
     }
 
-    @Override public int getDuration() { return duration; }
-
     public int getVoice() { return voice; }
     public NoteType getType() { return type; }
     public int getDots() { return dots; }
+
+    @JsonIgnore
     public boolean isDotted() { return dots > 0; }
 
     public void setType(NoteType type) {
@@ -29,6 +38,7 @@ public abstract class NoteRestElement extends Element {
         this.duration = calculateDuration();
     }
 
+    @JsonIgnore
     protected int calculateDuration() {
         int baseTicks = type.getTicks();
         int totalTicks = baseTicks;

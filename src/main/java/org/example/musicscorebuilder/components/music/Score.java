@@ -1,12 +1,16 @@
 package org.example.musicscorebuilder.components.music;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Score {
     private String numberNew, numberOld, title, subtitle, composer;
-    private final Page page = new Page(PageFormat.A4_V, 10, 10, 10, 10);
-    private final List<ScoreMode> scoreModes = new ArrayList<>();
+    private Page page = new Page(PageFormat.A4_V, 10, 10, 10, 10);
+
+    @JsonProperty("modes")
+    private List<ScoreMode> scoreModes = new ArrayList<>();
 
     public Score() {
         this("", "", "", "", "");
@@ -35,5 +39,7 @@ public class Score {
     public String getSubtitle() { return subtitle; }
     public String getComposer() { return composer; }
     public Page getPage() { return page; }
+
+    @JsonProperty("modes")
     public List<ScoreMode> getModes() { return scoreModes; }
 }

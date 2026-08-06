@@ -7,6 +7,8 @@ module org.example.musicscorebuilder {
     requires net.synedra.validatorfx;
     requires javafx.graphics;
     requires java.desktop;
+    requires com.fasterxml.jackson.annotation;
+    requires com.fasterxml.jackson.databind;
 
     opens org.example.musicscorebuilder to javafx.fxml;
     opens org.example.musicscorebuilder.components.music to javafx.fxml;

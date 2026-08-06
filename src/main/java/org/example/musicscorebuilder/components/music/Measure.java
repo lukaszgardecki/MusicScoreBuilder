@@ -1,5 +1,8 @@
 package org.example.musicscorebuilder.components.music;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.example.musicscorebuilder.components.music.util.MeasureDurationEditor;
 import org.example.musicscorebuilder.components.music.util.MeasureTimeSignatureAdjuster;
 
@@ -12,7 +15,26 @@ public class Measure {
     private Barline rightBarline;
     private final List<Staff> staves;
     private final List<Segment> segments = new ArrayList<>();
+
+    @JsonIgnore
     private boolean dirty = true;
+
+    @JsonCreator
+    public Measure(
+            @JsonProperty("staves") List<Staff> staves,
+            @JsonProperty("timeSignature") TimeSignature timeSignature,
+            @JsonProperty("keySignature") KeySignature keySignature,
+            @JsonProperty("rightBarline") Barline rightBarline,
+            @JsonProperty("segments") List<Segment> segments
+    ) {
+        this.staves = staves != null ? staves : new ArrayList<>();
+        this.timeSignature = timeSignature;
+        this.keySignature = keySignature;
+        this.rightBarline = rightBarline;
+        if (segments != null) {
+            this.segments.addAll(segments);
+        }
+    }
 
     public Measure(List<Staff> staves) {
         this.staves = staves;
@@ -63,9 +85,15 @@ public class Measure {
     public List<Staff> getStaves() { return staves; }
     public List<Segment> getSegments() { return segments; }
     public Barline getRightBarline() { return rightBarline; }
-    public BarlineStyle getBarlineStyle() { return rightBarline.getStyle(); }
     public TimeSignature getTimeSignature() { return timeSignature; }
     public KeySignature getKeySignature() { return keySignature; }
+
+    @JsonIgnore
+    public BarlineStyle getBarlineStyle() { return rightBarline.getStyle(); }
+
+    @JsonIgnore
+    public boolean isDirty() { return dirty; }
+
     public int getKeySignatureAlterForStep(PitchStep step) {
         return keySignature != null ? keySignature.getAlterForStep(step) : 0;
     }
@@ -118,7 +146,6 @@ public class Measure {
         }
         return -1;
     }
-    public boolean isDirty() { return dirty; }
     public void setDirty(boolean dirty) { this.dirty = dirty; }
     public void setBarlineStyle(BarlineStyle barlineStyle) {
         this.rightBarline.setStyle(barlineStyle);

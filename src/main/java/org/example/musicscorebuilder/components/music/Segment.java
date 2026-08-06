@@ -1,12 +1,31 @@
 package org.example.musicscorebuilder.components.music;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.*;
 
 public class Segment {
+    @JsonIgnore
     private Measure parent;
+
     private final SegmentType type;
     private final Map<Integer, List<Element>> staffElements = new HashMap<>();
     private int duration;
+
+    @JsonCreator
+    public Segment(
+            @JsonProperty("type") SegmentType type,
+            @JsonProperty("duration") int duration,
+            @JsonProperty("staffElements") Map<Integer, List<Element>> staffElements
+    ) {
+        this.type = type;
+        this.duration = duration;
+        if (staffElements != null) {
+            this.staffElements.putAll(staffElements);
+        }
+    }
 
     public Segment(SegmentType type, Measure parent) {
         this.type = type;
@@ -56,6 +75,10 @@ public class Segment {
         }
     }
 
+    public Map<Integer, List<Element>> getStaffElements() {
+        return staffElements;
+    }
+
     public List<Element> getElementsByStaff(int staffId) {
         return staffElements.getOrDefault(staffId, Collections.emptyList());
     }
@@ -76,13 +99,19 @@ public class Segment {
                 .toList();
     }
 
+    @JsonIgnore
     public Measure getParent() { return parent; }
     public SegmentType getType() { return type; }
     public int getDuration() { return duration; }
-    public void setDuration(int d) { duration = d; }
 
+    @JsonIgnore
     public boolean isEmpty() {
         return staffElements.values().stream().allMatch(list -> list == null || list.isEmpty());
     }
+
+    @JsonIgnore
     public boolean isNoteRest() { return type == SegmentType.NOTEREST; }
+
+    public void setParent(Measure parent) { this.parent = parent; }
+    public void setDuration(int d) { duration = d; }
 }

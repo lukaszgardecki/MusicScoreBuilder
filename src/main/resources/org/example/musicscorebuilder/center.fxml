@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ScrollPane?>
-<?import org.example.musicscorebuilder.components.views.BackgroundView?>
 <?import javafx.scene.control.ToggleButton?>
+<?import org.example.musicscorebuilder.components.views.BackgroundView?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.layout.StackPane?>
 
@@ -32,5 +33,24 @@
         </style>
     </ToggleButton>
 
-</StackPane>
+    <Button fx:id="saveButton"
+            text="ZAPISZ"
+            onAction="#saveScore"
+            StackPane.alignment="TOP_RIGHT">
+        <StackPane.margin>
+            <Insets top="65.0" right="25.0"/>
+        </StackPane.margin>
+        <style>
+            -fx-background-color: #ffffff;
+            -fx-text-fill: #2c3e50;
+            -fx-border-color: #bdc3c7;
+            -fx-border-radius: 20;
+            -fx-background-radius: 20;
+            -fx-padding: 8 16 8 16;
+            -fx-cursor: hand;
+            -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 8, 0, 0, 2);
+            -fx-font-weight: bold;
+        </style>
+    </Button>
 
+</StackPane>

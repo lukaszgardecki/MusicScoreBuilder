@@ -1,9 +1,16 @@
 package org.example.musicscorebuilder.components.music;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class Note extends NoteRestElement {
     private Pitch pitch;
     private BeamType beam;
     private boolean tieStart, tieStop;
+
+    @SuppressWarnings("unused")
+    private Note() {
+        super(null, 0, null);
+    }
 
     public Note(int voice, PitchStep pitchStep, int alter, int octave, NoteType type, BeamType beam, int dots, Measure parent) {
         super(parent, voice, type);
@@ -18,13 +25,20 @@ public class Note extends NoteRestElement {
 
     public Pitch getPitch() { return pitch; }
     public BeamType getBeam() { return beam; }
-    public boolean isBeamed() { return beam != null && beam != BeamType.NONE; }
-    public PitchStep getStep() { return pitch.getStep(); }
-    public int getStepValue() { return pitch.getStepValue(); }
-    public int getAlter() { return pitch.getAlter(); }
-    public int getOctave() { return pitch.getOctave(); }
     public boolean isTieStart() { return tieStart; }
     public boolean isTieStop() { return tieStop; }
+
+    @JsonIgnore
+    public boolean isBeamed() { return beam != null && beam != BeamType.NONE; }
+    @JsonIgnore
+    public PitchStep getStep() { return pitch.getStep(); }
+    @JsonIgnore
+    public int getStepValue() { return pitch.getStepValue(); }
+    @JsonIgnore
+    public int getAlter() { return pitch.getAlter(); }
+    @JsonIgnore
+    public int getOctave() { return pitch.getOctave(); }
+    @JsonIgnore
     public boolean hasTie() { return isTieStart() || isTieStop(); }
 
     public void setPitch(PitchStep step, int octave) {

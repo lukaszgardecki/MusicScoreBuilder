@@ -1,5 +1,8 @@
 package org.example.musicscorebuilder.components.music;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.example.musicscorebuilder.components.music.util.MeasureTimeSignatureAdjuster;
 import org.example.musicscorebuilder.palette.PreDefinedTimeSignature;
 
@@ -7,13 +10,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ScoreMode {
-    private final Score score;
+    @JsonIgnore
+    private Score score;
+
     private final ModeType type;
     private final BraceType braceType;
     private final Barline startBarline;
     private final List<Staff> staves = new ArrayList<>();
     private final List<Measure> measures = new ArrayList<>();
     private final List<Slur> slurs = new ArrayList<>();
+
+    @JsonCreator
+    public ScoreMode(
+            @JsonProperty("type") ModeType type,
+            @JsonProperty("braceType") BraceType braceType,
+            @JsonProperty("startBarline") Barline startBarline,
+            @JsonProperty("staves") List<Staff> staves,
+            @JsonProperty("measures") List<Measure> measures,
+            @JsonProperty("slurs") List<Slur> slurs
+    ) {
+        this.type = type;
+        this.braceType = braceType;
+        this.startBarline = startBarline;
+        if (staves != null) this.staves.addAll(staves);
+        if (measures != null) this.measures.addAll(measures);
+        if (slurs != null) this.slurs.addAll(slurs);
+    }
 
     public ScoreMode(Score score, ModeType type) {
         this.score = score;
@@ -64,11 +86,14 @@ public class ScoreMode {
     public void removeSlur(Slur slur) { slurs.remove(slur); }
 
     public Score getScore() { return score; }
-    public List<Measure> getMeasures() { return measures; }
+    public ModeType getType() { return type; }
     public BraceType getBraceType() { return braceType; }
     public Barline getStartBarline() { return startBarline; }
+    public List<Staff> getStaves() { return staves; }
+    public List<Measure> getMeasures() { return measures; }
     public List<Slur> getSlurs() { return slurs; }
 
+    public void setScore(Score score) { this.score = score; }
     public void setTimeSignature(PreDefinedTimeSignature timeSig) {
         if (measures.isEmpty()) return;
 

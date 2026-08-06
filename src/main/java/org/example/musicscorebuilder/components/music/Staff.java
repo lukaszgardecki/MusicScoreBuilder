@@ -1,16 +1,27 @@
 package org.example.musicscorebuilder.components.music;
 
-public class Staff {
-    private final int linesNumber = 5;
-    private final int index;
-    private Clef defaultClef;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-    public Staff(int index, Clef defaultClef) {
+public class Staff {
+    public static final int LINES_NUMBER = 5;
+
+    private final int index;
+    private final Clef defaultClef;
+
+    @JsonCreator
+    public Staff(
+            @JsonProperty("index") int index,
+            @JsonProperty("defaultClef") Clef defaultClef
+    ) {
         this.index = index;
         this.defaultClef = defaultClef;
     }
 
-    public int getLinesNumber() { return linesNumber; }
+    @JsonIgnore
+    public int getLinesNumber() { return LINES_NUMBER; }
+
     public int getIndex() { return index; }
     public Clef getDefaultClef() { return defaultClef; }
 }
