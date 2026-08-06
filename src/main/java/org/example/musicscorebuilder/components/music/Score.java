@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Score {
     private String numberNew, numberOld, title, subtitle, composer;
-    private final PageFormat pageFormat = PageFormat.A4_V;
+    private final Page page = new Page(PageFormat.A4_V, 10, 10, 10, 10);
     private final List<ScoreMode> scoreModes = new ArrayList<>();
 
     public Score() {
@@ -34,6 +34,6 @@ public class Score {
     public String getTitle() { return title; }
     public String getSubtitle() { return subtitle; }
     public String getComposer() { return composer; }
-    public PageFormat getPageFormat() { return pageFormat; }
+    public Page getPage() { return page; }
     public List<ScoreMode> getModes() { return scoreModes; }
 }

@@ -14,7 +14,7 @@ public final class StemLengthCalculator {
             return calculateBeamedFactor(parentNote, parentNote.getBeamGroup(), middleY, spacing);
         }
 
-        int activeVoices = parentNote.getParent().getVoiceCountForStaff(parentNote.getStaff());
+        int activeVoices = parentNote.getParent().getVoiceCountForStaff(parentNote.getStaff().getStaffIndex());
         if (activeVoices == 1) return calculateSingleVoiceFactor(parentNote, middleY, spacing);
 
         int stepsFromMiddle = calculateStepsFromMiddle(parentNote.getY(), middleY, spacing);
@@ -170,7 +170,7 @@ public final class StemLengthCalculator {
         y2 += shiftNeeded;
 
         // 2. Korekta dla pojedynczego głosu przekraczającego środkową linię
-        int activeVoices = first.getParent().getVoiceCountForStaff(first.getStaff());
+        int activeVoices = first.getParent().getVoiceCountForStaff(first.getStaff().getStaffIndex());
         if (activeVoices == 1 && beamGroup != null && beamGroup.getNotes() != null) {
             double stemWidth = resolveStemWidth(first);
             for (NoteLayout note : beamGroup.getNotes()) {

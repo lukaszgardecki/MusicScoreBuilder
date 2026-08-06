@@ -89,7 +89,8 @@ public class StemLayout implements Selectable {
     public boolean isDown() {  return getDirection() == StemDirection.DOWN; }
     public StemDirection getDirection() {
         int voice = parentNote.getNote().getVoice();
-        int activeVoices = parentNote.getParent().getVoiceCountForStaff(parentNote.getStaff());
+        int staffId = parentNote.getStaff().getStaffIndex();
+        int activeVoices = parentNote.getParent().getVoiceCountForStaff(staffId);
 
         // 1. Wielogłosowość: nieparzyste głosy w górę (UP), parzyste w dół (DOWN)
         if (activeVoices > 1) {

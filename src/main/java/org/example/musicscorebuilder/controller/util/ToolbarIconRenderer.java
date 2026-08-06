@@ -157,8 +157,7 @@ public class ToolbarIconRenderer {
         gc.clearRect(0, 0, width, height);
 
         ScoreStyle style = new ScoreStyle();
-        Page dummyPage = new Page(PageFormat.A4_V);
-        PageLayout dummyPageLayout = new PageLayout(dummyPage, new ScoreLayout(new Score(), style), 0);
+        PageLayout dummyPageLayout = new PageLayout(new ScoreLayout(new Score(), style), 0);
         SystemLayout dummySystem = new SystemLayout(dummyPageLayout, BraceType.BRACE);
 
         Measure dummyMeasure = new Measure(List.of(new Staff(0, new Clef(ClefType.G))));
@@ -216,8 +215,7 @@ public class ToolbarIconRenderer {
         gc.clearRect(0, 0, width, height);
 
         ScoreStyle style = new ScoreStyle();
-        Page dummyPage = new Page(PageFormat.A4_V);
-        PageLayout dummyPageLayout = new PageLayout(dummyPage, new ScoreLayout(new Score(), style), 0);
+        PageLayout dummyPageLayout = new PageLayout(new ScoreLayout(new Score(), style), 0);
         SystemLayout dummySystem = new SystemLayout(dummyPageLayout, BraceType.BRACE);
 
         Measure dummyMeasure = new Measure(List.of(new Staff(0, new Clef(ClefType.G))));

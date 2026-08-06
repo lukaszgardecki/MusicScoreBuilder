@@ -40,7 +40,7 @@ public class PageAreaController {
         initClickHandling();
         initListeners();
         initViewModeToggle();
-        initLayoutEngine();
+        this.layoutEngine = new LayoutEngine();
         MidiInputService.getInstance().startListening();
 
         refreshView();
@@ -126,13 +126,6 @@ public class PageAreaController {
     private void initViewModeToggle() {
         viewModeToggle.setSelected(true);
         viewModeToggle.setText("Widok: Głos Solowy");
-    }
-
-    private void initLayoutEngine() {
-        this.layoutEngine = new LayoutEngine(
-                new Page(PageFormat.A4_V, 10, 10, 10, 10),
-                new ScoreStyle()
-        );
     }
 
     private void redraw() {

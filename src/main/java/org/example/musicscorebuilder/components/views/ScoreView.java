@@ -53,7 +53,7 @@ public class ScoreView extends Canvas {
 
             if (target != null && target.segment().getType() == SegmentType.NOTEREST) {
                 var voice = scoreNavigator.getLastCursor().getElement().getVoice();
-                boolean segmentHasSameVoiceNote = target.segment().hasAnyNoteRestAtStaffByVoice(target.staff(), voice);
+                boolean segmentHasSameVoiceNote = target.segment().hasAnyNoteRestAtStaffByVoice(target.staff().getStaffIndex(), voice);
                 if (!segmentHasSameVoiceNote) return;
 
                 GhostNoteLayout currentGhost = modeManager.getGhostNote();

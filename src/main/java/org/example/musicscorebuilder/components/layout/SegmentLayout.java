@@ -100,12 +100,12 @@ public class SegmentLayout {
                 .flatMap(List::stream)
                 .toList();
     }
-    public int getVoiceCountForStaff(StaffLayout staff) {
-        return parent.getVoiceCountForStaff(staff);
+    public int getVoiceCountForStaff(int staffId) {
+        return parent.getVoiceCountForStaff(staffId);
     }
 
-    public boolean hasAnyNoteRestAtStaffByVoice(StaffLayout staff, int voice) {
-        return !segment.getNoteRestByStaffAndVoice(staff.getStaff(), voice).isEmpty();
+    public boolean hasAnyNoteRestAtStaffByVoice(int staffId, int voice) {
+        return !segment.getNoteRestByStaffAndVoice(staffId, voice).isEmpty();
     }
 
     public SegmentType getType() { return type; }

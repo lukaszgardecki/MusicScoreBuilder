@@ -21,9 +21,10 @@ public class PageLayout {
     private double x;
     private final int number;
 
-    public PageLayout(Page page, ScoreLayout parent, int pageIndex) {
+    public PageLayout(ScoreLayout parent, int pageIndex) {
         this.parent = parent;
         var style = parent.getStyle();
+        var page = parent.getScore().getPage();
         this.width = style.toSp(page.getWidthMm());
         this.height = style.toSp(page.getHeightMm());
         this.effectiveWidth = style.toSp(page.getEffectiveWidthMm());

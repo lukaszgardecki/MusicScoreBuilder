@@ -41,22 +41,22 @@ public class Measure {
         }
     }
 
-    public void changeElementDuration(Segment targetSegment, Staff staff, NoteRestElement elementToChange, NoteType newType) {
-        MeasureDurationEditor.changeElementDuration(this, targetSegment, staff, elementToChange, newType);
+    public void changeElementDuration(Segment targetSegment, int staffId, NoteRestElement elementToChange, NoteType newType) {
+        MeasureDurationEditor.changeElementDuration(this, targetSegment, staffId, elementToChange, newType);
         setDirty(true);
     }
 
-    public void convertNoteToRest(Segment targetSegment, Staff staff, Note noteToConvert) {
-        if (targetSegment == null || staff == null || noteToConvert == null) return;
+    public void convertNoteToRest(Segment targetSegment, int staffId, Note noteToConvert) {
+        if (targetSegment == null || noteToConvert == null) return;
 
         if (noteToConvert.isBeamed()) {
-            adjustBeamsOnNoteRemoval(targetSegment, staff, noteToConvert);
+            adjustBeamsOnNoteRemoval(targetSegment, staffId, noteToConvert);
         }
 
         Rest newRest = new Rest(noteToConvert.getVoice(), noteToConvert.getType(), this);
         newRest.setDots(noteToConvert.getDots());
 
-        targetSegment.replaceElement(staff, noteToConvert, newRest);
+        targetSegment.replaceElement(staffId, noteToConvert, newRest);
         setDirty(true);
     }
 
@@ -70,7 +70,7 @@ public class Measure {
         return keySignature != null ? keySignature.getAlterForStep(step) : 0;
     }
 
-    public int getEffectiveAlterBefore(Segment targetSegment, Staff staff, PitchStep step, int octave) {
+    public int getEffectiveAlterBefore(Segment targetSegment, int staffId, PitchStep step, int octave) {
         int activeAlter = getKeySignatureAlterForStep(step);
 
         if (targetSegment == null) {
@@ -82,7 +82,7 @@ public class Measure {
             if (seg == targetSegment) break;
             if (!seg.isNoteRest()) continue;
 
-            List<Element> elements = seg.getElementsByStaff(staff);
+            List<Element> elements = seg.getElementsByStaff(staffId);
 
             for (Element el : elements) {
                 if (el instanceof Note prevNote) {
@@ -99,9 +99,9 @@ public class Measure {
         return activeAlter;
     }
 
-    public int countVoicesByStaff(Staff staff) {
+    public int countVoicesByStaff(int staffId) {
         return segments.stream()
-                .mapToInt(s -> s.getVoiceCountByStaff(staff))
+                .mapToInt(s -> s.getVoiceCountByStaff(staffId))
                 .max()
                 .orElse(0);
     }
@@ -137,12 +137,12 @@ public class Measure {
         setDirty(true);
     }
 
-    private void adjustBeamsOnNoteRemoval(Segment targetSegment, Staff staff, Note note) {
+    private void adjustBeamsOnNoteRemoval(Segment targetSegment, int staffId, Note note) {
         BeamType currentBeam = note.getBeam();
         int voice = note.getVoice();
 
-        Note prevNote = findPreviousNoteInVoice(targetSegment, staff, voice);
-        Note nextNote = findNextNoteInVoice(targetSegment, staff, voice);
+        Note prevNote = findPreviousNoteInVoice(targetSegment, staffId, voice);
+        Note nextNote = findNextNoteInVoice(targetSegment, staffId, voice);
 
         switch (currentBeam) {
             case BEGIN -> {
@@ -183,14 +183,14 @@ public class Measure {
         }
     }
 
-    private Note findPreviousNoteInVoice(Segment targetSegment, Staff staff, int voice) {
+    private Note findPreviousNoteInVoice(Segment targetSegment, int staffId, int voice) {
         int index = segments.indexOf(targetSegment);
         if (index <= 0) return null;
 
         for (int i = index - 1; i >= 0; i--) {
             Segment seg = segments.get(i);
             if (seg.isNoteRest()) {
-                for (Element el : seg.getElementsByStaff(staff)) {
+                for (Element el : seg.getElementsByStaff(staffId)) {
                     if (el instanceof Note note && note.getVoice() == voice) {
                         return note;
                     }
@@ -200,14 +200,14 @@ public class Measure {
         return null;
     }
 
-    private Note findNextNoteInVoice(Segment targetSegment, Staff staff, int voice) {
+    private Note findNextNoteInVoice(Segment targetSegment, int staffId, int voice) {
         int index = segments.indexOf(targetSegment);
         if (index == -1 || index >= segments.size() - 1) return null;
 
         for (int i = index + 1; i < segments.size(); i++) {
             Segment seg = segments.get(i);
             if (seg.isNoteRest()) {
-                for (Element el : seg.getElementsByStaff(staff)) {
+                for (Element el : seg.getElementsByStaff(staffId)) {
                     if (el instanceof Note note && note.getVoice() == voice) {
                         return note;
                     }

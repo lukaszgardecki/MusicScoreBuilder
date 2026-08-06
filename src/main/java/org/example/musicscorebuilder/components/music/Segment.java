@@ -3,23 +3,21 @@ package org.example.musicscorebuilder.components.music;
 import java.util.*;
 
 public class Segment {
-    private Segment next;
-    private Segment prev;
     private Measure parent;
     private final SegmentType type;
-    private final Map<Staff, List<Element>> staffElements = new HashMap<>();
+    private final Map<Integer, List<Element>> staffElements = new HashMap<>();
     private int duration;
 
     public Segment(SegmentType type, Measure parent) {
         this.type = type;
         this.parent = parent;
         for (Staff staff : parent.getStaves()) {
-            staffElements.put(staff, new ArrayList<>());
+            staffElements.put(staff.getIndex(), new ArrayList<>());
         }
     }
 
-    public void insertNote(Staff staff, Note newNote) {
-        List<NoteRestElement> currentElements = getNoteRestByStaffAndVoice(staff, newNote.getVoice());
+    public void insertNote(int staffId, Note newNote) {
+        List<NoteRestElement> currentElements = getNoteRestByStaffAndVoice(staffId, newNote.getVoice());
 
         if (!currentElements.isEmpty()) {
             List<NoteRestElement> toRemove = currentElements.stream()
@@ -30,26 +28,26 @@ public class Segment {
                     })
                     .toList();
             for (NoteRestElement elementToRemove : toRemove) {
-                removeNoteRest(staff, elementToRemove);
+                removeNoteRest(staffId, elementToRemove);
             }
         }
 
-        addElement(staff, newNote);
+        addElement(staffId, newNote);
     }
 
-    public void removeNoteRest(Staff staff, NoteRestElement element) {
-        List<Element> elements = staffElements.get(staff);
+    public void removeNoteRest(int staffId, NoteRestElement element) {
+        List<Element> elements = staffElements.get(staffId);
         if (elements != null && element instanceof Element el) {
             elements.remove(el);
         }
     }
 
-    public void addElement(Staff staff, Element element) {
-        staffElements.computeIfAbsent(staff, k -> new ArrayList<>()).add(element);
+    public void addElement(int staffId, Element element) {
+        staffElements.computeIfAbsent(staffId, k -> new ArrayList<>()).add(element);
     }
 
-    public void replaceElement(Staff staff, Element oldElement, Element newElement) {
-        List<Element> elements = staffElements.get(staff);
+    public void replaceElement(int staffId, Element oldElement, Element newElement) {
+        List<Element> elements = staffElements.get(staffId);
         if (elements != null) {
             int index = elements.indexOf(oldElement);
             if (index != -1) {
@@ -58,20 +56,12 @@ public class Segment {
         }
     }
 
-    public List<Element> getElementsByStaff(Staff staff) {
-        return staffElements.getOrDefault(staff, Collections.emptyList());
+    public List<Element> getElementsByStaff(int staffId) {
+        return staffElements.getOrDefault(staffId, Collections.emptyList());
     }
 
-    public int getVoiceTicksByStaff(Staff staff, int voice) {
-        List<NoteRestElement> elements = getNoteRestByStaffAndVoice(staff, voice);
-        if (!elements.isEmpty()) {
-            return elements.get(0).getType().getTicks();
-        }
-        return getDuration();
-    }
-
-    public int getVoiceCountByStaff(Staff staff) {
-        return (int) getElementsByStaff(staff).stream()
+    public int getVoiceCountByStaff(int staffId) {
+        return (int) getElementsByStaff(staffId).stream()
                 .filter(NoteRestElement.class::isInstance)
                 .map(NoteRestElement.class::cast)
                 .map(NoteRestElement::getVoice)
@@ -79,8 +69,8 @@ public class Segment {
                 .count();
     }
 
-    public List<NoteRestElement> getNoteRestByStaffAndVoice(Staff staff, int voice) {
-        return getElementsByStaff(staff).stream()
+    public List<NoteRestElement> getNoteRestByStaffAndVoice(int staffId, int voice) {
+        return getElementsByStaff(staffId).stream()
                 .filter(e -> e instanceof NoteRestElement nre && nre.getVoice() == voice)
                 .map(NoteRestElement.class::cast)
                 .toList();
@@ -91,32 +81,8 @@ public class Segment {
     public int getDuration() { return duration; }
     public void setDuration(int d) { duration = d; }
 
-    public Segment getNextSameType() {
-        Segment current = this.next;
-        while (current != null) {
-            if (current.getType() == this.type) {
-                return current;
-            }
-            current = current.next;
-        }
-        return null;
-    }
-    public Segment getPrevSameType() {
-        Segment current = this.prev;
-        while (current != null) {
-            if (current.getType() == this.type) {
-                return current;
-            }
-            current = current.prev;
-        }
-        return null;
-    }
-
     public boolean isEmpty() {
         return staffElements.values().stream().allMatch(list -> list == null || list.isEmpty());
     }
     public boolean isNoteRest() { return type == SegmentType.NOTEREST; }
-
-    public void setNext(Segment next) { this.next = next; }
-    public void setPrev(Segment prev) { this.prev = prev; }
 }

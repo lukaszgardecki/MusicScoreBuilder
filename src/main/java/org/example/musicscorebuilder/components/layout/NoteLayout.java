@@ -143,10 +143,9 @@ public class NoteLayout extends ElementLayout {
 
         Segment segment = parent.getSegment();
         Measure measure = (segment != null) ? segment.getParent() : null;
-        Staff staffObj = staff.getStaff();
 
-        int effectiveAlter = measure != null && staffObj != null
-                ? measure.getEffectiveAlterBefore(segment, staffObj, newStep, octave)
+        int effectiveAlter = measure != null
+                ? measure.getEffectiveAlterBefore(segment, staff.getStaffIndex(), newStep, octave)
                 : 0;
 
         this.note.setPitch(newStep, octave);

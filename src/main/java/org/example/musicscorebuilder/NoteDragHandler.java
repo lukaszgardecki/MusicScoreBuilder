@@ -90,10 +90,10 @@ public class NoteDragHandler {
 
         Segment segment = gN.getSegment().getSegment();
         Measure measure = segment.getParent();
-        Staff staff = gN.getStaff().getStaff();
+        int staffId = gN.getStaff().getStaffIndex();
         Note note = gN.getNote();
 
-        Segment nextSegment = MeasureNoteInserter.insertNote(measure, segment, staff, note);
+        Segment nextSegment = MeasureNoteInserter.insertNote(measure, segment, staffId, note);
 
         stateManager.notifyScoreChanged();
 
@@ -102,7 +102,7 @@ public class NoteDragHandler {
             Selectable targetSelectable = LayoutHitTester.findSelectableForSegmentAndStaff(
                     updatedLayout.getPages(),
                     nextSegment,
-                    staff,
+                    staffId,
                     note.getVoice()
             );
 

@@ -296,8 +296,8 @@ public class LayoutHitTester {
         return itemsToSelect;
     }
 
-    public static Selectable findSelectableForElement(List<PageLayout> pages, Segment targetSegment, Staff staff, NoteRestElement targetNre) {
-        if (pages == null || targetSegment == null || staff == null || targetNre == null) return null;
+    public static Selectable findSelectableForElement(List<PageLayout> pages, Segment targetSegment, int staffId, NoteRestElement targetNre) {
+        if (pages == null || targetSegment == null || targetNre == null) return null;
 
         for (PageLayout page : pages) {
             for (SystemLayout system : page.getSystems()) {
@@ -305,7 +305,7 @@ public class LayoutHitTester {
                     for (SegmentLayout segLayout : measureLayout.getSegments()) {
                         if (segLayout.getSegment() == targetSegment) {
                             for (StaffLayout staffLayout : measureLayout.getStaffs()) {
-                                if (staffLayout.getStaff() == staff) {
+                                if (staffLayout.getStaffIndex() == staffId) {
                                     List<ElementLayout> elements = segLayout.getElementsByStaff(staffLayout);
                                     if (elements != null) {
                                         for (ElementLayout el : elements) {
@@ -326,8 +326,8 @@ public class LayoutHitTester {
         return null;
     }
 
-    public static Selectable findSelectableForSegmentAndStaff(List<PageLayout> pages, Segment targetSegment, Staff staff, int voice) {
-        if (pages == null || targetSegment == null || staff == null) return null;
+    public static Selectable findSelectableForSegmentAndStaff(List<PageLayout> pages, Segment targetSegment, int staffId, int voice) {
+        if (pages == null || targetSegment == null) return null;
 
         for (PageLayout page : pages) {
             for (SystemLayout system : page.getSystems()) {
@@ -335,7 +335,7 @@ public class LayoutHitTester {
                     for (SegmentLayout segLayout : measureLayout.getSegments()) {
                         if (segLayout.getSegment() == targetSegment) {
                             for (StaffLayout staffLayout : measureLayout.getStaffs()) {
-                                if (staffLayout.getStaff() == staff) {
+                                if (staffLayout.getStaffIndex() == staffId) {
                                     List<ElementLayout> elements = segLayout.getElementsByStaff(staffLayout);
                                     if (elements != null && !elements.isEmpty()) {
                                         for (ElementLayout el : elements) {
@@ -345,7 +345,7 @@ public class LayoutHitTester {
                                                 return rl;
                                             }
                                         }
-                                        return elements.get(0);
+                                        return elements.getFirst();
                                     }
                                 }
                             }

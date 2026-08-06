@@ -16,7 +16,7 @@ public class MeasureDurationEditor {
         boolean tieStart = false;
     }
 
-    public static void changeElementDuration(Measure measure, Segment targetSegment, Staff staff, NoteRestElement elementToChange, NoteType newType) {
+    public static void changeElementDuration(Measure measure, Segment targetSegment, int staffId, NoteRestElement elementToChange, NoteType newType) {
         if (targetSegment == null || targetSegment.getType() != SegmentType.NOTEREST) return;
         if (elementToChange == null || elementToChange.getType() == newType) return;
 
@@ -43,9 +43,9 @@ public class MeasureDurationEditor {
         }
 
         // 1. Odczytujemy informacje o łukach z zastępowanych obszarów przed ich usunięciem
-        TieInfo tieInfoM1 = collectTieInfo(measure, staff, voice, startTick, startTick + ticksForCurrentMeasure);
+        TieInfo tieInfoM1 = collectTieInfo(measure, staffId, voice, startTick, startTick + ticksForCurrentMeasure);
         TieInfo tieInfoM2 = (remainingTicks > 0 && nextMeasure != null)
-                ? collectTieInfo(nextMeasure, staff, voice, 0, remainingTicks)
+                ? collectTieInfo(nextMeasure, staffId, voice, 0, remainingTicks)
                 : null;
 
         boolean entryTieStop = tieInfoM1.tieStop;
@@ -68,8 +68,8 @@ public class MeasureDurationEditor {
 
             Segment actualTarget = findSegmentAtTick(measure, currentStartTick);
             if (actualTarget != null) {
-                removeCollisions(measure, staff, voice, currentStartTick, currentStartTick + elTicks);
-                actualTarget.addElement(staff, el);
+                removeCollisions(measure, staffId, voice, currentStartTick, currentStartTick + elTicks);
+                actualTarget.addElement(staffId, el);
                 allInsertedElements.add(el);
             }
             currentStartTick += elTicks;
@@ -88,8 +88,8 @@ public class MeasureDurationEditor {
 
                 Segment actualTarget = findSegmentAtTick(nextMeasure, nextMeasureEndTick);
                 if (actualTarget != null) {
-                    removeCollisions(nextMeasure, staff, voice, nextMeasureEndTick, nextMeasureEndTick + elTicks);
-                    actualTarget.addElement(staff, el);
+                    removeCollisions(nextMeasure, staffId, voice, nextMeasureEndTick, nextMeasureEndTick + elTicks);
+                    actualTarget.addElement(staffId, el);
                     allInsertedElements.add(el);
                 }
                 nextMeasureEndTick += elTicks;
@@ -120,7 +120,7 @@ public class MeasureDurationEditor {
     /**
      * Zbiera stan łuków z nut, które zostaną nadpisane/usunięte w danym przedziale czasowym.
      */
-    private static TieInfo collectTieInfo(Measure measure, Staff staff, int voice, int startTick, int targetEndTick) {
+    private static TieInfo collectTieInfo(Measure measure, int staffId, int voice, int startTick, int targetEndTick) {
         TieInfo info = new TieInfo();
         List<Note> notesInRange = new ArrayList<>();
 
@@ -128,7 +128,7 @@ public class MeasureDurationEditor {
         for (Segment seg : measure.getSegments()) {
             if (seg.isNoteRest()) {
                 int segDur = seg.getDuration();
-                List<NoteRestElement> nres = seg.getNoteRestByStaffAndVoice(staff, voice);
+                List<NoteRestElement> nres = seg.getNoteRestByStaffAndVoice(staffId, voice);
 
                 for (NoteRestElement el : nres) {
                     if (el instanceof Note note) {
@@ -209,19 +209,19 @@ public class MeasureDurationEditor {
         return null;
     }
 
-    private static void removeCollisions(Measure measure, Staff staff, int voice, int startTick, int targetEndTick) {
+    private static void removeCollisions(Measure measure, int staffId, int voice, int startTick, int targetEndTick) {
         int currentTick = 0;
         for (Segment seg : measure.getSegments()) {
             if (seg.isNoteRest()) {
                 int segDur = seg.getDuration();
-                List<NoteRestElement> nres = seg.getNoteRestByStaffAndVoice(staff, voice);
+                List<NoteRestElement> nres = seg.getNoteRestByStaffAndVoice(staffId, voice);
 
                 for (NoteRestElement el : new ArrayList<>(nres)) {
                     int elStart = currentTick;
                     int elEnd = currentTick + getElementTicks(el);
 
                     if (elStart < targetEndTick && elEnd > startTick) {
-                        seg.removeNoteRest(staff, el);
+                        seg.removeNoteRest(staffId, el);
                     }
                 }
                 currentTick += segDur;
@@ -231,14 +231,15 @@ public class MeasureDurationEditor {
 
     private static void cleanAndFillVoiceGaps(Measure measure) {
         for (Staff staff : measure.getStaves()) {
+            int staffId = staff.getIndex();
             for (int voice = 1; voice <= 4; voice++) {
-                boolean hasElements = hasElementsInVoice(measure, staff, voice);
+                boolean hasElements = hasElementsInVoice(measure, staffId, voice);
                 boolean active = (voice == 1) || hasElements;
 
                 if (!active) {
-                    removeAllElementsInVoice(measure, staff, voice);
+                    removeAllElementsInVoice(measure, staffId, voice);
                 } else {
-                    fillGapsForActiveVoice(measure, staff, voice);
+                    fillGapsForActiveVoice(measure, staffId, voice);
                 }
             }
         }
@@ -246,7 +247,7 @@ public class MeasureDurationEditor {
         updateBeams(measure);
     }
 
-    private static void fillGapsForActiveVoice(Measure measure, Staff staff, int voice) {
+    private static void fillGapsForActiveVoice(Measure measure, int staffId, int voice) {
         int totalTicks = measure.getTimeSignature().getTotalTicks();
 
         List<int[]> occupiedIntervals = new ArrayList<>();
@@ -255,7 +256,7 @@ public class MeasureDurationEditor {
         for (Segment seg : measure.getSegments()) {
             if (seg.isNoteRest()) {
                 int segDur = seg.getDuration();
-                for (NoteRestElement el : seg.getNoteRestByStaffAndVoice(staff, voice)) {
+                for (NoteRestElement el : seg.getNoteRestByStaffAndVoice(staffId, voice)) {
                     int elStart = currentTick;
                     int elEnd = currentTick + getElementTicks(el);
                     occupiedIntervals.add(new int[]{elStart, elEnd});
@@ -303,28 +304,28 @@ public class MeasureDurationEditor {
                 ensureSegmentBoundaryAt(measure, restStartTick);
                 Segment seg = findSegmentAtTick(measure, restStartTick);
                 if (seg != null) {
-                    seg.addElement(staff, new Rest(voice, restType, measure));
+                    seg.addElement(staffId, new Rest(voice, restType, measure));
                 }
                 restStartTick += restType.getTicks();
             }
         }
     }
 
-    private static boolean hasElementsInVoice(Measure measure, Staff staff, int voice) {
+    private static boolean hasElementsInVoice(Measure measure, int staffId, int voice) {
         for (Segment seg : measure.getSegments()) {
-            for (NoteRestElement nre : seg.getNoteRestByStaffAndVoice(staff, voice)) {
+            for (NoteRestElement nre : seg.getNoteRestByStaffAndVoice(staffId, voice)) {
                 return true;
             }
         }
         return false;
     }
 
-    private static void removeAllElementsInVoice(Measure measure, Staff staff, int voice) {
+    private static void removeAllElementsInVoice(Measure measure, int staffId, int voice) {
         for (Segment seg : measure.getSegments()) {
             if (seg.isNoteRest()) {
-                List<NoteRestElement> nres = seg.getNoteRestByStaffAndVoice(staff, voice);
+                List<NoteRestElement> nres = seg.getNoteRestByStaffAndVoice(staffId, voice);
                 for (NoteRestElement el : new ArrayList<>(nres)) {
-                    seg.removeNoteRest(staff, el);
+                    seg.removeNoteRest(staffId, el);
                 }
             }
         }
@@ -333,12 +334,12 @@ public class MeasureDurationEditor {
     private static void updateBeams(Measure measure) {
         for (Staff staff : measure.getStaves()) {
             for (int voice = 1; voice <= 4; voice++) {
-                updateBeamsForVoice(measure, staff, voice);
+                updateBeamsForVoice(measure, staff.getIndex(), voice);
             }
         }
     }
 
-    private static void updateBeamsForVoice(Measure measure, Staff staff, int voice) {
+    private static void updateBeamsForVoice(Measure measure, int staffId, int voice) {
         List<Note> currentGroup = new ArrayList<>();
         int beatTicks = getBeatUnitTicks(measure.getTimeSignature());
         int currentTick = 0;
@@ -349,7 +350,7 @@ public class MeasureDurationEditor {
                 continue;
             }
 
-            List<NoteRestElement> nres = seg.getNoteRestByStaffAndVoice(staff, voice);
+            List<NoteRestElement> nres = seg.getNoteRestByStaffAndVoice(staffId, voice);
             for (NoteRestElement nre : nres) {
                 if (nre instanceof Note note && isBeamable(note)) {
                     if (currentTick > 0 && currentTick % beatTicks == 0 && !currentGroup.isEmpty()) {

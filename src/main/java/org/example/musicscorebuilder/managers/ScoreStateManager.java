@@ -163,8 +163,8 @@ public class ScoreStateManager {
         if (currentNote == null || segLayout == null || staffLayout == null) return;
 
         Segment targetSegment = segLayout.getSegment();
-        Staff staff = staffLayout.getStaff();
-        if (targetSegment == null || staff == null) return;
+        int staffId = staffLayout.getStaffIndex();
+        if (targetSegment == null) return;
 
         Measure measure = targetSegment.getParent();
         if (measure == null) return;
@@ -176,11 +176,11 @@ public class ScoreStateManager {
         }
 
         postRefreshAction = layout -> {
-            var staffElements = targetSegment.getElementsByStaff(staff);
+            var staffElements = targetSegment.getElementsByStaff(staffId);
             if (staffElements != null) {
                 for (Element el : staffElements) {
                     if (el instanceof NoteRestElement nre && nre.getVoice() == targetVoice) {
-                        Selectable newLayout = LayoutHitTester.findSelectableForElement(layout.getPages(), targetSegment, staff, nre);
+                        Selectable newLayout = LayoutHitTester.findSelectableForElement(layout.getPages(), targetSegment, staffId, nre);
                         if (newLayout != null) {
                             setSelected(newLayout);
                         }
@@ -190,7 +190,7 @@ public class ScoreStateManager {
             }
         };
 
-        measure.convertNoteToRest(targetSegment, staff, currentNote);
+        measure.convertNoteToRest(targetSegment, staffId, currentNote);
         notifyScoreChanged();
     }
 
@@ -205,7 +205,7 @@ public class ScoreStateManager {
         final Segment targetSegment = segLayout.getSegment();
         if (targetSegment == null) return;
 
-        final Staff staff = staffLayout.getStaff();
+        int staffId = staffLayout.getStaffIndex();
         final Measure measure = targetSegment.getParent();
 
         final NoteRestElement elementToChange;
@@ -221,15 +221,15 @@ public class ScoreStateManager {
             return;
         }
 
-        if (elementToChange == null || measure == null || staff == null) return;
+        if (elementToChange == null || measure == null) return;
         if (elementToChange.getType() == type) return;
 
         postRefreshAction = layout -> {
-            var staffElements = targetSegment.getElementsByStaff(staff);
+            var staffElements = targetSegment.getElementsByStaff(staffId);
             if (staffElements != null) {
                 for (Element el : staffElements) {
                     if (el instanceof NoteRestElement nre && nre.getVoice() == targetVoice) {
-                        Selectable newLayout = LayoutHitTester.findSelectableForElement(layout.getPages(), targetSegment, staff, nre);
+                        Selectable newLayout = LayoutHitTester.findSelectableForElement(layout.getPages(), targetSegment, staffId, nre);
                         if (newLayout != null) {
                             setSelected(newLayout);
                         }
@@ -239,7 +239,7 @@ public class ScoreStateManager {
             }
         };
 
-        measure.changeElementDuration(targetSegment, staff, elementToChange, type);
+        measure.changeElementDuration(targetSegment, staffId, elementToChange, type);
         notifyScoreChanged();
     }
 
@@ -254,7 +254,7 @@ public class ScoreStateManager {
         final Segment targetSegment = segLayout.getSegment();
         if (targetSegment == null) return;
 
-        final Staff staff = staffLayout.getStaff();
+        int staffId = staffLayout.getStaffIndex();
 
         final NoteRestElement elementToChange;
         final int targetVoice;
@@ -269,15 +269,15 @@ public class ScoreStateManager {
             return;
         }
 
-        if (elementToChange == null || staff == null) return;
+        if (elementToChange == null) return;
         if (elementToChange.getDots() == dots) return;
 
         postRefreshAction = layout -> {
-            var staffElements = targetSegment.getElementsByStaff(staff);
+            var staffElements = targetSegment.getElementsByStaff(staffId);
             if (staffElements != null) {
                 for (Element el : staffElements) {
                     if (el instanceof NoteRestElement nre && nre.getVoice() == targetVoice) {
-                        Selectable newLayout = LayoutHitTester.findSelectableForElement(layout.getPages(), targetSegment, staff, nre);
+                        Selectable newLayout = LayoutHitTester.findSelectableForElement(layout.getPages(), targetSegment, staffId, nre);
                         if (newLayout != null) {
                             setSelected(newLayout);
                         }

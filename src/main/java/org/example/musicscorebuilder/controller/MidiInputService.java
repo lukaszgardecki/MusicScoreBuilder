@@ -93,12 +93,12 @@ public class MidiInputService {
         Segment nextSegment = MeasureNoteInserter.insertNote(
                 context.measure(),
                 context.segment(),
-                context.staff(),
+                context.staffId(),
                 note
         );
 
         if (nextSegment != null) {
-            scheduleCursorUpdate(nextSegment, context.staff());
+            scheduleCursorUpdate(nextSegment, context.staffId());
         }
 
         stateManager.notifyScoreChanged();
@@ -133,30 +133,30 @@ public class MidiInputService {
         return relativeYInSpaces >= minAllowedRelativeY && relativeYInSpaces <= maxAllowedRelativeY;
     }
 
-    private void scheduleCursorUpdate(Segment nextSegment, Staff staff) {
+    private void scheduleCursorUpdate(Segment nextSegment, int staffId) {
         int voice = modeManager.getCurrentVoice();
         stateManager.setPostRefreshAction(newScoreLayout -> {
-            Selectable newSelectable = findTargetSelectable(newScoreLayout, nextSegment, staff, voice);
+            Selectable newSelectable = findTargetSelectable(newScoreLayout, nextSegment, staffId, voice);
             if (newSelectable != null) {
                 scoreNavigator.setCursorLayoutQuietly(new CursorLayout(newSelectable));
             }
         });
     }
 
-    private Selectable findTargetSelectable(ScoreLayout layout, Segment segment, Staff staff, int voice) {
-        NoteRestElement targetElement = findTargetElement(segment, staff, voice);
+    private Selectable findTargetSelectable(ScoreLayout layout, Segment segment, int staffId, int voice) {
+        NoteRestElement targetElement = findTargetElement(segment, staffId, voice);
         if (targetElement == null) return null;
 
         return LayoutHitTester.findSelectableForElement(
                 layout.getPages(),
                 segment,
-                staff,
+                staffId,
                 targetElement
         );
     }
 
-    private NoteRestElement findTargetElement(Segment segment, Staff staff, int voice) {
-        List<Element> elements = segment.getElementsByStaff(staff);
+    private NoteRestElement findTargetElement(Segment segment, int staffId, int voice) {
+        List<Element> elements = segment.getElementsByStaff(staffId);
         if (elements == null || elements.isEmpty()) return null;
 
         for (Element el : elements) {
@@ -176,7 +176,7 @@ public class MidiInputService {
 
     private record InsertionContext(
             Segment segment,
-            Staff staff,
+            int staffId,
             Measure measure,
             Clef clef,
             int maxLedgerLines
@@ -196,7 +196,7 @@ public class MidiInputService {
             Clef clef = staff.getDefaultClef();
             int maxLedgers = cursor.getSegment().getScoreStyle().getNoteMaxLedgerLines();
 
-            return new InsertionContext(segment, staff, measure, clef, maxLedgers);
+            return new InsertionContext(segment, staff.getIndex(), measure, clef, maxLedgers);
         }
     }
 

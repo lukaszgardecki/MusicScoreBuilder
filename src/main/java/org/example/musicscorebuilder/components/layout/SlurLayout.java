@@ -78,7 +78,7 @@ public class SlurLayout  implements Selectable {
     private boolean isPolyphonic(NoteLayout note) {
         var segment = note.getSegment();
         if (segment.getType() != SegmentType.NOTEREST) return false;
-        return segment.getVoiceCountForStaff(note.getStaff()) > 1;
+        return segment.getVoiceCountForStaff(note.getStaff().getStaffIndex()) > 1;
     }
 
     public double getStartX() {

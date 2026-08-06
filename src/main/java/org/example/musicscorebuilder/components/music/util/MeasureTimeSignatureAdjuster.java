@@ -41,7 +41,7 @@ public class MeasureTimeSignatureAdjuster {
             for (NoteType type : pattern) {
                 Segment fillSeg = new Segment(SegmentType.NOTEREST, measure);
                 for (Staff staff : staves) {
-                    fillSeg.addElement(staff, new Rest(1, type, measure));
+                    fillSeg.addElement(staff.getIndex(), new Rest(1, type, measure));
                 }
                 fillSeg.setDuration(type.getTicks());
                 segments.add(fillSeg);
@@ -57,7 +57,7 @@ public class MeasureTimeSignatureAdjuster {
 
             Segment fillSeg = new Segment(SegmentType.NOTEREST, measure);
             for (Staff staff : staves) {
-                fillSeg.addElement(staff, new Rest(1, fit, measure));
+                fillSeg.addElement(staff.getIndex(), new Rest(1, fit, measure));
             }
             fillSeg.setDuration(fit.getTicks());
             segments.add(fillSeg);

@@ -14,13 +14,11 @@ import java.util.function.Predicate;
 
 public class LayoutEngine {
     private final ScoreStyle style;
-    private final Page page;
     private final SystemJustifier systemJustifier;
     private final Map<Measure, MeasureLayout> measureCache = new IdentityHashMap<>();
 
-    public LayoutEngine(Page page, ScoreStyle style) {
-        this.page = page;
-        this.style = style;
+    public LayoutEngine() {
+        this.style = new ScoreStyle();
         this.systemJustifier = new SystemJustifier(style);
     }
 
@@ -83,7 +81,7 @@ public class LayoutEngine {
 
     private PageLayout createPageLayout(ScoreLayout scoreLayout) {
         int pageIndex = scoreLayout.getPages().size();
-        return new PageLayout(page, scoreLayout, pageIndex);
+        return new PageLayout(scoreLayout, pageIndex);
     }
 
     private MeasureLayout createMeasureLayout(Measure measure, SystemLayout systemLayout) {
@@ -97,7 +95,7 @@ public class LayoutEngine {
         for (Segment segment : measure.getSegments()) {
             SegmentLayout segmentLayout = new SegmentLayout(segment, measureLayout);
             for (StaffLayout staff : measureLayout.getStaffs()) {
-                for (Element element : segment.getElementsByStaff(staff.getStaff())) {
+                for (Element element : segment.getElementsByStaff(staff.getStaffIndex())) {
                     if (element instanceof Barline barline) {
                         segmentLayout.addByStaff(staff, new BarlineLayout(barline, staff, segmentLayout));
                     } else if (element instanceof Note note) {
@@ -116,7 +114,7 @@ public class LayoutEngine {
         Segment endBarlineSegment = new Segment(SegmentType.BARLINE, measure);
         SegmentLayout endBarlineSegLayout = new SegmentLayout(endBarlineSegment, measureLayout);
         for (StaffLayout staffLayout : measureLayout.getStaffs()) {
-            endBarlineSegment.addElement(staffLayout.getStaff(), measure.getRightBarline());
+            endBarlineSegment.addElement(staffLayout.getStaffIndex(), measure.getRightBarline());
             endBarlineSegLayout.addByStaff(staffLayout, new BarlineLayout(measure.getRightBarline(), staffLayout, endBarlineSegLayout));
         }
         measureLayout.add(endBarlineSegLayout);

@@ -24,6 +24,7 @@ public class StaffLayout {
 
     public MeasureLayout getParent() { return parent; }
     public Staff getStaff() { return staff; }
+    public int getStaffIndex() { return staff.getIndex(); }
     public int getLinesNumber() { return staff.getLinesNumber(); }
     public double getLineWidth() { return lineWidth; }
     public double getLineSpacing() { return lineSpacing; }

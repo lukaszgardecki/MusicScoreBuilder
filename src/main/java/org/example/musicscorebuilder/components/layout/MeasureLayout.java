@@ -102,9 +102,8 @@ public class MeasureLayout {
         double totalSpacing = (staves.size() - 1) * style.getStaffSpacing();
         return totalStavesHeight + totalSpacing;
     }
-    public int getVoiceCountForStaff(StaffLayout staffLayout) {
-        Staff staff = staffLayout.getStaff();
-        return measure.countVoicesByStaff(staff);
+    public int getVoiceCountForStaff(int staffId) {
+        return measure.countVoicesByStaff(staffId);
     }
 
     public void setX(double x) { this.x = x; }

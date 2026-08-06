@@ -11,7 +11,7 @@ import java.util.List;
 
 public class MeasureNoteInserter {
 
-    public static Segment insertNote(Measure measure, Segment targetSegment, Staff staff, Note newNote) {
+    public static Segment insertNote(Measure measure, Segment targetSegment, int staffId, Note newNote) {
         if (targetSegment == null || !targetSegment.isNoteRest()) return null;
 
         int voice = newNote.getVoice();
@@ -53,14 +53,14 @@ public class MeasureNoteInserter {
 
             Segment actualTarget = findSegmentAtTick(measure, currentStartTick);
             if (actualTarget != null) {
-                removeCollisions(measure, staff, voice, currentStartTick, currentStartTick + nTicks);
-                actualTarget.insertNote(staff, n);
+                removeCollisions(measure, staffId, voice, currentStartTick, currentStartTick + nTicks);
+                actualTarget.insertNote(staffId, n);
                 allInsertedNotes.add(n);
             }
             currentStartTick += nTicks;
         }
 
-        cleanAndFillVoiceGaps(measure, staff);
+        cleanAndFillVoiceGaps(measure, staffId);
         measure.setDirty(true);
 
         int nextMeasureEndTick = 0;
@@ -72,14 +72,14 @@ public class MeasureNoteInserter {
 
                 Segment actualTarget = findSegmentAtTick(nextMeasure, nextMeasureEndTick);
                 if (actualTarget != null) {
-                    removeCollisions(nextMeasure, staff, voice, nextMeasureEndTick, nextMeasureEndTick + nTicks);
-                    actualTarget.insertNote(staff, n);
+                    removeCollisions(nextMeasure, staffId, voice, nextMeasureEndTick, nextMeasureEndTick + nTicks);
+                    actualTarget.insertNote(staffId, n);
                     allInsertedNotes.add(n);
                 }
                 nextMeasureEndTick += nTicks;
             }
 
-            cleanAndFillVoiceGaps(nextMeasure, staff);
+            cleanAndFillVoiceGaps(nextMeasure, staffId);
             nextMeasure.setDirty(true);
         }
 
@@ -138,19 +138,19 @@ public class MeasureNoteInserter {
         return null;
     }
 
-    private static void removeCollisions(Measure measure, Staff staff, int voice, int startTick, int targetEndTick) {
+    private static void removeCollisions(Measure measure, int staffId, int voice, int startTick, int targetEndTick) {
         int currentTick = 0;
         for (Segment seg : measure.getSegments()) {
             if (seg.isNoteRest()) {
                 int segDur = seg.getDuration();
-                List<NoteRestElement> nres = seg.getNoteRestByStaffAndVoice(staff, voice);
+                List<NoteRestElement> nres = seg.getNoteRestByStaffAndVoice(staffId, voice);
 
                 for (NoteRestElement el : new ArrayList<>(nres)) {
                     int elStart = currentTick;
                     int elEnd = currentTick + getElementTicks(el);
 
                     if (elStart < targetEndTick && elEnd > startTick) {
-                        seg.removeNoteRest(staff, el);
+                        seg.removeNoteRest(staffId, el);
                     }
                 }
                 currentTick += segDur;
@@ -158,28 +158,28 @@ public class MeasureNoteInserter {
         }
     }
 
-    private static void cleanAndFillVoiceGaps(Measure measure, Staff targetStaff) {
+    private static void cleanAndFillVoiceGaps(Measure measure, int staffId) {
         for (int voice = 1; voice <= 4; voice++) {
-            boolean hasElements = hasElementsInVoice(measure, targetStaff, voice);
+            boolean hasElements = hasElementsInVoice(measure, staffId, voice);
             boolean active = (voice == 1) || hasElements;
 
             if (!active) {
-                removeAllElementsInVoice(measure, targetStaff, voice);
+                removeAllElementsInVoice(measure, staffId, voice);
             } else {
-                fillGapsForActiveVoice(measure, targetStaff, voice);
+                fillGapsForActiveVoice(measure, staffId, voice);
             }
         }
 
-        updateBeamsForStaff(measure, targetStaff);
+        updateBeamsForStaff(measure, staffId);
     }
 
-    private static void updateBeamsForStaff(Measure measure, Staff targetStaff) {
+    private static void updateBeamsForStaff(Measure measure, int staffId) {
         for (int voice = 1; voice <= 4; voice++) {
-            updateBeamsForVoice(measure, targetStaff, voice);
+            updateBeamsForVoice(measure, staffId, voice);
         }
     }
 
-    private static void updateBeamsForVoice(Measure measure, Staff staff, int voice) {
+    private static void updateBeamsForVoice(Measure measure, int staffId, int voice) {
         List<Note> currentGroup = new ArrayList<>();
         int beatTicks = getBeatUnitTicks(measure.getTimeSignature());
         int currentTick = 0;
@@ -190,7 +190,7 @@ public class MeasureNoteInserter {
                 continue;
             }
 
-            List<NoteRestElement> nres = seg.getNoteRestByStaffAndVoice(staff, voice);
+            List<NoteRestElement> nres = seg.getNoteRestByStaffAndVoice(staffId, voice);
             for (NoteRestElement nre : nres) {
                 if (nre instanceof Note note && isBeamable(note)) {
                     if (currentTick > 0 && currentTick % beatTicks == 0 && !currentGroup.isEmpty()) {
@@ -249,18 +249,18 @@ public class MeasureNoteInserter {
         }
     }
 
-    private static void removeAllElementsInVoice(Measure measure, Staff staff, int voice) {
+    private static void removeAllElementsInVoice(Measure measure, int staffId, int voice) {
         for (Segment seg : measure.getSegments()) {
             if (seg.isNoteRest()) {
-                List<NoteRestElement> nres = seg.getNoteRestByStaffAndVoice(staff, voice);
+                List<NoteRestElement> nres = seg.getNoteRestByStaffAndVoice(staffId, voice);
                 for (NoteRestElement el : new ArrayList<>(nres)) {
-                    seg.removeNoteRest(staff, el);
+                    seg.removeNoteRest(staffId, el);
                 }
             }
         }
     }
 
-    private static void fillGapsForActiveVoice(Measure measure, Staff staff, int voice) {
+    private static void fillGapsForActiveVoice(Measure measure, int staffId, int voice) {
         int totalTicks = measure.getTimeSignature().getTotalTicks();
 
         List<int[]> coveredIntervals = new ArrayList<>();
@@ -268,7 +268,7 @@ public class MeasureNoteInserter {
         for (Segment seg : measure.getSegments()) {
             if (seg.isNoteRest()) {
                 int segDur = seg.getDuration();
-                List<NoteRestElement> elements = seg.getNoteRestByStaffAndVoice(staff, voice);
+                List<NoteRestElement> elements = seg.getNoteRestByStaffAndVoice(staffId, voice);
                 for (NoteRestElement el : elements) {
                     int elStart = currentTick;
                     int elEnd = currentTick + getElementTicks(el);
@@ -284,7 +284,7 @@ public class MeasureNoteInserter {
             if (mergedIntervals.isEmpty()) {
                 mergedIntervals.add(new int[]{interval[0], interval[1]});
             } else {
-                int[] last = mergedIntervals.get(mergedIntervals.size() - 1);
+                int[] last = mergedIntervals.getLast();
                 if (interval[0] <= last[1]) {
                     last[1] = Math.max(last[1], interval[1]);
                 } else {
@@ -317,16 +317,16 @@ public class MeasureNoteInserter {
                 ensureSegmentBoundaryAt(measure, restStartTick);
                 Segment seg = findSegmentAtTick(measure, restStartTick);
                 if (seg != null) {
-                    seg.addElement(staff, new Rest(voice, restType, measure));
+                    seg.addElement(staffId, new Rest(voice, restType, measure));
                 }
                 restStartTick += restType.getTicks();
             }
         }
     }
 
-    private static boolean hasElementsInVoice(Measure measure, Staff staff, int voice) {
+    private static boolean hasElementsInVoice(Measure measure, int staffId, int voice) {
         for (Segment seg : measure.getSegments()) {
-            if (seg.isNoteRest() && !seg.getNoteRestByStaffAndVoice(staff, voice).isEmpty()) {
+            if (seg.isNoteRest() && !seg.getNoteRestByStaffAndVoice(staffId, voice).isEmpty()) {
                 return true;
             }
         }
@@ -363,11 +363,12 @@ public class MeasureNoteInserter {
                 Segment seg2 = new Segment(SegmentType.NOTEREST, measure);
                 seg2.setDuration(part2Ticks);
 
-                for (Staff s : measure.getStaves()) {
+                for (Staff staff : measure.getStaves()) {
+                    int staffId = staff.getIndex();
                     for (int voice = 1; voice <= 4; voice++) {
-                        List<NoteRestElement> elements = seg.getNoteRestByStaffAndVoice(s, voice);
+                        List<NoteRestElement> elements = seg.getNoteRestByStaffAndVoice(staffId, voice);
                         for (NoteRestElement el : elements) {
-                            seg1.addElement(s, el);
+                            seg1.addElement(staffId, el);
                         }
                     }
                 }
