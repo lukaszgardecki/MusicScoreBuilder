@@ -18,9 +18,13 @@ public class HeaderView extends ComponentView {
         double headerHeight = header.getHeight() * sp;
 
         gc.save();
-//        gc.setFill(Color.GREEN);
-//        gc.fillRect(headerX, headerY, headerWidth, headerHeight);
+        gc.setStroke(Color.web("#a0a0a4"));
+        gc.setLineWidth(2.5);
+        gc.setLineDashes(5.0, 4.0);
+        gc.strokeRect(headerX, headerY, headerWidth, headerHeight);
+        gc.restore();
 
+        gc.save();
         double centerX = headerX + (headerWidth / 2.0);
         double rightX = headerX + headerWidth;
 
