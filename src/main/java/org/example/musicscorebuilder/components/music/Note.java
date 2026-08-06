@@ -3,8 +3,7 @@ package org.example.musicscorebuilder.components.music;
 public class Note extends NoteRestElement {
     private Pitch pitch;
     private BeamType beam;
-    private boolean tieStart;
-    private boolean tieStop;
+    private boolean tieStart, tieStop;
 
     public Note(int voice, PitchStep pitchStep, int alter, int octave, NoteType type, BeamType beam, int dots, Measure parent) {
         super(parent, voice, type);

@@ -43,7 +43,7 @@ public class ScoreStyle {
     private static final double BOW_HEIGHT_FACTOR                           = 1.0;
     private static final double BOW_Y_NOTE_SPACE                            = 0.2;
     private static final double BOW_X_NOTE_SPACE                            = 0.2;
-    private static final double BOW_SYSTEM_BREAK_START_X                    = 1.7;
+    private static final double BOW_SYSTEM_BREAK_END_X_MARGIN               = 0.5;
 
     private static final String VOICE_1_COLOR                               = "#0066cc";
     private static final String VOICE_2_COLOR                               = "#007a1a";
@@ -133,7 +133,7 @@ public class ScoreStyle {
     private double bowHeightFactor = BOW_HEIGHT_FACTOR;
     private double bowYNoteSpace = BOW_Y_NOTE_SPACE;
     private double bowXNoteSpace = BOW_X_NOTE_SPACE;
-    private double bowSystemBreakStartX = BOW_SYSTEM_BREAK_START_X;
+    private double bowSystemBreakEndXMargin = BOW_SYSTEM_BREAK_END_X_MARGIN;
 
     private String voice1Color = VOICE_1_COLOR;
     private String voice2Color = VOICE_2_COLOR;
@@ -209,7 +209,7 @@ public class ScoreStyle {
     public double getBowHeightFactor() { return staffSpacingScale * bowHeightFactor; }
     public double getBowYNoteSpace() { return  staffSpacingScale * bowYNoteSpace; }
     public double getBowXNoteSpace() { return staffSpacingScale * bowXNoteSpace; }
-    public double getBowSystemBreakStartX() { return staffSpacingScale * bowSystemBreakStartX; }
+    public double getBowSystemBreakEndXMargin() { return staffSpacingScale * bowSystemBreakEndXMargin; }
 
     public double getSelectionFrameWidth() { return staffSpacingScale * selectionFrameWidth; }
     public double getSelectionFrameExtraHeight() { return staffSpacingScale * selectionFrameExtraHeight; }

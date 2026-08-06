@@ -2,6 +2,7 @@ package org.example.musicscorebuilder.components.views;
 
 import javafx.scene.canvas.GraphicsContext;
 import org.example.musicscorebuilder.components.layout.MeasureLayout;
+import org.example.musicscorebuilder.components.layout.SlurLayout;
 import org.example.musicscorebuilder.components.layout.SystemLayout;
 import org.example.musicscorebuilder.components.layout.TieLayout;
 import org.example.musicscorebuilder.util.Util;
@@ -9,6 +10,7 @@ import org.example.musicscorebuilder.util.Util;
 public class SystemView extends ComponentView {
     private final MeasureView measureView = new MeasureView();
     private final TieView tieView = new TieView();
+    private final SlurView slurView = new SlurView();
     private final BraceView braceView = new BraceView();
 
     public void draw(GraphicsContext gc, SystemLayout system, double pageX, double pageY, double sp) {
@@ -25,8 +27,7 @@ public class SystemView extends ComponentView {
             measureView.draw(gc, measure, systemX, systemY, sp);
         }
 
-        for (TieLayout tie : system.getTies()) {
-            tieView.draw(gc, tie, systemX, systemY, sp);
-        }
+        for (TieLayout tie : system.getTies()) tieView.draw(gc, tie, systemX, systemY, sp);
+        for (SlurLayout slur : system.getSlurs()) slurView.draw(gc, slur, systemX, systemY, sp);
     }
 }

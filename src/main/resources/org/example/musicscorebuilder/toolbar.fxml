@@ -27,6 +27,7 @@
     <Button fx:id="btnDoubleSharp" styleClass="toolbar-btn" onAction="#toggleDoubleSharp"/>
     <Separator />
     <Button fx:id="btnTie" styleClass="toolbar-btn" onAction="#addTie"/>
+    <Button fx:id="btnSlur" styleClass="toolbar-btn" onAction="#addSlur"/>
     <Separator />
     <Button fx:id="voice1Button" styleClass="toolbar-btn" text="1" onAction="#activateVoice1"/>
     <Button fx:id="voice2Button" styleClass="toolbar-btn" text="2" onAction="#activateVoice2"/>

@@ -1,11 +1,13 @@
 package org.example.musicscorebuilder.managers;
 
+import org.example.musicscorebuilder.ScoreService;
 import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.music.*;
 import org.example.musicscorebuilder.components.music.util.PitchTransposer;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class ScoreStateManager {
     private static ScoreStateManager instance;
@@ -303,16 +305,71 @@ public class ScoreStateManager {
 
         if (currentNote.isTieStart()) {
             currentNote.setTieStart(false);
-            NoteLayout nextNoteLayout = findNextNoteInVoice(segLayout, staff, currentNote.getVoice());
+            NoteLayout nextNoteLayout = findNextNoteInVoice(segLayout, staff, currentNote.getVoice(), false);
             if (nextNoteLayout != null && isSamePitch(currentNote, nextNoteLayout.getNote())) {
                 nextNoteLayout.getNote().setTieStop(false);
             }
         } else {
-            NoteLayout nextNoteLayout = findNextNoteInVoice(segLayout, staff, currentNote.getVoice());
+            NoteLayout nextNoteLayout = findNextNoteInVoice(segLayout, staff, currentNote.getVoice(), false);
             if (nextNoteLayout != null && isSamePitch(currentNote, nextNoteLayout.getNote())) {
                 currentNote.setTieStart(true);
                 nextNoteLayout.getNote().setTieStop(true);
             }
+        }
+
+        notifyScoreChanged();
+    }
+
+    public void toggleSlurForSelectedNote() {
+        Score score = ScoreService.getInstance().getScore();
+        ScoreMode mode = getCurrentMode(score);
+        if (mode == null) return;
+
+        List<NoteLayout> selectedNotes = selectedItems.stream()
+                .filter(NoteLayout.class::isInstance)
+                .map(NoteLayout.class::cast)
+                .toList();
+
+        Note startNote = null;
+        Note endNote = null;
+
+        if (selectedNotes.size() == 2) {
+            NoteLayout n1 = selectedNotes.get(0);
+            NoteLayout n2 = selectedNotes.get(1);
+
+            if (isSegmentBefore(n2.getSegment(), n1.getSegment())) {
+                startNote = n2.getNote();
+                endNote = n1.getNote();
+            } else {
+                startNote = n1.getNote();
+                endNote = n2.getNote();
+            }
+        } else if (getSelectedItem() instanceof NoteLayout startLayout) {
+            startNote = startLayout.getNote();
+            NoteLayout endLayout = findNextNoteInVoice(
+                    startLayout.getSegment(),
+                    startLayout.getStaff().getStaff(),
+                    startNote.getVoice(),
+                    true // ignoruj pauzy
+            );
+            if (endLayout != null) {
+                endNote = endLayout.getNote();
+            }
+        }
+
+        if (startNote == null || endNote == null) return;
+
+        final Note finalStart = startNote;
+        final Note finalEnd = endNote;
+
+        Optional<Slur> existingSlur = mode.getSlurs().stream()
+                .filter(s -> s.getStartNote() == finalStart && s.getEndNote() == finalEnd)
+                .findFirst();
+
+        if (existingSlur.isPresent()) {
+            mode.removeSlur(existingSlur.get());
+        } else {
+            mode.addSlur(new Slur(finalStart, finalEnd));
         }
 
         notifyScoreChanged();
@@ -366,29 +423,46 @@ public class ScoreStateManager {
         }
     }
 
+    public boolean isNoteInSlur(Note note) {
+        if (note == null) return false;
+
+        Score score = ScoreService.getInstance().getScore();
+        ScoreMode mode = getCurrentMode(score);
+        if (mode == null) return false;
+
+        return mode.getSlurs().stream()
+                .anyMatch(slur -> slur.getStartNote() == note || slur.getEndNote() == note);
+    }
+
     private boolean isSamePitch(Note n1, Note n2) {
         return n1.getStep() == n2.getStep()
                 && n1.getAlter() == n2.getAlter()
                 && n1.getOctave() == n2.getOctave();
     }
 
-    private NoteLayout findNextNoteInVoice(SegmentLayout startSegmentLayout, Staff staff, int voice) {
-        SegmentLayout currentLayout = startSegmentLayout.getNext();
+    private NoteLayout findNextNoteInVoice(SegmentLayout startSegment, Staff staff, int voice, boolean ignoreRests, Predicate<NoteLayout> filter) {
+        SegmentLayout current = startSegment.getNext();
 
-        while (currentLayout != null) {
-            for (ElementLayout el : currentLayout.getElements()) {
+        while (current != null) {
+            for (ElementLayout el : current.getElements()) {
                 if (el.getStaff() != null && el.getStaff().getStaff() == staff && el.getVoice() == voice) {
-                    if (el instanceof NoteLayout nextNoteLayout) {
-                        return nextNoteLayout;
-                    } else if (el instanceof RestLayout) {
+                    if (el instanceof NoteLayout note) {
+                        if (filter.test(note)) {
+                            return note;
+                        }
+                    } else if (!ignoreRests && el instanceof RestLayout) {
                         return null;
                     }
                 }
             }
-            currentLayout = currentLayout.getNext();
+            current = current.getNext();
         }
 
         return null;
+    }
+
+    private NoteLayout findNextNoteInVoice(SegmentLayout startSegment, Staff staff, int voice, boolean ignoreRests) {
+        return findNextNoteInVoice(startSegment, staff, voice, ignoreRests, note -> true);
     }
 
     private boolean isPitchWithinLedgerBounds(Pitch pitch, Clef clef, int maxLedgerLines) {
@@ -398,5 +472,15 @@ public class ScoreStateManager {
         double minAllowedRelativeY = -maxLedgerLines;
         double maxAllowedRelativeY = 4.0 + maxLedgerLines;
         return relativeYInSpaces >= minAllowedRelativeY && relativeYInSpaces <= maxAllowedRelativeY;
+    }
+
+    private boolean isSegmentBefore(SegmentLayout seg1, SegmentLayout seg2) {
+        if (seg1 == null || seg2 == null || seg1 == seg2) return false;
+        SegmentLayout curr = seg1;
+        while (curr != null) {
+            if (curr == seg2) return true;
+            curr = curr.getNext();
+        }
+        return false;
     }
 }

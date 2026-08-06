@@ -13,6 +13,7 @@ public class ScoreMode {
     private final Barline startBarline;
     private final List<Staff> staves = new ArrayList<>();
     private final List<Measure> measures = new ArrayList<>();
+    private final List<Slur> slurs = new ArrayList<>();
 
     public ScoreMode(Score score, ModeType type) {
         this.score = score;
@@ -27,6 +28,7 @@ public class ScoreMode {
     public void appendMeasures(int count) {
         for (int i = 0; i < count; i++) appendMeasure();
     }
+    public void addSlur(Slur slur) { slurs.add(slur); }
 
     public void appendMeasure() {
         Measure measure = new Measure(staves);
@@ -59,10 +61,13 @@ public class ScoreMode {
         measures.getLast().setBarlineStyle(BarlineStyle.FINAL);
     }
 
+    public void removeSlur(Slur slur) { slurs.remove(slur); }
+
     public Score getScore() { return score; }
     public List<Measure> getMeasures() { return measures; }
     public BraceType getBraceType() { return braceType; }
     public Barline getStartBarline() { return startBarline; }
+    public List<Slur> getSlurs() { return slurs; }
 
     public void setTimeSignature(PreDefinedTimeSignature timeSig) {
         if (measures.isEmpty()) return;

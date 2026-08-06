@@ -5,8 +5,12 @@ import org.example.musicscorebuilder.components.layout.util.GroupBeamBuilder;
 import org.example.musicscorebuilder.components.layout.util.SystemJustifier;
 import org.example.musicscorebuilder.components.music.*;
 
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class LayoutEngine {
     private final ScoreStyle style;
@@ -66,6 +70,7 @@ public class LayoutEngine {
 
         linkAllSegments(scoreLayout);
         buildTies(scoreLayout);
+        buildSlurs(scoreMode, scoreLayout);
         return scoreLayout;
     }
 
@@ -107,7 +112,6 @@ public class LayoutEngine {
             }
             measureLayout.add(segmentLayout);
         }
-
 
         Segment endBarlineSegment = new Segment(SegmentType.BARLINE, measure);
         SegmentLayout endBarlineSegLayout = new SegmentLayout(endBarlineSegment, measureLayout);
@@ -152,9 +156,66 @@ public class LayoutEngine {
     }
 
     private void buildTies(ScoreLayout scoreLayout) {
+        buildSpanners(
+                scoreLayout,
+                system -> system.getTies().clear(),
+                Note::isTieStart,
+                this::findNextNoteInVoice,
+                (system, start, end) -> system.addTie(new TieLayout(system, start, end))
+        );
+    }
+
+    private void buildSlurs(ScoreMode scoreMode, ScoreLayout scoreLayout) {
         for (PageLayout page : scoreLayout.getPages()) {
             for (SystemLayout system : page.getSystems()) {
-                system.getTies().clear();
+                system.getSlurs().clear();
+            }
+        }
+
+        Map<Note, NoteLayout> noteToLayoutMap = new HashMap<>();
+        for (PageLayout page : scoreLayout.getPages()) {
+            for (SystemLayout system : page.getSystems()) {
+                for (MeasureLayout measure : system.getMeasures()) {
+                    for (SegmentLayout segment : measure.getSegments()) {
+                        for (ElementLayout element : segment.getElements()) {
+                            if (element instanceof NoteLayout noteLayout) {
+                                noteToLayoutMap.put(noteLayout.getNote(), noteLayout);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        for (Slur slur : scoreMode.getSlurs()) {
+            NoteLayout startLayout = noteToLayoutMap.get(slur.getStartNote());
+            NoteLayout endLayout = noteToLayoutMap.get(slur.getEndNote());
+
+            if (startLayout == null || endLayout == null) continue;
+
+            SystemLayout startSystem = startLayout.getSegment().getParent().getParent();
+            SystemLayout endSystem = endLayout.getSegment().getParent().getParent();
+
+            if (startSystem == endSystem) {
+                startSystem.addSlur(new SlurLayout(startSystem, startLayout, endLayout));
+            } else {
+                // Łuk przełamany między systemami
+                startSystem.addSlur(new SlurLayout(startSystem, startLayout, null));
+                endSystem.addSlur(new SlurLayout(endSystem, null, endLayout));
+            }
+        }
+    }
+
+    private void buildSpanners(
+            ScoreLayout scoreLayout,
+            Consumer<SystemLayout> clearAction,
+            Predicate<Note> isStartPredicate,
+            Function<NoteLayout, NoteLayout> endFinder,
+            TriConsumer<SystemLayout, NoteLayout, NoteLayout> addSpannerToSystem
+    ) {
+        for (PageLayout page : scoreLayout.getPages()) {
+            for (SystemLayout system : page.getSystems()) {
+                clearAction.accept(system);
             }
         }
 
@@ -164,29 +225,26 @@ public class LayoutEngine {
                     for (SegmentLayout segment : measure.getSegments()) {
                         for (ElementLayout element : segment.getElements()) {
 
-                            if (element instanceof NoteLayout startNote && startNote.getNote().isTieStart()) {
-                                createTieForNote(startNote);
+                            if (element instanceof NoteLayout startNote && isStartPredicate.test(startNote.getNote())) {
+                                NoteLayout endNote = endFinder.apply(startNote);
+                                if (endNote == null) continue;
+
+                                SystemLayout startSystem = startNote.getSegment().getParent().getParent();
+                                SystemLayout endSystem = endNote.getSegment().getParent().getParent();
+
+                                if (startSystem == endSystem) {
+                                    addSpannerToSystem.accept(startSystem, startNote, endNote);
+                                } else {
+                                    // Łącznik przecięty zmianą systemu/linii
+                                    addSpannerToSystem.accept(startSystem, startNote, null);
+                                    addSpannerToSystem.accept(endSystem, null, endNote);
+                                }
                             }
 
                         }
                     }
                 }
             }
-        }
-    }
-
-    private void createTieForNote(NoteLayout startNote) {
-        NoteLayout endNote = findNextNoteInVoice(startNote);
-        if (endNote == null) return;
-
-        SystemLayout startSystem = startNote.getSegment().getParent().getParent();
-        SystemLayout endSystem = endNote.getSegment().getParent().getParent();
-
-        if (startSystem == endSystem) {
-            startSystem.addTie(new TieLayout(startSystem, startNote, endNote));
-        } else {
-            startSystem.addTie(new TieLayout(startSystem, startNote, null));
-            endSystem.addTie(new TieLayout(endSystem, null, endNote));
         }
     }
 
@@ -199,11 +257,16 @@ public class LayoutEngine {
             for (ElementLayout el : current.getElements()) {
                 if (el.getStaff() != null && el.getStaff().getStaff() == staff && el.getVoice() == voice) {
                     if (el instanceof NoteLayout note) return note;
-                    if (el instanceof RestLayout) return null; // Pauza rozrywa łuk!
+                    if (el instanceof RestLayout) return null;
                 }
             }
             current = current.getNext();
         }
         return null;
+    }
+
+    @FunctionalInterface
+    private interface TriConsumer<System, StartNote, EndNote> {
+        void accept(System system, StartNote startNote, EndNote endNote);
     }
 }

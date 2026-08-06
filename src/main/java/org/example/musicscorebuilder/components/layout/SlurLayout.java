@@ -3,13 +3,15 @@ package org.example.musicscorebuilder.components.layout;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.music.SegmentType;
 
-public class TieLayout implements Selectable {
+import java.util.Optional;
+
+public class SlurLayout  implements Selectable {
     private final NoteLayout startNote;
     private final NoteLayout endNote;
     private final SystemLayout system;
     private boolean selected;
 
-    public TieLayout(SystemLayout system, NoteLayout startNote, NoteLayout endNote) {
+    public SlurLayout(SystemLayout system, NoteLayout startNote, NoteLayout endNote) {
         this.system = system;
         this.startNote = startNote;
         this.endNote = endNote;
@@ -53,7 +55,8 @@ public class TieLayout implements Selectable {
         return new BowCurveGeometry(
                 getStartX(), getStartY(),
                 getEndX(), getEndY(),
-                isCurveUp(), getScoreStyle()
+                isCurveUp(), getScoreStyle(),
+                true
         );
     }
 

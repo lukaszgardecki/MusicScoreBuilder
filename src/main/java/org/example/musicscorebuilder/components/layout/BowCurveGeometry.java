@@ -13,7 +13,7 @@ public class BowCurveGeometry {
     private final double cp1yOuter, cp2yOuter;
     private final double cp1yInner, cp2yInner;
 
-    public BowCurveGeometry(double startX, double startY, double endX, double endY, boolean curveUp, ScoreStyle style) {
+    public BowCurveGeometry(double startX, double startY, double endX, double endY, boolean curveUp, ScoreStyle style, boolean isSlur) {
         this.startX = startX;
         this.startY = startY;
         this.endX = endX;
@@ -30,19 +30,35 @@ public class BowCurveGeometry {
             return;
         }
 
-        this.height = Math.min(style.getBowHeightFactor(), dx * style.getBowMaxDxRatio());
-        this.thickness = Math.min(style.getBowMidThickness(), this.height * 0.55);
-
         double dir = curveUp ? -1.0 : 1.0;
+        double sp = style.getStaffLineSpacing();
+
+        if (isSlur) {
+            double rawHeight = sp * 0.3 + Math.sqrt(dx / sp) * sp * 0.35;
+            this.height = Math.min(rawHeight, dx * 0.32);
+            this.thickness = Math.min(style.getBowMidThickness(), this.height * 0.35);
+        } else {
+            this.height = Math.min(style.getBowHeightFactor(), dx * style.getBowMaxDxRatio());
+            this.thickness = Math.min(style.getBowMidThickness(), this.height * 0.55);
+        }
 
         this.cp1x = startX + (dx * 0.25);
         this.cp2x = startX + (dx * 0.75);
 
-        this.cp1yOuter = startY + (dir * this.height);
-        this.cp2yOuter = endY + (dir * this.height);
+        double cp1yBase = startY + (endY - startY) * 0.25;
+        double cp2yBase = startY + (endY - startY) * 0.75;
 
-        this.cp1yInner = startY + (dir * (this.height - this.thickness));
-        this.cp2yInner = endY + (dir * (this.height - this.thickness));
+        double archFactor = 1.15;
+
+        this.cp1yOuter = cp1yBase + (dir * this.height * archFactor);
+        this.cp2yOuter = cp2yBase + (dir * this.height * archFactor);
+
+        this.cp1yInner = cp1yBase + (dir * (this.height * archFactor - this.thickness));
+        this.cp2yInner = cp2yBase + (dir * (this.height * archFactor - this.thickness));
+    }
+
+    public BowCurveGeometry(double startX, double startY, double endX, double endY, boolean curveUp, ScoreStyle style) {
+        this(startX, startY, endX, endY, curveUp, style, false);
     }
 
     public double findTForX(double targetX) {

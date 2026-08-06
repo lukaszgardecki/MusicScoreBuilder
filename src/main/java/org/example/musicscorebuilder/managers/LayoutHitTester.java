@@ -2,10 +2,7 @@ package org.example.musicscorebuilder.managers;
 
 import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
-import org.example.musicscorebuilder.components.music.NoteRestElement;
-import org.example.musicscorebuilder.components.music.Segment;
-import org.example.musicscorebuilder.components.music.SegmentType;
-import org.example.musicscorebuilder.components.music.Staff;
+import org.example.musicscorebuilder.components.music.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,6 +25,14 @@ public class LayoutHitTester {
                     for (TieLayout tie : system.getTies()) {
                         if (tie.contains(systemX, systemY)) {
                             return tie;
+                        }
+                    }
+                }
+
+                if (system.getSlurs() != null) {
+                    for (SlurLayout slur : system.getSlurs()) {
+                        if (slur.contains(systemX, systemY)) {
+                            return slur;
                         }
                     }
                 }
@@ -201,6 +206,8 @@ public class LayoutHitTester {
             itemsToSelect.add(beam);
         } else if (clickedElement instanceof TieLayout tie) {
             itemsToSelect.add(tie);
+        } else if (clickedElement instanceof SlurLayout slur) {
+            itemsToSelect.add(slur);
         } else if (clickedElement instanceof MeasureStaffSelection selection) {
             itemsToSelect.add(selection);
 
@@ -264,6 +271,15 @@ public class LayoutHitTester {
                         if (tie.getStartNote() != null && tie.getEndNote() != null) {
                             if (itemsToSelect.contains(tie.getStartNote()) && itemsToSelect.contains(tie.getEndNote())) {
                                 itemsToSelect.add(tie);
+                            }
+                        }
+                    }
+                }
+                if (system != null && system.getSlurs() != null) {
+                    for (SlurLayout slur : system.getSlurs()) {
+                        if (slur.getStartNote() != null && slur.getEndNote() != null) {
+                            if (itemsToSelect.contains(slur.getStartNote()) && itemsToSelect.contains(slur.getEndNote())) {
+                                itemsToSelect.add(slur);
                             }
                         }
                     }

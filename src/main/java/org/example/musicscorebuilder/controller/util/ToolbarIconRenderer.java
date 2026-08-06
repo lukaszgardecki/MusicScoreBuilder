@@ -9,10 +9,7 @@ import javafx.scene.text.FontWeight;
 import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.music.*;
-import org.example.musicscorebuilder.components.views.AccidentalView;
-import org.example.musicscorebuilder.components.views.NoteView;
-import org.example.musicscorebuilder.components.views.RestView;
-import org.example.musicscorebuilder.components.views.TieView;
+import org.example.musicscorebuilder.components.views.*;
 
 import java.util.List;
 
@@ -20,12 +17,14 @@ public class ToolbarIconRenderer {
     private final NoteView noteView;
     private final RestView restView;
     private final TieView tieView;
+    private final SlurView slurView;
     private final AccidentalView accView;
 
     public ToolbarIconRenderer() {
         this.noteView = new NoteView();
         this.restView = new RestView();
         this.tieView = new TieView();
+        this.slurView = new SlurView();
         this.accView = new AccidentalView();
     }
 
@@ -198,6 +197,78 @@ public class ToolbarIconRenderer {
         noteView.draw(gc, noteLayout1, 0.0, 0.0, noteScale);
         noteView.draw(gc, noteLayout2, 0.0, 0.0, noteScale);
         tieView.draw(gc, tieLayout, tieOffsetX, tieOffsetY, noteScale);
+
+        gc.restore();
+
+        button.setGraphic(canvas);
+    }
+
+    public void renderSlurIcon(Button button) {
+        if (button == null) return;
+
+        double width = 36;
+        double height = 25;
+        double noteScale = 4.5;
+        double offsetY = 1.0;
+
+        Canvas canvas = new Canvas(width, height);
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        gc.clearRect(0, 0, width, height);
+
+        ScoreStyle style = new ScoreStyle();
+        Page dummyPage = new Page(PageFormat.A4_V);
+        PageLayout dummyPageLayout = new PageLayout(dummyPage, new ScoreLayout(new Score(), style), 0);
+        SystemLayout dummySystem = new SystemLayout(dummyPageLayout, BraceType.BRACE);
+
+        Measure dummyMeasure = new Measure(List.of(new Staff(0, new Clef(ClefType.G))));
+        dummyMeasure.setKeySignature(new KeySignature(0, dummyMeasure));
+        Staff dummyStaff = dummyMeasure.getStaves().getFirst();
+        MeasureLayout measureLayout = new MeasureLayout(dummyMeasure, dummySystem, style);
+        StaffLayout staffLayout = new StaffLayout(dummyStaff, measureLayout, style);
+
+        Note dummyNote1 = new Note(1, PitchStep.B, 0, 4, NoteType.QUARTER, BeamType.NONE, dummyMeasure);
+        Segment dummySegment1 = new Segment(SegmentType.NOTEREST, dummyMeasure);
+        SegmentLayout segmentLayout1 = new SegmentLayout(dummySegment1, measureLayout);
+        NoteLayout noteLayout1 = new NoteLayout(dummyNote1, staffLayout, segmentLayout1);
+
+        Note dummyNote2 = new Note(1, PitchStep.C, 0, 5, NoteType.QUARTER, BeamType.NONE, dummyMeasure);
+        Segment dummySegment2 = new Segment(SegmentType.NOTEREST, dummyMeasure);
+        SegmentLayout segmentLayout2 = new SegmentLayout(dummySegment2, measureLayout);
+        NoteLayout noteLayout2 = new NoteLayout(dummyNote2, staffLayout, segmentLayout2);
+
+        Note dummyNote3 = new Note(1, PitchStep.D, 0, 5, NoteType.QUARTER, BeamType.NONE, dummyMeasure);
+        Segment dummySegment3 = new Segment(SegmentType.NOTEREST, dummyMeasure);
+        SegmentLayout segmentLayout3 = new SegmentLayout(dummySegment3, measureLayout);
+        NoteLayout noteLayout3 = new NoteLayout(dummyNote3, staffLayout, segmentLayout3);
+
+        segmentLayout1.setX(0);
+        segmentLayout2.setX(0);
+        segmentLayout3.setX(0);
+
+        double startX = 6;
+        double midX   = 16;
+        double endX   = 25;
+
+        noteLayout1.setX(startX / noteScale);
+        noteLayout1.setXOffset((startX / noteScale) - segmentLayout1.getMarginLeft());
+
+        noteLayout2.setX(midX / noteScale);
+        noteLayout2.setXOffset((midX / noteScale) - segmentLayout2.getMarginLeft());
+
+        noteLayout3.setX(endX / noteScale);
+        noteLayout3.setXOffset((endX / noteScale) - segmentLayout3.getMarginLeft());
+
+        SlurLayout slurLayout = new SlurLayout(dummySystem, noteLayout1, noteLayout3);
+        double slurOffsetX = -measureLayout.getX() * noteScale;
+        double slurOffsetY = 0.0;
+
+        gc.save();
+        gc.translate(0, offsetY);
+
+        noteView.draw(gc, noteLayout1, 0.0, 0.0, noteScale);
+        noteView.draw(gc, noteLayout2, 0.0, 0.0, noteScale);
+        noteView.draw(gc, noteLayout3, 0.0, 0.0, noteScale);
+        slurView.draw(gc, slurLayout, slurOffsetX, slurOffsetY, noteScale);
 
         gc.restore();
 

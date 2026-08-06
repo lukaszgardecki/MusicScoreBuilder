@@ -22,7 +22,7 @@ public class ToolbarController {
 
     @FXML private Button modeButton;
     @FXML private Button btn32, btn16, btn8, btn4, btn2, btn1;
-    @FXML private Button btnDot, btnRest, btnTie;
+    @FXML private Button btnDot, btnRest, btnTie, btnSlur;
     @FXML private Button btnDoubleFlat, btnFlat, btnNatural, btnSharp, btnDoubleSharp;
     @FXML private Button voice1Button, voice2Button, voice3Button, voice4Button;
 
@@ -89,6 +89,16 @@ public class ToolbarController {
         updateTieButtonState();
     }
 
+    @FXML
+    private void addSlur() {
+        if (modeManager.isInsertMode()) {
+
+        } else {
+            stateManager.toggleSlurForSelectedNote();
+        }
+        updateSlurButtonState();
+    }
+
     @FXML private void activateVoice1() { activateVoice(1); }
     @FXML private void activateVoice2() { activateVoice(2); }
     @FXML private void activateVoice3() { activateVoice(3); }
@@ -148,6 +158,7 @@ public class ToolbarController {
         iconRenderer.renderAccidentalIcon(btnSharp, 1);
         iconRenderer.renderAccidentalIcon(btnDoubleSharp, 2);
         iconRenderer.renderTieIcon(btnTie);
+        iconRenderer.renderSlurIcon(btnSlur);
         iconRenderer.renderVoiceIcon(voice1Button, 1);
         iconRenderer.renderVoiceIcon(voice2Button, 2);
         iconRenderer.renderVoiceIcon(voice3Button, 3);
@@ -163,6 +174,7 @@ public class ToolbarController {
         updateDotButtonState();
         updateRestButtonState();
         updateTieButtonState();
+        updateSlurButtonState();
         updateAccidentalButtonState();
     }
 
@@ -181,6 +193,7 @@ public class ToolbarController {
         updateDotButtonState();
         updateRestButtonState();
         updateTieButtonState();
+        updateSlurButtonState();
     }
 
     private void handleNoteTypeChange(NoteType noteType) {
@@ -189,6 +202,7 @@ public class ToolbarController {
             updateDotButtonState();
             updateRestButtonState();
             updateTieButtonState();
+            updateSlurButtonState();
             updateAccidentalButtonState();
         }
     }
@@ -199,6 +213,7 @@ public class ToolbarController {
             updateDotButtonState();
             updateRestButtonState();
             updateTieButtonState();
+            updateSlurButtonState();
             updateAccidentalButtonState();
         }
     }
@@ -210,6 +225,7 @@ public class ToolbarController {
             updateDotButtonState();
             updateRestButtonState();
             updateTieButtonState();
+            updateSlurButtonState();
             updateAccidentalButtonState();
         }
     }
@@ -271,6 +287,19 @@ public class ToolbarController {
         }
 
         setButtonActive(btnTie, isTied);
+    }
+
+    private void updateSlurButtonState() {
+        boolean isSlurred = false;
+
+        if (!modeManager.isInsertMode()) {
+            Selectable selected = stateManager.getSelectedItem();
+            if (selected instanceof NoteLayout noteLayout) {
+                isSlurred = stateManager.isNoteInSlur(noteLayout.getNote());
+            }
+        }
+
+        setButtonActive(btnSlur, isSlurred);
     }
 
     private void updateAccidentalButtonState() {
