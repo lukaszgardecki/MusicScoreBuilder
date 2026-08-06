@@ -4,10 +4,7 @@ import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.music.*;
 import org.example.musicscorebuilder.components.music.util.PitchTransposer;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class ScoreStateManager {
@@ -41,9 +38,35 @@ public class ScoreStateManager {
     }
 
     public void setSelected(Selectable item) {
+        setSelected(item, false);
+    }
+
+    public void setSelected(Selectable item, boolean isAdditive) {
+        if (item == null) {
+            if (!isAdditive) {
+                deselectAll();
+            }
+            return;
+        }
+
         List<Selectable> itemsToSelect = LayoutHitTester.resolveSelection(item);
-        deselectAll();
-        selectAll(itemsToSelect);
+        if (itemsToSelect.isEmpty()) return;
+
+        if (isAdditive) {
+            boolean allAlreadySelected = new HashSet<>(selectedItems).containsAll(itemsToSelect);
+            if (allAlreadySelected) {
+                for (Selectable sel : itemsToSelect) {
+                    deselect(sel);
+                }
+            } else {
+                for (Selectable sel : itemsToSelect) {
+                    select(sel);
+                }
+            }
+        } else {
+            deselectAll();
+            selectAll(itemsToSelect);
+        }
 
         Selectable currentSelected = getSelectedItem();
         for (SelectionChangeListener listener : selectionChangeListeners) {
@@ -56,7 +79,7 @@ public class ScoreStateManager {
     }
 
     public void clearSelection() {
-        setSelected(null);
+        setSelected(null, false);
     }
 
     public List<Selectable> getSelectedItems() {
@@ -88,13 +111,24 @@ public class ScoreStateManager {
         }
     }
 
+    private void select(Selectable item) {
+        if (item != null && !selectedItems.contains(item)) {
+            selectedItems.add(item);
+            item.setSelected(true);
+        }
+    }
+
+    private void deselect(Selectable item) {
+        if (item != null && selectedItems.contains(item)) {
+            selectedItems.remove(item);
+            item.setSelected(false);
+        }
+    }
+
     private void selectAll(Collection<? extends Selectable> items) {
         if (items != null) {
             for (Selectable item : items) {
-                if (item != null) {
-                    selectedItems.add(item);
-                    item.setSelected(true);
-                }
+                select(item);
             }
         }
     }

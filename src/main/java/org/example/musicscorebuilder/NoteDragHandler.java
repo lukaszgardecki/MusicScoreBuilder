@@ -77,7 +77,6 @@ public class NoteDragHandler {
             stateManager.notifyScoreChanged();
             event.consume();
         } else if (isDraggingOtherElement) {
-            stateManager.notifyScoreChanged();
             container.updateContent(layout);
         }
 
@@ -94,13 +93,10 @@ public class NoteDragHandler {
         Staff staff = gN.getStaff().getStaff();
         Note note = gN.getNote();
 
-        // 1. Wstawiamy nutę (dowolny głos) i pobieramy kolejny wolny segment
         Segment nextSegment = MeasureNoteInserter.insertNote(measure, segment, staff, note);
 
-        // 2. Przeliczamy drzewo układu (Layout)
         stateManager.notifyScoreChanged();
 
-        // 3. Ustawiamy kursor na nowej pozycji (działa dla głosu 1, 2, 3...)
         ScoreLayout updatedLayout = layoutProvider.get();
         if (nextSegment != null && updatedLayout != null) {
             Selectable targetSelectable = LayoutHitTester.findSelectableForSegmentAndStaff(
@@ -122,7 +118,6 @@ public class NoteDragHandler {
         session = new DragSession(note, mouseModelY, mouseModelY - note.getY());
         isDragActive = false;
         isDraggingOtherElement = false;
-        stateManager.clearSelection();
     }
 
     private void startOtherElementDragSession() {
@@ -136,7 +131,13 @@ public class NoteDragHandler {
         double currentMouseY = container.toModelY(event.getY());
 
         boolean userDrags = !isDragActive && Math.abs(currentMouseY - session.startMouseY()) > DRAG_THRESHOLD;
-        if (userDrags) isDragActive = true;
+        if (userDrags) {
+            isDragActive = true;
+            boolean isAdditive = event.isShortcutDown() || event.isControlDown() || event.isMetaDown();
+            if (!isAdditive && !stateManager.getSelectedItems().contains(session.note())) {
+                stateManager.setSelected(session.note(), false);
+            }
+        }
 
         if (isDragActive) {
             double targetNoteY = currentMouseY - session.offsetY();

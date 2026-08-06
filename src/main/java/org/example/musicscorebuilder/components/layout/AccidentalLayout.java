@@ -5,16 +5,16 @@ import org.example.musicscorebuilder.components.music.*;
 
 public class AccidentalLayout implements Selectable {
     private final ScoreStyle style;
-    private final NoteLayout note;
+    private final NoteLayout parent;
     private boolean selected;
 
-    public AccidentalLayout(NoteLayout note) {
-        this.note = note;
-        this.style = note.getScoreStyle();
+    public AccidentalLayout(NoteLayout parent) {
+        this.parent = parent;
+        this.style = parent.getScoreStyle();
     }
 
     private Pitch getPitch() {
-        return (note != null && note.getNote() != null) ? note.getNote().getPitch() : null;
+        return (parent != null && parent.getNote() != null) ? parent.getNote().getPitch() : null;
     }
 
     private Leland getFontData() {
@@ -35,7 +35,7 @@ public class AccidentalLayout implements Selectable {
         if (pitch == null) return false;
 
         int noteAlter = pitch.getAlter();
-        int activeAlter = calculateEffectiveAlterBefore(note, pitch);
+        int activeAlter = calculateEffectiveAlterBefore(parent, pitch);
 
         return noteAlter != activeAlter;
     }
@@ -69,25 +69,25 @@ public class AccidentalLayout implements Selectable {
 
     @Override public boolean isSelected() { return selected; }
     @Override public void setSelected(boolean selected) { this.selected = selected; }
-    @Override public int getVoice() { return note.getVoice(); }
+    @Override public int getVoice() { return parent.getVoice(); }
 
     @Override
     public boolean contains(double x, double y) {
         if (!isVisible()) return false;
 
-        double minX = note.getX() + getX();
+        double minX = parent.getX() + getX();
         double maxX = minX + getWidth();
 
         Leland fontData = getFontData();
         double h = fontData.getHeight();
-        double minY = note.getY() - (h / 2.0);
+        double minY = parent.getY() - (h / 2.0);
         double maxY = minY + h;
 
         return x >= minX && x <= maxX && y >= minY && y <= maxY;
     }
 
-    @Override public SegmentLayout getSegment() { return note.getParent(); }
-    @Override public StaffLayout getStaff() { return note.getStaff(); }
+    @Override public SegmentLayout getSegment() { return parent.getParent(); }
+    @Override public StaffLayout getStaff() { return parent.getStaff(); }
 
     public double getX() { return -getWidth() - style.getNoteAccSpacing(); }
     public double getY() { return 0; }

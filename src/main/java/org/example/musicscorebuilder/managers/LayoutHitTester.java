@@ -179,7 +179,15 @@ public class LayoutHitTester {
 
         if (clickedElement instanceof ElementLayout element) {
             if (clickedElement instanceof TimeSigLayout || clickedElement instanceof KeySigLayout) {
-                itemsToSelect.addAll(element.getParent().getElements());
+                if (element.getParent() != null && element.getParent().getElements() != null) {
+                    for (ElementLayout child : element.getParent().getElements()) {
+                        if (child.getClass() == element.getClass()) {
+                            itemsToSelect.add(child);
+                        }
+                    }
+                } else {
+                    itemsToSelect.add(element);
+                }
             } else {
                 itemsToSelect.add(element);
             }
@@ -309,7 +317,6 @@ public class LayoutHitTester {
                                 if (staffLayout.getStaff() == staff) {
                                     List<ElementLayout> elements = segLayout.getElementsByStaff(staffLayout);
                                     if (elements != null && !elements.isEmpty()) {
-                                        // 1. Najpierw szukamy elementu przypisanego do wskazanego głosu
                                         for (ElementLayout el : elements) {
                                             if (el instanceof NoteLayout nl && nl.getNote().getVoice() == voice) {
                                                 return nl;
@@ -317,8 +324,6 @@ public class LayoutHitTester {
                                                 return rl;
                                             }
                                         }
-                                        // 2. Fallback: jeśli ten głos jeszcze nie istnieje w nowym segmencie,
-                                        // zwracamy pierwszy dostępny element na tej pięciolinii (Głos 1)
                                         return elements.get(0);
                                     }
                                 }

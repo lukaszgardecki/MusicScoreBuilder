@@ -154,12 +154,15 @@ public class PageAreaController {
         if (modeManager.isInsertMode()) return;
         if (currentScoreLayout == null) return;
         if (!container.wasLastMousePressJustClick()) return;
+
         Selectable clickedElement = LayoutHitTester.findClickedElement(
                 currentScoreLayout.getPages(),
                 container.toModelX(event.getX()),
                 container.toModelY(event.getY())
         );
-        stateManager.setSelected(clickedElement);
+
+        boolean isAdditive = event.isShortcutDown() || event.isControlDown() || event.isMetaDown();
+        stateManager.setSelected(clickedElement, isAdditive);
         redraw();
     }
 }
