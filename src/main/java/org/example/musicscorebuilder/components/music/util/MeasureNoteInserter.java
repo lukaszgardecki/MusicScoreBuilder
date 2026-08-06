@@ -17,7 +17,6 @@ public class MeasureNoteInserter {
         int voice = newNote.getVoice();
         int newTicks = getElementTicks(newNote);
 
-        // 1. Obliczamy pozycję startową docelowego segmentu
         int startTick = measure.getStartTickOfSegment(targetSegment);
         if (startTick < 0) return null;
 
@@ -27,18 +26,15 @@ public class MeasureNoteInserter {
         int ticksForCurrentMeasure = Math.min(newTicks, availableInMeasure);
         int remainingTicks = newTicks - ticksForCurrentMeasure;
 
-        // Jeśli nuta się nie mieści w bieżącym takcie, sprawdzamy istnienie następnego taktu
         Measure nextMeasure = null;
         if (remainingTicks > 0) {
             nextMeasure = getNextMeasure(measure);
             if (nextMeasure == null) {
-                // Brak następnego taktu -> obcinamy nutę do końca bieżącego taktu
                 ticksForCurrentMeasure = availableInMeasure;
                 remainingTicks = 0;
             }
         }
 
-        // Przygotowujemy grupy nut dla obu taktów
         List<Note> notesM1 = (remainingTicks == 0)
                 ? List.of(newNote)
                 : createNotesForTicks(newNote, ticksForCurrentMeasure, measure);
@@ -49,7 +45,6 @@ public class MeasureNoteInserter {
 
         List<Note> allInsertedNotes = new ArrayList<>();
 
-        // 2. Wstawianie do BIEŻĄCEGO taktu
         int currentStartTick = startTick;
         for (Note n : notesM1) {
             int nTicks = getElementTicks(n);
@@ -65,10 +60,9 @@ public class MeasureNoteInserter {
             currentStartTick += nTicks;
         }
 
-        cleanAndFillVoiceGaps(measure);
+        cleanAndFillVoiceGaps(measure, staff);
         measure.setDirty(true);
 
-        // 3. Wstawianie pozostałości do NASTĘPNEGO taktu (od ticku 0)
         int nextMeasureEndTick = 0;
         if (!notesM2.isEmpty() && nextMeasure != null) {
             for (Note n : notesM2) {
@@ -85,16 +79,14 @@ public class MeasureNoteInserter {
                 nextMeasureEndTick += nTicks;
             }
 
-            cleanAndFillVoiceGaps(nextMeasure);
+            cleanAndFillVoiceGaps(nextMeasure, staff);
             nextMeasure.setDirty(true);
         }
 
-        // 4. Łączenie podzielonych nut w jeden ciąg za pomocą łuków (Tie)
         for (int i = 0; i < allInsertedNotes.size() - 1; i++) {
             linkNotesWithTie(allInsertedNotes.get(i), allInsertedNotes.get(i + 1));
         }
 
-        // 5. Zwracamy wskaźnik na kolejny wolny segment po wstawionej nucie
         if (nextMeasure != null && !notesM2.isEmpty()) {
             return findNextFreeSegment(nextMeasure, nextMeasureEndTick);
         } else {
@@ -107,8 +99,7 @@ public class MeasureNoteInserter {
         List<Note> notes = new ArrayList<>();
 
         for (NoteType type : types) {
-            Note n = createNoteFromTemplate(templateNote, type, targetMeasure);
-            notes.add(n);
+            notes.add(createNoteFromTemplate(templateNote, type, targetMeasure));
         }
         return notes;
     }
@@ -167,29 +158,24 @@ public class MeasureNoteInserter {
         }
     }
 
-    private static void cleanAndFillVoiceGaps(Measure measure) {
-        for (Staff staff : measure.getStaves()) {
-            for (int voice = 1; voice <= 4; voice++) {
-                boolean hasNotes = hasNotesInVoice(measure, staff, voice);
-                boolean active = (voice == 1) || hasNotes;
+    private static void cleanAndFillVoiceGaps(Measure measure, Staff targetStaff) {
+        for (int voice = 1; voice <= 4; voice++) {
+            boolean hasElements = hasElementsInVoice(measure, targetStaff, voice);
+            boolean active = (voice == 1) || hasElements;
 
-                if (!active) {
-                    removeAllElementsInVoice(measure, staff, voice);
-                } else {
-                    removeAllRestsInVoice(measure, staff, voice);
-                    fillGapsForActiveVoice(measure, staff, voice);
-                }
+            if (!active) {
+                removeAllElementsInVoice(measure, targetStaff, voice);
+            } else {
+                fillGapsForActiveVoice(measure, targetStaff, voice);
             }
         }
 
-        updateBeams(measure);
+        updateBeamsForStaff(measure, targetStaff);
     }
 
-    private static void updateBeams(Measure measure) {
-        for (Staff staff : measure.getStaves()) {
-            for (int voice = 1; voice <= 4; voice++) {
-                updateBeamsForVoice(measure, staff, voice);
-            }
+    private static void updateBeamsForStaff(Measure measure, Staff targetStaff) {
+        for (int voice = 1; voice <= 4; voice++) {
+            updateBeamsForVoice(measure, targetStaff, voice);
         }
     }
 
@@ -263,19 +249,6 @@ public class MeasureNoteInserter {
         }
     }
 
-    private static void removeAllRestsInVoice(Measure measure, Staff staff, int voice) {
-        for (Segment seg : measure.getSegments()) {
-            if (seg.isNoteRest()) {
-                List<NoteRestElement> nres = seg.getNoteRestByStaffAndVoice(staff, voice);
-                for (NoteRestElement el : new ArrayList<>(nres)) {
-                    if (el instanceof Rest) {
-                        seg.removeNoteRest(staff, el);
-                    }
-                }
-            }
-        }
-    }
-
     private static void removeAllElementsInVoice(Measure measure, Staff staff, int voice) {
         for (Segment seg : measure.getSegments()) {
             if (seg.isNoteRest()) {
@@ -290,44 +263,43 @@ public class MeasureNoteInserter {
     private static void fillGapsForActiveVoice(Measure measure, Staff staff, int voice) {
         int totalTicks = measure.getTimeSignature().getTotalTicks();
 
-        List<int[]> noteIntervals = new ArrayList<>();
+        List<int[]> coveredIntervals = new ArrayList<>();
         int currentTick = 0;
         for (Segment seg : measure.getSegments()) {
             if (seg.isNoteRest()) {
                 int segDur = seg.getDuration();
-                for (NoteRestElement el : seg.getNoteRestByStaffAndVoice(staff, voice)) {
-                    if (el instanceof Note note) {
-                        int noteStart = currentTick;
-                        int noteEnd = currentTick + getElementTicks(note);
-                        noteIntervals.add(new int[]{noteStart, noteEnd});
-                    }
+                List<NoteRestElement> elements = seg.getNoteRestByStaffAndVoice(staff, voice);
+                for (NoteRestElement el : elements) {
+                    int elStart = currentTick;
+                    int elEnd = currentTick + getElementTicks(el);
+                    coveredIntervals.add(new int[]{elStart, elEnd});
                 }
                 currentTick += segDur;
             }
         }
 
-        noteIntervals.sort(Comparator.comparingInt(a -> a[0]));
-        List<int[]> mergedNotes = new ArrayList<>();
-        for (int[] interval : noteIntervals) {
-            if (mergedNotes.isEmpty()) {
-                mergedNotes.add(interval);
+        coveredIntervals.sort(Comparator.comparingInt(a -> a[0]));
+        List<int[]> mergedIntervals = new ArrayList<>();
+        for (int[] interval : coveredIntervals) {
+            if (mergedIntervals.isEmpty()) {
+                mergedIntervals.add(new int[]{interval[0], interval[1]});
             } else {
-                int[] last = mergedNotes.get(mergedNotes.size() - 1);
-                if (interval[0] < last[1]) {
+                int[] last = mergedIntervals.get(mergedIntervals.size() - 1);
+                if (interval[0] <= last[1]) {
                     last[1] = Math.max(last[1], interval[1]);
                 } else {
-                    mergedNotes.add(interval);
+                    mergedIntervals.add(new int[]{interval[0], interval[1]});
                 }
             }
         }
 
         List<int[]> gapIntervals = new ArrayList<>();
         int searchStart = 0;
-        for (int[] noteInt : mergedNotes) {
-            if (noteInt[0] > searchStart) {
-                gapIntervals.add(new int[]{searchStart, noteInt[0]});
+        for (int[] covered : mergedIntervals) {
+            if (covered[0] > searchStart) {
+                gapIntervals.add(new int[]{searchStart, covered[0]});
             }
-            searchStart = Math.max(searchStart, noteInt[1]);
+            searchStart = Math.max(searchStart, covered[1]);
         }
         if (searchStart < totalTicks) {
             gapIntervals.add(new int[]{searchStart, totalTicks});
@@ -352,12 +324,10 @@ public class MeasureNoteInserter {
         }
     }
 
-    private static boolean hasNotesInVoice(Measure measure, Staff staff, int voice) {
+    private static boolean hasElementsInVoice(Measure measure, Staff staff, int voice) {
         for (Segment seg : measure.getSegments()) {
-            for (NoteRestElement nre : seg.getNoteRestByStaffAndVoice(staff, voice)) {
-                if (nre instanceof Note) {
-                    return true;
-                }
+            if (seg.isNoteRest() && !seg.getNoteRestByStaffAndVoice(staff, voice).isEmpty()) {
+                return true;
             }
         }
         return false;
@@ -379,22 +349,32 @@ public class MeasureNoteInserter {
             int segDuration = seg.getDuration();
             int segEnd = currentTick + segDuration;
 
+            if (currentTick == targetTick) {
+                return;
+            }
+
             if (targetTick > currentTick && targetTick < segEnd) {
                 int part1Ticks = targetTick - currentTick;
                 int part2Ticks = segEnd - targetTick;
 
-                List<NoteType> part2Types = decomposeTicksToNoteTypes(part2Ticks);
-                if (part2Types.isEmpty()) return;
+                Segment seg1 = new Segment(SegmentType.NOTEREST, measure);
+                seg1.setDuration(part1Ticks);
 
-                seg.setDuration(part1Ticks);
+                Segment seg2 = new Segment(SegmentType.NOTEREST, measure);
+                seg2.setDuration(part2Ticks);
 
-                int insertIndex = i + 1;
-                for (NoteType subType : part2Types) {
-                    Segment tailSeg = new Segment(SegmentType.NOTEREST, measure);
-                    tailSeg.setDuration(subType.getTicks());
-                    segments.add(insertIndex, tailSeg);
-                    insertIndex++;
+                for (Staff s : measure.getStaves()) {
+                    for (int voice = 1; voice <= 4; voice++) {
+                        List<NoteRestElement> elements = seg.getNoteRestByStaffAndVoice(s, voice);
+                        for (NoteRestElement el : elements) {
+                            seg1.addElement(s, el);
+                        }
+                    }
                 }
+
+                segments.remove(i);
+                segments.add(i, seg1);
+                segments.add(i + 1, seg2);
                 return;
             }
             currentTick += segDuration;
