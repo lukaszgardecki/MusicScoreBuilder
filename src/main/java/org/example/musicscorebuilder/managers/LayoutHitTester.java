@@ -17,6 +17,11 @@ public class LayoutHitTester {
             double pageX = globalX - page.getX();
             double pageY = globalY;
 
+            FrameLayout header = page.getHeader();
+            if (header != null && header.contains(pageX, pageY)) {
+                return header;
+            }
+
             for (SystemLayout system : page.getSystems()) {
                 double systemX = pageX - system.getX();
                 double systemY = pageY - system.getY();

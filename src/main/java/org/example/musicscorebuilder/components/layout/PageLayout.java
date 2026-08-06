@@ -7,7 +7,7 @@ import java.util.List;
 
 public class PageLayout {
     private ScoreLayout parent;
-    private final HeaderLayout header;
+    private final FrameLayout header;
     private final FooterLayout footer;
     private final List<SystemLayout> systems = new ArrayList<>();
     private final double height;
@@ -34,7 +34,7 @@ public class PageLayout {
         this.marginRight = style.toSp(page.getMarginRightMm());
         this.x = (width + style.getPageSpacing()) * pageIndex;
         this.number = pageIndex + 1;
-        this.header = number == 1 ? new HeaderLayout(this, style) : null;
+        this.header = number == 1 ? new FrameLayout(this, style) : null;
         this.footer = new FooterLayout(this, style);
     }
 
@@ -71,7 +71,7 @@ public class PageLayout {
     }
     public double getX() { return x; }
     public int getNumber() { return number; }
-    public HeaderLayout getHeader() { return header; }
+    public FrameLayout getHeader() { return header; }
     public FooterLayout getFooter() { return footer; }
 
     public void setLastSystemSpaceBelow(double spaceBelow) {

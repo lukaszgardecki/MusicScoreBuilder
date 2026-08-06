@@ -114,13 +114,8 @@ public class TieLayout implements Selectable {
         return absoluteNoteX + correctedX - getScoreStyle().getBowXNoteSpace();
     }
 
-    public double getStartY() {
-        return calculateY(startNote, endNote);
-    }
-
-    public double getEndY() {
-        return calculateY(endNote, startNote);
-    }
+    public double getStartY() { return calculateY(startNote, endNote); }
+    public double getEndY() { return calculateY(endNote, startNote); }
 
     private double calculateY(NoteLayout primaryNote, NoteLayout secondaryNote) {
         NoteLayout targetNote = primaryNote != null ? primaryNote : secondaryNote;
