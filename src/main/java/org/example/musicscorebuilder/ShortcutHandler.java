@@ -28,22 +28,22 @@ public class ShortcutHandler {
         boolean handled = true;
 
         switch (event.getCode()) {
-            case N               -> modeManager.toggleInsertMode();
-            case ESCAPE          -> handleEscape();
-            case DIGIT0, NUMPAD0 -> handleZero();
-            case T               -> handleTie();
-            case PERIOD, DECIMAL -> handleDot();
-            case LEFT            -> scoreNavigator.movePrev();
-            case RIGHT           -> scoreNavigator.moveNext();
-            case UP              -> scoreStateManager.transposeSelectedNoteUp();
-            case DOWN            -> scoreStateManager.transposeSelectedNoteDown();
+            case N                                      -> modeManager.toggleInsertMode();
+            case ESCAPE                                 -> handleEscape();
+            case DIGIT0, NUMPAD0, BACK_SPACE, DELETE    -> handleZero();
+            case T                                      -> handleTie();
+            case PERIOD, DECIMAL                        -> handleDot();
+            case LEFT                                   -> scoreNavigator.movePrev();
+            case RIGHT                                  -> scoreNavigator.moveNext();
+            case UP                                     -> scoreStateManager.transposeSelectedNoteUp();
+            case DOWN                                   -> scoreStateManager.transposeSelectedNoteDown();
 
-            case DIGIT2, NUMPAD2 -> handleNoteDuration(NoteType.THIRTY_SECOND);
-            case DIGIT3, NUMPAD3 -> handleNoteDuration(NoteType.SIXTEENTH);
-            case DIGIT4, NUMPAD4 -> handleNoteDuration(NoteType.EIGHTH);
-            case DIGIT5, NUMPAD5 -> handleNoteDuration(NoteType.QUARTER);
-            case DIGIT6, NUMPAD6 -> handleNoteDuration(NoteType.HALF);
-            case DIGIT7, NUMPAD7 -> handleNoteDuration(NoteType.WHOLE);
+            case DIGIT2, NUMPAD2                        -> handleNoteDuration(NoteType.THIRTY_SECOND);
+            case DIGIT3, NUMPAD3                        -> handleNoteDuration(NoteType.SIXTEENTH);
+            case DIGIT4, NUMPAD4                        -> handleNoteDuration(NoteType.EIGHTH);
+            case DIGIT5, NUMPAD5                        -> handleNoteDuration(NoteType.QUARTER);
+            case DIGIT6, NUMPAD6                        -> handleNoteDuration(NoteType.HALF);
+            case DIGIT7, NUMPAD7                        -> handleNoteDuration(NoteType.WHOLE);
 
             default -> handled = false;
         }
