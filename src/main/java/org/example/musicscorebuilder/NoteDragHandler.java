@@ -1,13 +1,12 @@
 package org.example.musicscorebuilder;
 
 import javafx.scene.input.MouseEvent;
-import org.example.musicscorebuilder.components.layout.NoteLayout;
-import org.example.musicscorebuilder.components.layout.ScoreLayout;
-import org.example.musicscorebuilder.components.layout.Selectable;
+import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.layout.edit.CursorLayout;
 import org.example.musicscorebuilder.components.layout.edit.GhostNoteLayout;
 import org.example.musicscorebuilder.components.music.*;
 import org.example.musicscorebuilder.components.music.util.MeasureNoteInserter;
+import org.example.musicscorebuilder.components.music.util.TiedNoteService;
 import org.example.musicscorebuilder.components.views.BackgroundView;
 import org.example.musicscorebuilder.managers.LayoutHitTester;
 import org.example.musicscorebuilder.managers.ModeManager;
@@ -147,6 +146,8 @@ public class NoteDragHandler {
 
             if (session.note().getY() != previousNoteY) {
                 session.note().setSelected(true);
+
+                TiedNoteService.syncTiedNotesPitch(session.note());
                 container.updateContent(layoutProvider.get());
             }
         }

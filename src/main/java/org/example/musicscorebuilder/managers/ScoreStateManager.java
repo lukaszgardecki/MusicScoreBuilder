@@ -4,6 +4,7 @@ import org.example.musicscorebuilder.ScoreService;
 import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.music.*;
 import org.example.musicscorebuilder.components.music.util.PitchTransposer;
+import org.example.musicscorebuilder.components.music.util.TiedNoteService;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -414,30 +415,14 @@ public class ScoreStateManager {
     }
 
     public void transposeSelectedNoteUp() {
-        Selectable selected = getSelectedItem();
-        if (!(selected instanceof NoteLayout noteLayout)) return;
-
-        Note note = noteLayout.getNote();
-        if (note == null || note.getPitch() == null) return;
-
-        Clef clef = noteLayout.getStaff().getStaff().getDefaultClef();
-        int maxLedgers = noteLayout.getScoreStyle().getNoteMaxLedgerLines();
-
-        Pitch currentPitch = note.getPitch();
-        Pitch candidate = new Pitch(currentPitch.getStep(), currentPitch.getAlter(), currentPitch.getOctave());
-
-        PitchTransposer.transposeUp(candidate);
-
-        if (isPitchWithinLedgerBounds(candidate, clef, maxLedgers)) {
-            currentPitch.setStep(candidate.getStep());
-            currentPitch.setAlter(candidate.getAlter());
-            currentPitch.setOctave(candidate.getOctave());
-            noteLayout.refresh();
-            notifyScoreChanged();
-        }
+        transposeSelectedNote(PitchTransposer::transposeUp);
     }
 
     public void transposeSelectedNoteDown() {
+        transposeSelectedNote(PitchTransposer::transposeDown);
+    }
+
+    private void transposeSelectedNote(Consumer<Pitch> transposeAction) {
         Selectable selected = getSelectedItem();
         if (!(selected instanceof NoteLayout noteLayout)) return;
 
@@ -450,13 +435,16 @@ public class ScoreStateManager {
         Pitch currentPitch = note.getPitch();
         Pitch candidate = new Pitch(currentPitch.getStep(), currentPitch.getAlter(), currentPitch.getOctave());
 
-        PitchTransposer.transposeDown(candidate);
+        transposeAction.accept(candidate);
 
         if (isPitchWithinLedgerBounds(candidate, clef, maxLedgers)) {
             currentPitch.setStep(candidate.getStep());
             currentPitch.setAlter(candidate.getAlter());
             currentPitch.setOctave(candidate.getOctave());
-            noteLayout.refresh();
+
+            noteLayout.refreshMeasureAccidentals();
+
+            TiedNoteService.syncTiedNotesPitch(noteLayout);
             notifyScoreChanged();
         }
     }
