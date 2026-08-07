@@ -2,6 +2,7 @@ package org.example.musicscorebuilder;
 
 import org.example.musicscorebuilder.components.music.util.ScoreFactory;
 import org.example.musicscorebuilder.components.music.Score;
+import org.example.musicscorebuilder.managers.ScoreStateManager;
 
 public class ScoreService {
     private static ScoreService instance;
@@ -24,5 +25,6 @@ public class ScoreService {
 
     public void setScore(Score score) {
         this.score = score;
+        ScoreStateManager.getInstance().notifyScoreChanged();
     }
 }

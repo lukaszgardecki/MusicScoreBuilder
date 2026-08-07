@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.ToggleButton?>
-<?import org.example.musicscorebuilder.components.views.BackgroundView?>
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.layout.StackPane?>
-
+<?import org.example.musicscorebuilder.components.views.BackgroundView?>
 <StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="org.example.musicscorebuilder.controller.PageAreaController">
 
     <ScrollPane fx:id="scrollPane" fitToWidth="false" fitToHeight="false">
@@ -22,25 +20,5 @@
             <Insets top="15.0" right="25.0"/>
         </StackPane.margin>
     </ToggleButton>
-
-    <Button fx:id="saveButton"
-            text="ZAPISZ"
-            onAction="#saveScore"
-            styleClass="custom-button"
-            StackPane.alignment="TOP_RIGHT">
-        <StackPane.margin>
-            <Insets top="65.0" right="25.0"/>
-        </StackPane.margin>
-    </Button>
-
-    <Button fx:id="loadButton"
-            text="WCZYTAJ"
-            onAction="#loadScore"
-            styleClass="custom-button"
-            StackPane.alignment="TOP_RIGHT">
-        <StackPane.margin>
-            <Insets top="115.0" right="25.0"/>
-        </StackPane.margin>
-    </Button>
 
 </StackPane>

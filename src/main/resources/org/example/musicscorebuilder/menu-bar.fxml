@@ -3,9 +3,10 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.shape.SVGPath?>
 
-<MenuBar xmlns="http://javafx.com/javafx"
-         xmlns:fx="http://javafx.com/fxml"
-         fx:controller="org.example.musicscorebuilder.controller.MenuBarController">
+<MenuBar fx:id="menuBar"
+        xmlns="http://javafx.com/javafx"
+        xmlns:fx="http://javafx.com/fxml"
+        fx:controller="org.example.musicscorebuilder.controller.MenuBarController">
 
     <Menu text="_Plik">
         <MenuItem text="_Nowy..." accelerator="Ctrl+N" onAction="#handleNew">
