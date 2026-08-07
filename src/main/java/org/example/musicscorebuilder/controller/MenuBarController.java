@@ -1,92 +1,91 @@
 package org.example.musicscorebuilder.controller;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import org.example.musicscorebuilder.ScoreService;
+import org.example.musicscorebuilder.components.dialog.CustomConfirmationDialog;
 
 public class MenuBarController {
 
     @FXML
     private void handleNew(ActionEvent event) {
-        // TODO: Logika tworzenia nowego pliku
+        System.out.println("Tworzenie nowego pliku");
     }
 
     @FXML
     private void handleOpen(ActionEvent event) {
-        // TODO: Logika otwierania pliku
+        System.out.println("Otwieranie pliku");
     }
 
     @FXML
     private void handleClose(ActionEvent event) {
-        // TODO: Logika zamykania projektu
+        System.out.println("Zamykanie pliku");
     }
 
     @FXML
     private void handleSave(ActionEvent event) {
-        // TODO: Logika zapisu
+        System.out.println("Zapisz");
     }
 
     @FXML
     private void handleSaveAs(ActionEvent event) {
-        // TODO: Logika "Zapisz jako"
+        System.out.println("Zapisz jako");
     }
 
     @FXML
     private void handleSaveCopy(ActionEvent event) {
-        // TODO: Logika zapisu kopii
-    }
-
-    @FXML
-    private void handleSaveSelection(ActionEvent event) {
-        // TODO: Logika zapisu zaznaczenia
-    }
-
-    @FXML
-    private void handleSaveCloud(ActionEvent event) {
-        // TODO: Logika zapisu w chmurze
-    }
-
-    @FXML
-    private void handlePublishMuseScore(ActionEvent event) {
-        // TODO: Logika publikacji na MuseScore.com
+        System.out.println("Zapisz kopię");
     }
 
     @FXML
     private void handleImportPdf(ActionEvent event) {
-        // TODO: Logika importu PDF
+        System.out.println("Import");
     }
 
     @FXML
     private void handleExport(ActionEvent event) {
-        // TODO: Logika eksportu
-    }
-
-    @FXML
-    private void handleShareAudio(ActionEvent event) {
-        // TODO: Logika udostępniania na Audio.com
+        System.out.println("Eksport");
     }
 
     @FXML
     private void handleProjectProperties(ActionEvent event) {
-        // TODO: Okno właściwości projektu
+        System.out.println("Właściwości");
     }
 
     @FXML
     private void handlePrint(ActionEvent event) {
-        // TODO: Logika drukowania
+        System.out.println("Drukuj");
     }
 
     @FXML
     private void handleExit(ActionEvent event) {
-        // TODO: Wyjście z aplikacji
+        String scoreName = ScoreService.getInstance().getScore().getTitle();
+
+        new CustomConfirmationDialog()
+                .setTitle("MusicScore Builder")
+                .setHeader("Chcesz zapisać zmiany w partyturze „" + scoreName + "” przed zamknięciem?")
+                .setContent("Twoje zmiany zostaną utracone, jeśli ich nie zapiszesz.")
+                .setConfirmButton("Zapisz", () -> {
+                    handleSave(event);
+                    Platform.exit();
+                    System.exit(0);
+                })
+                .setDenyButton("Nie zapisuj", () -> {
+                    Platform.exit();
+                    System.exit(0);
+                })
+                .setCancelButton("Anuluj", null)
+                .showAndWait();
     }
 
     @FXML
     private void handleUndo(ActionEvent event) {
-        // TODO: Cofnij
+        System.out.println("Cofnij");
     }
 
     @FXML
     private void handleRedo(ActionEvent event) {
-        // TODO: Ponów
+        System.out.println("Ponów");
     }
 }

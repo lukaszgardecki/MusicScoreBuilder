@@ -69,7 +69,7 @@
 
     <Menu text="_Edytuj">
         <MenuItem text="_Cofnij" accelerator="Ctrl+Z" onAction="#handleUndo"/>
-        <MenuItem text="Po_wtórz" accelerator="Ctrl+Y" onAction="#handleRedo"/>
+        <MenuItem text="Po_wtórz" accelerator="Ctrl+Shift+Z" onAction="#handleRedo"/>
     </Menu>
 
     <Menu text="_Widok"/>

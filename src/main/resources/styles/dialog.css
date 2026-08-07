@@ -1,0 +1,45 @@
+/* ALERT WINDOW */
+.custom-alert {
+    -fx-background-color: #f8f9fa;
+    -fx-padding: 22px 32px;
+}
+
+/* Kolor nagłówka (Pytanie) */
+.custom-alert .alert-header-text {
+    -fx-text-fill: #0f172a;
+}
+
+/* Kolor opisu pod pytaniem */
+.custom-alert .alert-content-text {
+    -fx-text-fill: #4b5563;
+}
+
+/* Pasek z przyciskami */
+.custom-alert .button-bar {
+    -fx-padding: 20px 0 0 0;
+}
+
+/* Przyciski standardowe */
+.custom-alert .button-bar .button {
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-size: 13px;
+    -fx-background-radius: 6px;
+    -fx-padding: 7px 22px;
+    -fx-background-color: #e5e7eb;
+    -fx-text-fill: #1f2937;
+    -fx-cursor: hand;
+}
+
+.custom-alert .button-bar .button:hover {
+    -fx-background-color: #d1d5db;
+}
+
+/* Przycisk wyróżniony "Zapisz" */
+.custom-alert .button-bar .button.primary-button {
+    -fx-background-color: #93c5fd;
+    -fx-text-fill: #0f172a;
+}
+
+.custom-alert .button-bar .button.primary-button:hover {
+    -fx-background-color: #60a5fa;
+}
