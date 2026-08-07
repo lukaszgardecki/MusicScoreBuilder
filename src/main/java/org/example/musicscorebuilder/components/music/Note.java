@@ -1,11 +1,14 @@
 package org.example.musicscorebuilder.components.music;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
+@JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class Note extends NoteRestElement {
     private Pitch pitch;
     private BeamType beam;
-    private boolean tieStart, tieStop;
+    private boolean tieStart;
+    private boolean tieStop;
 
     @SuppressWarnings("unused")
     private Note() {
@@ -15,7 +18,7 @@ public class Note extends NoteRestElement {
     public Note(int voice, PitchStep pitchStep, int alter, int octave, NoteType type, BeamType beam, int dots, Measure parent) {
         super(parent, voice, type);
         this.pitch = new Pitch(pitchStep, alter, octave);
-        this.beam = beam;
+        setBeam(beam);
         this.dots = dots;
     }
 
@@ -29,7 +32,7 @@ public class Note extends NoteRestElement {
     public boolean isTieStop() { return tieStop; }
 
     @JsonIgnore
-    public boolean isBeamed() { return beam != null && beam != BeamType.NONE; }
+    public boolean isBeamed() { return beam != null; }
     @JsonIgnore
     public PitchStep getStep() { return pitch.getStep(); }
     @JsonIgnore
@@ -41,12 +44,19 @@ public class Note extends NoteRestElement {
     @JsonIgnore
     public boolean hasTie() { return isTieStart() || isTieStop(); }
 
-    public void setPitch(PitchStep step, int octave) {
-        pitch.setStep(step);
-        pitch.setOctave(octave);
+    public void setPitch(Pitch pitch) {
+        this.pitch = pitch;
     }
-    public void setBeamType(BeamType beam) {
-        this.beam = beam;
+    public void setPitch(PitchStep step, int octave) {
+        if (pitch == null) {
+            pitch = new Pitch(step, 0, octave);
+        } else {
+            pitch.setStep(step);
+            pitch.setOctave(octave);
+        }
+    }
+    public void setBeam(BeamType beam) {
+        this.beam = (beam == BeamType.NONE) ? null : beam;
     }
     public void setTieStart(boolean tieStart) { this.tieStart = tieStart; }
     public void setTieStop(boolean tieStop) { this.tieStop = tieStop; }

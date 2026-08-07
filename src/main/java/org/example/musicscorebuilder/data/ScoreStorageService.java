@@ -1,8 +1,8 @@
 package org.example.musicscorebuilder.data;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import org.example.musicscorebuilder.components.music.*;
 
 import java.io.*;
@@ -15,9 +15,8 @@ public class ScoreStorageService {
 
     public ScoreStorageService() {
         this.mapper = new ObjectMapper();
-        // Ładne formatowanie JSON w trybie tekstowym
-        this.mapper.enable(SerializationFeature.INDENT_OUTPUT);
-        // Odporność na ewentualne nowe pola w przyszłości
+//        this.mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
@@ -54,19 +53,54 @@ public class ScoreStorageService {
 
             if (mode.getMeasures() == null) continue;
 
+            TimeSignature activeTimeSignature = null;
+            KeySignature activeKeySignature = null;
+
             for (Measure measure : mode.getMeasures()) {
 
+                // 1. Odtwarzanie TimeSignature (dziedziczenie z poprzedniego taktu, jeśli brak w JSON)
                 if (measure.getTimeSignature() != null) {
-                    measure.getTimeSignature().setParent(measure);
+                    activeTimeSignature = measure.getTimeSignature();
+                    activeTimeSignature.setParent(measure);
+                } else if (activeTimeSignature != null) {
+                    TimeSignature inheritedTimeSig = new TimeSignature(
+                            activeTimeSignature.getBeat(),
+                            activeTimeSignature.getBeatType(),
+                            activeTimeSignature.getType(),
+                            measure
+                    );
+                    measure.setTimeSignature(inheritedTimeSig);
+                } else {
+                    TimeSignature defaultTimeSig = new TimeSignature(4, 4, TimeSignature.Type.FRACTIONAL, measure);
+                    measure.setTimeSignature(defaultTimeSig);
+                    activeTimeSignature = defaultTimeSig;
                 }
+
+                // 2. Odtwarzanie KeySignature (dziedziczenie z poprzedniego taktu, jeśli brak w JSON)
                 if (measure.getKeySignature() != null) {
-                    measure.getKeySignature().setParent(measure);
+                    activeKeySignature = measure.getKeySignature();
+                    activeKeySignature.setParent(measure);
+                } else if (activeKeySignature != null) {
+                    KeySignature inheritedKeySig = new KeySignature(
+                            activeKeySignature.getFifths(),
+                            measure
+                    );
+                    measure.setKeySignature(inheritedKeySig);
+                } else {
+                    KeySignature defaultKeySig = new KeySignature(0, measure);
+                    measure.setKeySignature(defaultKeySig);
+                    activeKeySignature = defaultKeySig;
                 }
+
+                // 3. Upewnienie się, że kreska taktowa ma ustawionego rodzica
                 if (measure.getRightBarline() != null) {
                     measure.getRightBarline().setParent(measure);
                 }
 
+                // 4. Przeliczenie segmentów w takcie po odtworzeniu metrum
+                measure.recalculateSegmentDurations();
 
+                // 5. Powiązanie rodziców (parent) dla segmentów i elementów
                 if (measure.getSegments() != null) {
                     for (Segment segment : measure.getSegments()) {
                         segment.setParent(measure);

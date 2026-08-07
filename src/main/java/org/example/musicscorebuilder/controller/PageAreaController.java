@@ -5,6 +5,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.FileChooser;
 import org.example.musicscorebuilder.NoteDragHandler;
 import org.example.musicscorebuilder.ScoreService;
 import org.example.musicscorebuilder.ShortcutHandler;
@@ -79,16 +80,60 @@ public class PageAreaController {
             return;
         }
 
+//        String fileName = String.format("%s_%s_c.json", score.getNumberNew(), score.getTitle().replaceAll(" ", "-"));
         String fileName = String.format("%s_%s.json", score.getNumberNew(), score.getTitle().replaceAll(" ", "-"));
         File saveFile = new File(fileName);
         try {
-            storageService.saveToCompressedJson(score, saveFile);
-            showInfoAlert("Zapis zakończony", "Partytura została zapisana w pliku: " + saveFile.getName());
+//            storageService.saveToCompressedJson(score, saveFile);
+            storageService.saveToJson(score, saveFile);
         } catch (IOException e) {
             e.printStackTrace();
             showErrorAlert("Błąd zapisu", "Nie udało się zapisać partytury: " + e.getMessage());
         }
     }
+
+    @FXML
+    private void loadScore() {
+//        File loadFile = new File("251_O-milcząca-Hostio-biała_c.json");
+        File loadFile = new File("251_O-milcząca-Hostio-biała.json");
+
+        if (!loadFile.exists()) {
+            showErrorAlert("Błąd wczytywania", "Plik " + loadFile.getName() + " nie istnieje!");
+            return;
+        }
+
+        try {
+//            Score score = storageService.loadFromCompressedJson(loadFile);
+            Score score = storageService.loadFromJson(loadFile);
+            scoreService.setScore(score);
+            refreshView();
+        } catch (IOException e) {
+            e.printStackTrace();
+            showErrorAlert("Błąd wczytywania", "Nie udało się wczytać partytury: " + e.getMessage());
+        }
+    }
+
+//    @FXML
+//    private void loadScore() {
+//        FileChooser fileChooser = new FileChooser();
+//        fileChooser.setTitle("Otwórz plik partytury");
+//        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Pliki JSON", "*.json"));
+//
+//        // Pobranie aktualnego Okna (Stage)
+//        File selectedFile = fileChooser.showOpenDialog(scrollPane.getScene().getWindow());
+//
+//        if (selectedFile != null) {
+//            try {
+//                Score score = storageService.loadFromJson(selectedFile);
+//                scoreService.setScore(score);
+//                refreshView();
+//                showInfoAlert("Wczytywanie zakończone", "Wczytano: " + selectedFile.getName());
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//                showErrorAlert("Błąd wczytywania", "Nie udało się wczytać pliku: " + e.getMessage());
+//            }
+//        }
+//    }
 
     private void initContainerBinding() {
         container.prefWidthProperty().bind(scrollPane.widthProperty());

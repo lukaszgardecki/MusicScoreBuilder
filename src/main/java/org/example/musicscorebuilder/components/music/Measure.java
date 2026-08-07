@@ -2,6 +2,7 @@ package org.example.musicscorebuilder.components.music;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.example.musicscorebuilder.components.music.util.MeasureDurationEditor;
 import org.example.musicscorebuilder.components.music.util.MeasureTimeSignatureAdjuster;
@@ -9,11 +10,21 @@ import org.example.musicscorebuilder.components.music.util.MeasureTimeSignatureA
 import java.util.ArrayList;
 import java.util.List;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Measure {
+
+    @JsonProperty("timeSig")
     private TimeSignature timeSignature;
+
+    @JsonProperty("keySig")
     private KeySignature keySignature;
     private Barline rightBarline;
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @JsonProperty("staves")
     private final List<Staff> staves;
+
+    @JsonProperty("segs")
     private final List<Segment> segments = new ArrayList<>();
 
     @JsonIgnore
@@ -22,15 +33,15 @@ public class Measure {
     @JsonCreator
     public Measure(
             @JsonProperty("staves") List<Staff> staves,
-            @JsonProperty("timeSignature") TimeSignature timeSignature,
-            @JsonProperty("keySignature") KeySignature keySignature,
-            @JsonProperty("rightBarline") Barline rightBarline,
-            @JsonProperty("segments") List<Segment> segments
+            @JsonProperty("timeSig") TimeSignature timeSignature,
+            @JsonProperty("keySig") KeySignature keySignature,
+            @JsonProperty("barline") Barline rightBarline,
+            @JsonProperty("segs") List<Segment> segments
     ) {
         this.staves = staves != null ? staves : new ArrayList<>();
         this.timeSignature = timeSignature;
         this.keySignature = keySignature;
-        this.rightBarline = rightBarline;
+        this.rightBarline = rightBarline != null ? rightBarline : new Barline(BarlineStyle.SINGLE, this);
         if (segments != null) {
             this.segments.addAll(segments);
         }
@@ -45,6 +56,7 @@ public class Measure {
     }
 
     public void recalculateSegmentDurations() {
+//        if (timeSignature == null) return;
         int totalTicks = timeSignature.getTotalTicks();
 
         List<Segment> noteRestSegments = segments.stream()
@@ -84,12 +96,26 @@ public class Measure {
 
     public List<Staff> getStaves() { return staves; }
     public List<Segment> getSegments() { return segments; }
-    public Barline getRightBarline() { return rightBarline; }
+    @JsonIgnore
+    public Barline getRightBarline() {
+        if (rightBarline == null) {
+            rightBarline = new Barline(BarlineStyle.SINGLE, this);
+        }
+        return rightBarline;
+    }
+    @JsonProperty("barline")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Barline getRightBarlineForJson() {
+        if (rightBarline == null || rightBarline.getStyle() == BarlineStyle.SINGLE) {
+            return null; // Zwykła kreska zostanie pominięta w pliku JSON
+        }
+        return rightBarline;
+    }
     public TimeSignature getTimeSignature() { return timeSignature; }
     public KeySignature getKeySignature() { return keySignature; }
 
     @JsonIgnore
-    public BarlineStyle getBarlineStyle() { return rightBarline.getStyle(); }
+    public BarlineStyle getBarlineStyle() { return getRightBarline().getStyle(); }
 
     @JsonIgnore
     public boolean isDirty() { return dirty; }
@@ -148,7 +174,11 @@ public class Measure {
     }
     public void setDirty(boolean dirty) { this.dirty = dirty; }
     public void setBarlineStyle(BarlineStyle barlineStyle) {
-        this.rightBarline.setStyle(barlineStyle);
+        if (this.rightBarline == null) {
+            this.rightBarline = new Barline(barlineStyle, this);
+        } else {
+            this.rightBarline.setStyle(barlineStyle);
+        }
         setDirty(true);
     }
 
@@ -175,34 +205,34 @@ public class Measure {
             case BEGIN -> {
                 if (nextNote != null && nextNote.isBeamed()) {
                     if (nextNote.getBeam() == BeamType.CONTINUE) {
-                        nextNote.setBeamType(BeamType.BEGIN);
+                        nextNote.setBeam(BeamType.BEGIN);
                     } else if (nextNote.getBeam() == BeamType.END) {
-                        nextNote.setBeamType(BeamType.NONE);
+                        nextNote.setBeam(BeamType.NONE);
                     }
                 }
             }
             case END -> {
                 if (prevNote != null && prevNote.isBeamed()) {
                     if (prevNote.getBeam() == BeamType.CONTINUE) {
-                        prevNote.setBeamType(BeamType.END);
+                        prevNote.setBeam(BeamType.END);
                     } else if (prevNote.getBeam() == BeamType.BEGIN) {
-                        prevNote.setBeamType(BeamType.NONE);
+                        prevNote.setBeam(BeamType.NONE);
                     }
                 }
             }
             case CONTINUE -> {
                 if (prevNote != null && prevNote.isBeamed()) {
                     if (prevNote.getBeam() == BeamType.BEGIN) {
-                        prevNote.setBeamType(BeamType.NONE);
+                        prevNote.setBeam(BeamType.NONE);
                     } else if (prevNote.getBeam() == BeamType.CONTINUE) {
-                        prevNote.setBeamType(BeamType.END);
+                        prevNote.setBeam(BeamType.END);
                     }
                 }
                 if (nextNote != null && nextNote.isBeamed()) {
                     if (nextNote.getBeam() == BeamType.END) {
-                        nextNote.setBeamType(BeamType.NONE);
+                        nextNote.setBeam(BeamType.NONE);
                     } else if (nextNote.getBeam() == BeamType.CONTINUE) {
-                        nextNote.setBeamType(BeamType.BEGIN);
+                        nextNote.setBeam(BeamType.BEGIN);
                     }
                 }
             }

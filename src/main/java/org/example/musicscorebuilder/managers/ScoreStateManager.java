@@ -301,16 +301,16 @@ public class ScoreStateManager {
 
         if (currentNote == null || segLayout == null || staffLayout == null) return;
 
-        Staff staff = staffLayout.getStaff();
+        int staffId = staffLayout.getStaffIndex();
 
         if (currentNote.isTieStart()) {
             currentNote.setTieStart(false);
-            NoteLayout nextNoteLayout = findNextNoteInVoice(segLayout, staff, currentNote.getVoice(), false);
+            NoteLayout nextNoteLayout = findNextNoteInVoice(segLayout, staffId, currentNote.getVoice(), false);
             if (nextNoteLayout != null && isSamePitch(currentNote, nextNoteLayout.getNote())) {
                 nextNoteLayout.getNote().setTieStop(false);
             }
         } else {
-            NoteLayout nextNoteLayout = findNextNoteInVoice(segLayout, staff, currentNote.getVoice(), false);
+            NoteLayout nextNoteLayout = findNextNoteInVoice(segLayout, staffId, currentNote.getVoice(), false);
             if (nextNoteLayout != null && isSamePitch(currentNote, nextNoteLayout.getNote())) {
                 currentNote.setTieStart(true);
                 nextNoteLayout.getNote().setTieStop(true);
@@ -348,7 +348,7 @@ public class ScoreStateManager {
             startNote = startLayout.getNote();
             NoteLayout endLayout = findNextNoteInVoice(
                     startLayout.getSegment(),
-                    startLayout.getStaff().getStaff(),
+                    startLayout.getStaff().getStaffIndex(),
                     startNote.getVoice(),
                     true // ignoruj pauzy
             );
@@ -440,12 +440,12 @@ public class ScoreStateManager {
                 && n1.getOctave() == n2.getOctave();
     }
 
-    private NoteLayout findNextNoteInVoice(SegmentLayout startSegment, Staff staff, int voice, boolean ignoreRests, Predicate<NoteLayout> filter) {
+    private NoteLayout findNextNoteInVoice(SegmentLayout startSegment, int staffId, int voice, boolean ignoreRests, Predicate<NoteLayout> filter) {
         SegmentLayout current = startSegment.getNext();
 
         while (current != null) {
             for (ElementLayout el : current.getElements()) {
-                if (el.getStaff() != null && el.getStaff().getStaff() == staff && el.getVoice() == voice) {
+                if (el.getStaff() != null && el.getStaff().getStaffIndex() == staffId && el.getVoice() == voice) {
                     if (el instanceof NoteLayout note) {
                         if (filter.test(note)) {
                             return note;
@@ -461,8 +461,8 @@ public class ScoreStateManager {
         return null;
     }
 
-    private NoteLayout findNextNoteInVoice(SegmentLayout startSegment, Staff staff, int voice, boolean ignoreRests) {
-        return findNextNoteInVoice(startSegment, staff, voice, ignoreRests, note -> true);
+    private NoteLayout findNextNoteInVoice(SegmentLayout startSegment, int staffId, int voice, boolean ignoreRests) {
+        return findNextNoteInVoice(startSegment, staffId, voice, ignoreRests, note -> true);
     }
 
     private boolean isPitchWithinLedgerBounds(Pitch pitch, Clef clef, int maxLedgerLines) {

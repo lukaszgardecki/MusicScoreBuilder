@@ -2,12 +2,17 @@ package org.example.musicscorebuilder.components.music;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class Pitch {
     private PitchStep step;
     private int alter;
     private int octave;
+
+    @SuppressWarnings("unused")
+    private Pitch() {}
 
     @JsonCreator
     public Pitch(

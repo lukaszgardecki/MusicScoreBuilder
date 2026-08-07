@@ -16,41 +16,31 @@
     <ToggleButton fx:id="viewModeToggle"
                   text="Widok: Pełna Partytura"
                   onAction="#toggleViewMode"
+                  styleClass="custom-button"
                   StackPane.alignment="TOP_RIGHT">
         <StackPane.margin>
             <Insets top="15.0" right="25.0"/>
         </StackPane.margin>
-        <style>
-            -fx-background-color: #ffffff;
-            -fx-text-fill: #2c3e50;
-            -fx-border-color: #bdc3c7;
-            -fx-border-radius: 20;
-            -fx-background-radius: 20;
-            -fx-padding: 8 16 8 16;
-            -fx-cursor: hand;
-            -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 8, 0, 0, 2);
-            -fx-font-weight: bold;
-        </style>
     </ToggleButton>
 
     <Button fx:id="saveButton"
             text="ZAPISZ"
             onAction="#saveScore"
+            styleClass="custom-button"
             StackPane.alignment="TOP_RIGHT">
         <StackPane.margin>
             <Insets top="65.0" right="25.0"/>
         </StackPane.margin>
-        <style>
-            -fx-background-color: #ffffff;
-            -fx-text-fill: #2c3e50;
-            -fx-border-color: #bdc3c7;
-            -fx-border-radius: 20;
-            -fx-background-radius: 20;
-            -fx-padding: 8 16 8 16;
-            -fx-cursor: hand;
-            -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 8, 0, 0, 2);
-            -fx-font-weight: bold;
-        </style>
+    </Button>
+
+    <Button fx:id="loadButton"
+            text="WCZYTAJ"
+            onAction="#loadScore"
+            styleClass="custom-button"
+            StackPane.alignment="TOP_RIGHT">
+        <StackPane.margin>
+            <Insets top="115.0" right="25.0"/>
+        </StackPane.margin>
     </Button>
 
 </StackPane>

@@ -248,14 +248,14 @@ public class LayoutEngine {
 
     private NoteLayout findNextNoteInVoice(NoteLayout startNote) {
         SegmentLayout current = startNote.getSegment().getNext();
-        Staff staff = startNote.getStaff().getStaff();
+        int staffIndex = startNote.getStaff().getStaffIndex();
         int voice = startNote.getVoice();
 
         while (current != null) {
             for (ElementLayout el : current.getElements()) {
-                if (el.getStaff() != null && el.getStaff().getStaff() == staff && el.getVoice() == voice) {
+                if (el.getStaff() != null && el.getStaff().getStaffIndex() == staffIndex && el.getVoice() == voice) {
                     if (el instanceof NoteLayout note) return note;
-                    if (el instanceof RestLayout) return null;
+                    if (el instanceof RestLayout) return null; // Pauza przerywa łuk
                 }
             }
             current = current.getNext();

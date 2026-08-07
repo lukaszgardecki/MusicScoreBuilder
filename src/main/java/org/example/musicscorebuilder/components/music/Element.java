@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.*;
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.PROPERTY,
-        property = "elementType"
+        property = "elType"
 )
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.IntSequenceGenerator.class,

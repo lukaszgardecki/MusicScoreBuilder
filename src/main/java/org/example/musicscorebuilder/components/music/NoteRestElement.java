@@ -29,6 +29,9 @@ public abstract class NoteRestElement extends Element {
     @JsonIgnore
     public boolean isDotted() { return dots > 0; }
 
+    public void setVoice(int voice) {
+        this.voice = voice;
+    }
     public void setType(NoteType type) {
         this.type = type;
         this.duration = calculateDuration();
@@ -40,6 +43,9 @@ public abstract class NoteRestElement extends Element {
 
     @JsonIgnore
     protected int calculateDuration() {
+        if (type == null) {
+            return 0;
+        }
         int baseTicks = type.getTicks();
         int totalTicks = baseTicks;
         int addedTicks = baseTicks / 2;

@@ -1,5 +1,11 @@
 package org.example.musicscorebuilder.components.music;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
+@JsonIdentityInfo(generator = ObjectIdGenerators.None.class)
 public class Barline extends Element {
     public enum Type { START, END }
 

@@ -1,5 +1,6 @@
 package org.example.musicscorebuilder.components.music;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
@@ -16,12 +17,19 @@ public class Score {
         this("", "", "", "", "");
     }
 
-    public Score(String newNum, String oldNum, String title, String subtitle, String composer) {
-        this.numberNew = newNum;
-        this.numberOld = oldNum;
-        this.title = title;
-        this.subtitle = subtitle;
-        this.composer = composer;
+    @JsonCreator
+    public Score(
+            @JsonProperty("numberNew") String newNum,
+            @JsonProperty("numberOld") String oldNum,
+            @JsonProperty("title") String title,
+            @JsonProperty("subtitle") String subtitle,
+            @JsonProperty("composer") String composer
+    ) {
+        this.numberNew = newNum != null ? newNum : "";
+        this.numberOld = oldNum != null ? oldNum : "";
+        this.title = title != null ? title : "";
+        this.subtitle = subtitle != null ? subtitle : "";
+        this.composer = composer != null ? composer : "";
     }
 
     public void add(ScoreMode scoreMode) { scoreModes.add(scoreMode); }

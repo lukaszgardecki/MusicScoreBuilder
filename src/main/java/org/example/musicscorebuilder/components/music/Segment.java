@@ -2,6 +2,7 @@ package org.example.musicscorebuilder.components.music;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.*;
@@ -11,6 +12,11 @@ public class Segment {
     private Measure parent;
 
     private final SegmentType type;
+
+    @JsonInclude(
+            content = JsonInclude.Include.NON_EMPTY,
+            value = JsonInclude.Include.NON_EMPTY
+    )
     private final Map<Integer, List<Element>> staffElements = new HashMap<>();
     private int duration;
 

@@ -21,4 +21,8 @@ public class ScoreService {
         this.score = ScoreFactory.createScore();
         return score;
     }
+
+    public void setScore(Score score) {
+        this.score = score;
+    }
 }

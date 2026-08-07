@@ -363,7 +363,7 @@ public class MeasureDurationEditor {
                     currentGroup.clear();
 
                     if (nre instanceof Note nonBeamableNote) {
-                        nonBeamableNote.setBeamType(BeamType.NONE);
+                        nonBeamableNote.setBeam(BeamType.NONE);
                     }
                 }
             }
@@ -395,15 +395,15 @@ public class MeasureDurationEditor {
         if (group.isEmpty()) return;
 
         if (group.size() == 1) {
-            group.getFirst().setBeamType(BeamType.NONE);
+            group.getFirst().setBeam(BeamType.NONE);
         } else {
             for (int i = 0; i < group.size(); i++) {
                 if (i == 0) {
-                    group.get(i).setBeamType(BeamType.BEGIN);
+                    group.get(i).setBeam(BeamType.BEGIN);
                 } else if (i == group.size() - 1) {
-                    group.get(i).setBeamType(BeamType.END);
+                    group.get(i).setBeam(BeamType.END);
                 } else {
-                    group.get(i).setBeamType(BeamType.CONTINUE);
+                    group.get(i).setBeam(BeamType.CONTINUE);
                 }
             }
         }
