@@ -154,8 +154,15 @@ public class ScoreStateManager {
 
     public void convertSelectedNoteToRest() {
         Selectable selected = getSelectedItem();
-        if (!(selected instanceof NoteLayout noteLayout)) return;
 
+        if (selected instanceof NoteLayout noteLayout) {
+            handleSingleNoteConversion(noteLayout);
+        } else if (selected instanceof MeasureStaffSelection measureSelection) {
+            handleMeasureStaffConversion(measureSelection);
+        }
+    }
+
+    private void handleSingleNoteConversion(NoteLayout noteLayout) {
         Note currentNote = noteLayout.getNote();
         SegmentLayout segLayout = noteLayout.getSegment();
         StaffLayout staffLayout = noteLayout.getStaff();
@@ -180,7 +187,9 @@ public class ScoreStateManager {
             if (staffElements != null) {
                 for (Element el : staffElements) {
                     if (el instanceof NoteRestElement nre && nre.getVoice() == targetVoice) {
-                        Selectable newLayout = LayoutHitTester.findSelectableForElement(layout.getPages(), targetSegment, staffId, nre);
+                        Selectable newLayout = LayoutHitTester.findSelectableForElement(
+                                layout.getPages(), targetSegment, staffId, nre
+                        );
                         if (newLayout != null) {
                             setSelected(newLayout);
                         }
@@ -191,6 +200,35 @@ public class ScoreStateManager {
         };
 
         measure.convertNoteToRest(targetSegment, staffId, currentNote);
+        notifyScoreChanged();
+    }
+
+    private void handleMeasureStaffConversion(MeasureStaffSelection measureSelection) {
+        Measure measure = measureSelection.getMeasure().getMeasure();
+        int staffId = measureSelection.getStaff().getStaffIndex();
+
+        if (measure == null) return;
+
+        postRefreshAction = layout -> {
+            if (measure.getSegments() != null && !measure.getSegments().isEmpty()) {
+                Segment firstSegment = measure.getSegments().getFirst();
+                var staffElements = firstSegment.getElementsByStaff(staffId);
+
+                if (staffElements != null && !staffElements.isEmpty()) {
+                    if (staffElements.getFirst() instanceof NoteRestElement nre) {
+                        Selectable newLayout = LayoutHitTester.findSelectableForElement(
+                                layout.getPages(), firstSegment, staffId, nre
+                        );
+                        if (newLayout != null) {
+                            setSelected(newLayout);
+                        }
+                    }
+
+                }
+            }
+        };
+
+        measure.convertStaffToWholeRest(staffId);
         notifyScoreChanged();
     }
 

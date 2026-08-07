@@ -71,6 +71,13 @@ public class Segment {
         staffElements.computeIfAbsent(staffId, k -> new ArrayList<>()).add(element);
     }
 
+    public void clearStaff(int staffId) {
+        List<Element> elements = staffElements.get(staffId);
+        if (elements != null) {
+            elements.clear();
+        }
+    }
+
     public void replaceElement(int staffId, Element oldElement, Element newElement) {
         List<Element> elements = staffElements.get(staffId);
         if (elements != null) {

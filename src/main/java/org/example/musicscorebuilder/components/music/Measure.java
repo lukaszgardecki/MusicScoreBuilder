@@ -94,6 +94,25 @@ public class Measure {
         setDirty(true);
     }
 
+    public void convertStaffToWholeRest(int staffId) {
+        for (Segment seg : segments) {
+            seg.clearStaff(staffId);
+        }
+        segments.removeIf(Segment::isEmpty);
+
+        if (segments.isEmpty()) {
+            Segment newSegment = new Segment(SegmentType.NOTEREST, this);
+            segments.add(newSegment);
+        }
+
+        Segment firstSegment = segments.getFirst();
+        Rest wholeRest = new Rest(1, NoteType.WHOLE, this);
+        firstSegment.addElement(staffId, wholeRest);
+
+        recalculateSegmentDurations();
+        setDirty(true);
+    }
+
     public List<Staff> getStaves() { return staves; }
     public List<Segment> getSegments() { return segments; }
     @JsonIgnore
