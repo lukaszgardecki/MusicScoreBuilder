@@ -1,22 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.MenuBar?>
-<?import javafx.scene.control.Menu?>
-<?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.shape.SVGPath?>
 
-<MenuBar>
-    <Menu text="Plik">
-        <MenuItem text="Nowy"/>
-        <MenuItem text="Otwórz"/>
-        <MenuItem text="Zapisz"/>
+<MenuBar xmlns="http://javafx.com/javafx"
+         xmlns:fx="http://javafx.com/fxml"
+         fx:controller="org.example.musicscorebuilder.controller.MenuBarController">
+
+    <Menu text="_Plik">
+        <MenuItem text="_Nowy..." accelerator="Ctrl+N" onAction="#handleNew">
+            <graphic>
+                <SVGPath content="M6 2h8l4 4v14H6V2zm8 1.5V7h3.5L14 3.5z" styleClass="menu-icon"/>
+            </graphic>
+        </MenuItem>
+
+        <MenuItem text="_Otwórz..." accelerator="Ctrl+O" onAction="#handleOpen">
+            <graphic>
+                <SVGPath content="M2 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6z" styleClass="menu-icon"/>
+            </graphic>
+        </MenuItem>
+
+        <Menu text="O_twórz ostatnie">
+            <MenuItem text="Brak ostatnich plików" disable="true"/>
+        </Menu>
+
         <SeparatorMenuItem/>
-        <MenuItem text="Wyjdź"/>
+
+        <MenuItem text="Z_amknij" accelerator="Ctrl+W" onAction="#handleClose"/>
+
+        <MenuItem text="Zapi_sz" accelerator="Ctrl+S" onAction="#handleSave">
+            <graphic>
+                <SVGPath content="M17 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7l-4-4zm-5 16a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm3-10H6V5h9v4z" styleClass="menu-icon"/>
+            </graphic>
+        </MenuItem>
+
+        <MenuItem text="Zapisz j_ako..." accelerator="Ctrl+Shift+S" onAction="#handleSaveAs"/>
+        <MenuItem text="Zapisz _kopię..." onAction="#handleSaveCopy"/>
+
+        <SeparatorMenuItem/>
+
+        <MenuItem text="Importuj P_DF..." onAction="#handleImportPdf">
+            <graphic>
+                <SVGPath content="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" styleClass="menu-icon"/>
+            </graphic>
+        </MenuItem>
+
+
+        <MenuItem text="Ek_sportuj..." accelerator="Ctrl+D" onAction="#handleExport">
+            <graphic>
+                <SVGPath content="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2v2h14v-2H5z" styleClass="menu-icon"/>
+            </graphic>
+        </MenuItem>
+
+        <SeparatorMenuItem/>
+
+        <MenuItem text="Właściwości projektu..." onAction="#handleProjectProperties"/>
+
+        <SeparatorMenuItem/>
+
+        <MenuItem text="Dr_ukuj..." accelerator="Ctrl+P" onAction="#handlePrint">
+            <graphic>
+                <SVGPath content="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" styleClass="menu-icon"/>
+            </graphic>
+        </MenuItem>
+
+        <MenuItem text="Zakończ" accelerator="Ctrl+Q" onAction="#handleExit"/>
     </Menu>
-    <Menu text="Edytuj">
-        <MenuItem text="Undo"/>
-        <MenuItem text="Redo"/>
+
+    <Menu text="_Edytuj">
+        <MenuItem text="_Cofnij" accelerator="Ctrl+Z" onAction="#handleUndo"/>
+        <MenuItem text="Po_wtórz" accelerator="Ctrl+Y" onAction="#handleRedo"/>
     </Menu>
-    <Menu text="Widok"/>
-    <Menu text="Pomoc"/>
+
+    <Menu text="_Widok"/>
+    <Menu text="P_omoc"/>
 </MenuBar>

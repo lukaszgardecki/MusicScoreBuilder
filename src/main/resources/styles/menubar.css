@@ -1,0 +1,82 @@
+/* Kontener MenuBar */
+.menu-bar {
+    -fx-background-color: #f2f3f5;
+    -fx-padding: 2px 4px;
+    -fx-border-color: #dcdfe4;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.menu-bar > .container > .menu-button {
+    -fx-background-color: transparent;
+    -fx-padding: 4px 8px;
+}
+
+.menu-bar > .container > .menu-button:hover,
+.menu-bar > .container > .menu-button:showing {
+    -fx-background-color: #e4e7ed;
+    -fx-background-radius: 4px;
+}
+
+.menu-bar > .container > .menu-button > .label {
+    -fx-text-fill: #2c3e50;
+    -fx-font-size: 13px;
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+/* Rozwijane menu (Context Menu / Submenu) */
+.context-menu {
+    -fx-background-color: #f8f9fa;
+    -fx-background-radius: 0;
+    -fx-border-color: #c9cdd4;
+    -fx-border-width: 1px;
+    -fx-padding: 4px 0px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.15), 8, 0, 0, 3);
+}
+
+/* Pojedynczy element opcji */
+.menu-item {
+    -fx-padding: 5px 20px 5px 12px;
+    -fx-background-color: transparent;
+}
+
+.menu-item:hover,
+.menu-item:focused {
+    -fx-background-color: #e8ecef;
+}
+
+.menu-item > .label {
+    -fx-text-fill: #1a1a1a;
+    -fx-font-size: 13px;
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+/* Tekst skrótów klawiszowych (Ctrl+N itp.) */
+.menu-item > .accelerator-text {
+    -fx-text-fill: #5f6368;
+    -fx-font-size: 12px;
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-padding: 0 0 0 25px;
+}
+
+/* Ikony SVG */
+.menu-icon {
+    -fx-fill: transparent;
+    -fx-stroke: #3c4043;
+    -fx-stroke-width: 1.3px;
+    -fx-scale-x: 0.75;
+    -fx-scale-y: 0.75;
+}
+
+/* Miejsce na ikonę w menu-item dla równego wyrównania tekstu */
+.menu-item > .left-container {
+    -fx-padding: 0 6px 0 0;
+    -fx-min-width: 20px;
+    -fx-alignment: center-left;
+}
+
+/* Separator */
+.separator-menu-item > .line {
+    -fx-border-color: #e0e0e0;
+    -fx-border-width: 1px 0 0 0;
+    -fx-padding: 2px 0;
+}
