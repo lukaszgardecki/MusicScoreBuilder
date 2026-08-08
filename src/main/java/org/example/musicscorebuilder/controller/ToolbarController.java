@@ -6,6 +6,7 @@ import javafx.scene.control.Button;
 import org.example.musicscorebuilder.ScoreService;
 import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.music.*;
+import org.example.musicscorebuilder.components.music.util.TiedNoteService;
 import org.example.musicscorebuilder.controller.util.ToolbarIconRenderer;
 import org.example.musicscorebuilder.managers.ModeManager;
 import org.example.musicscorebuilder.managers.ScoreNavigator;
@@ -399,6 +400,8 @@ public class ToolbarController {
 
         pitch.setAlter(newAlter);
         noteLayout.refreshMeasureAccidentals();
+
+        TiedNoteService.syncTiedNotesPitch(noteLayout);
         stateManager.notifyScoreChanged();
     }
 }
