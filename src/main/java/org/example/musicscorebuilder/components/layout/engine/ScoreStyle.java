@@ -27,7 +27,7 @@ public class ScoreStyle {
     private static final int NOTE_MAX_LEDGER_LINES                          = 3;
     private static final double NOTE_STEM_WIDTH                             = 0.1;
     private static final double NOTE_STEM_SINGLE_DEFAULT_HEIGHT             = 3.5;
-    private static final double NOTE_STEM_BEAMED_DEFAULT_HEIGHT             = 3.0;
+    private static final double NOTE_STEM_BEAMED_DEFAULT_HEIGHT             = 3.25;
     private static final double NOTE_STEM_MIN_HEIGHT                        = 2.25;
     private static final double NOTE_STEM_HEIGHT_DIFF_FACTOR                = 0.2;
     private static final double NOTE_BEAM_THICKNESS                         = 0.5;
