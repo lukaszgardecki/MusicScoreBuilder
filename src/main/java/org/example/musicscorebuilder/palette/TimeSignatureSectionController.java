@@ -11,7 +11,9 @@ import org.example.musicscorebuilder.components.layout.TimeSigLayout;
 import org.example.musicscorebuilder.components.music.SegmentType;
 import org.example.musicscorebuilder.components.music.TimeSignature;
 import org.example.musicscorebuilder.components.views.TimeSigView;
+import org.example.musicscorebuilder.managers.ScoreStateManager;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -35,7 +37,9 @@ public class TimeSignatureSectionController extends AbstractPaletteSectionContro
         Selectable item = stateManager.getSelectedItem();
 
         if (item instanceof TimeSigLayout) {
-            scoreService.getScore().getModes().forEach(mode -> mode.setTimeSignature(sig));
+            new ArrayList<>(scoreService.getScore().getModes())
+                    .forEach(mode -> mode.setTimeSignature(sig));
+            ScoreStateManager.getInstance().notifyScoreChanged();
             return true;
         }
         return false;

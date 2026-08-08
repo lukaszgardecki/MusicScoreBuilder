@@ -28,6 +28,15 @@ public class Measure {
     private final List<Segment> segments = new ArrayList<>();
 
     @JsonIgnore
+    private Measure prev;
+
+    @JsonIgnore
+    private Measure next;
+
+    @JsonIgnore
+    private ScoreMode parentMode;
+
+    @JsonIgnore
     private boolean dirty = true;
 
     @JsonCreator
@@ -56,7 +65,6 @@ public class Measure {
     }
 
     public void recalculateSegmentDurations() {
-//        if (timeSignature == null) return;
         int totalTicks = timeSignature.getTotalTicks();
 
         List<Segment> noteRestSegments = segments.stream()
@@ -70,7 +78,6 @@ public class Measure {
             int d = seg.getDuration();
             if (d <= 0) {
                 seg.setDuration(defaultDur);
-                d = defaultDur;
             }
         }
     }
@@ -126,7 +133,7 @@ public class Measure {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Barline getRightBarlineForJson() {
         if (rightBarline == null || rightBarline.getStyle() == BarlineStyle.SINGLE) {
-            return null; // Zwykła kreska zostanie pominięta w pliku JSON
+            return null;
         }
         return rightBarline;
     }
@@ -139,6 +146,19 @@ public class Measure {
     @JsonIgnore
     public boolean isDirty() { return dirty; }
 
+    @JsonIgnore
+    public Measure getPrev() { return prev; }
+
+    @JsonIgnore
+    public Measure getNext() { return next; }
+
+    public void setPrev(Measure prev) { this.prev = prev; }
+    public void setNext(Measure next) { this.next = next; }
+
+    @JsonIgnore
+    public ScoreMode getParentMode() { return parentMode; }
+    public void setParentMode(ScoreMode parentMode) { this.parentMode = parentMode; }
+
     public int getKeySignatureAlterForStep(PitchStep step) {
         return keySignature != null ? keySignature.getAlterForStep(step) : 0;
     }
@@ -149,7 +169,6 @@ public class Measure {
         if (targetSegment == null) {
             return activeAlter;
         }
-
 
         for (Segment seg : segments) {
             if (seg == targetSegment) break;
@@ -202,10 +221,15 @@ public class Measure {
     }
 
     public void setTimeSignature(TimeSignature timeSignature) {
+        setTimeSignature(timeSignature, true);
+    }
+
+    public void setTimeSignature(TimeSignature timeSignature, boolean triggerAdjust) {
         this.timeSignature = timeSignature;
-        MeasureTimeSignatureAdjuster.adjustSegmentsToTimeSignature(this);
-        recalculateSegmentDurations();
         setDirty(true);
+        if (triggerAdjust) {
+            MeasureTimeSignatureAdjuster.adjustFromMeasure(this);
+        }
     }
 
     public void setKeySignature(KeySignature keySignature) {

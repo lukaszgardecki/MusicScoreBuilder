@@ -23,6 +23,9 @@ public class LayoutEngine {
     }
 
     public ScoreLayout compute(ScoreMode scoreMode) {
+        boolean hasDirtyMeasures = scoreMode.getMeasures().stream().anyMatch(Measure::isDirty);
+        if (hasDirtyMeasures) clearCache();
+
         ScoreLayout scoreLayout = new ScoreLayout(scoreMode.getScore(), style);
         PageLayout currentPage = createPageLayout(scoreLayout);
         scoreLayout.addPageLayout(currentPage);
@@ -35,6 +38,7 @@ public class LayoutEngine {
                 measureLayout = measureCache.get(measure);
                 measureLayout.remove1stMeasureAttributes();
                 measureLayout.resetLayoutState();
+                measureLayout.setParent(newSystem);
             } else {
                 measureLayout = createMeasureLayout(measure, newSystem);
                 measureCache.put(measure, measureLayout);
@@ -53,6 +57,7 @@ public class LayoutEngine {
                 }
                 newSystem = addNewSystemToPage(currentPage, scoreMode);
                 measureLayout.setX(newSystem.getWidth());
+                measureLayout.setParent(newSystem);
             }
 
             if (newSystem.getMeasures().isEmpty()) {
@@ -70,6 +75,10 @@ public class LayoutEngine {
         buildTies(scoreLayout);
         buildSlurs(scoreMode, scoreLayout);
         return scoreLayout;
+    }
+
+    private void clearCache() {
+        measureCache.clear();
     }
 
     private SystemLayout addNewSystemToPage(PageLayout pageLayout, ScoreMode scoreMode) {

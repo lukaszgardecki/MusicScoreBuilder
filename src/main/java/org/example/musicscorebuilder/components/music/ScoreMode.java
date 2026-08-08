@@ -33,7 +33,10 @@ public class ScoreMode {
         this.braceType = braceType;
         this.startBarline = startBarline;
         if (staves != null) this.staves.addAll(staves);
-        if (measures != null) this.measures.addAll(measures);
+        if (measures != null) {
+            this.measures.addAll(measures);
+            updateMeasureLinks();
+        }
         if (slurs != null) this.slurs.addAll(slurs);
     }
 
@@ -54,9 +57,13 @@ public class ScoreMode {
 
     public void appendMeasure() {
         Measure measure = new Measure(staves);
+        measure.setParentMode(this);
 
         if (!measures.isEmpty()) {
             Measure lastMeasure = measures.getLast();
+            lastMeasure.setNext(measure);
+            measure.setPrev(lastMeasure);
+
             measure.setKeySignature(lastMeasure.getKeySignature());
 
             TimeSignature lastTimeSig = lastMeasure.getTimeSignature();
@@ -65,22 +72,26 @@ public class ScoreMode {
                     lastTimeSig.getBeatType(),
                     lastTimeSig.getType(),
                     measure
-            ));
+            ), false);
 
             measure.setBarlineStyle(lastMeasure.getBarlineStyle());
             lastMeasure.setBarlineStyle(BarlineStyle.SINGLE);
-        } else {
-            MeasureTimeSignatureAdjuster.adjustSegmentsToTimeSignature(measure);
         }
 
+        MeasureTimeSignatureAdjuster.adjustFromMeasure(measure);
         measures.add(measure);
     }
 
     public void removeLastMeasure() {
         if (measures.isEmpty()) return;
-        measures.removeLast();
+        Measure removed = measures.removeLast();
+        removed.setPrev(null);
+        removed.setParentMode(null);
+
         if (measures.isEmpty()) return;
-        measures.getLast().setBarlineStyle(BarlineStyle.FINAL);
+        Measure last = measures.getLast();
+        last.setNext(null);
+        last.setBarlineStyle(BarlineStyle.FINAL);
     }
 
     public void removeSlur(Slur slur) { slurs.remove(slur); }
@@ -94,22 +105,60 @@ public class ScoreMode {
     public List<Slur> getSlurs() { return slurs; }
 
     public void setScore(Score score) { this.score = score; }
-    public void setTimeSignature(PreDefinedTimeSignature timeSig) {
+    public void setTimeSignature(PreDefinedTimeSignature preDefined) {
+        if (preDefined == null) {
+            setTimeSignature((TimeSignature) null);
+        } else {
+            setTimeSignature(new TimeSignature(preDefined.getBeat(), preDefined.getBeatType(), preDefined.getType(), null));
+        }
+    }
+
+    @JsonIgnore
+    public void setTimeSignature(TimeSignature timeSignature) {
         if (measures.isEmpty()) return;
 
-        measures.forEach(m -> {
-            m.setTimeSignature(new TimeSignature(
-                    timeSig.getBeat(),
-                    timeSig.getBeatType(),
-                    timeSig.getType(),
+        for (Measure m : measures) {
+            m.setTimeSignature(timeSignature != null ? new TimeSignature(
+                    timeSignature.getBeat(),
+                    timeSignature.getBeatType(),
+                    timeSignature.getType(),
                     m
-            ));
-        });
+            ) : null, false);
+        }
+
+        MeasureTimeSignatureAdjuster.adjustFromMeasure(measures.getFirst());
+        validateAndCleanSlurs();
+    }
+
+    private void validateAndCleanSlurs() {
+        if (slurs.isEmpty()) return;
+        slurs.removeIf(slur -> !isNotePresentInMeasures(slur.getStartNote()) || !isNotePresentInMeasures(slur.getEndNote()));
+    }
+
+    private boolean isNotePresentInMeasures(Note note) {
+        if (note == null) return false;
+        for (Measure m : measures) {
+            for (Segment seg : m.getSegments()) {
+                for (List<Element> elements : seg.getStaffElements().values()) {
+                    if (elements.contains(note)) return true;
+                }
+            }
+        }
+        return false;
     }
 
     public void setKeySignature(Integer key) {
         if (measures.isEmpty()) return;
         measures.forEach(m -> m.setKeySignature(new KeySignature(key, m)));
+    }
+
+    public void updateMeasureLinks() {
+        for (int i = 0; i < measures.size(); i++) {
+            Measure curr = measures.get(i);
+            curr.setParentMode(this);
+            curr.setPrev(i > 0 ? measures.get(i - 1) : null);
+            curr.setNext(i < measures.size() - 1 ? measures.get(i + 1) : null);
+        }
     }
 
     private void addDefaultStaves() {
