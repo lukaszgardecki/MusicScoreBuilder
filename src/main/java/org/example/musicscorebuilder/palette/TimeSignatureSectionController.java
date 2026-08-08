@@ -13,7 +13,6 @@ import org.example.musicscorebuilder.components.music.TimeSignature;
 import org.example.musicscorebuilder.components.views.TimeSigView;
 import org.example.musicscorebuilder.managers.ScoreStateManager;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -37,8 +36,7 @@ public class TimeSignatureSectionController extends AbstractPaletteSectionContro
         Selectable item = stateManager.getSelectedItem();
 
         if (item instanceof TimeSigLayout) {
-            new ArrayList<>(scoreService.getScore().getModes())
-                    .forEach(mode -> mode.setTimeSignature(sig));
+            ScoreStateManager.getInstance().getCurrentMode().setTimeSignature(sig);
             ScoreStateManager.getInstance().notifyScoreChanged();
             return true;
         }

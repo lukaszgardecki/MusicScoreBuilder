@@ -32,7 +32,8 @@ public class ScoreStateManager {
         notifyScoreChanged();
     }
 
-    public ScoreMode getCurrentMode(Score score) {
+    public ScoreMode getCurrentMode() {
+        Score score = ScoreService.getInstance().getScore();
         if (score == null || score.getModes().isEmpty()) return null;
         if (currentModeIndex < 0 || currentModeIndex >= score.getModes().size()) {
             return score.getModes().getFirst();
@@ -360,8 +361,7 @@ public class ScoreStateManager {
     }
 
     public void toggleSlurForSelectedNote() {
-        Score score = ScoreService.getInstance().getScore();
-        ScoreMode mode = getCurrentMode(score);
+        ScoreMode mode = getCurrentMode();
         if (mode == null) return;
 
         List<NoteLayout> selectedNotes = selectedItems.stream()
@@ -452,8 +452,7 @@ public class ScoreStateManager {
     public boolean isNoteInSlur(Note note) {
         if (note == null) return false;
 
-        Score score = ScoreService.getInstance().getScore();
-        ScoreMode mode = getCurrentMode(score);
+        ScoreMode mode = getCurrentMode();
         if (mode == null) return false;
 
         return mode.getSlurs().stream()
