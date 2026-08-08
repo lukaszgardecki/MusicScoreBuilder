@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Objects;
+
 public class TimeSignature extends Element {
     public enum Type { FRACTIONAL, COMMON, CUT }
 
@@ -52,5 +54,20 @@ public class TimeSignature extends Element {
             return (beat / 3) * (base * 3);
         }
         return beat * base;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TimeSignature that = (TimeSignature) o;
+        return beat == that.beat &&
+                beatType == that.beatType &&
+                type == that.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(beat, beatType, type);
     }
 }

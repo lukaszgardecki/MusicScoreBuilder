@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.example.musicscorebuilder.components.music.util.MeasureTimeSignatureAdjuster;
-import org.example.musicscorebuilder.palette.PreDefinedTimeSignature;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -105,19 +104,16 @@ public class ScoreMode {
     public List<Slur> getSlurs() { return slurs; }
 
     public void setScore(Score score) { this.score = score; }
-    public void setTimeSignature(PreDefinedTimeSignature preDefined) {
-        if (preDefined == null) {
-            setTimeSignature((TimeSignature) null);
-        } else {
-            setTimeSignature(new TimeSignature(preDefined.getBeat(), preDefined.getBeatType(), preDefined.getType(), null));
-        }
-    }
 
     @JsonIgnore
-    public void setTimeSignature(TimeSignature timeSignature) {
-        if (measures.isEmpty()) return;
+    public void setNewTimeSignatureFromMeasure(TimeSignature timeSignature, Measure measure) {
+        if (measure == null) return;
 
-        for (Measure m : measures) {
+        int startIndex = measures.indexOf(measure);
+        if (startIndex == -1) return;
+
+        for (int i = startIndex; i < measures.size(); i++) {
+            Measure m = measures.get(i);
             m.setTimeSignature(timeSignature != null ? new TimeSignature(
                     timeSignature.getBeat(),
                     timeSignature.getBeatType(),
@@ -126,7 +122,7 @@ public class ScoreMode {
             ) : null, false);
         }
 
-        MeasureTimeSignatureAdjuster.adjustFromMeasure(measures.getFirst());
+        MeasureTimeSignatureAdjuster.adjustFromMeasure(measure);
         validateAndCleanSlurs();
     }
 

@@ -101,6 +101,15 @@ public class LayoutEngine {
             measureLayout.add(new StaffLayout(staff, measureLayout, style));
         }
 
+        Measure prevMeasure = measure.getPrev();
+        if (prevMeasure != null && measure.getTimeSignature() != null && prevMeasure.getTimeSignature() != null) {
+            if (!measure.getTimeSignature().equals(prevMeasure.getTimeSignature())) {
+                SegmentLayout tsSegLayout = new SegmentLayout(SegmentType.TIME_SIG, measureLayout);
+                tsSegLayout.addTimeSignature(measure.getTimeSignature());
+                measureLayout.add(tsSegLayout);
+            }
+        }
+
         for (Segment segment : measure.getSegments()) {
             SegmentLayout segmentLayout = new SegmentLayout(segment, measureLayout);
             for (StaffLayout staff : measureLayout.getStaffs()) {

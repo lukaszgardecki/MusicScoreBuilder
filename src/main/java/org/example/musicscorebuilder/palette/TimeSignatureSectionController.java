@@ -8,6 +8,8 @@ import javafx.scene.paint.Color;
 import org.example.musicscorebuilder.components.layout.SegmentLayout;
 import org.example.musicscorebuilder.components.layout.Selectable;
 import org.example.musicscorebuilder.components.layout.TimeSigLayout;
+import org.example.musicscorebuilder.components.music.Measure;
+import org.example.musicscorebuilder.components.music.ScoreMode;
 import org.example.musicscorebuilder.components.music.SegmentType;
 import org.example.musicscorebuilder.components.music.TimeSignature;
 import org.example.musicscorebuilder.components.views.TimeSigView;
@@ -34,9 +36,13 @@ public class TimeSignatureSectionController extends AbstractPaletteSectionContro
     @Override
     protected boolean applyToSelectedElement(PreDefinedTimeSignature sig) {
         Selectable item = stateManager.getSelectedItem();
+        if (item == null || sig == null) return false;
+        Measure measure = item.getSegment().getParent().getMeasure();
 
-        if (item instanceof TimeSigLayout) {
-            ScoreStateManager.getInstance().getCurrentMode().setTimeSignature(sig);
+        if (measure != null) {
+            TimeSignature newTimeSig = new TimeSignature(sig.getBeat(), sig.getBeatType(), sig.getType(), null);
+            ScoreMode currentMode = ScoreStateManager.getInstance().getCurrentMode();
+            currentMode.setNewTimeSignatureFromMeasure(newTimeSig, measure);
             ScoreStateManager.getInstance().notifyScoreChanged();
             return true;
         }
