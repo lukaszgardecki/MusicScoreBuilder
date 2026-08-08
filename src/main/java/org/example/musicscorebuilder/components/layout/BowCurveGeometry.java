@@ -36,12 +36,11 @@ public class BowCurveGeometry {
         if (isSlur) {
             double rawHeight = sp * 0.3 + Math.sqrt(dx / sp) * sp * 0.35;
             this.height = Math.min(rawHeight, dx * 0.32);
-            this.thickness = Math.min(style.getBowMidThickness(), this.height * 0.35);
+            this.thickness = style.getSlurMaxThickness();
         } else {
             this.height = Math.min(style.getBowHeightFactor(), dx * style.getBowMaxDxRatio());
-            this.thickness = Math.min(style.getBowMidThickness(), this.height * 0.55);
+            this.thickness = style.getTieMaxThickness();
         }
-
         this.cp1x = startX + (dx * 0.25);
         this.cp2x = startX + (dx * 0.75);
 

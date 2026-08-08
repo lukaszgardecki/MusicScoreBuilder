@@ -91,6 +91,9 @@ public class ScoreStyle {
     private static final double FRAME_STROKE_DASH_LENGTH                    = 0.4;
     private static final double FRAME_STROKE_SPACE_LENGTH                   = 0.3;
 
+    private static final double TIE_MAX_THICKNESS                           = 0.2;
+    private static final double SLUR_MAX_THICKNESS                          = 0.3;
+
     private double pageSpacing = PAGE_SPACING;
     private double staffSpacing = STAFF_SPACING;
     private double systemSpacing = SYSTEM_SPACING;
@@ -251,6 +254,9 @@ public class ScoreStyle {
     public double getFrameStrokeThickness() { return staffSpacingScale * frameStrokeThickness; }
     public double getFrameStrokeDashLength() { return staffSpacingScale * frameStrokeDashLength; }
     public double getFrameStrokeSpaceLength() { return staffSpacingScale * frameStrokeSpaceLength; }
+
+    public double getTieMaxThickness() { return staffSpacingScale * TIE_MAX_THICKNESS; }
+    public double getSlurMaxThickness() { return staffSpacingScale * SLUR_MAX_THICKNESS; }
 
     public double toSp(double valueInMm) {
         if (spatiumMm <= 0) return 0;
