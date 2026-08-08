@@ -126,6 +126,18 @@ public class ScoreMode {
         validateAndCleanSlurs();
     }
 
+    public void setNewKeySignatureFromMeasure(int key, Measure measure) {
+        if (measure == null) return;
+
+        int startIndex = measures.indexOf(measure);
+        if (startIndex == -1) return;
+
+        for (int i = startIndex; i < measures.size(); i++) {
+            Measure m = measures.get(i);
+            m.setKeySignature(new KeySignature(key, m));
+        }
+    }
+
     private void validateAndCleanSlurs() {
         if (slurs.isEmpty()) return;
         slurs.removeIf(slur -> !isNotePresentInMeasures(slur.getStartNote()) || !isNotePresentInMeasures(slur.getEndNote()));
@@ -141,11 +153,6 @@ public class ScoreMode {
             }
         }
         return false;
-    }
-
-    public void setKeySignature(Integer key) {
-        if (measures.isEmpty()) return;
-        measures.forEach(m -> m.setKeySignature(new KeySignature(key, m)));
     }
 
     public void updateMeasureLinks() {

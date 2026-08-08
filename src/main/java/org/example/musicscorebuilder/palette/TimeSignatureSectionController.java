@@ -9,7 +9,6 @@ import org.example.musicscorebuilder.components.layout.SegmentLayout;
 import org.example.musicscorebuilder.components.layout.Selectable;
 import org.example.musicscorebuilder.components.layout.TimeSigLayout;
 import org.example.musicscorebuilder.components.music.Measure;
-import org.example.musicscorebuilder.components.music.ScoreMode;
 import org.example.musicscorebuilder.components.music.SegmentType;
 import org.example.musicscorebuilder.components.music.TimeSignature;
 import org.example.musicscorebuilder.components.views.TimeSigView;
@@ -41,8 +40,9 @@ public class TimeSignatureSectionController extends AbstractPaletteSectionContro
 
         if (measure != null) {
             TimeSignature newTimeSig = new TimeSignature(sig.getBeat(), sig.getBeatType(), sig.getType(), null);
-            ScoreMode currentMode = ScoreStateManager.getInstance().getCurrentMode();
-            currentMode.setNewTimeSignatureFromMeasure(newTimeSig, measure);
+            ScoreStateManager.getInstance()
+                    .getCurrentMode()
+                    .setNewTimeSignatureFromMeasure(newTimeSig, measure);
             ScoreStateManager.getInstance().notifyScoreChanged();
             return true;
         }

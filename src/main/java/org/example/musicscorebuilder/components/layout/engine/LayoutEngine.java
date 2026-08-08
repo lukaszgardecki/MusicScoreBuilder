@@ -102,11 +102,18 @@ public class LayoutEngine {
         }
 
         Measure prevMeasure = measure.getPrev();
+        if (prevMeasure != null && measure.getKeySignature() != null && prevMeasure.getKeySignature() != null) {
+            if (!measure.getKeySignature().equals(prevMeasure.getKeySignature())) {
+                SegmentLayout segment = new SegmentLayout(SegmentType.KEY_SIG, measureLayout);
+                segment.addKeySignature(measure.getKeySignature());
+                measureLayout.add(segment);
+            }
+        }
         if (prevMeasure != null && measure.getTimeSignature() != null && prevMeasure.getTimeSignature() != null) {
             if (!measure.getTimeSignature().equals(prevMeasure.getTimeSignature())) {
-                SegmentLayout tsSegLayout = new SegmentLayout(SegmentType.TIME_SIG, measureLayout);
-                tsSegLayout.addTimeSignature(measure.getTimeSignature());
-                measureLayout.add(tsSegLayout);
+                SegmentLayout segment = new SegmentLayout(SegmentType.TIME_SIG, measureLayout);
+                segment.addTimeSignature(measure.getTimeSignature());
+                measureLayout.add(segment);
             }
         }
 

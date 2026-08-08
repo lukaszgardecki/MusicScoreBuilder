@@ -2,6 +2,8 @@ package org.example.musicscorebuilder.components.music;
 
 import com.fasterxml.jackson.annotation.*;
 
+import java.util.Objects;
+
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonIdentityInfo(generator = ObjectIdGenerators.None.class)
 public class KeySignature extends Element {
@@ -27,5 +29,18 @@ public class KeySignature extends Element {
 
     public int getAlterForStep(PitchStep step) {
         return type == null ? 0 : type.getAlterForStep(step);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        KeySignature that = (KeySignature) o;
+        return fifths == that.fifths;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(fifths);
     }
 }

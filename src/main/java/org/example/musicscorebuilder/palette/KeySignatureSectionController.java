@@ -9,8 +9,10 @@ import org.example.musicscorebuilder.components.layout.KeySigLayout;
 import org.example.musicscorebuilder.components.layout.SegmentLayout;
 import org.example.musicscorebuilder.components.layout.Selectable;
 import org.example.musicscorebuilder.components.music.KeySignature;
+import org.example.musicscorebuilder.components.music.Measure;
 import org.example.musicscorebuilder.components.music.SegmentType;
 import org.example.musicscorebuilder.components.views.KeySigView;
+import org.example.musicscorebuilder.managers.ScoreStateManager;
 
 import java.util.List;
 
@@ -32,8 +34,14 @@ public class KeySignatureSectionController extends AbstractPaletteSectionControl
     @Override
     protected boolean applyToSelectedElement(Integer key) {
         Selectable item = stateManager.getSelectedItem();
-        if (item instanceof KeySigLayout) {
-            scoreService.getScore().getModes().forEach(mode -> mode.setKeySignature(key));
+        if (item == null) return false;
+        Measure measure = item.getSegment().getParent().getMeasure();
+
+        if (measure != null) {
+            ScoreStateManager.getInstance()
+                    .getCurrentMode()
+                    .setNewKeySignatureFromMeasure(key, measure);
+            ScoreStateManager.getInstance().notifyScoreChanged();
             return true;
         }
         return false;
