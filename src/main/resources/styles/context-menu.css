@@ -1,0 +1,45 @@
+.score-context-menu {
+    -fx-background-color: #f2f2f2;
+    -fx-border-color: #cccccc;
+    -fx-border-width: 1px;
+    -fx-padding: 4px 0px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 4);
+}
+
+.score-context-menu .menu-item {
+    -fx-padding: 6px 12px;
+}
+
+.score-context-menu .menu-item > .label {
+    -fx-text-fill: #1a1a1a;
+    -fx-font-size: 13px;
+    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+    -fx-max-width: infinity;
+}
+
+.score-context-menu .menu-item > .accelerator-text {
+    -fx-text-fill: #595959;
+    -fx-font-size: 12px;
+    -fx-alignment: center-right;
+    -fx-max-width: infinity;
+}
+
+.score-context-menu .menu-item > .right-container {
+    -fx-alignment: center-right;
+    -fx-max-width: infinity;
+}
+
+.score-context-menu .menu-item:hover,
+.score-context-menu .menu-item:focused {
+    -fx-background-color: #b3d2f0;
+}
+
+.score-context-menu .menu-item:hover .svg-path,
+.score-context-menu .menu-item:focused .svg-path {
+    -fx-fill: #005fb8;
+}
+
+.score-context-menu .separator *.line {
+    -fx-border-color: #e0e0e0;
+    -fx-border-width: 1px 0px 0px 0px;
+}

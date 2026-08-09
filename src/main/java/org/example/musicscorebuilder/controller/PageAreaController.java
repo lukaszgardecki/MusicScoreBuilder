@@ -3,6 +3,7 @@ package org.example.musicscorebuilder.controller;
 import javafx.fxml.FXML;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import org.example.musicscorebuilder.NoteDragHandler;
 import org.example.musicscorebuilder.ScoreService;
@@ -29,6 +30,9 @@ public class PageAreaController {
     @FXML private ScrollPane scrollPane;
     @FXML private BackgroundView container;
     @FXML private ToggleButton viewModeToggle;
+
+    private ContextMenuController contextMenuController;
+
     private LayoutEngine layoutEngine;
     private ScoreLayout currentScoreLayout;
     private final ScoreService scoreService = ScoreService.getInstance();
@@ -44,6 +48,7 @@ public class PageAreaController {
         initClickHandling();
         initListeners();
         initViewModeToggle();
+        this.contextMenuController = ContextMenuController.create();
         this.layoutEngine = new LayoutEngine();
         MidiInputService.getInstance().startListening();
 
@@ -89,6 +94,11 @@ public class PageAreaController {
     }
 
     private void initClickHandling() {
+        container.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
+            if (contextMenuController != null && contextMenuController.isShowing()) {
+                contextMenuController.hide();
+            }
+        });
         container.setOnMouseClicked(this::handleCanvasClick);
     }
 
@@ -157,6 +167,11 @@ public class PageAreaController {
                 container.toModelY(event.getY())
         );
 
+        if (event.getButton() == MouseButton.SECONDARY && clickedElement != null) {
+            handleRightClick(event, clickedElement);
+            return;
+        }
+
         boolean isAdditive = event.isShortcutDown() || event.isControlDown() || event.isMetaDown();
         stateManager.setSelected(clickedElement, isAdditive);
 
@@ -164,5 +179,18 @@ public class PageAreaController {
             PianoPlayer.getInstance().playNote(note.getNote().getPitch());
         }
         redraw();
+    }
+
+    private void handleRightClick(MouseEvent event, Selectable clickedElement) {
+        if (contextMenuController == null) return;
+
+        if (clickedElement != null) {
+            stateManager.setSelected(clickedElement, false);
+            redraw();
+        }
+        if (contextMenuController != null) {
+            contextMenuController.setContext(clickedElement);
+            contextMenuController.show(container, event.getScreenX(), event.getScreenY());
+        }
     }
 }
