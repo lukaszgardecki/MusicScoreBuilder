@@ -23,62 +23,91 @@ public class LayoutEngine {
     }
 
     public ScoreLayout compute(ScoreMode scoreMode) {
-        boolean hasDirtyMeasures = scoreMode.getMeasures().stream().anyMatch(Measure::isDirty);
-        if (hasDirtyMeasures) clearCache();
+        invalidateCacheIfNeeded(scoreMode);
 
         ScoreLayout scoreLayout = new ScoreLayout(scoreMode.getScore(), style);
         PageLayout currentPage = createPageLayout(scoreLayout);
         scoreLayout.addPageLayout(currentPage);
-
-        SystemLayout newSystem = addNewSystemToPage(currentPage, scoreMode);
+        SystemLayout currentSystem = addNewSystemToPage(currentPage, scoreMode);
 
         for (Measure measure : scoreMode.getMeasures()) {
-            MeasureLayout measureLayout;
-            if (measureCache.containsKey(measure) && !measure.isDirty()) {
-                measureLayout = measureCache.get(measure);
-                measureLayout.remove1stMeasureAttributes();
-                measureLayout.resetLayoutState();
-                measureLayout.setParent(newSystem);
-            } else {
-                measureLayout = createMeasureLayout(measure, newSystem);
-                measureCache.put(measure, measureLayout);
-                measure.setDirty(false);
+            MeasureLayout measureLayout = getOrCreateMeasureLayout(measure, currentSystem);
+
+            double courtesyPadding = calculateCourtesyPadding(measure, measureLayout);
+            boolean needsNewSystem = !canFitMeasureInSystem(currentPage, currentSystem, measureLayout, courtesyPadding);
+
+            if (needsNewSystem) {
+                addCourtesyAttributesToLastMeasure(currentSystem, measure);
+                currentSystem = finalizeSystemAndCreateNext(currentSystem, scoreLayout, scoreMode, measureLayout);
+                currentPage = currentSystem.getPageLayout();
             }
 
-            boolean noSpaceForNextMeasure = currentPage.getEffectiveWidth() - newSystem.getWidth() < measureLayout.getWidth();
-            boolean noSpaceForNextSystem = currentPage.getRemainingHeight() < newSystem.getHeight() + style.getSystemSpacing();
-
-            if (noSpaceForNextMeasure) {
-                systemJustifier.justify(newSystem);
-
-                if (noSpaceForNextSystem) {
-                    currentPage = createPageLayout(scoreLayout);
-                    scoreLayout.addPageLayout(currentPage);
-                }
-                newSystem = addNewSystemToPage(currentPage, scoreMode);
-                measureLayout.setX(newSystem.getWidth());
-                measureLayout.setParent(newSystem);
-            }
-
-            if (newSystem.getMeasures().isEmpty()) {
+            if (currentSystem.getMeasures().isEmpty()) {
                 add1stMeasureAttributes(scoreMode, measureLayout, scoreLayout);
             }
 
-            double startX = newSystem.getMeasures().isEmpty() ? newSystem.getBraceWidth() : newSystem.getWidth();
+            double startX = currentSystem.getMeasures().isEmpty() ? currentSystem.getBraceWidth() : currentSystem.getWidth();
             measureLayout.setX(startX);
-            newSystem.add(measureLayout);
+            currentSystem.add(measureLayout);
         }
 
-        systemJustifier.justify(newSystem);
+        systemJustifier.justify(currentSystem);
 
-        linkAllSegments(scoreLayout);
-        buildTies(scoreLayout);
-        buildSlurs(scoreMode, scoreLayout);
+        postProcessLayout(scoreMode, scoreLayout);
         return scoreLayout;
     }
 
-    private void clearCache() {
-        measureCache.clear();
+    // ========================================================================
+    // CACHE & SETUP
+    // ========================================================================
+
+    private void invalidateCacheIfNeeded(ScoreMode scoreMode) {
+        if (scoreMode.getMeasures().stream().anyMatch(Measure::isDirty)) {
+            measureCache.clear();
+        }
+    }
+
+    private MeasureLayout getOrCreateMeasureLayout(Measure measure, SystemLayout currentSystem) {
+        if (measureCache.containsKey(measure) && !measure.isDirty()) {
+            MeasureLayout measureLayout = measureCache.get(measure);
+            measureLayout.remove1stMeasureAttributes();
+            measureLayout.resetLayoutState();
+            measureLayout.setParent(currentSystem);
+            return measureLayout;
+        }
+
+        MeasureLayout measureLayout = createMeasureLayout(measure, currentSystem);
+        measureCache.put(measure, measureLayout);
+        measure.setDirty(false);
+        return measureLayout;
+    }
+
+    // ========================================================================
+    // PAGINATION & SYSTEM BREAKS
+    // ========================================================================
+
+    private boolean canFitMeasureInSystem(PageLayout page, SystemLayout system, MeasureLayout measureLayout, double courtesyPadding) {
+        double requiredSpace = measureLayout.getWidth() + courtesyPadding;
+        double availableSpace = page.getEffectiveWidth() - system.getWidth();
+        return availableSpace >= requiredSpace;
+    }
+
+    private SystemLayout finalizeSystemAndCreateNext(SystemLayout currentSystem, ScoreLayout scoreLayout, ScoreMode scoreMode, MeasureLayout nextMeasureLayout) {
+        systemJustifier.justify(currentSystem);
+
+        PageLayout currentPage = currentSystem.getPageLayout();
+        boolean noSpaceForNextSystem = currentPage.getRemainingHeight() < currentSystem.getHeight() + style.getSystemSpacing();
+
+        if (noSpaceForNextSystem) {
+            currentPage = createPageLayout(scoreLayout);
+            scoreLayout.addPageLayout(currentPage);
+        }
+
+        SystemLayout newSystem = addNewSystemToPage(currentPage, scoreMode);
+        nextMeasureLayout.setX(newSystem.getWidth());
+        nextMeasureLayout.setParent(newSystem);
+
+        return newSystem;
     }
 
     private SystemLayout addNewSystemToPage(PageLayout pageLayout, ScoreMode scoreMode) {
@@ -89,34 +118,97 @@ public class LayoutEngine {
     }
 
     private PageLayout createPageLayout(ScoreLayout scoreLayout) {
-        int pageIndex = scoreLayout.getPages().size();
-        return new PageLayout(scoreLayout, pageIndex);
+        return new PageLayout(scoreLayout, scoreLayout.getPages().size());
     }
+
+    // ========================================================================
+    // ATTRIBUTES & COURTESY
+    // ========================================================================
+
+    private double calculateCourtesyPadding(Measure measure, MeasureLayout measureLayout) {
+        Measure nextMeasure = measure.getNext();
+        if (nextMeasure == null) return 0.0;
+
+        double padding = 0.0;
+
+        if (measure.getTimeSignature() != null && nextMeasure.getTimeSignature() != null
+                && !measure.getTimeSignature().equals(nextMeasure.getTimeSignature())) {
+            SegmentLayout tempCourtesy = new SegmentLayout(SegmentType.TIME_SIG, measureLayout);
+            tempCourtesy.addTimeSignature(nextMeasure.getTimeSignature());
+            padding += tempCourtesy.getWidth();
+        }
+
+        return padding;
+    }
+
+    private void addCourtesyAttributesToLastMeasure(SystemLayout system, Measure nextMeasure) {
+        if (system.getMeasures().isEmpty()) return;
+
+        MeasureLayout lastMeasureLayout = system.getMeasures().getLast();
+        Measure prevMeasure = lastMeasureLayout.getMeasure();
+
+        if (nextMeasure.getTimeSignature() != null && prevMeasure.getTimeSignature() != null
+                && !nextMeasure.getTimeSignature().equals(prevMeasure.getTimeSignature())) {
+            SegmentLayout courtesySegment = new SegmentLayout(SegmentType.TIME_SIG, lastMeasureLayout);
+            courtesySegment.addTimeSignature(nextMeasure.getTimeSignature());
+            courtesySegment.setSystemGenerated(true);
+            lastMeasureLayout.add(courtesySegment);
+        }
+    }
+
+    private void add1stMeasureAttributes(ScoreMode scoreMode, MeasureLayout measureLayout, ScoreLayout scoreLayout) {
+        var isFirstMeasure = scoreLayout.getPages().size() == 1 && scoreLayout.getPages().get(0).getSystems().size() == 1;
+
+        if (isFirstMeasure) {
+            measureLayout.addSystemTimeSignature(measureLayout.getMeasure().getTimeSignature());
+        }
+        measureLayout.addSystemKeySignature(measureLayout.getMeasure().getKeySignature());
+        measureLayout.addSystemClef();
+        if (scoreMode.getStartBarline() != null) {
+            measureLayout.addSystemStartBarline(scoreMode.getStartBarline());
+        }
+    }
+
+    // ========================================================================
+    // MEASURE BUILDING
+    // ========================================================================
 
     private MeasureLayout createMeasureLayout(Measure measure, SystemLayout systemLayout) {
         MeasureLayout measureLayout = new MeasureLayout(measure, systemLayout, style);
-        GroupBeamBuilder groupBeamBuilder = new GroupBeamBuilder();
 
         for (Staff staff : measure.getStaves()) {
             measureLayout.add(new StaffLayout(staff, measureLayout, style));
         }
 
+        addPermanentAttributesIfNeeded(measure, measureLayout);
+        GroupBeamBuilder groupBeamBuilder = populateMeasureSegments(measure, measureLayout);
+        addEndBarline(measure, measureLayout);
+
+        measureLayout.setBeamGroups(groupBeamBuilder.build());
+        return measureLayout;
+    }
+
+    private void addPermanentAttributesIfNeeded(Measure measure, MeasureLayout measureLayout) {
         Measure prevMeasure = measure.getPrev();
-        if (prevMeasure != null && measure.getKeySignature() != null && prevMeasure.getKeySignature() != null) {
-            if (!measure.getKeySignature().equals(prevMeasure.getKeySignature())) {
-                SegmentLayout segment = new SegmentLayout(SegmentType.KEY_SIG, measureLayout);
-                segment.addKeySignature(measure.getKeySignature());
-                measureLayout.add(segment);
-            }
-        }
-        if (prevMeasure != null && measure.getTimeSignature() != null && prevMeasure.getTimeSignature() != null) {
-            if (!measure.getTimeSignature().equals(prevMeasure.getTimeSignature())) {
-                SegmentLayout segment = new SegmentLayout(SegmentType.TIME_SIG, measureLayout);
-                segment.addTimeSignature(measure.getTimeSignature());
-                measureLayout.add(segment);
-            }
+        if (prevMeasure == null) return;
+
+        if (measure.getKeySignature() != null && prevMeasure.getKeySignature() != null
+                && !measure.getKeySignature().equals(prevMeasure.getKeySignature())) {
+            SegmentLayout segment = new SegmentLayout(SegmentType.KEY_SIG, measureLayout);
+            segment.addKeySignature(measure.getKeySignature());
+            measureLayout.add(segment);
         }
 
+        if (measure.getTimeSignature() != null && prevMeasure.getTimeSignature() != null
+                && !measure.getTimeSignature().equals(prevMeasure.getTimeSignature())) {
+            SegmentLayout segment = new SegmentLayout(SegmentType.TIME_SIG, measureLayout);
+            segment.addTimeSignature(measure.getTimeSignature());
+            measureLayout.add(segment);
+        }
+    }
+
+    private GroupBeamBuilder populateMeasureSegments(Measure measure, MeasureLayout measureLayout) {
+        GroupBeamBuilder groupBeamBuilder = new GroupBeamBuilder();
         for (Segment segment : measure.getSegments()) {
             SegmentLayout segmentLayout = new SegmentLayout(segment, measureLayout);
             for (StaffLayout staff : measureLayout.getStaffs()) {
@@ -135,7 +227,10 @@ public class LayoutEngine {
             }
             measureLayout.add(segmentLayout);
         }
+        return groupBeamBuilder;
+    }
 
+    private void addEndBarline(Measure measure, MeasureLayout measureLayout) {
         Segment endBarlineSegment = new Segment(SegmentType.BARLINE, measure);
         SegmentLayout endBarlineSegLayout = new SegmentLayout(endBarlineSegment, measureLayout);
         for (StaffLayout staffLayout : measureLayout.getStaffs()) {
@@ -143,26 +238,20 @@ public class LayoutEngine {
             endBarlineSegLayout.addByStaff(staffLayout, new BarlineLayout(measure.getRightBarline(), staffLayout, endBarlineSegLayout));
         }
         measureLayout.add(endBarlineSegLayout);
-
-        measureLayout.setBeamGroups(groupBeamBuilder.build());
-        return measureLayout;
     }
 
-    private void add1stMeasureAttributes(ScoreMode scoreMode, MeasureLayout measureLayout, ScoreLayout scoreLayout) {
-        var isFirstMeasure = scoreLayout.getPages().size() == 1 && scoreLayout.getPages().get(0).getSystems().size() == 1;
+    // ========================================================================
+    // POST-PROCESSING (Slurs, Ties, Segments)
+    // ========================================================================
 
-        if (isFirstMeasure) {
-            measureLayout.addSystemTimeSignature(measureLayout.getMeasure().getTimeSignature());
-        }
-        measureLayout.addSystemKeySignature(measureLayout.getMeasure().getKeySignature());
-        measureLayout.addSystemClef();
-        if (scoreMode.getStartBarline() == null) return;
-        measureLayout.addSystemStartBarline(scoreMode.getStartBarline());
+    private void postProcessLayout(ScoreMode scoreMode, ScoreLayout scoreLayout) {
+        linkAllSegments(scoreLayout);
+        buildTies(scoreLayout);
+        buildSlurs(scoreMode, scoreLayout);
     }
 
     private void linkAllSegments(ScoreLayout scoreLayout) {
         java.util.List<SegmentLayout> allSegments = new java.util.ArrayList<>();
-
         for (PageLayout page : scoreLayout.getPages()) {
             for (SystemLayout system : page.getSystems()) {
                 for (MeasureLayout measure : system.getMeasures()) {
@@ -170,7 +259,6 @@ public class LayoutEngine {
                 }
             }
         }
-
         for (int i = 0; i < allSegments.size(); i++) {
             SegmentLayout current = allSegments.get(i);
             current.setPrev(i > 0 ? allSegments.get(i - 1) : null);
@@ -222,7 +310,6 @@ public class LayoutEngine {
             if (startSystem == endSystem) {
                 startSystem.addSlur(new SlurLayout(startSystem, startLayout, endLayout));
             } else {
-                // Łuk przełamany między systemami
                 startSystem.addSlur(new SlurLayout(startSystem, startLayout, null));
                 endSystem.addSlur(new SlurLayout(endSystem, null, endLayout));
             }
@@ -247,7 +334,6 @@ public class LayoutEngine {
                 for (MeasureLayout measure : system.getMeasures()) {
                     for (SegmentLayout segment : measure.getSegments()) {
                         for (ElementLayout element : segment.getElements()) {
-
                             if (element instanceof NoteLayout startNote && isStartPredicate.test(startNote.getNote())) {
                                 NoteLayout endNote = endFinder.apply(startNote);
                                 if (endNote == null) continue;
@@ -258,12 +344,10 @@ public class LayoutEngine {
                                 if (startSystem == endSystem) {
                                     addSpannerToSystem.accept(startSystem, startNote, endNote);
                                 } else {
-                                    // Łącznik przecięty zmianą systemu/linii
                                     addSpannerToSystem.accept(startSystem, startNote, null);
                                     addSpannerToSystem.accept(endSystem, null, endNote);
                                 }
                             }
-
                         }
                     }
                 }
@@ -280,7 +364,7 @@ public class LayoutEngine {
             for (ElementLayout el : current.getElements()) {
                 if (el.getStaff() != null && el.getStaff().getStaffIndex() == staffIndex && el.getVoice() == voice) {
                     if (el instanceof NoteLayout note) return note;
-                    if (el instanceof RestLayout) return null; // Pauza przerywa łuk
+                    if (el instanceof RestLayout) return null;
                 }
             }
             current = current.getNext();
