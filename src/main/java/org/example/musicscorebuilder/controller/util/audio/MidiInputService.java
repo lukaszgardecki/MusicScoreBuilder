@@ -1,4 +1,4 @@
-package org.example.musicscorebuilder.controller;
+package org.example.musicscorebuilder.controller.util.audio;
 
 import javafx.application.Platform;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;

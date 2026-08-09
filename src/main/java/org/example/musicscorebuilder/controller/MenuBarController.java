@@ -10,6 +10,7 @@ import javafx.stage.Window;
 import org.example.musicscorebuilder.ScoreService;
 import org.example.musicscorebuilder.components.dialog.CustomConfirmationDialog;
 import org.example.musicscorebuilder.components.music.Score;
+import org.example.musicscorebuilder.controller.util.audio.PianoPlayer;
 import org.example.musicscorebuilder.data.ScoreStorageService;
 
 import java.io.File;
@@ -118,13 +119,9 @@ public class MenuBarController {
                 .setContent("Twoje zmiany zostaną utracone, jeśli ich nie zapiszesz.")
                 .setConfirmButton("Zapisz", () -> {
                     handleSave(event);
-                    Platform.exit();
-                    System.exit(0);
+                    closeApp();
                 })
-                .setDenyButton("Nie zapisuj", () -> {
-                    Platform.exit();
-                    System.exit(0);
-                })
+                .setDenyButton("Nie zapisuj", this::closeApp)
                 .setCancelButton("Anuluj", null)
                 .showAndWait();
     }
@@ -145,5 +142,11 @@ public class MenuBarController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private void closeApp() {
+        PianoPlayer.getInstance().close();
+        Platform.exit();
+        System.exit(0);
     }
 }

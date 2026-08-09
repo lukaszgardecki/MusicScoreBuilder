@@ -1,6 +1,7 @@
 package org.example.musicscorebuilder.components.music.util;
 
 import org.example.musicscorebuilder.components.music.*;
+import org.example.musicscorebuilder.controller.util.audio.PianoPlayer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,7 @@ public class MeasureNoteInserter {
         if (startTick < 0) return null;
 
         int endTick = startTick + newTicks;
+        PianoPlayer.getInstance().playNote(newNote.getPitch());
 
         removeCollisions(measure, staffId, voice, startTick, endTick);
 

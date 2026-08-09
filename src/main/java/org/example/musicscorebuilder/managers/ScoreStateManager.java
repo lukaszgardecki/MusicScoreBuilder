@@ -5,6 +5,7 @@ import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.music.*;
 import org.example.musicscorebuilder.components.music.util.PitchTransposer;
 import org.example.musicscorebuilder.components.music.util.TiedNoteService;
+import org.example.musicscorebuilder.controller.util.audio.PianoPlayer;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -415,11 +416,17 @@ public class ScoreStateManager {
     }
 
     public void transposeSelectedNoteUp() {
-        transposeSelectedNote(PitchTransposer::transposeUp);
+        transposeSelectedNote(pitch -> {
+            PitchTransposer.transposeUp(pitch);
+            PianoPlayer.getInstance().playNote(pitch);
+        });
     }
 
     public void transposeSelectedNoteDown() {
-        transposeSelectedNote(PitchTransposer::transposeDown);
+        transposeSelectedNote(pitch -> {
+            PitchTransposer.transposeDown(pitch);
+            PianoPlayer.getInstance().playNote(pitch);
+        });
     }
 
     private void transposeSelectedNote(Consumer<Pitch> transposeAction) {

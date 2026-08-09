@@ -1,10 +1,8 @@
 package org.example.musicscorebuilder.managers;
 
-import org.example.musicscorebuilder.components.layout.ElementLayout;
-import org.example.musicscorebuilder.components.layout.SegmentLayout;
-import org.example.musicscorebuilder.components.layout.Selectable;
-import org.example.musicscorebuilder.components.layout.StaffLayout;
+import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.layout.edit.CursorLayout;
+import org.example.musicscorebuilder.controller.util.audio.PianoPlayer;
 
 import java.util.List;
 
@@ -128,6 +126,9 @@ public class ScoreNavigator {
         ElementLayout targetElement = findAdjacentElement(startSeg, currentStaff, currentVoice, forward);
         if (targetElement instanceof Selectable selectableTarget) {
             scoreStateManager.setSelected(selectableTarget);
+            if (selectableTarget instanceof NoteLayout note) {
+                PianoPlayer.getInstance().playNote(note.getNote().getPitch());
+            }
         }
     }
 

@@ -36,4 +36,6 @@ module org.example.musicscorebuilder {
     opens org.example.musicscorebuilder.components.layout.engine to javafx.fxml;
     exports org.example.musicscorebuilder.components.layout.edit;
     opens org.example.musicscorebuilder.components.layout.edit to javafx.fxml;
+    exports org.example.musicscorebuilder.controller.util.audio;
+    opens org.example.musicscorebuilder.controller.util.audio to javafx.fxml;
 }

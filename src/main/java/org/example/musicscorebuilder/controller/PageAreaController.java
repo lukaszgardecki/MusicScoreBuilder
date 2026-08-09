@@ -7,6 +7,7 @@ import javafx.scene.input.MouseEvent;
 import org.example.musicscorebuilder.NoteDragHandler;
 import org.example.musicscorebuilder.ScoreService;
 import org.example.musicscorebuilder.ShortcutHandler;
+import org.example.musicscorebuilder.components.layout.NoteLayout;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
 import org.example.musicscorebuilder.components.layout.Selectable;
 import org.example.musicscorebuilder.components.layout.edit.CursorLayout;
@@ -14,6 +15,8 @@ import org.example.musicscorebuilder.components.layout.engine.LayoutEngine;
 import org.example.musicscorebuilder.components.music.Score;
 import org.example.musicscorebuilder.components.music.ScoreMode;
 import org.example.musicscorebuilder.components.views.BackgroundView;
+import org.example.musicscorebuilder.controller.util.audio.MidiInputService;
+import org.example.musicscorebuilder.controller.util.audio.PianoPlayer;
 import org.example.musicscorebuilder.managers.LayoutHitTester;
 import org.example.musicscorebuilder.managers.ModeManager;
 import org.example.musicscorebuilder.managers.ScoreNavigator;
@@ -156,6 +159,10 @@ public class PageAreaController {
 
         boolean isAdditive = event.isShortcutDown() || event.isControlDown() || event.isMetaDown();
         stateManager.setSelected(clickedElement, isAdditive);
+
+        if (clickedElement instanceof NoteLayout note) {
+            PianoPlayer.getInstance().playNote(note.getNote().getPitch());
+        }
         redraw();
     }
 }
