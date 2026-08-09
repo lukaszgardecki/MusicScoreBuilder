@@ -71,6 +71,12 @@ public class LayoutEngine {
         if (measureCache.containsKey(measure) && !measure.isDirty()) {
             MeasureLayout measureLayout = measureCache.get(measure);
             measureLayout.remove1stMeasureAttributes();
+
+            var segments = measureLayout.getSegments();
+            if (!segments.isEmpty() && segments.getLast().getSegment().getType() != SegmentType.BARLINE) {
+                addEndBarline(measure, measureLayout);
+            }
+
             measureLayout.resetLayoutState();
             measureLayout.setParent(currentSystem);
             return measureLayout;
@@ -131,17 +137,35 @@ public class LayoutEngine {
 
         double padding = 0.0;
 
-        if (measure.getTimeSignature() != null && nextMeasure.getTimeSignature() != null
-                && !measure.getTimeSignature().equals(nextMeasure.getTimeSignature())) {
-            SegmentLayout tempCourtesy = new SegmentLayout(SegmentType.TIME_SIG, measureLayout);
-            tempCourtesy.addTimeSignature(nextMeasure.getTimeSignature());
+        boolean keyChange = measure.getKeySignature() != null && nextMeasure.getKeySignature() != null
+                && !measure.getKeySignature().equals(nextMeasure.getKeySignature());
+        boolean timeChange = measure.getTimeSignature() != null && nextMeasure.getTimeSignature() != null
+                && !measure.getTimeSignature().equals(nextMeasure.getTimeSignature());
+
+        if (keyChange || timeChange) {
+            Barline rightBarline = measure.getRightBarline();
+            if (rightBarline != null && rightBarline.getStyle() == BarlineStyle.SINGLE) {
+                SegmentLayout currentBarlineSeg = measureLayout.getSegments().getLast();
+
+                Barline doubleBarline = new Barline(BarlineStyle.DOUBLE_LIGHT, measure);
+                SegmentLayout tempDoubleBarlineSeg = new SegmentLayout(new Segment(SegmentType.BARLINE, measure), measureLayout);
+                for (StaffLayout staff : measureLayout.getStaffs()) {
+                    tempDoubleBarlineSeg.addByStaff(staff, new BarlineLayout(doubleBarline, staff, tempDoubleBarlineSeg));
+                }
+
+                padding += (tempDoubleBarlineSeg.getWidth() - currentBarlineSeg.getWidth());
+            }
+        }
+
+        if (keyChange) {
+            SegmentLayout tempCourtesy = new SegmentLayout(SegmentType.KEY_SIG, measureLayout);
+            tempCourtesy.addKeySignature(nextMeasure.getKeySignature());
             padding += tempCourtesy.getWidth();
         }
 
-        if (measure.getKeySignature() != null && nextMeasure.getKeySignature() != null
-                && !measure.getKeySignature().equals(nextMeasure.getKeySignature())) {
-            SegmentLayout tempCourtesy = new SegmentLayout(SegmentType.KEY_SIG, measureLayout);
-            tempCourtesy.addKeySignature(nextMeasure.getKeySignature());
+        if (timeChange) {
+            SegmentLayout tempCourtesy = new SegmentLayout(SegmentType.TIME_SIG, measureLayout);
+            tempCourtesy.addTimeSignature(nextMeasure.getTimeSignature());
             padding += tempCourtesy.getWidth();
         }
 
@@ -154,16 +178,37 @@ public class LayoutEngine {
         MeasureLayout lastMeasureLayout = system.getMeasures().getLast();
         Measure prevMeasure = lastMeasureLayout.getMeasure();
 
-        if (nextMeasure.getKeySignature() != null && prevMeasure.getKeySignature() != null
-                && !nextMeasure.getKeySignature().equals(prevMeasure.getKeySignature())) {
+        boolean keyChange = nextMeasure.getKeySignature() != null && prevMeasure.getKeySignature() != null
+                && !nextMeasure.getKeySignature().equals(prevMeasure.getKeySignature());
+        boolean timeChange = nextMeasure.getTimeSignature() != null && prevMeasure.getTimeSignature() != null
+                && !nextMeasure.getTimeSignature().equals(prevMeasure.getTimeSignature());
+
+        if (keyChange || timeChange) {
+            Barline rightBarline = prevMeasure.getRightBarline();
+            if (rightBarline != null && rightBarline.getStyle() == BarlineStyle.SINGLE) {
+                lastMeasureLayout.getSegments().removeLast();
+
+                Segment doubleBarlineSegment = new Segment(SegmentType.BARLINE, prevMeasure);
+                SegmentLayout doubleBarlineSegLayout = new SegmentLayout(doubleBarlineSegment, lastMeasureLayout);
+                doubleBarlineSegLayout.setSystemGenerated(true);
+
+                Barline doubleBarline = new Barline(BarlineStyle.DOUBLE_LIGHT, prevMeasure);
+                for (StaffLayout staff : lastMeasureLayout.getStaffs()) {
+                    doubleBarlineSegLayout.addByStaff(staff, new BarlineLayout(doubleBarline, staff, doubleBarlineSegLayout));
+                }
+
+                lastMeasureLayout.add(doubleBarlineSegLayout);
+            }
+        }
+
+        if (keyChange) {
             SegmentLayout courtesyKeySig = new SegmentLayout(SegmentType.KEY_SIG, lastMeasureLayout);
             courtesyKeySig.addKeySignature(nextMeasure.getKeySignature());
             courtesyKeySig.setSystemGenerated(true);
             lastMeasureLayout.add(courtesyKeySig);
         }
 
-        if (nextMeasure.getTimeSignature() != null && prevMeasure.getTimeSignature() != null
-                && !nextMeasure.getTimeSignature().equals(prevMeasure.getTimeSignature())) {
+        if (timeChange) {
             SegmentLayout courtesyTimeSig = new SegmentLayout(SegmentType.TIME_SIG, lastMeasureLayout);
             courtesyTimeSig.addTimeSignature(nextMeasure.getTimeSignature());
             courtesyTimeSig.setSystemGenerated(true);
