@@ -138,6 +138,13 @@ public class LayoutEngine {
             padding += tempCourtesy.getWidth();
         }
 
+        if (measure.getKeySignature() != null && nextMeasure.getKeySignature() != null
+                && !measure.getKeySignature().equals(nextMeasure.getKeySignature())) {
+            SegmentLayout tempCourtesy = new SegmentLayout(SegmentType.KEY_SIG, measureLayout);
+            tempCourtesy.addKeySignature(nextMeasure.getKeySignature());
+            padding += tempCourtesy.getWidth();
+        }
+
         return padding;
     }
 
@@ -147,22 +154,41 @@ public class LayoutEngine {
         MeasureLayout lastMeasureLayout = system.getMeasures().getLast();
         Measure prevMeasure = lastMeasureLayout.getMeasure();
 
+        if (nextMeasure.getKeySignature() != null && prevMeasure.getKeySignature() != null
+                && !nextMeasure.getKeySignature().equals(prevMeasure.getKeySignature())) {
+            SegmentLayout courtesyKeySig = new SegmentLayout(SegmentType.KEY_SIG, lastMeasureLayout);
+            courtesyKeySig.addKeySignature(nextMeasure.getKeySignature());
+            courtesyKeySig.setSystemGenerated(true);
+            lastMeasureLayout.add(courtesyKeySig);
+        }
+
         if (nextMeasure.getTimeSignature() != null && prevMeasure.getTimeSignature() != null
                 && !nextMeasure.getTimeSignature().equals(prevMeasure.getTimeSignature())) {
-            SegmentLayout courtesySegment = new SegmentLayout(SegmentType.TIME_SIG, lastMeasureLayout);
-            courtesySegment.addTimeSignature(nextMeasure.getTimeSignature());
-            courtesySegment.setSystemGenerated(true);
-            lastMeasureLayout.add(courtesySegment);
+            SegmentLayout courtesyTimeSig = new SegmentLayout(SegmentType.TIME_SIG, lastMeasureLayout);
+            courtesyTimeSig.addTimeSignature(nextMeasure.getTimeSignature());
+            courtesyTimeSig.setSystemGenerated(true);
+            lastMeasureLayout.add(courtesyTimeSig);
         }
     }
 
     private void add1stMeasureAttributes(ScoreMode scoreMode, MeasureLayout measureLayout, ScoreLayout scoreLayout) {
-        var isFirstMeasure = scoreLayout.getPages().size() == 1 && scoreLayout.getPages().get(0).getSystems().size() == 1;
+        var isFirstMeasure = scoreLayout.getPages().size() == 1 && scoreLayout.getPages().getFirst().getSystems().size() == 1;
+        Measure measure = measureLayout.getMeasure();
 
         if (isFirstMeasure) {
-            measureLayout.addSystemTimeSignature(measureLayout.getMeasure().getTimeSignature());
+            measureLayout.addSystemTimeSignature(measure.getTimeSignature());
         }
-        measureLayout.addSystemKeySignature(measureLayout.getMeasure().getKeySignature());
+
+        Measure prevMeasure = measure.getPrev();
+        boolean isKeyChange = prevMeasure != null
+                && measure.getKeySignature() != null
+                && prevMeasure.getKeySignature() != null
+                && !measure.getKeySignature().equals(prevMeasure.getKeySignature());
+
+        if (!isKeyChange) {
+            measureLayout.addSystemKeySignature(measure.getKeySignature());
+        }
+
         measureLayout.addSystemClef();
         if (scoreMode.getStartBarline() != null) {
             measureLayout.addSystemStartBarline(scoreMode.getStartBarline());
