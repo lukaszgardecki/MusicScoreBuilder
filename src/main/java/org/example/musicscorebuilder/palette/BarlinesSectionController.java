@@ -5,11 +5,8 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
-import org.example.musicscorebuilder.components.layout.BarlineLayout;
-import org.example.musicscorebuilder.components.layout.SegmentLayout;
-import org.example.musicscorebuilder.components.music.Barline;
-import org.example.musicscorebuilder.components.music.BarlineStyle;
-import org.example.musicscorebuilder.components.music.SegmentType;
+import org.example.musicscorebuilder.components.layout.*;
+import org.example.musicscorebuilder.components.music.*;
 import org.example.musicscorebuilder.components.views.BarlineView;
 
 import java.util.Arrays;
@@ -32,10 +29,54 @@ public class BarlinesSectionController extends AbstractPaletteSectionController<
 
     @Override
     protected boolean applyToSelectedElement(BarlineStyle item) {
-        var selectedLayout = stateManager.getSelectedItem();
+        Selectable selectedLayout = stateManager.getSelectedItem();
+        if (selectedLayout == null) return false;
+
         if (selectedLayout instanceof BarlineLayout actualBarlineLayout) {
-            actualBarlineLayout.setStyle(item);
-            return true;
+            SegmentLayout segLayout = actualBarlineLayout.getSegment();
+            if (segLayout != null && segLayout.getSegment() != null) {
+                updateBarlineStyleInSegment(segLayout.getSegment(), selectedLayout.getStaff().getStaffIndex(), item);
+                stateManager.notifyScoreChanged();
+                return true;
+            }
+            return false;
+        }
+
+        if (selectedLayout instanceof NoteLayout || selectedLayout instanceof RestLayout) {
+            SegmentLayout currentSegLayout = selectedLayout.getSegment();
+            if (currentSegLayout == null) return false;
+
+            int staffIndex = selectedLayout.getStaff().getStaffIndex();
+            SegmentLayout prevSegLayout = currentSegLayout.getPrev();
+
+            if (prevSegLayout != null && prevSegLayout.getType() == SegmentType.BARLINE) {
+                Segment barlineSegment = prevSegLayout.getSegment();
+                if (barlineSegment != null) {
+                    updateBarlineStyleInSegment(barlineSegment, staffIndex, item);
+                    stateManager.notifyScoreChanged();
+                    return true;
+                }
+            } else {
+                Segment targetSegment = currentSegLayout.getSegment();
+                if (targetSegment == null) return false;
+
+                Measure measure = targetSegment.getParent();
+                if (measure == null) return false;
+
+                List<Segment> segments = measure.getSegments();
+                int currentIndex = segments.indexOf(targetSegment);
+
+                if (currentIndex != -1) {
+                    Segment newBarlineSeg = new Segment(SegmentType.BARLINE, measure);
+                    newBarlineSeg.addElement(staffIndex, new Barline(item, measure));
+
+                    segments.add(currentIndex, newBarlineSeg);
+
+                    measure.setDirty(true);
+                    stateManager.notifyScoreChanged();
+                    return true;
+                }
+            }
         }
         return false;
     }
@@ -76,5 +117,21 @@ public class BarlinesSectionController extends AbstractPaletteSectionController<
         gc.setStroke(Color.BLACK);
         gc.setFill(Color.BLACK);
         barlineView.draw(gc, barline, x, y, sp);
+    }
+
+    private void updateBarlineStyleInSegment(Segment segment, int staffIndex, BarlineStyle style) {
+        var staffElements = segment.getElementsByStaff(staffIndex);
+
+        if (staffElements != null && !staffElements.isEmpty()) {
+            if (staffElements.getFirst() instanceof Barline barline) {
+                barline.setStyle(style);
+                barline.hasChanged();
+            }
+        } else {
+            segment.addElement(staffIndex, new Barline(style, segment.getParent()));
+            if (segment.getParent() != null) {
+                segment.getParent().setDirty(true);
+            }
+        }
     }
 }

@@ -4,9 +4,21 @@ import org.example.musicscorebuilder.components.music.*;
 import org.example.musicscorebuilder.controller.util.audio.PianoPlayer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MeasureNoteInserter {
+
+    private static class NonNoteRestPos {
+        final Segment segment;
+        final int tick;
+
+        NonNoteRestPos(Segment segment, int tick) {
+            this.segment = segment;
+            this.tick = tick;
+        }
+    }
 
     public static Segment insertNote(Measure measure, Segment targetSegment, int staffId, Note newNote) {
         if (measure == null || targetSegment == null || newNote == null) return null;
@@ -21,13 +33,65 @@ public class MeasureNoteInserter {
         int endTick = startTick + newTicks;
         PianoPlayer.getInstance().playNote(newNote.getPitch());
 
+        Map<Measure, List<NonNoteRestPos>> savedPositions = new HashMap<>();
+        Measure curr = measure;
+        while (curr != null) {
+            savedPositions.put(curr, saveNonNoteRestPositions(curr));
+            curr = curr.getNext();
+        }
+
         removeCollisions(measure, staffId, voice, startTick, endTick);
 
         targetSegment.addElement(staffId, newNote);
 
         MeasureTimeSignatureAdjuster.adjustFromMeasure(measure);
 
+        for (Map.Entry<Measure, List<NonNoteRestPos>> entry : savedPositions.entrySet()) {
+            restoreNonNoteRestPositions(entry.getKey(), entry.getValue());
+        }
+
         return findNextFreeSegment(measure, endTick);
+    }
+
+    private static List<NonNoteRestPos> saveNonNoteRestPositions(Measure measure) {
+        List<NonNoteRestPos> saved = new ArrayList<>();
+        if (measure == null || measure.getSegments() == null) return saved;
+
+        for (Segment seg : measure.getSegments()) {
+            if (!seg.isNoteRest()) {
+                int tick = getStartTickOfSegment(measure, seg);
+                if (tick >= 0) {
+                    saved.add(new NonNoteRestPos(seg, tick));
+                }
+            }
+        }
+        return saved;
+    }
+
+    private static void restoreNonNoteRestPositions(Measure measure, List<NonNoteRestPos> saved) {
+        if (measure == null || measure.getSegments() == null || saved == null || saved.isEmpty()) return;
+
+        List<Segment> segments = measure.getSegments();
+        segments.removeIf(seg -> !seg.isNoteRest());
+
+        for (NonNoteRestPos pos : saved) {
+            int targetTick = pos.tick;
+            int currentTick = 0;
+            int insertIndex = 0;
+
+            while (insertIndex < segments.size()) {
+                Segment seg = segments.get(insertIndex);
+                if (seg.isNoteRest()) {
+                    if (currentTick >= targetTick) {
+                        break;
+                    }
+                    currentTick += seg.getDuration();
+                }
+                insertIndex++;
+            }
+
+            segments.add(insertIndex, pos.segment);
+        }
     }
 
     private static int getStartTickOfSegment(Measure measure, Segment targetSegment) {
