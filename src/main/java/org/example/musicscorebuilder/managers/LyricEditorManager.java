@@ -17,6 +17,7 @@ import javafx.scene.text.*;
 import javafx.util.Duration;
 import org.example.musicscorebuilder.components.layout.NoteLayout;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
+import org.example.musicscorebuilder.components.layout.StaffLayout;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.music.Lyric;
 import org.example.musicscorebuilder.components.music.LyricFragment;
@@ -547,6 +548,7 @@ public class LyricEditorManager {
         this.isEditing = false;
         this.justStartedEditing = false;
         this.currentNoteLayout = null;
+        this.currentScoreLayout = null;
 
         caretBlink.stop();
         customCaret.setVisible(false);
@@ -618,8 +620,10 @@ public class LyricEditorManager {
     }
 
     private ScoreLayout getScoreLayout() {
-        if (currentScoreLayout != null) return currentScoreLayout;
-        return (transformer != null) ? transformer.getScoreLayout() : null;
+        if (transformer != null && transformer.getScoreLayout() != null) {
+            return transformer.getScoreLayout();
+        }
+        return currentScoreLayout;
     }
 
     private double modelToViewX(double modelX) { return (transformer != null) ? transformer.modelToViewX(modelX) : modelX; }
@@ -631,29 +635,23 @@ public class LyricEditorManager {
 
         commitCurrentText(type, true);
         NoteLayout nextNote = findNextNoteLayout(currentNoteLayout);
-        ScoreLayout savedScoreLayout = getScoreLayout();
 
         if (nextNote != null) {
             Note targetNextModel = nextNote.getNote();
+            int verse = currentVerse;
+
             hideEditor();
             ScoreStateManager.getInstance().notifyScoreChanged();
 
             Platform.runLater(() -> {
                 NoteLayout freshNextNote = findFreshNoteLayout(targetNextModel);
                 if (freshNextNote != null) {
-                    startEditing(freshNextNote, currentVerse, savedScoreLayout);
+                    startEditing(freshNextNote, verse);
                 }
             });
         } else {
             commitAndHide();
         }
-    }
-
-    private NoteLayout findNextNoteLayout(NoteLayout current) {
-        List<NoteLayout> allNotes = getAllNotesInScore();
-        int idx = allNotes.indexOf(current);
-        if (idx != -1 && idx + 1 < allNotes.size()) return allNotes.get(idx + 1);
-        return null;
     }
 
     private List<NoteLayout> getAllNotesInScore() {
@@ -667,10 +665,35 @@ public class LyricEditorManager {
         return notes;
     }
 
+    private NoteLayout findNextNoteLayout(NoteLayout current) {
+        if (current == null || current.getNote() == null) return null;
+
+        Note currentNoteModel = current.getNote();
+        StaffLayout currentStaff = current.getStaff();
+        int currentStaffIndex = (currentStaff != null) ? currentStaff.getStaffIndex() : -1;
+        List<NoteLayout> allNotes = getAllNotesInScore();
+
+        List<NoteLayout> sameStaffNotes = allNotes.stream()
+                .filter(nl -> nl.getStaff() != null && nl.getStaff().getStaffIndex() == currentStaffIndex)
+                .toList();
+
+        for (int i = 0; i < sameStaffNotes.size(); i++) {
+            if (sameStaffNotes.get(i).getNote() == currentNoteModel) {
+                if (i + 1 < sameStaffNotes.size()) {
+                    return sameStaffNotes.get(i + 1);
+                }
+                break;
+            }
+        }
+        return null;
+    }
+
     private NoteLayout findFreshNoteLayout(Note targetNote) {
         if (targetNote == null) return null;
         for (NoteLayout nl : getAllNotesInScore()) {
-            if (nl.getNote() == targetNote) return nl;
+            if (nl.getNote() == targetNote) {
+                return nl;
+            }
         }
         return null;
     }
