@@ -11,6 +11,7 @@ public class NoteLayout extends ElementLayout {
     private final StemLayout stem;
     private final BeamSingleLayout singleBeam;
     private final List<DotLayout> dots = new ArrayList<>();
+    private final List<LyricLayout> lyrics = new ArrayList<>();
     private BeamGroupLayout beamGroup;
     private AccidentalLayout accidental;
     private double xOffset = 0.0;
@@ -61,6 +62,19 @@ public class NoteLayout extends ElementLayout {
     public double getFontSize() { return 4 * style.getStaffLineSpacing(); }
     public String getCode() { return fontData.getCode(); }
     public List<DotLayout> getDots() { return dots; }
+    public List<LyricLayout> getLyrics() {
+        refreshLyrics();
+        return lyrics;
+    }
+    public LyricLayout getLyricLayout(int verse) {
+        for (LyricLayout lyricLayout : getLyrics()) {
+            if (lyricLayout.getVerse() == verse) {
+                return lyricLayout;
+            }
+        }
+        return null;
+    }
+    public double getXOffset() { return xOffset; }
     public int getDiatonicStep() { return note.getPitch().getAbsoluteDiatonicStep(); }
     public StemLayout getStem() { return stem; }
     public BeamSingleLayout getBeamSingle() { return singleBeam; }
@@ -106,6 +120,18 @@ public class NoteLayout extends ElementLayout {
         Clef clef = staff.getStaff().getDefaultClef();
         calculateDots(clef);
         this.accidental = (this.note != null && this.note.getPitch() != null) ? new AccidentalLayout(this) : null;
+        refreshLyrics();
+    }
+
+    private void refreshLyrics() {
+        lyrics.clear();
+        if (note != null && note.getLyrics() != null) {
+            for (Lyric lyric : note.getLyrics()) {
+                if (lyric != null && lyric.getText() != null && !lyric.getText().trim().isEmpty()) {
+                    lyrics.add(new LyricLayout(lyric, this));
+                }
+            }
+        }
     }
 
     public void updatePitchFromY(double newY) {

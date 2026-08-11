@@ -133,7 +133,22 @@ public class SegmentLayout {
                 .max()
                 .orElse(0.0);
 
-        return Math.max(minMargin, maxAccidentalSpace);
+        double maxLyricLeftSpace = getElements().stream()
+                .filter(NoteLayout.class::isInstance)
+                .map(NoteLayout.class::cast)
+                .mapToDouble(nl -> {
+                    double headWidth = nl.getFontWidth();
+                    double maxLyricWidth = nl.getLyrics().stream()
+                            .mapToDouble(LyricLayout::getTotalWidth)
+                            .max()
+                            .orElse(0.0);
+                    double leftOverhang = (maxLyricWidth - headWidth) / 2.0;
+                    return Math.max(0.0, leftOverhang - nl.getXOffset());
+                })
+                .max()
+                .orElse(0.0);
+
+        return Math.max(minMargin, Math.max(maxAccidentalSpace, maxLyricLeftSpace));
     }
     public double getWidth() {
         List<ElementLayout> allElements = getElements();
@@ -141,7 +156,16 @@ public class SegmentLayout {
         double marginLeft = getMarginLeft();
         double maxContentWidth = allElements.stream()
                 .mapToDouble(el -> {
-                    if (el instanceof NoteLayout nl) return (nl.getX() - marginLeft) + nl.getWidth();
+                    if (el instanceof NoteLayout nl) {
+                        double noteExtent = (nl.getX() - marginLeft) + nl.getWidth();
+                        double noteCenterXRel = (nl.getX() - marginLeft) + (nl.getFontWidth() / 2.0);
+                        double maxLyricExtent = nl.getLyrics().stream()
+                                .mapToDouble(lyric -> noteCenterXRel + (lyric.getTotalWidth() / 2.0))
+                                .max()
+                                .orElse(0.0);
+
+                        return Math.max(noteExtent, maxLyricExtent);
+                    }
                     return el.getWidth();
                 })
                 .max()
