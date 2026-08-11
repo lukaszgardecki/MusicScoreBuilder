@@ -7,6 +7,7 @@ import org.example.musicscorebuilder.components.layout.RestLayout;
 import org.example.musicscorebuilder.components.layout.Selectable;
 import org.example.musicscorebuilder.components.music.NoteRestElement;
 import org.example.musicscorebuilder.components.music.NoteType;
+import org.example.musicscorebuilder.managers.LyricEditorManager;
 import org.example.musicscorebuilder.managers.ModeManager;
 import org.example.musicscorebuilder.managers.ScoreNavigator;
 import org.example.musicscorebuilder.managers.ScoreStateManager;
@@ -25,9 +26,11 @@ public class ShortcutHandler {
     }
 
     private void handleKeyPressed(KeyEvent event) {
+        if (modeManager.isEditTextMode()) return;
         boolean handled = true;
 
         switch (event.getCode()) {
+            case L                                      -> handleLyric(event);
             case N                                      -> modeManager.toggleInsertMode();
             case ESCAPE                                 -> handleEscape();
             case DIGIT0, NUMPAD0, BACK_SPACE, DELETE    -> handleZero();
@@ -95,6 +98,16 @@ public class ShortcutHandler {
             NoteRestElement currentNRE = getSelectedNoteRestElement();
             if (currentNRE != null && currentNRE.getType() != targetType) {
                 scoreStateManager.changeSelectedElementDuration(targetType);
+            }
+        }
+    }
+
+    private void handleLyric(KeyEvent event) {
+        if (event.isShortcutDown()) {
+            Selectable selected = scoreStateManager.getSelectedItem();
+
+            if (selected instanceof NoteLayout noteLayout) {
+                LyricEditorManager.getInstance().startEditing(noteLayout, 1);
             }
         }
     }

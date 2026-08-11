@@ -1,5 +1,5 @@
 package org.example.musicscorebuilder.components.music;
 
-public enum Mode {
-    DISPLAY, INSERT, EDIT_TEXT
+public enum SyllableType {
+    SINGLE, BEGIN, MIDDLE, END
 }

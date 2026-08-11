@@ -2,11 +2,13 @@ package org.example.musicscorebuilder.components.views;
 
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
-import org.example.musicscorebuilder.managers.ModeManager;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
+import org.example.musicscorebuilder.managers.LyricEditorManager;
+import org.example.musicscorebuilder.managers.ModeManager;
 
 public class BackgroundView extends Pane {
     private final ModeManager modeManager = ModeManager.getInstance();
+    private final LyricEditorManager lyricEditorManager = LyricEditorManager.getInstance();
     private ScoreView scoreView;
     private double lastX;
     private double lastY;
@@ -16,6 +18,27 @@ public class BackgroundView extends Pane {
     private boolean wasDragged = false;
 
     public BackgroundView(){
+        this.lyricEditorManager.init(this, new LyricEditorManager.CoordinateTransformer() {
+            @Override
+            public double modelToViewX(double modelX) {
+                return toScreenX(modelX);
+            }
+
+            @Override
+            public double modelToViewY(double modelY) {
+                return toScreenY(modelY);
+            }
+
+            @Override
+            public double getScaleY() {
+                return getActualSp();
+            }
+            @Override
+            public ScoreLayout getScoreLayout() {
+                return (scoreView != null) ? scoreView.getScoreLayout() : null;
+            }
+        });
+
         enableDrag();
         enableZoom();
         centerFirstPage();
@@ -61,6 +84,8 @@ public class BackgroundView extends Pane {
         offsetY = (canvasHeight - pageHeightPx) / 2.0;
 
         scoreView.setViewportTransform(offsetX, offsetY, zoom);
+
+        updateLyricPosition();
     }
 
     private void enableDrag() {
@@ -88,6 +113,8 @@ public class BackgroundView extends Pane {
             if (scoreView != null) {
                 scoreView.setViewportTransform(offsetX, offsetY, zoom);
             }
+
+            updateLyricPosition();
         });
     }
 
@@ -115,15 +142,23 @@ public class BackgroundView extends Pane {
             offsetY = mouseY - (mouseY - offsetY) * actualFactor;
 
             scoreView.setViewportTransform(offsetX, offsetY, zoom);
+
+            updateLyricPosition();
         });
     }
 
     public boolean wasLastMousePressJustClick() { return !wasDragged; }
     public double toModelX(double screenX) { return (screenX - offsetX) / getActualSp(); }
     public double toModelY(double screenY) { return (screenY - offsetY) / getActualSp(); }
-
-    private double getActualSp() {
+    public double toScreenX(double modelX) { return offsetX + (modelX * getActualSp()); }
+    public double toScreenY(double modelY) { return offsetY + (modelY * getActualSp()); }
+    public ScoreView getScoreView() { return scoreView; }
+    public double getActualSp() {
         if (scoreView == null) return 10.0;
         return zoom * scoreView.getBaseSpatiumPx();
+    }
+
+    private void updateLyricPosition() {
+        if (lyricEditorManager != null) lyricEditorManager.updatePosition();
     }
 }

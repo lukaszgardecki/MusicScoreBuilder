@@ -36,6 +36,7 @@ public class ScoreStyle {
     private static final double NOTE_DOT_MARGIN                             = 0.55;
     private static final double NOTE_DOT_SPACING                            = 0.3;
     private static final double NOTE_ACC_SPACING                            = 0.15;
+    private static final double NOTE_LYRIC_FONT_SIZE                        = 2.3;
 
     private static final double BOW_MID_THICKNESS                           = 0.18;
     private static final double BOW_TIP_ROUNDING_FACTOR                     = 0.05;
@@ -135,6 +136,7 @@ public class ScoreStyle {
     private double noteDotMargin = NOTE_DOT_MARGIN;
     private double noteDotSpacing = NOTE_DOT_SPACING;
     private double noteAccSpacing = NOTE_ACC_SPACING;
+    private double noteLyricFontSize = NOTE_LYRIC_FONT_SIZE;
 
     private double bowMidThickness = BOW_MID_THICKNESS;
     private double bowTipRoundingFactor = BOW_TIP_ROUNDING_FACTOR;
@@ -217,6 +219,7 @@ public class ScoreStyle {
     public double getNoteDotMargin() { return  staffSpacingScale * noteDotMargin; }
     public double getNoteDotSpacing() { return  staffSpacingScale * noteDotSpacing; }
     public double getNoteAccSpacing() { return  staffSpacingScale * noteAccSpacing; }
+    public double getNoteLyricFontSize() { return staffSpacingScale * noteLyricFontSize; }
 
     public double getBowMidThickness() { return staffSpacingScale * bowMidThickness; }
     public double getBowTipRoundingFactor() { return staffSpacingScale * bowTipRoundingFactor; }

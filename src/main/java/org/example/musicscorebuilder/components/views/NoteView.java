@@ -14,6 +14,7 @@ public class NoteView extends ComponentView {
     private final StemView stemView = new StemView();
     private final BeamSingleView beamSingleView = new BeamSingleView();
     private final AccidentalView accidentalView = new AccidentalView();
+    private final LyricView lyricView = new LyricView();
 
     public void draw(GraphicsContext gc, NoteLayout note, double segmentX, double segmentY, double sp) {
         double noteX = segmentX + note.getX() * sp;
@@ -42,5 +43,7 @@ public class NoteView extends ComponentView {
         gc.setFont(FontManager.getLelandFont(fontSize));
         gc.setFill(Color.web(color));
         gc.fillText(note.getCode(), noteX, noteY);
+
+        lyricView.draw(gc, note, segmentX, segmentY, sp);
     }
 }

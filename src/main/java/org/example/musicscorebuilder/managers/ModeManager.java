@@ -40,6 +40,14 @@ public class ModeManager {
         }
     }
 
+    public void toggleEditLyricsMode() {
+        if (mode == Mode.EDIT_TEXT) {
+            mode = Mode.DISPLAY;
+        } else {
+            mode = Mode.EDIT_TEXT;
+        }
+    }
+
     public NoteType getCurrentNoteType() {
         return currentNoteType;
     }
@@ -75,6 +83,7 @@ public class ModeManager {
     }
 
     public boolean isInsertMode() { return mode == Mode.INSERT; }
+    public boolean isEditTextMode() { return mode == Mode.EDIT_TEXT; }
     public int getCurrentVoice() { return currentVoice; }
 
     public void setGhostNote(GhostNoteLayout ghostNote) { this.ghostNote = ghostNote; }

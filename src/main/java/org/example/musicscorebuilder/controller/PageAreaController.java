@@ -8,9 +8,7 @@ import javafx.scene.input.MouseEvent;
 import org.example.musicscorebuilder.NoteDragHandler;
 import org.example.musicscorebuilder.ScoreService;
 import org.example.musicscorebuilder.ShortcutHandler;
-import org.example.musicscorebuilder.components.layout.NoteLayout;
-import org.example.musicscorebuilder.components.layout.ScoreLayout;
-import org.example.musicscorebuilder.components.layout.Selectable;
+import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.layout.edit.CursorLayout;
 import org.example.musicscorebuilder.components.layout.engine.LayoutEngine;
 import org.example.musicscorebuilder.components.music.Score;
@@ -18,10 +16,7 @@ import org.example.musicscorebuilder.components.music.ScoreMode;
 import org.example.musicscorebuilder.components.views.BackgroundView;
 import org.example.musicscorebuilder.controller.util.audio.MidiInputService;
 import org.example.musicscorebuilder.controller.util.audio.PianoPlayer;
-import org.example.musicscorebuilder.managers.LayoutHitTester;
-import org.example.musicscorebuilder.managers.ModeManager;
-import org.example.musicscorebuilder.managers.ScoreNavigator;
-import org.example.musicscorebuilder.managers.ScoreStateManager;
+import org.example.musicscorebuilder.managers.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -98,6 +93,25 @@ public class PageAreaController {
             if (contextMenuController != null && contextMenuController.isShowing()) {
                 contextMenuController.hide();
             }
+
+            if (modeManager.isInsertMode() || currentScoreLayout == null) return;
+
+            if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2) {
+                double modelX = container.toModelX(event.getX());
+                double modelY = container.toModelY(event.getY());
+                var pages = currentScoreLayout.getPages();
+
+                LayoutHitTester.LyricHit lyricHit = LayoutHitTester.findClickedLyric(pages, modelX, modelY);
+                if (lyricHit != null) {
+                    LyricEditorManager.getInstance().startEditing(
+                            lyricHit.noteLayout(),
+                            lyricHit.verse(),
+                            currentScoreLayout,
+                            event.getX()
+                    );
+                    event.consume();
+                }
+            }
         });
         container.setOnMouseClicked(this::handleCanvasClick);
     }
@@ -157,15 +171,14 @@ public class PageAreaController {
     }
 
     private void handleCanvasClick(MouseEvent event) {
-        if (modeManager.isInsertMode()) return;
-        if (currentScoreLayout == null) return;
+        if (modeManager.isInsertMode() || currentScoreLayout == null) return;
         if (!container.wasLastMousePressJustClick()) return;
+        if (event.getClickCount() == 2) return;
 
-        Selectable clickedElement = LayoutHitTester.findClickedElement(
-                currentScoreLayout.getPages(),
-                container.toModelX(event.getX()),
-                container.toModelY(event.getY())
-        );
+        double modelX = container.toModelX(event.getX());
+        double modelY = container.toModelY(event.getY());
+
+        Selectable clickedElement = LayoutHitTester.findClickedElement(currentScoreLayout.getPages(), modelX, modelY);
 
         if (event.getButton() == MouseButton.SECONDARY && clickedElement != null) {
             handleRightClick(event, clickedElement);

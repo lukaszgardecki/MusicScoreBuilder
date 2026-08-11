@@ -96,7 +96,7 @@ public class AccidentalLayout implements Selectable {
         Leland fontData = getFontData();
         return (fontData.getHeight() * fontData.getRatio()) * style.getStaffLineSpacing();
     }
-
+    public NoteLayout getParent() { return parent; }
     public ScoreStyle getScoreStyle() { return style; }
     public double getFontSize() { return 4 * style.getStaffLineSpacing(); }
     public String getCode() { return getFontData().getCode(); }

@@ -356,4 +356,128 @@ public class LayoutHitTester {
         }
         return null;
     }
+
+    public record LyricHit(NoteLayout noteLayout, int verse) implements Selectable {
+
+        @Override
+        public boolean isSelected() {
+            return false;
+        }
+
+        @Override
+        public void setSelected(boolean selected) {
+
+        }
+
+        @Override
+        public int getVoice() {
+            return 0;
+        }
+
+        @Override
+        public boolean contains(double x, double y) {
+            return false;
+        }
+
+        @Override
+        public SegmentLayout getSegment() {
+            return null;
+        }
+
+        @Override
+        public StaffLayout getStaff() {
+            return null;
+        }
+    }
+
+    public record PositionedNote(NoteLayout noteLayout, double segmentX, double segmentY) {}
+    public record Point(double x,  double y) {}
+
+    public static List<PositionedNote> getAllPositionedNotes(List<PageLayout> pages) {
+        List<PositionedNote> result = new ArrayList<>();
+        if (pages == null) return result;
+
+        for (PageLayout page : pages) {
+            double pageX = page.getX();
+            double pageY = 0;
+
+            for (SystemLayout system : page.getSystems()) {
+                double systemX = pageX + system.getX();
+                double systemY = pageY + system.getY();
+
+                for (MeasureLayout measure : system.getMeasures()) {
+                    double measureX = systemX + measure.getX();
+                    double measureY = systemY + measure.getY();
+
+                    for (SegmentLayout segment : measure.getSegments()) {
+                        double segX = measureX + segment.getX();
+                        double segY = measureY + segment.getY();
+
+                        for (ElementLayout element : segment.getElements()) {
+                            if (element instanceof NoteLayout note) {
+                                result.add(new PositionedNote(note, segX, segY));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    public static LyricHit findClickedLyric(List<PageLayout> pages, double x, double y) {
+        for (PositionedNote pn : getAllPositionedNotes(pages)) {
+            NoteLayout noteLayout = pn.noteLayout();
+            var note = noteLayout.getNote();
+            if (note == null || note.getLyrics().isEmpty()) continue;
+
+            StaffLayout staff = noteLayout.getStaff();
+            if (staff == null) continue;
+
+            ScoreStyle style = noteLayout.getScoreStyle();
+            double fontSizeInSpatium = (style != null) ? style.getNoteLyricFontSize() : 1.3;
+
+            double absNoteCenterX = pn.segmentX() + (noteLayout.getX() + (noteLayout.getFontWidth() / 2.0));
+            double absStaffBottomY = pn.segmentY() + (staff.getY() + staff.getHeight());
+
+            for (Lyric lyric : note.getLyrics()) {
+                if (lyric == null || lyric.getText() == null || lyric.getText().isBlank()) continue;
+
+                int verse = lyric.getVerse();
+                double lyricY = absStaffBottomY + 2.5 + ((verse - 1) * 1.5);
+                double textWidth = FontManager.getTextWidth(FontManager.FontType.FREE_SERIF, lyric.getText(), fontSizeInSpatium);
+                double textHeight = FontManager.getTextHeight(FontManager.FontType.FREE_SERIF, lyric.getText(), fontSizeInSpatium);
+
+                double minX = absNoteCenterX - (textWidth / 2.0);
+                double maxX = absNoteCenterX + (textWidth / 2.0);
+                double minY = lyricY;
+                double maxY = lyricY + textHeight;
+
+                if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
+                    return new LyricHit(noteLayout, verse);
+                }
+            }
+        }
+        return null;
+    }
+
+    public static Point getLyricAbsolutePosition(ScoreLayout scoreLayout, NoteLayout targetNote, int verse) {
+        if (scoreLayout == null || targetNote == null) return new Point(0, 0);
+
+        for (PositionedNote pn : getAllPositionedNotes(scoreLayout.getPages())) {
+            if (pn.noteLayout() == targetNote) {
+
+                double absX = pn.segmentX() + (targetNote.getX() + (targetNote.getFontWidth() / 2.0));
+                StaffLayout staff = targetNote.getStaff();
+
+                double staffBottomY = (staff != null)
+                        ? pn.segmentY() + staff.getY() + staff.getHeight()
+                        : pn.segmentY() + targetNote.getY();
+
+                double absY = staffBottomY + 2.5 + ((verse - 1) * 1.5);
+                return new Point(absX, absY);
+            }
+        }
+        return new Point(0, 0);
+    }
 }
