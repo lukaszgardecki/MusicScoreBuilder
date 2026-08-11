@@ -4,27 +4,23 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.example.musicscorebuilder.components.music.util.MeasureDurationEditor;
 import org.example.musicscorebuilder.components.music.util.MeasureTimeSignatureAdjuster;
+import org.example.musicscorebuilder.data.MeasureSerializer;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@JsonSerialize(using = MeasureSerializer.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Measure {
 
-    @JsonProperty("timeSig")
     private TimeSignature timeSignature;
-
-    @JsonProperty("keySig")
     private KeySignature keySignature;
     private Barline rightBarline;
 
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    @JsonProperty("staves")
     private final List<Staff> staves;
-
-    @JsonProperty("segs")
     private final List<Segment> segments = new ArrayList<>();
 
     @JsonIgnore
@@ -122,21 +118,14 @@ public class Measure {
 
     public List<Staff> getStaves() { return staves; }
     public List<Segment> getSegments() { return segments; }
-    @JsonIgnore
+
     public Barline getRightBarline() {
         if (rightBarline == null) {
             rightBarline = new Barline(BarlineStyle.SINGLE, this);
         }
         return rightBarline;
     }
-    @JsonProperty("barline")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Barline getRightBarlineForJson() {
-        if (rightBarline == null || rightBarline.getStyle() == BarlineStyle.SINGLE) {
-            return null;
-        }
-        return rightBarline;
-    }
+
     public TimeSignature getTimeSignature() { return timeSignature; }
     public KeySignature getKeySignature() { return keySignature; }
 

@@ -52,13 +52,22 @@ public class ScoreStorageService {
             mode.setScore(score);
 
             if (mode.getMeasures() == null) continue;
+            mode.updateMeasureLinks();
 
             TimeSignature activeTimeSignature = null;
             KeySignature activeKeySignature = null;
 
             for (Measure measure : mode.getMeasures()) {
 
-                // 1. Odtwarzanie TimeSignature (dziedziczenie z poprzedniego taktu, jeśli brak w JSON)
+                if (measure.getStaves().isEmpty()) {
+                    if (measure.getPrev() != null && !measure.getPrev().getStaves().isEmpty()) {
+                        measure.getStaves().addAll(measure.getPrev().getStaves());
+                    } else if (mode.getStaves() != null && !mode.getStaves().isEmpty()) {
+                        measure.getStaves().addAll(mode.getStaves());
+                    }
+                }
+
+                // 1. Odtwarzanie TimeSignature
                 if (measure.getTimeSignature() != null) {
                     activeTimeSignature = measure.getTimeSignature();
                     activeTimeSignature.setParent(measure);
@@ -69,14 +78,14 @@ public class ScoreStorageService {
                             activeTimeSignature.getType(),
                             measure
                     );
-                    measure.setTimeSignature(inheritedTimeSig);
+                    measure.setTimeSignature(inheritedTimeSig, false);
                 } else {
                     TimeSignature defaultTimeSig = new TimeSignature(4, 4, TimeSignature.Type.FRACTIONAL, measure);
-                    measure.setTimeSignature(defaultTimeSig);
+                    measure.setTimeSignature(defaultTimeSig, false);
                     activeTimeSignature = defaultTimeSig;
                 }
 
-                // 2. Odtwarzanie KeySignature (dziedziczenie z poprzedniego taktu, jeśli brak w JSON)
+                // 2. Odtwarzanie KeySignature
                 if (measure.getKeySignature() != null) {
                     activeKeySignature = measure.getKeySignature();
                     activeKeySignature.setParent(measure);
@@ -92,15 +101,10 @@ public class ScoreStorageService {
                     activeKeySignature = defaultKeySig;
                 }
 
-                // 3. Upewnienie się, że kreska taktowa ma ustawionego rodzica
                 if (measure.getRightBarline() != null) {
                     measure.getRightBarline().setParent(measure);
                 }
-
-                // 4. Przeliczenie segmentów w takcie po odtworzeniu metrum
                 measure.recalculateSegmentDurations();
-
-                // 5. Powiązanie rodziców (parent) dla segmentów i elementów
                 if (measure.getSegments() != null) {
                     for (Segment segment : measure.getSegments()) {
                         segment.setParent(measure);

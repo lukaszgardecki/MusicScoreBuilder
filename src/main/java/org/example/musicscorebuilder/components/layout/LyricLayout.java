@@ -17,9 +17,9 @@ public class LyricLayout {
 
     public record FragmentLayout(
             LyricFragment fragment,
-            double width,              // szerokość w jednostkach modelowych
-            double relativeX,          // przesunięcie X od początku tekstu
-            double underlineRelativeY, // przesunięcie Y dla podkreślenia
+            double width,
+            double relativeX,
+            double underlineRelativeY,
             FontWeight weight,
             FontPosture posture,
             double fontSizeSp
@@ -60,6 +60,13 @@ public class LyricLayout {
     public double getTotalWidth() { return totalWidth; }
     public List<FragmentLayout> getFragmentLayouts() { return fragmentLayouts; }
 
+    public double getFontSize() {
+        if (lyric != null && lyric.getFontSize() != null && lyric.getFontSize() > 0.0) {
+            return lyric.getFontSize();
+        }
+        return noteLayout.getScoreStyle().getNoteLyricFontSize();
+    }
+
     public double getModelY() {
         StaffLayout staff = noteLayout.getStaff();
         if (staff == null) return 0.0;
@@ -88,7 +95,7 @@ public class LyricLayout {
             fragments = List.of(new LyricFragment(lyric.getText(), false, false, false));
         }
 
-        double fontSizeSp = lyric.getFontSize();
+        double fontSizeSp = getFontSize();
         Font baseFont = FontManager.getFreeSerifFont(fontSizeSp);
         String fontFamily = baseFont.getFamily();
 
@@ -153,10 +160,10 @@ public class LyricLayout {
         double nextLeftX = nextNoteCenterX - (nextTextWidthSp / 2.0);
 
         double gap = nextLeftX - currentRightX;
-        double margin = 0.15; // Margines modelowy
+        double margin = 0.15;
         double availableForHyphen = gap - (2 * margin);
 
-        double fontSizeSp = lyric.getFontSize();
+        double fontSizeSp = getFontSize();
         Font baseFont = FontManager.getFreeSerifFont(fontSizeSp);
         Text hyphenText = new Text("–");
         hyphenText.setFont(baseFont);

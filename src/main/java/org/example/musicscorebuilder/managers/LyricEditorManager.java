@@ -497,16 +497,45 @@ public class LyricEditorManager {
             List<LyricFragment> fragments = exportToFragments();
             Lyric lyric = note.getLyric(currentVerse);
 
+            double activeEditorSize = currentNoteLayout.getScoreStyle().getNoteLyricFontSize();
+            Double prevSize = getPreviousSyllableFontSize(currentVerse);
+            Double fontSizeToSave = null;
+            if (prevSize == null || Math.abs(activeEditorSize - prevSize) > 0.01) {
+                fontSizeToSave = activeEditorSize;
+            }
+
             if (lyric == null) {
-                lyric = new Lyric(fragments, type, currentVerse, currentNoteLayout.getScoreStyle().getNoteLyricFontSize());
+                lyric = new Lyric(fragments, type, currentVerse, fontSizeToSave);
                 note.setLyric(currentVerse, lyric);
             } else {
                 lyric.setFragments(fragments);
+                lyric.setFontSize(fontSizeToSave);
                 if (forceTypeChange) lyric.setType(type);
             }
         } else {
             note.removeLyric(currentVerse);
         }
+    }
+
+    private Double getPreviousSyllableFontSize(int verse) {
+        List<NoteLayout> allNotes = getAllNotesInScore();
+        if (currentNoteLayout == null) return null;
+
+        int currentIndex = allNotes.indexOf(currentNoteLayout);
+        if (currentIndex <= 0) return null;
+
+        for (int i = currentIndex - 1; i >= 0; i--) {
+            Note prevNote = allNotes.get(i).getNote();
+            if (prevNote != null) {
+                Lyric prevLyric = prevNote.getLyric(verse);
+                if (prevLyric != null) {
+                    if (prevLyric.getFontSize() != null && prevLyric.getFontSize() > 0.0) {
+                        return prevLyric.getFontSize();
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     private List<LyricFragment> exportToFragments() {

@@ -14,6 +14,8 @@ public class Note extends NoteRestElement {
     private BeamType beam;
     private boolean tieStart;
     private boolean tieStop;
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private final Map<Integer, Lyric> lyrics = new HashMap<>();
 
     @SuppressWarnings("unused")

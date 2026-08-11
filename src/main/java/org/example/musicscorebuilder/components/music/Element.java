@@ -7,10 +7,6 @@ import com.fasterxml.jackson.annotation.*;
         include = JsonTypeInfo.As.PROPERTY,
         property = "elType"
 )
-@JsonIdentityInfo(
-        generator = ObjectIdGenerators.IntSequenceGenerator.class,
-        property = "@id"
-)
 @JsonSubTypes({
         @JsonSubTypes.Type(value = Barline.class, name = "barline"),
         @JsonSubTypes.Type(value = Clef.class, name = "clef"),
