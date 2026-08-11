@@ -264,7 +264,12 @@ public class LyricEditorManager {
                 hideEditor();
             } else if (event.getCode() == KeyCode.SPACE) {
                 event.consume();
-                commitAndNext(SyllableType.SINGLE);
+
+                if (event.isShortcutDown() || event.isControlDown()) {
+                    inputField.insertText(inputField.getCaretPosition(), " ");
+                } else {
+                    commitAndNext(SyllableType.SINGLE);
+                }
             } else if (event.getCode() == KeyCode.MINUS || event.getCode() == KeyCode.SUBTRACT) {
                 event.consume();
                 commitAndNext(SyllableType.BEGIN);
