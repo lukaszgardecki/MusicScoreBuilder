@@ -12,6 +12,9 @@ import java.util.Objects;
 public class FontManager {
     private static final String LELAND_PATH = "/fonts/Leland.otf";
     private static final String FREE_SERIF_PATH = "/fonts/FreeSerif.ttf";
+    private static final String FREE_SERIF_BOLD_PATH = "/fonts/FreeSerifBold.ttf";
+    private static final String FREE_SERIF_ITALIC_PATH = "/fonts/FreeSerifItalic.ttf";
+    private static final String FREE_SERIF_BOLD_ITALIC_PATH = "/fonts/FreeSerifBoldItalic.ttf";
 
     public enum FontType {
         LELAND("/fonts/Leland.otf"),
@@ -29,6 +32,10 @@ public class FontManager {
     public static void loadFonts() {
         if (lelandFont == null) lelandFont = loadFontTo(LELAND_PATH);
         if (freeSerifFont == null) freeSerifFont = loadFontTo(FREE_SERIF_PATH);
+
+        loadFontTo(FREE_SERIF_BOLD_PATH);
+        loadFontTo(FREE_SERIF_ITALIC_PATH);
+        loadFontTo(FREE_SERIF_BOLD_ITALIC_PATH);
     }
 
     public static Font getLelandFont(double size) {
@@ -66,9 +73,19 @@ public class FontManager {
         } catch (Exception e) {
             System.err.println("BŁĄD: Nie udało się załadować AWT Font: " + type);
         }
+
+        if (type == FontType.FREE_SERIF) {
+            loadFontTo(FREE_SERIF_BOLD_PATH);
+            loadFontTo(FREE_SERIF_ITALIC_PATH);
+            loadFontTo(FREE_SERIF_BOLD_ITALIC_PATH);
+        }
     }
 
     public static double getTextWidth(FontType type, String text, double fontSizeInSpatium) {
+        return getTextWidth(type, text, fontSizeInSpatium, false, false);
+    }
+
+    public static double getTextWidth(FontType type, String text, double fontSizeInSpatium, boolean bold, boolean italic) {
         if (text == null || text.isEmpty()) return 0.0;
         if (!awtFonts.containsKey(type)) {
             loadFont(type);
@@ -77,12 +94,21 @@ public class FontManager {
         java.awt.Font awtFont = awtFonts.get(type);
         if (awtFont == null) return 0.0;
 
-        java.awt.Font derived = awtFont.deriveFont((float) fontSizeInSpatium);
+        int style = java.awt.Font.PLAIN;
+        if (bold && italic) style = java.awt.Font.BOLD | java.awt.Font.ITALIC;
+        else if (bold) style = java.awt.Font.BOLD;
+        else if (italic) style = java.awt.Font.ITALIC;
+
+        java.awt.Font derived = awtFont.deriveFont(style, (float) fontSizeInSpatium);
         Rectangle2D bounds = derived.getStringBounds(text, FRC);
         return bounds.getWidth();
     }
 
     public static double getTextHeight(FontType type, String text, double fontSizeInSpatium) {
+        return getTextHeight(type, text, fontSizeInSpatium, false, false);
+    }
+
+    public static double getTextHeight(FontType type, String text, double fontSizeInSpatium, boolean bold, boolean italic) {
         if (text == null || text.isEmpty()) return 0.0;
         if (!awtFonts.containsKey(type)) {
             loadFont(type);
@@ -91,17 +117,32 @@ public class FontManager {
         java.awt.Font awtFont = awtFonts.get(type);
         if (awtFont == null) return 0.0;
 
-        java.awt.Font derived = awtFont.deriveFont((float) fontSizeInSpatium);
+        int style = java.awt.Font.PLAIN;
+        if (bold && italic) style = java.awt.Font.BOLD | java.awt.Font.ITALIC;
+        else if (bold) style = java.awt.Font.BOLD;
+        else if (italic) style = java.awt.Font.ITALIC;
+
+        java.awt.Font derived = awtFont.deriveFont(style, (float) fontSizeInSpatium);
         Rectangle2D bounds = derived.getStringBounds(text, FRC);
         return bounds.getHeight();
     }
 
     private static Font loadFontTo(String path) {
-        String fontPath = Objects.requireNonNull(FontManager.class.getResource(path)).toExternalForm();
-        Font font = Font.loadFont(fontPath, 14.0);
-        if (font == null) {
-            System.err.println("BŁĄD: Nie udało się załadować czcionki " + path + "!");
+        try {
+            var resource = FontManager.class.getResource(path);
+            if (resource == null) {
+                System.err.println("BŁĄD: Nie znaleziono pliku czcionki w resources: " + path);
+                return null;
+            }
+            String fontPath = resource.toExternalForm();
+            Font font = Font.loadFont(fontPath, 14.0);
+            if (font == null) {
+                System.err.println("BŁĄD: Nie udało się załadować czcionki " + path + "!");
+            }
+            return font;
+        } catch (Exception e) {
+            System.err.println("BŁĄD: Wyjątek podczas ładowania czcionki " + path + ": " + e.getMessage());
+            return null;
         }
-        return font;
     }
 }

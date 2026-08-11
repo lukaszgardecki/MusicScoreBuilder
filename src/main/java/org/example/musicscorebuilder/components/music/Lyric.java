@@ -1,22 +1,38 @@
 package org.example.musicscorebuilder.components.music;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Lyric {
-    private String text;
+    private List<LyricFragment> fragments;
     private int verse;
     private SyllableType type;
     private double fontSize;
 
-    public Lyric() {}
-
-    public Lyric(String text, SyllableType type, int verse, double fontsize) {
-        this.text = text;
-        this.type = type;
-        this.verse = verse;
-        this.fontSize = fontsize;
+    public Lyric() {
+        this.fragments = new ArrayList<>();
     }
 
-    public String getText() { return text; }
-    public void setText(String text) { this.text = text; }
+    public Lyric(List<LyricFragment> fragments, SyllableType type, int verse, double fontSize) {
+        this.fragments = fragments != null ? fragments : new ArrayList<>();
+        this.type = type;
+        this.verse = verse;
+        this.fontSize = fontSize;
+    }
+
+    public List<LyricFragment> getFragments() { return fragments; }
+    public void setFragments(List<LyricFragment> fragments) { this.fragments = fragments; }
+
+    public String getText() {
+        if (fragments == null || fragments.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (LyricFragment fragment : fragments) {
+            sb.append(fragment.getText());
+        }
+        return sb.toString();
+    }
 
     public SyllableType getType() { return type; }
     public void setType(SyllableType type) { this.type = type; }

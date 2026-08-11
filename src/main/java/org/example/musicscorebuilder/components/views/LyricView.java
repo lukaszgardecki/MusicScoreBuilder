@@ -3,15 +3,22 @@ package org.example.musicscorebuilder.components.views;
 import javafx.geometry.VPos;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import org.example.musicscorebuilder.components.layout.NoteLayout;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
 import org.example.musicscorebuilder.components.layout.StaffLayout;
 import org.example.musicscorebuilder.components.music.Lyric;
+import org.example.musicscorebuilder.components.music.LyricFragment;
 import org.example.musicscorebuilder.components.music.SyllableType;
 import org.example.musicscorebuilder.managers.FontManager;
 import org.example.musicscorebuilder.managers.LayoutHitTester;
 import org.example.musicscorebuilder.managers.LyricEditorManager;
+
+import java.util.List;
 
 public class LyricView extends ComponentView {
 
@@ -24,52 +31,87 @@ public class LyricView extends ComponentView {
         StaffLayout staff = noteLayout.getStaff();
         if (staff == null) return;
 
-        double staffBottomY = (staff.getY() + staff.getHeight()) * sp;
-        double noteX = segmentX + noteLayout.getX() * sp;
-        double noteCenterX = noteX + (noteLayout.getFontWidth() * sp) / 2.0;
+        gc.save();
 
-        LyricEditorManager editorManager = LyricEditorManager.getInstance();
-        BackgroundView bgView = null;
+        try {
+            double staffBottomY = (staff.getY() + staff.getHeight()) * sp;
+            double noteX = segmentX + noteLayout.getX() * sp;
+            double noteCenterX = noteX + (noteLayout.getFontWidth() * sp) / 2.0;
 
-        if (gc.getCanvas().getParent() instanceof BackgroundView bg) {
-            bgView = bg;
-        }
+            LyricEditorManager editorManager = LyricEditorManager.getInstance();
+            BackgroundView bgView = null;
 
-        gc.setTextAlign(TextAlignment.CENTER);
-        gc.setTextBaseline(VPos.TOP);
-        gc.setFill(Color.BLACK);
-
-        for (Lyric lyric : lyrics) {
-            if (lyric == null || lyric.getText() == null || lyric.getText().trim().isEmpty()) continue;
-
-            int verse = lyric.getVerse();
-
-            if (editorManager != null && editorManager.isEditingNote(noteLayout, verse)) {
-                continue;
+            if (gc.getCanvas().getParent() instanceof BackgroundView bg) {
+                bgView = bg;
             }
 
-            double lyricModelY = staffBottomY + (sp * 2.5) + ((verse - 1) * sp * 1.5);
-            double lyricScreenY = segmentY + lyricModelY;
-            double fontSizeSp = lyric.getFontSize();
-            double fontSize = fontSizeSp * sp;
-            gc.setFont(FontManager.getFreeSerifFont(fontSize));
+            gc.setTextAlign(TextAlignment.LEFT);
+            gc.setTextBaseline(VPos.TOP);
 
-            String text = lyric.getText();
-            gc.fillText(text, noteCenterX, lyricScreenY);
+            for (Lyric lyric : lyrics) {
+                if (lyric == null || lyric.getText() == null || lyric.getText().trim().isEmpty()) continue;
 
-            if (lyric.getType() == SyllableType.BEGIN || lyric.getType() == SyllableType.MIDDLE) {
-                drawDynamicHyphen(gc, bgView, noteLayout, verse, text, fontSizeSp, noteCenterX, lyricScreenY, sp);
+                int verse = lyric.getVerse();
+
+                if (editorManager != null && editorManager.isEditingNote(noteLayout, verse)) {
+                    continue;
+                }
+
+                double lyricModelY = staffBottomY + (sp * 2.5) + ((verse - 1) * sp * 1.5);
+                double lyricScreenY = segmentY + lyricModelY;
+                double fontSizeSp = lyric.getFontSize();
+                double fontSize = fontSizeSp * sp;
+
+                Font baseFont = FontManager.getFreeSerifFont(fontSize);
+                String fontFamily = baseFont.getFamily();
+
+                List<LyricFragment> fragments = lyric.getFragments();
+                if (fragments == null || fragments.isEmpty()) {
+                    fragments = List.of(new LyricFragment(lyric.getText(), false, false, false));
+                }
+
+                double totalWidth = calculateLyricWidth(fragments, fontSize, fontFamily);
+                double currentX = noteCenterX - (totalWidth / 2.0);
+
+                for (LyricFragment frag : fragments) {
+                    Font font = getFragmentFont(fontFamily, fontSize, frag);
+                    gc.setFont(font);
+                    gc.setFill(Color.BLACK);
+
+                    gc.fillText(frag.getText(), currentX, lyricScreenY);
+
+                    Text measureText = new Text(frag.getText());
+                    measureText.setFont(font);
+                    double fragWidth = measureText.getLayoutBounds().getWidth();
+
+                    if (frag.isUnderline()) {
+                        gc.setStroke(Color.BLACK);
+                        gc.setLineWidth(Math.max(1.0, sp * 0.1));
+                        double underlineY = lyricScreenY + measureText.getLayoutBounds().getHeight() * 0.8;
+                        gc.strokeLine(currentX, underlineY, currentX + fragWidth, underlineY);
+                    }
+
+                    currentX += fragWidth;
+                }
+
+                if (lyric.getType() == SyllableType.BEGIN || lyric.getType() == SyllableType.MIDDLE) {
+                    double currentTextWidthSp = totalWidth / sp;
+                    drawDynamicHyphen(gc, bgView, noteLayout, verse, currentTextWidthSp, fontSizeSp, noteCenterX, lyricScreenY, sp);
+                }
             }
+        } finally {
+            gc.restore();
         }
     }
 
-    private void drawDynamicHyphen(GraphicsContext gc, BackgroundView bgView, NoteLayout currentNote,
-                                   int verse, String currentText, double fontSizeSp,
-                                   double noteCenterX, double lyricScreenY, double sp) {
-
+    private void drawDynamicHyphen(
+            GraphicsContext gc, BackgroundView bgView, NoteLayout currentNote,
+            int verse, double currentTextWidthSp, double fontSizeSp,
+            double noteCenterX, double lyricScreenY, double sp
+    ) {
         NoteLayout nextNote = findNextNoteLayout(bgView, currentNote);
         double nextNoteCenterX;
-        String nextLyricText = "";
+        double nextTextWidthSp = 0;
 
         if (nextNote != null && bgView.getScoreView() != null) {
             ScoreLayout scoreLayout = bgView.getScoreView().getScoreLayout();
@@ -84,15 +126,17 @@ public class LyricView extends ComponentView {
             if (nextNote.getNote() != null) {
                 Lyric nextLyric = nextNote.getNote().getLyric(verse);
                 if (nextLyric != null && nextLyric.getText() != null) {
-                    nextLyricText = nextLyric.getText().trim();
+                    double fontSize = fontSizeSp * sp;
+                    Font baseFont = FontManager.getFreeSerifFont(fontSize);
+                    List<LyricFragment> nextFrags = nextLyric.getFragments() != null ? nextLyric.getFragments() :
+                            List.of(new LyricFragment(nextLyric.getText(), false, false, false));
+
+                    nextTextWidthSp = calculateLyricWidth(nextFrags, fontSize, baseFont.getFamily()) / sp;
                 }
             }
         } else {
             nextNoteCenterX = noteCenterX + 3.0 * sp;
         }
-
-        double currentTextWidthSp = FontManager.getTextWidth(FontManager.FontType.FREE_SERIF, currentText, fontSizeSp);
-        double nextTextWidthSp = nextLyricText.isEmpty() ? 0 : FontManager.getTextWidth(FontManager.FontType.FREE_SERIF, nextLyricText, fontSizeSp);
 
         double currentRightX = noteCenterX + (currentTextWidthSp * sp) / 2.0;
         double nextLeftX = nextNoteCenterX - (nextTextWidthSp * sp) / 2.0;
@@ -101,10 +145,13 @@ public class LyricView extends ComponentView {
         double margin = 0.15 * sp; // Margines odstępu od tekstu z lewej i prawej strony
 
         double availableForHyphen = gap - (2 * margin);
-        double standardDashWidth = FontManager.getTextWidth(FontManager.FontType.FREE_SERIF, "–", fontSizeSp) * sp;
-        double minDashWidth = 0.25 * standardDashWidth; // Progowa szerokość, poniżej której ukrywamy myślnik
 
-        // Rysowanie z wyliczonym skrajnym lub przeskalowanym rozmiarem
+        Font baseFont = FontManager.getFreeSerifFont(fontSizeSp * sp);
+        Text hyphenText = new Text("–");
+        hyphenText.setFont(baseFont);
+        double standardDashWidth = hyphenText.getLayoutBounds().getWidth();
+        double minDashWidth = 0.25 * standardDashWidth;
+
         if (availableForHyphen >= minDashWidth && standardDashWidth > 0) {
             double targetWidth = Math.min(standardDashWidth, availableForHyphen);
             double scaleX = targetWidth / standardDashWidth;
@@ -114,9 +161,27 @@ public class LyricView extends ComponentView {
             gc.save();
             gc.translate(hyphenX, lyricScreenY);
             gc.scale(scaleX, 1.0);
+            gc.setFont(baseFont);
+            gc.setTextAlign(TextAlignment.CENTER);
             gc.fillText("–", 0, 0);
             gc.restore();
         }
+    }
+
+    private double calculateLyricWidth(List<LyricFragment> fragments, double fontSize, String family) {
+        double totalWidth = 0;
+        for (LyricFragment frag : fragments) {
+            Text t = new Text(frag.getText());
+            t.setFont(getFragmentFont(family, fontSize, frag));
+            totalWidth += t.getLayoutBounds().getWidth();
+        }
+        return totalWidth;
+    }
+
+    private Font getFragmentFont(String family, double size, LyricFragment fragment) {
+        FontWeight weight = fragment.isBold() ? FontWeight.BOLD : FontWeight.NORMAL;
+        FontPosture posture = fragment.isItalic() ? FontPosture.ITALIC : FontPosture.REGULAR;
+        return Font.font(family, weight, posture, size);
     }
 
     private NoteLayout findNextNoteLayout(BackgroundView bgView, NoteLayout currentNote) {
