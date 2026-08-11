@@ -33,7 +33,8 @@ public class ShortcutHandler {
             case L                                      -> handleLyric(event);
             case N                                      -> modeManager.toggleInsertMode();
             case ESCAPE                                 -> handleEscape();
-            case DIGIT0, NUMPAD0, BACK_SPACE, DELETE    -> handleZero();
+            case DIGIT0, NUMPAD0, DELETE                -> handleZero();
+            case BACK_SPACE                             -> handleBackspace();
             case T                                      -> handleTie();
             case PERIOD, DECIMAL                        -> handleDot();
             case LEFT                                   -> scoreNavigator.movePrev();
@@ -68,6 +69,12 @@ public class ShortcutHandler {
             // Miejsce na obsługę 0 w trybie wprowadzania
         } else {
             scoreStateManager.convertSelectedNoteToRest();
+        }
+    }
+
+    private void handleBackspace() {
+        if (!modeManager.isEditTextMode()) {
+            handleZero();
         }
     }
 
