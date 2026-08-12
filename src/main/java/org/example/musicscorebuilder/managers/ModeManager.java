@@ -33,6 +33,7 @@ public class ModeManager {
     }
 
     public void toggleInsertMode() {
+        if (isEditTextMode()) return;
         if (isInsertMode()) {
             deactivateInsertMode();
         } else {
