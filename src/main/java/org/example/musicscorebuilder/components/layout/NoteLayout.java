@@ -66,7 +66,7 @@ public class NoteLayout extends ElementLayout {
         refreshLyrics();
         return lyrics;
     }
-    public LyricLayout getLyricLayout(int verse) {
+    public LyricLayout getLyric(int verse) {
         for (LyricLayout lyricLayout : getLyrics()) {
             if (lyricLayout.getVerse() == verse) {
                 return lyricLayout;
@@ -127,8 +127,15 @@ public class NoteLayout extends ElementLayout {
         lyrics.clear();
         if (note != null && note.getLyrics() != null) {
             for (Lyric lyric : note.getLyrics()) {
-                if (lyric != null && lyric.getText() != null && !lyric.getText().trim().isEmpty()) {
-                    lyrics.add(new LyricLayout(lyric, this));
+                if (lyric != null) {
+                    boolean hasText = lyric.getText() != null && !lyric.getText().trim().isEmpty();
+                    boolean isConnectedType = lyric.getType() == SyllableType.BEGIN
+                            || lyric.getType() == SyllableType.MIDDLE
+                            || lyric.getType() == SyllableType.END;
+
+                    if (hasText || isConnectedType) {
+                        lyrics.add(new LyricLayout(lyric, this));
+                    }
                 }
             }
         }

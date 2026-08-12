@@ -48,8 +48,7 @@ public class LyricView extends ComponentView {
                     }
                 }
 
-                LyricLayout.HyphenLayout hyphen = lyricLayout.computeHyphenLayout(scoreLayout);
-                if (hyphen != null) {
+                for (LyricLayout.HyphenLayout hyphen : lyricLayout.computeHyphenLayouts(scoreLayout)) {
                     gc.save();
                     gc.translate(segmentX + hyphen.modelX() * sp, segmentY + hyphen.modelY() * sp);
                     gc.scale(hyphen.scaleX(), 1.0);

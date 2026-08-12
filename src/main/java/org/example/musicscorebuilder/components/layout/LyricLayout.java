@@ -4,11 +4,11 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import org.example.musicscorebuilder.components.layout.util.LyricHyphenCalculator;
 import org.example.musicscorebuilder.components.music.Lyric;
 import org.example.musicscorebuilder.components.music.LyricFragment;
 import org.example.musicscorebuilder.components.music.SyllableType;
 import org.example.musicscorebuilder.managers.FontManager;
-import org.example.musicscorebuilder.managers.LayoutHitTester;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -128,72 +128,7 @@ public class LyricLayout {
         totalWidth = currentRelX;
     }
 
-    public HyphenLayout computeHyphenLayout(ScoreLayout scoreLayout) {
-        if (lyric.getType() != SyllableType.BEGIN && lyric.getType() != SyllableType.MIDDLE) {
-            return null;
-        }
-
-        NoteLayout nextNote = findNextNoteLayout(scoreLayout);
-        double noteCenterX = getNoteCenterX();
-        double nextNoteCenterX;
-        double nextTextWidthSp = 0.0;
-
-        if (nextNote != null) {
-            LayoutHitTester.Point currentAbs = LayoutHitTester.getLyricAbsolutePosition(scoreLayout, noteLayout, getVerse());
-            LayoutHitTester.Point nextAbs = LayoutHitTester.getLyricAbsolutePosition(scoreLayout, nextNote, getVerse());
-
-            double diffModelX = nextAbs.x() - currentAbs.x();
-            if (diffModelX <= 0) return null;
-
-            nextNoteCenterX = noteCenterX + diffModelX;
-
-            LyricLayout nextLyricLayout = nextNote.getLyricLayout(getVerse());
-            if (nextLyricLayout != null) {
-                nextTextWidthSp = nextLyricLayout.getTotalWidth();
-            }
-        } else {
-            nextNoteCenterX = noteCenterX + 3.0;
-        }
-
-        double currentTextWidthSp = getTotalWidth();
-        double currentRightX = noteCenterX + (currentTextWidthSp / 2.0);
-        double nextLeftX = nextNoteCenterX - (nextTextWidthSp / 2.0);
-
-        double gap = nextLeftX - currentRightX;
-        double margin = 0.15;
-        double availableForHyphen = gap - (2 * margin);
-
-        double fontSizeSp = getFontSize();
-        Font baseFont = FontManager.getFreeSerifFont(fontSizeSp);
-        Text hyphenText = new Text("–");
-        hyphenText.setFont(baseFont);
-
-        double standardDashWidth = hyphenText.getLayoutBounds().getWidth();
-        double minDashWidth = 0.25 * standardDashWidth;
-
-        if (availableForHyphen >= minDashWidth && standardDashWidth > 0) {
-            double targetWidth = Math.min(standardDashWidth, availableForHyphen);
-            double scaleX = targetWidth / standardDashWidth;
-            double hyphenX = (currentRightX + nextLeftX) / 2.0;
-
-            return new HyphenLayout(hyphenX, getModelY(), scaleX, fontSizeSp);
-        }
-
-        return null;
-    }
-
-    private NoteLayout findNextNoteLayout(ScoreLayout scoreLayout) {
-        if (scoreLayout != null) {
-            var allNotes = LayoutHitTester.getAllPositionedNotes(scoreLayout.getPages());
-            for (int i = 0; i < allNotes.size(); i++) {
-                if (allNotes.get(i).noteLayout() == noteLayout) {
-                    if (i + 1 < allNotes.size()) {
-                        return allNotes.get(i + 1).noteLayout();
-                    }
-                    break;
-                }
-            }
-        }
-        return null;
+    public List<HyphenLayout> computeHyphenLayouts(ScoreLayout scoreLayout) {
+        return LyricHyphenCalculator.calculateHyphens(this, scoreLayout);
     }
 }
