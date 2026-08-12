@@ -15,9 +15,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.text.*;
 import javafx.util.Duration;
-import org.example.musicscorebuilder.components.layout.NoteLayout;
-import org.example.musicscorebuilder.components.layout.ScoreLayout;
-import org.example.musicscorebuilder.components.layout.StaffLayout;
+import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.music.Lyric;
 import org.example.musicscorebuilder.components.music.LyricFragment;
@@ -69,6 +67,7 @@ public class LyricEditorManager {
     private NoteLayout currentNoteLayout;
     private int currentVerse = 1;
     private boolean isEditing = false;
+    private boolean isNavigating = false;
     private boolean justStartedEditing = false;
     private boolean isLoadingLyric = false;
     private ScoreLayout currentScoreLayout;
@@ -124,11 +123,6 @@ public class LyricEditorManager {
         ScoreStateManager.getInstance().notifyScoreChanged();
 
         Platform.runLater(() -> {
-            NoteLayout freshNote = findFreshNoteLayout(targetModel);
-            if (freshNote != null) {
-                this.currentNoteLayout = freshNote;
-            }
-
             ensureInputFieldAttached();
 
             Lyric lyric = targetModel.getLyric(verse);
@@ -139,12 +133,18 @@ public class LyricEditorManager {
             editorContainer.setVisible(true);
             editorContainer.toFront();
 
-            int caretIndex = (clickX != null && !inputField.getText().isEmpty())
-                    ? calculateCaretIndex(inputField.getText(), clickX)
-                    : inputField.getText().length();
-
             inputField.requestFocus();
-            inputField.positionCaret(caretIndex);
+
+            if (clickX != null) {
+                int caretIndex = !inputField.getText().isEmpty() ? calculateCaretIndex(inputField.getText(), clickX) : 0;
+                inputField.positionCaret(caretIndex);
+            } else {
+                if (!inputField.getText().isEmpty()) {
+                    inputField.selectAll();
+                } else {
+                    inputField.positionCaret(0);
+                }
+            }
 
             updateCustomCaretPosition();
 
@@ -239,6 +239,7 @@ public class LyricEditorManager {
         });
 
         inputField.focusedProperty().addListener((obs, wasFocused, isFocused) -> {
+            if (isNavigating) return;
             if (isFocused) {
                 updateCustomCaretPosition();
             } else if (isEditing && !justStartedEditing) {
@@ -254,12 +255,34 @@ public class LyricEditorManager {
                 currentItalic = s.italic;
                 currentUnderline = s.underline;
             }
-            updateCustomCaretPosition();
+            Platform.runLater(this::updateCustomCaretPosition);
+        });
+
+        inputField.selectionProperty().addListener((obs, oldSel, newSel) -> {
+            Platform.runLater(this::updateCustomCaretPosition);
         });
 
         inputField.addEventFilter(KeyEvent.KEY_TYPED, event -> {
             if ("-".equals(event.getCharacter()) || " ".equals(event.getCharacter())) {
                 event.consume();
+            }
+        });
+
+        inputField.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode() == KeyCode.RIGHT) {
+                if (inputField.getCaretPosition() == inputField.getText().length() && inputField.getSelectedText().isEmpty()) {
+                    if (findNextNoteLayout(currentNoteLayout) != null) {
+                        event.consume();
+                        commitAndNavigateNext();
+                    }
+                }
+            } else if (event.getCode() == KeyCode.LEFT) {
+                if (inputField.getCaretPosition() == 0 && inputField.getSelectedText().isEmpty()) {
+                    if (findPreviousNoteLayout(currentNoteLayout) != null) {
+                        event.consume();
+                        commitAndPrevious();
+                    }
+                }
             }
         });
 
@@ -293,7 +316,7 @@ public class LyricEditorManager {
     }
 
     private void updateCustomCaretPosition() {
-        if (!isEditing) {
+        if (!isEditing || inputField.getSelection().getLength() > 0) {
             caretBlink.stop();
             customCaret.setVisible(false);
             return;
@@ -474,12 +497,11 @@ public class LyricEditorManager {
         heightNode.setFont(baseFont);
         double fieldHeight = heightNode.getLayoutBounds().getHeight() + 4.0;
 
-        Text widthNode = new Text(inputField.getText().isEmpty() ? "a" : inputField.getText());
-        widthNode.setFont(baseFont);
-        double exactTextWidth = widthNode.getLayoutBounds().getWidth();
-
-        double fieldWidth = Math.max(25.0, exactTextWidth + scaleY + 12.0);
-
+        String text = inputField.getText();
+        double exactTextWidth = (text == null || text.isEmpty())
+                ? measureWidth("a", 0, 1, baseFont)
+                : measureWidth(text, 0, text.length(), baseFont);
+        double fieldWidth = Math.max(20.0, exactTextWidth + 8.0);
         double finalX = viewX - (fieldWidth / 2.0);
         double finalY = viewY;
 
@@ -518,22 +540,18 @@ public class LyricEditorManager {
     }
 
     private Double getPreviousSyllableFontSize(int verse) {
-        List<NoteLayout> allNotes = getAllNotesInScore();
         if (currentNoteLayout == null) return null;
 
-        int currentIndex = allNotes.indexOf(currentNoteLayout);
-        if (currentIndex <= 0) return null;
-
-        for (int i = currentIndex - 1; i >= 0; i--) {
-            Note prevNote = allNotes.get(i).getNote();
+        NoteLayout prev = findPreviousNoteLayout(currentNoteLayout);
+        while (prev != null) {
+            Note prevNote = prev.getNote();
             if (prevNote != null) {
                 Lyric prevLyric = prevNote.getLyric(verse);
-                if (prevLyric != null) {
-                    if (prevLyric.getFontSize() != null && prevLyric.getFontSize() > 0.0) {
-                        return prevLyric.getFontSize();
-                    }
+                if (prevLyric != null && prevLyric.getFontSize() != null && prevLyric.getFontSize() > 0.0) {
+                    return prevLyric.getFontSize();
                 }
             }
+            prev = findPreviousNoteLayout(prev);
         }
         return null;
     }
@@ -597,7 +615,7 @@ public class LyricEditorManager {
     private void attachMouseFilter() {
         if (containerPane != null) {
             containerPane.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
-                if (justStartedEditing) {
+                if (justStartedEditing || isNavigating) {
                     return;
                 }
                 if (isEditing) {
@@ -618,9 +636,7 @@ public class LyricEditorManager {
         double fontSize = scaleY * style.getNoteLyricFontSize();
         Font actualFont = FontManager.getFreeSerifFont(fontSize);
 
-        Text textNode = new Text(text);
-        textNode.setFont(actualFont);
-        double totalWidth = textNode.getLayoutBounds().getWidth();
+        double totalWidth = measureWidth(text, 0, text.length(), actualFont);
 
         LayoutHitTester.Point modelPos = LayoutHitTester.getLyricAbsolutePosition(getScoreLayout(), currentNoteLayout, currentVerse);
         double viewX = modelToViewX(modelPos.x());
@@ -634,11 +650,7 @@ public class LyricEditorManager {
         double minDiff = Double.MAX_VALUE;
 
         for (int i = 0; i <= text.length(); i++) {
-            String sub = text.substring(0, i);
-            Text subNode = new Text(sub);
-            subNode.setFont(actualFont);
-            double subWidth = subNode.getLayoutBounds().getWidth();
-
+            double subWidth = measureWidth(text, 0, i, actualFont);
             double diff = Math.abs(subWidth - clickOffset);
             if (diff < minDiff) {
                 minDiff = diff;
@@ -659,70 +671,98 @@ public class LyricEditorManager {
     private double modelToViewY(double modelY) { return (transformer != null) ? transformer.modelToViewY(modelY) : modelY; }
     private double getScaleY() { return (transformer != null) ? transformer.getScaleY() : 1.0; }
 
-    private void commitAndNext(SyllableType type) {
+    private void navigateTo(NoteLayout targetNoteLayout, SyllableType commitType, boolean forceTypeChange) {
         if (!isEditing || currentNoteLayout == null) return;
 
-        commitCurrentText(type, true);
-        NoteLayout nextNote = findNextNoteLayout(currentNoteLayout);
+        if (targetNoteLayout == null) {
+            commitCurrentText(commitType, forceTypeChange);
+            commitAndHide();
+            return;
+        }
 
-        if (nextNote != null) {
-            Note targetNextModel = nextNote.getNote();
-            int verse = currentVerse;
+        this.isNavigating = true;
 
-            hideEditor();
+        try {
+            commitCurrentText(commitType, forceTypeChange);
+
+            Note targetModel = targetNoteLayout.getNote();
+            if (targetModel == null) return;
+
+            this.currentNoteLayout = targetNoteLayout;
+
+            Lyric lyric = targetModel.getLyric(currentVerse);
+            loadLyricIntoEditor(lyric);
+
             ScoreStateManager.getInstance().notifyScoreChanged();
 
-            Platform.runLater(() -> {
-                NoteLayout freshNextNote = findFreshNoteLayout(targetNextModel);
-                if (freshNextNote != null) {
-                    startEditing(freshNextNote, verse);
-                }
-            });
-        } else {
-            commitAndHide();
+            updatePosition();
+
+            inputField.requestFocus();
+            if (!inputField.getText().isEmpty()) {
+                inputField.selectAll();
+            } else {
+                inputField.positionCaret(0);
+            }
+            updateCustomCaretPosition();
+        } finally {
+            Platform.runLater(() -> this.isNavigating = false);
         }
     }
 
-    private List<NoteLayout> getAllNotesInScore() {
-        List<NoteLayout> notes = new ArrayList<>();
-        ScoreLayout layout = getScoreLayout();
-        if (layout == null) return notes;
+    private void commitAndNext(SyllableType type) {
+        navigateTo(findNextNoteLayout(currentNoteLayout), type, true);
+    }
 
-        for (LayoutHitTester.PositionedNote pn : LayoutHitTester.getAllPositionedNotes(layout.getPages())) {
-            notes.add(pn.noteLayout());
-        }
-        return notes;
+    private void commitAndNavigateNext() {
+        navigateTo(findNextNoteLayout(currentNoteLayout), SyllableType.SINGLE, false);
+    }
+
+    private void commitAndPrevious() {
+        navigateTo(findPreviousNoteLayout(currentNoteLayout), SyllableType.SINGLE, false);
     }
 
     private NoteLayout findNextNoteLayout(NoteLayout current) {
-        if (current == null || current.getNote() == null) return null;
+        if (current == null || current.getNote() == null || current.getSegment() == null) return null;
 
-        Note currentNoteModel = current.getNote();
-        StaffLayout currentStaff = current.getStaff();
-        int currentStaffIndex = (currentStaff != null) ? currentStaff.getStaffIndex() : -1;
-        List<NoteLayout> allNotes = getAllNotesInScore();
+        int targetVoice = current.getNote().getVoice();
+        int targetStaff = current.getStaff().getStaffIndex();
 
-        List<NoteLayout> sameStaffNotes = allNotes.stream()
-                .filter(nl -> nl.getStaff() != null && nl.getStaff().getStaffIndex() == currentStaffIndex)
-                .toList();
+        SegmentLayout segmentNode = current.getSegment().getNextSameType();
 
-        for (int i = 0; i < sameStaffNotes.size(); i++) {
-            if (sameStaffNotes.get(i).getNote() == currentNoteModel) {
-                if (i + 1 < sameStaffNotes.size()) {
-                    return sameStaffNotes.get(i + 1);
+        while (segmentNode != null) {
+            for (ElementLayout element : segmentNode.getElements()) {
+                if (element instanceof NoteLayout nextNote) {
+                    if (nextNote.getNote() != null
+                            && nextNote.getNote().getVoice() == targetVoice
+                            && nextNote.getStaff().getStaffIndex() == targetStaff) {
+                        return nextNote;
+                    }
                 }
-                break;
             }
+            segmentNode = segmentNode.getNextSameType();
         }
         return null;
     }
 
-    private NoteLayout findFreshNoteLayout(Note targetNote) {
-        if (targetNote == null) return null;
-        for (NoteLayout nl : getAllNotesInScore()) {
-            if (nl.getNote() == targetNote) {
-                return nl;
+    private NoteLayout findPreviousNoteLayout(NoteLayout current) {
+        if (current == null || current.getNote() == null || current.getSegment() == null) return null;
+
+        int targetVoice = current.getNote().getVoice();
+        int targetStaff = current.getStaff().getStaffIndex();
+
+        SegmentLayout segmentNode = current.getSegment().getPrevSameType();
+
+        while (segmentNode != null) {
+            for (ElementLayout element : segmentNode.getElements()) {
+                if (element instanceof NoteLayout prevNote) {
+                    if (prevNote.getNote() != null
+                            && prevNote.getNote().getVoice() == targetVoice
+                            && prevNote.getStaff().getStaffIndex() == targetStaff) {
+                        return prevNote;
+                    }
+                }
             }
+            segmentNode = segmentNode.getPrevSameType();
         }
         return null;
     }
