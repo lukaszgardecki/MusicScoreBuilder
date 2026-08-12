@@ -90,6 +90,7 @@ public class MidiInputService {
             return;
         }
 
+        PianoPlayer.getInstance().playNote(note.getPitch());
         Segment nextSegment = MeasureNoteInserter.insertNote(
                 context.measure(),
                 context.segment(),

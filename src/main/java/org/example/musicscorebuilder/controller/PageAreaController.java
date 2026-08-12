@@ -110,10 +110,36 @@ public class PageAreaController {
                             event.getX()
                     );
                     event.consume();
+                    return;
                 }
             }
+
+            if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 1) {
+                double modelX = container.toModelX(event.getX());
+                double modelY = container.toModelY(event.getY());
+
+                Selectable clickedElement = LayoutHitTester.findClickedElement(currentScoreLayout.getPages(), modelX, modelY);
+
+                boolean isAdditive = event.isShortcutDown() || event.isControlDown() || event.isMetaDown();
+                stateManager.setSelected(clickedElement, isAdditive);
+
+                if (clickedElement instanceof NoteLayout note && note.getNote() != null) {
+                    PianoPlayer.getInstance().playNote(note.getNote().getPitch());
+                }
+                redraw();
+            }
         });
-        container.setOnMouseClicked(this::handleCanvasClick);
+
+        container.setOnMouseClicked(event -> {
+            if (modeManager.isInsertMode() || currentScoreLayout == null) return;
+
+            if (event.getButton() == MouseButton.SECONDARY) {
+                double modelX = container.toModelX(event.getX());
+                double modelY = container.toModelY(event.getY());
+                Selectable clickedElement = LayoutHitTester.findClickedElement(currentScoreLayout.getPages(), modelX, modelY);
+                handleRightClick(event, clickedElement);
+            }
+        });
     }
 
     private void initListeners() {
@@ -170,30 +196,6 @@ public class PageAreaController {
         redraw();
     }
 
-    private void handleCanvasClick(MouseEvent event) {
-        if (modeManager.isInsertMode() || currentScoreLayout == null) return;
-        if (!container.wasLastMousePressJustClick()) return;
-        if (event.getClickCount() == 2) return;
-
-        double modelX = container.toModelX(event.getX());
-        double modelY = container.toModelY(event.getY());
-
-        Selectable clickedElement = LayoutHitTester.findClickedElement(currentScoreLayout.getPages(), modelX, modelY);
-
-        if (event.getButton() == MouseButton.SECONDARY && clickedElement != null) {
-            handleRightClick(event, clickedElement);
-            return;
-        }
-
-        boolean isAdditive = event.isShortcutDown() || event.isControlDown() || event.isMetaDown();
-        stateManager.setSelected(clickedElement, isAdditive);
-
-        if (clickedElement instanceof NoteLayout note) {
-            PianoPlayer.getInstance().playNote(note.getNote().getPitch());
-        }
-        redraw();
-    }
-
     private void handleRightClick(MouseEvent event, Selectable clickedElement) {
         if (contextMenuController == null) return;
 
@@ -201,9 +203,7 @@ public class PageAreaController {
             stateManager.setSelected(clickedElement, false);
             redraw();
         }
-        if (contextMenuController != null) {
-            contextMenuController.setContext(clickedElement);
-            contextMenuController.show(container, event.getScreenX(), event.getScreenY());
-        }
+        contextMenuController.setContext(clickedElement);
+        contextMenuController.show(container, event.getScreenX(), event.getScreenY());
     }
 }

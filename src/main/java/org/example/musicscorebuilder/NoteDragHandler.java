@@ -8,6 +8,7 @@ import org.example.musicscorebuilder.components.music.*;
 import org.example.musicscorebuilder.components.music.util.MeasureNoteInserter;
 import org.example.musicscorebuilder.components.music.util.TiedNoteService;
 import org.example.musicscorebuilder.components.views.BackgroundView;
+import org.example.musicscorebuilder.controller.util.audio.PianoPlayer;
 import org.example.musicscorebuilder.managers.LayoutHitTester;
 import org.example.musicscorebuilder.managers.ModeManager;
 import org.example.musicscorebuilder.managers.ScoreNavigator;
@@ -92,6 +93,7 @@ public class NoteDragHandler {
         int staffId = gN.getStaff().getStaffIndex();
         Note note = gN.getNote();
 
+        PianoPlayer.getInstance().playNote(note.getPitch());
         Segment nextSegment = MeasureNoteInserter.insertNote(measure, segment, staffId, note);
 
         stateManager.notifyScoreChanged();
@@ -149,6 +151,9 @@ public class NoteDragHandler {
 
                 TiedNoteService.syncTiedNotesPitch(session.note());
                 container.updateContent(layoutProvider.get());
+                if (session.note().getNote() != null) {
+                    PianoPlayer.getInstance().playNote(session.note().getNote().getPitch());
+                }
             }
         }
     }

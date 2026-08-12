@@ -1,7 +1,9 @@
 package org.example.musicscorebuilder.components.music.util;
 
-import org.example.musicscorebuilder.components.music.*;
-import org.example.musicscorebuilder.controller.util.audio.PianoPlayer;
+import org.example.musicscorebuilder.components.music.Measure;
+import org.example.musicscorebuilder.components.music.Note;
+import org.example.musicscorebuilder.components.music.NoteRestElement;
+import org.example.musicscorebuilder.components.music.Segment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,7 +33,6 @@ public class MeasureNoteInserter {
         if (startTick < 0) return null;
 
         int endTick = startTick + newTicks;
-        PianoPlayer.getInstance().playNote(newNote.getPitch());
 
         Map<Measure, List<NonNoteRestPos>> savedPositions = new HashMap<>();
         Measure curr = measure;
