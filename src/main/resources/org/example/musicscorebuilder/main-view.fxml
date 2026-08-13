@@ -13,6 +13,8 @@
 
     <left><fx:include source="left.fxml"/></left>
 
+    <right><fx:include source="right.fxml"/></right>
+
     <center><fx:include source="center.fxml"/></center>
 
     <bottom>

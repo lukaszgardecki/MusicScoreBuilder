@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<TabPane prefWidth="300.0"
+         tabClosingPolicy="UNAVAILABLE"
+         xmlns="http://javafx.com/javafx/17"
+         xmlns:fx="http://javafx.com/fxml/1"
+         fx:controller="org.example.musicscorebuilder.controller.SongbookController">
+
+    <Tab text="Śpiewnik">
+        <VBox spacing="10" style="-fx-padding: 10;">
+            <Button fx:id="openFolderButton"
+                    text="Otwórz folder"
+                    onAction="#handleOpenFolder"
+                    maxWidth="Infinity"/>
+
+            <Label fx:id="folderPathLabel"
+                   text="Nie wybrano folderu"
+                   style="-fx-font-size: 11px; -fx-text-fill: #666666;"
+                   wrapText="true"/>
+
+            <Separator />
+
+            <CheckBox fx:id="compressedOnlyCheckBox"
+                      text="Pokaż skompresowane (GZIP)"
+                      onAction="#handleFilterChange" />
+
+            <Label text="Pliki śpiewnika (.json):" style="-fx-font-weight: bold;" />
+
+            <ListView fx:id="jsonFilesListView" VBox.vgrow="ALWAYS" />
+        </VBox>
+    </Tab>
+</TabPane>
