@@ -167,7 +167,7 @@ public class SongbookController {
         }
 
         File parentDir = parentDirOpt.get();
-        String currentInput = "NowyFolder";
+        String currentInput = "";
 
         while (true) {
             TextInputDialog dialog = new TextInputDialog(currentInput);
@@ -206,7 +206,7 @@ public class SongbookController {
         }
 
         File parentDir = parentDirOpt.get();
-        String currentInput = "NowyUtwor";
+        String currentInput = "";
 
         while (true) {
             TextInputDialog dialog = new TextInputDialog(currentInput);

@@ -14,6 +14,7 @@
             <Button fx:id="openFolderButton"
                     text="Otwórz folder"
                     onAction="#handleOpenFolder"
+                    styleClass="btn"
                     maxWidth="Infinity"/>
 
             <Label fx:id="folderPathLabel"
@@ -22,25 +23,48 @@
                    wrapText="true"/>
 
             <Separator />
-            <HBox spacing="10">
-                <Button text="+ Nowy folder"
-                        onAction="#handleAddFolder"
+
+            <HBox spacing="8">
+                <Button onAction="#handleAddFolder"
+                        styleClass="btn, btn-folder"
                         maxWidth="Infinity"
-                        HBox.hgrow="ALWAYS"/>
-                <Button text="+ Nowy plik"
-                        onAction="#handleAddFile"
+                        HBox.hgrow="ALWAYS">
+                    <tooltip>
+                        <Tooltip text="Nowy folder" />
+                    </tooltip>
+                    <graphic>
+                        <Region styleClass="icon, icon-folder-add" />
+                    </graphic>
+                </Button>
+                <Button onAction="#handleAddFile"
+                        styleClass="btn, btn-file"
                         maxWidth="Infinity"
-                        HBox.hgrow="ALWAYS"/>
+                        HBox.hgrow="ALWAYS">
+                    <tooltip>
+                        <Tooltip text="Nowy plik" />
+                    </tooltip>
+                    <graphic>
+                        <Region styleClass="icon, icon-file-add" />
+                    </graphic>
+                </Button>
                 <Button fx:id="deleteButton"
-                        text="- Usuń"
                         onAction="#handleDelete"
+                        styleClass="btn, btn-danger"
                         maxWidth="Infinity"
-                        HBox.hgrow="ALWAYS"/>
+                        HBox.hgrow="ALWAYS">
+                    <tooltip>
+                        <Tooltip text="Usuń element" />
+                    </tooltip>
+                    <graphic>
+                        <Region styleClass="icon, icon-trash" />
+                    </graphic>
+                </Button>
             </HBox>
+
             <Separator />
 
             <CheckBox fx:id="compressedOnlyCheckBox"
-                      text="Pokaż skompresowane (GZIP)"
+                      text="Pokaż skompresowane"
                       onAction="#handleFilterChange" />
             <Label text="Pliki śpiewnika:" style="-fx-font-weight: bold;" />
             <ListView fx:id="jsonFilesListView" VBox.vgrow="ALWAYS" />

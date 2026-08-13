@@ -20,6 +20,7 @@ public class MusicScoreBuilder extends Application {
         scene.getStylesheets().addAll(
                 Objects.requireNonNull(getClass().getResource("/styles/center.css")).toExternalForm(),
                 Objects.requireNonNull(getClass().getResource("/styles/left.css")).toExternalForm(),
+                Objects.requireNonNull(getClass().getResource("/styles/right.css")).toExternalForm(),
                 Objects.requireNonNull(getClass().getResource("/styles/toolbar.css")).toExternalForm(),
                 Objects.requireNonNull(getClass().getResource("/styles/menubar.css")).toExternalForm(),
                 Objects.requireNonNull(getClass().getResource("/styles/sheet.css")).toExternalForm()
