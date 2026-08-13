@@ -1,6 +1,7 @@
 package org.example.musicscorebuilder.controller.songbookcontroller;
 
 import javafx.animation.PauseTransition;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -327,14 +328,27 @@ public class SongbookController {
 
     private void setupMouseNavigation() {
         jsonFilesListView.setOnMouseClicked(event -> {
+            jsonFilesListView.requestFocus();
             if (event.getClickCount() == 2) {
                 SongbookItem selected = jsonFilesListView.getSelectionModel().getSelectedItem();
-                if (selected == null) return;
+                openItem(selected);
+            }
+        });
+    }
 
-                switch (selected.type()) {
-                    case PARENT_DIR, DIRECTORY -> navigateToDirectory(selected.file());
-                    case FILE -> loadScoreFileSafely(selected.file());
-                }
+    private void openItem(SongbookItem item) {
+        if (item == null) return;
+        switch (item.type()) {
+            case PARENT_DIR, DIRECTORY -> navigateToDirectory(item.file());
+            case FILE -> loadScoreFileSafely(item.file());
+        }
+    }
+
+    private void navigateUp() {
+        PreferencesService.getDirectoryFile().ifPresent(currentDir -> {
+            File parentDir = currentDir.getParentFile();
+            if (parentDir != null && parentDir.exists()) {
+                navigateToDirectory(parentDir);
             }
         });
     }
@@ -465,14 +479,45 @@ public class SongbookController {
                 newScene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
                     if (newScene.getFocusOwner() instanceof TextInputControl) return;
 
-                    SongbookItem selected = jsonFilesListView.getSelectionModel().getSelectedItem();
-                    if (selected == null || selected.type() == SongbookItem.Type.PARENT_DIR) return;
+                    int currentIndex = jsonFilesListView.getSelectionModel().getSelectedIndex();
+                    int totalItems = jsonFilesListView.getItems().size();
 
-                    if (event.getCode() == KeyCode.DELETE) {
-                        handleDelete();
+                    if (event.getCode() == KeyCode.UP) {
+                        if (currentIndex > 0) {
+                            int nextIndex = currentIndex - 1;
+                            jsonFilesListView.getSelectionModel().select(nextIndex);
+                            jsonFilesListView.scrollTo(nextIndex);
+                            jsonFilesListView.requestFocus();
+                        }
+                        event.consume();
+                    } else if (event.getCode() == KeyCode.DOWN) {
+                        if (currentIndex < totalItems - 1) {
+                            int nextIndex = currentIndex + 1;
+                            jsonFilesListView.getSelectionModel().select(nextIndex);
+                            jsonFilesListView.scrollTo(nextIndex);
+                            jsonFilesListView.requestFocus();
+                        }
+                        event.consume();
+                    } else if (event.getCode() == KeyCode.ENTER) {
+                        SongbookItem selected = jsonFilesListView.getSelectionModel().getSelectedItem();
+                        if (selected != null) {
+                            openItem(selected);
+                        }
+                        event.consume();
+                    } else if (event.getCode() == KeyCode.BACK_SPACE) {
+                        navigateUp();
+                        event.consume();
+                    } else if (event.getCode() == KeyCode.DELETE) {
+                        SongbookItem selected = jsonFilesListView.getSelectionModel().getSelectedItem();
+                        if (selected != null && selected.type() != SongbookItem.Type.PARENT_DIR) {
+                            handleDelete();
+                        }
                         event.consume();
                     } else if (event.getCode() == KeyCode.F2) {
-                        handleRename();
+                        SongbookItem selected = jsonFilesListView.getSelectionModel().getSelectedItem();
+                        if (selected != null && selected.type() != SongbookItem.Type.PARENT_DIR) {
+                            handleRename();
+                        }
                         event.consume();
                     }
                 });
@@ -493,6 +538,12 @@ public class SongbookController {
     private void loadJsonFiles(File folder) {
         jsonFilesList.clear();
         jsonFilesList.addAll(fileService.getDirectoryContent(folder, compressedOnlyCheckBox.isSelected()));
+
+        if (!jsonFilesList.isEmpty()) {
+            jsonFilesListView.getSelectionModel().select(0);
+        }
+
+        Platform.runLater(() -> jsonFilesListView.requestFocus());
     }
 
     private void loadSavedDirectory() {
