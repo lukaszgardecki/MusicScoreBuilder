@@ -6,9 +6,10 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import org.example.musicscorebuilder.NoteDragHandler;
-import org.example.musicscorebuilder.ScoreService;
 import org.example.musicscorebuilder.ShortcutHandler;
-import org.example.musicscorebuilder.components.layout.*;
+import org.example.musicscorebuilder.components.layout.NoteLayout;
+import org.example.musicscorebuilder.components.layout.ScoreLayout;
+import org.example.musicscorebuilder.components.layout.Selectable;
 import org.example.musicscorebuilder.components.layout.edit.CursorLayout;
 import org.example.musicscorebuilder.components.layout.engine.LayoutEngine;
 import org.example.musicscorebuilder.components.music.Score;
@@ -16,6 +17,7 @@ import org.example.musicscorebuilder.components.music.ScoreMode;
 import org.example.musicscorebuilder.components.views.BackgroundView;
 import org.example.musicscorebuilder.controller.util.audio.MidiInputService;
 import org.example.musicscorebuilder.controller.util.audio.PianoPlayer;
+import org.example.musicscorebuilder.data.StorageService;
 import org.example.musicscorebuilder.managers.*;
 
 import java.util.List;
@@ -30,7 +32,7 @@ public class PageAreaController {
 
     private LayoutEngine layoutEngine;
     private ScoreLayout currentScoreLayout;
-    private final ScoreService scoreService = ScoreService.getInstance();
+    private final StorageService storageService = StorageService.getInstance();
     private final ScoreStateManager stateManager = ScoreStateManager.getInstance();
     private final ModeManager modeManager = ModeManager.getInstance();
     private final ScoreNavigator scoreNavigator = ScoreNavigator.getInstance();
@@ -52,7 +54,7 @@ public class PageAreaController {
 
     @FXML
     private void toggleViewMode() {
-        Score score = scoreService.getScore();
+        Score score = storageService.getScore();
         if (score.getModes().size() <= 1) return;
 
         if (viewModeToggle.isSelected()) {

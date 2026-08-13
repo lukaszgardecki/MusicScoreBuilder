@@ -1,11 +1,11 @@
 package org.example.musicscorebuilder.managers;
 
-import org.example.musicscorebuilder.ScoreService;
 import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.music.*;
 import org.example.musicscorebuilder.components.music.util.PitchTransposer;
 import org.example.musicscorebuilder.components.music.util.TiedNoteService;
 import org.example.musicscorebuilder.controller.util.audio.PianoPlayer;
+import org.example.musicscorebuilder.data.StorageService;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -34,7 +34,7 @@ public class ScoreStateManager {
     }
 
     public ScoreMode getCurrentMode() {
-        Score score = ScoreService.getInstance().getScore();
+        Score score = StorageService.getInstance().getScore();
         if (score == null || score.getModes().isEmpty()) return null;
         if (currentModeIndex < 0 || currentModeIndex >= score.getModes().size()) {
             return score.getModes().getFirst();

@@ -3,11 +3,11 @@ package org.example.musicscorebuilder.controller;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import org.example.musicscorebuilder.ScoreService;
 import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.music.*;
 import org.example.musicscorebuilder.components.music.util.TiedNoteService;
 import org.example.musicscorebuilder.controller.util.ToolbarIconRenderer;
+import org.example.musicscorebuilder.data.StorageService;
 import org.example.musicscorebuilder.managers.ModeManager;
 import org.example.musicscorebuilder.managers.ScoreNavigator;
 import org.example.musicscorebuilder.managers.ScoreStateManager;
@@ -15,7 +15,7 @@ import org.example.musicscorebuilder.managers.ScoreStateManager;
 import java.util.Map;
 
 public class ToolbarController {
-    private final ScoreService scoreService = ScoreService.getInstance();
+    private final StorageService storageService = StorageService.getInstance();
     private final ScoreStateManager stateManager = ScoreStateManager.getInstance();
     private final ModeManager modeManager = ModeManager.getInstance();
     private final ScoreNavigator scoreNavigator = ScoreNavigator.getInstance();
@@ -107,13 +107,13 @@ public class ToolbarController {
 
     @FXML
     private void addMeasure() {
-        scoreService.getScore().addNewMeasure();
+        storageService.getScore().addNewMeasure();
         stateManager.notifyScoreChanged();
     }
 
     @FXML
     private void removeMeasure() {
-        scoreService.getScore().removeLastMeasure();
+        storageService.getScore().removeLastMeasure();
         stateManager.notifyScoreChanged();
     }
 

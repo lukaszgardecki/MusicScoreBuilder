@@ -7,18 +7,17 @@ import javafx.scene.control.MenuBar;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import org.example.musicscorebuilder.MusicScoreBuilder;
-import org.example.musicscorebuilder.ScoreService;
 import org.example.musicscorebuilder.components.dialog.CustomConfirmationDialog;
-import org.example.musicscorebuilder.components.music.Score;
-import org.example.musicscorebuilder.data.ScoreStorageService;
+import org.example.musicscorebuilder.data.FileService;
+import org.example.musicscorebuilder.data.StorageService;
 
-import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 public class MenuBarController {
     @FXML MenuBar menuBar;
-    private final ScoreService scoreService = ScoreService.getInstance();
-    private final ScoreStorageService storageService = new ScoreStorageService();
+    private final StorageService storageService = StorageService.getInstance();
+    private final FileService fileService = FileService.getInstance();
 
     @FXML
     private void handleNew(ActionEvent event) {
@@ -31,25 +30,21 @@ public class MenuBarController {
         fileChooser.setTitle("Otwórz");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Pliki JSON", "*.json"));
 
-        File projectDir = new File(System.getProperty("user.dir"));
-        if (projectDir.exists() && projectDir.isDirectory()) {
-            fileChooser.setInitialDirectory(projectDir);
-        }
+        fileService.getCurrentProjectFile().ifPresent(fileChooser::setInitialDirectory);
 
         Window ownerWindow = (menuBar != null && menuBar.getScene() != null)
                 ? menuBar.getScene().getWindow()
                 : null;
-        File selectedFile = fileChooser.showOpenDialog(ownerWindow);
 
-        if (selectedFile != null) {
-            try {
-                Score score = storageService.loadFromJson(selectedFile);
-                scoreService.setScore(score);
-            } catch (IOException e) {
-                e.printStackTrace();
-                showErrorAlert("Błąd wczytywania", "Nie udało się wczytać pliku: " + e.getMessage());
-            }
-        }
+        Optional.ofNullable(fileChooser.showOpenDialog(ownerWindow))
+                .ifPresent(file -> {
+                    try {
+                        storageService.loadScoreFile(file);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        showErrorAlert("Błąd wczytywania", "Nie udało się wczytać pliku: " + e.getMessage());
+                    }
+                });
     }
 
     @FXML
@@ -59,22 +54,14 @@ public class MenuBarController {
 
     @FXML
     private void handleSave(ActionEvent event) {
-        Score score = scoreService.getScore();
-
-        if (score == null) {
-            showErrorAlert("Błąd zapisu", "Brak aktywnej partytury do zapisania.");
-            return;
-        }
-
-//        String fileName = String.format("%s_%s_c.json", score.getNumberNew(), score.getTitle().replaceAll(" ", "-"));
-        String fileName = String.format("%s_%s.json", score.getNumberNew(), score.getTitle().replaceAll(" ", "-"));
-        File saveFile = new File(fileName);
         try {
-//            storageService.saveToCompressedJson(score, saveFile);
-            storageService.saveToJson(score, saveFile);
+            storageService.saveCurrentScoreFile();
         } catch (IOException e) {
             e.printStackTrace();
             showErrorAlert("Błąd zapisu", "Nie udało się zapisać partytury: " + e.getMessage());
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            showErrorAlert("Błąd zapisu", "Brak aktywnej partytury do zapisania.");
         }
     }
 
@@ -110,7 +97,7 @@ public class MenuBarController {
 
     @FXML
     private void handleExit(ActionEvent event) {
-        String scoreName = scoreService.getScore().getTitle();
+        String scoreName = storageService.getScore().getTitle();
 
         new CustomConfirmationDialog()
                 .setTitle("MusicScore Builder")

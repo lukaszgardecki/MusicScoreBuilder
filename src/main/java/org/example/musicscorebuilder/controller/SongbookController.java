@@ -6,11 +6,13 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
-import org.example.musicscorebuilder.ScoreService;
-import org.example.musicscorebuilder.components.music.Score;
-import org.example.musicscorebuilder.data.ScoreStorageService;
+import org.example.musicscorebuilder.data.FileService;
+import org.example.musicscorebuilder.data.PreferencesService;
+import org.example.musicscorebuilder.data.StorageService;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Optional;
 
 public class SongbookController {
     @FXML private Button openFolderButton;
@@ -19,9 +21,8 @@ public class SongbookController {
     @FXML private ListView<String> jsonFilesListView;
 
     private final ObservableList<String> jsonFilesList = FXCollections.observableArrayList();
-    private final ScoreService scoreService = ScoreService.getInstance();
-    private final ScoreStorageService storageService = new ScoreStorageService();
-    private File currentDirectory;
+    private final StorageService storageService = StorageService.getInstance();
+    private final FileService fileService = FileService.getInstance();
 
     @FXML
     public void initialize() {
@@ -29,12 +30,12 @@ public class SongbookController {
 
         jsonFilesListView.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
-                String selectedFileName = jsonFilesListView.getSelectionModel().getSelectedItem();
-                if (selectedFileName != null && currentDirectory != null) {
-                    openJsonFile(selectedFileName);
-                }
+                Optional.ofNullable(jsonFilesListView.getSelectionModel().getSelectedItem())
+                        .flatMap(fileService::getFileFromSongbookDir)
+                        .ifPresent(this::loadScoreFileSafely);
             }
         });
+        loadSavedDirectory();
     }
 
     @FXML
@@ -42,75 +43,43 @@ public class SongbookController {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Wybierz folder śpiewnika");
 
-        Stage stage = (Stage) openFolderButton.getScene().getWindow();
-        File selectedDirectory = directoryChooser.showDialog(stage);
+        PreferencesService.getDirectoryFile().ifPresent(directoryChooser::setInitialDirectory);
 
-        if (selectedDirectory != null) {
-            this.currentDirectory = selectedDirectory;
-            folderPathLabel.setText(selectedDirectory.getAbsolutePath());
-            loadJsonFiles(selectedDirectory);
-        }
+        Stage stage = (Stage) openFolderButton.getScene().getWindow();
+        Optional.ofNullable(directoryChooser.showDialog(stage))
+                .ifPresent(directory -> {
+                    folderPathLabel.setText(directory.getAbsolutePath());
+                    loadJsonFiles(directory);
+                    PreferencesService.saveDirectoryPath(directory.getAbsolutePath());
+                });
     }
 
     @FXML
     private void handleFilterChange() {
-        if (currentDirectory != null) {
-            loadJsonFiles(currentDirectory);
-        }
+        PreferencesService.getDirectoryFile().ifPresent(this::loadJsonFiles);
     }
 
     private void loadJsonFiles(File folder) {
         jsonFilesList.clear();
-
-        FilenameFilter jsonFilter = (dir, name) -> name.toLowerCase().endsWith(".json") || name.toLowerCase().endsWith(".json.gz");
-        File[] files = folder.listFiles(jsonFilter);
-
-        boolean showCompressed = compressedOnlyCheckBox.isSelected();
-
-        if (files != null) {
-            for (File file : files) {
-                boolean isGzip = isGzipCompressed(file);
-                if (showCompressed == isGzip) {
-                    jsonFilesList.add(file.getName());
-                }
-            }
-        }
+        jsonFilesList.addAll(fileService.getJsonFileNames(folder, compressedOnlyCheckBox.isSelected()));
     }
 
-    private boolean isGzipCompressed(File file) {
-        if (!file.isFile() || !file.canRead()) {
-            return false;
-        }
-
-        try (InputStream fis = new FileInputStream(file)) {
-            byte[] magic = new byte[2];
-            int read = fis.read(magic);
-            return read == 2 && magic[0] == (byte) 0x1F && magic[1] == (byte) 0x8B;
+    private void loadScoreFileSafely(File file) {
+        try {
+            storageService.loadScoreFile(file);
         } catch (IOException e) {
-            return false;
+            e.printStackTrace();
+            showErrorAlert("Błąd wczytywania", "Nie udało się wczytać pliku: " + e.getMessage());
         }
     }
 
-    private void openJsonFile(String fileName) {
-        if (scoreService == null) {
-            showErrorAlert("Błąd konfiguracji", "Serwisy (storageService / scoreService) nie zostały przekazane do SongbookController.");
-            return;
-        }
-
-        File fileToOpen = new File(currentDirectory, fileName);
-
-        if (fileToOpen.exists() && fileToOpen.isFile()) {
-            try {
-                Score score = storageService.loadFromJson(fileToOpen);
-                scoreService.setScore(score);
-            } catch (IOException e) {
-                e.printStackTrace();
-                showErrorAlert("Błąd wczytywania", "Nie udało się wczytać pliku: " + e.getMessage());
-            }
-        }
+    private void loadSavedDirectory() {
+        PreferencesService.getDirectoryFile()
+                .ifPresent(directory -> {
+                    folderPathLabel.setText(directory.getAbsolutePath());
+                    loadJsonFiles(directory);
+                });
     }
-
-
 
     private void showErrorAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);

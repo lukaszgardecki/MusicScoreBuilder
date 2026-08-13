@@ -9,6 +9,7 @@ module org.example.musicscorebuilder {
     requires java.desktop;
     requires com.fasterxml.jackson.annotation;
     requires com.fasterxml.jackson.databind;
+    requires java.prefs;
 
     opens org.example.musicscorebuilder to javafx.fxml;
 

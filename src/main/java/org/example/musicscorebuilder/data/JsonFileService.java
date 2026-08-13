@@ -9,11 +9,10 @@ import java.io.*;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-public class ScoreStorageService {
-
+public class JsonFileService {
     private final ObjectMapper mapper;
 
-    public ScoreStorageService() {
+    public JsonFileService() {
         this.mapper = new ObjectMapper();
 //        this.mapper.enable(SerializationFeature.INDENT_OUTPUT);
         mapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
@@ -43,6 +42,20 @@ public class ScoreStorageService {
         }
         hydrate(score);
         return score;
+    }
+
+    public boolean isGzipCompressed(File file) {
+        if (!file.isFile() || !file.canRead()) {
+            return false;
+        }
+
+        try (InputStream fis = new FileInputStream(file)) {
+            byte[] magic = new byte[2];
+            int read = fis.read(magic);
+            return read == 2 && magic[0] == (byte) 0x1F && magic[1] == (byte) 0x8B;
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     private void hydrate(Score score) {

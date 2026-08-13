@@ -5,7 +5,6 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
-import org.example.musicscorebuilder.ScoreService;
 import org.example.musicscorebuilder.components.layout.ElementLayout;
 import org.example.musicscorebuilder.components.layout.MeasureLayout;
 import org.example.musicscorebuilder.components.layout.StaffLayout;
@@ -22,7 +21,6 @@ import java.util.List;
 public abstract class AbstractPaletteSectionController<T> {
     protected final double defaultCanvasWidth = 45;
     protected final double defaultCanvasHeight = 35;
-    protected final ScoreService scoreService = ScoreService.getInstance();
     protected final ScoreStateManager stateManager = ScoreStateManager.getInstance();
     protected final GridPane gridPane;
     private Button selectedButton = null;
