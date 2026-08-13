@@ -22,15 +22,6 @@
                    wrapText="true"/>
 
             <Separator />
-
-            <CheckBox fx:id="compressedOnlyCheckBox"
-                      text="Pokaż skompresowane (GZIP)"
-                      onAction="#handleFilterChange" />
-
-            <Label text="Pliki śpiewnika:" style="-fx-font-weight: bold;" />
-
-            <ListView fx:id="jsonFilesListView" VBox.vgrow="ALWAYS" />
-
             <HBox spacing="10">
                 <Button text="+ Nowy folder"
                         onAction="#handleAddFolder"
@@ -40,7 +31,19 @@
                         onAction="#handleAddFile"
                         maxWidth="Infinity"
                         HBox.hgrow="ALWAYS"/>
+                <Button fx:id="deleteButton"
+                        text="- Usuń"
+                        onAction="#handleDelete"
+                        maxWidth="Infinity"
+                        HBox.hgrow="ALWAYS"/>
             </HBox>
+            <Separator />
+
+            <CheckBox fx:id="compressedOnlyCheckBox"
+                      text="Pokaż skompresowane (GZIP)"
+                      onAction="#handleFilterChange" />
+            <Label text="Pliki śpiewnika:" style="-fx-font-weight: bold;" />
+            <ListView fx:id="jsonFilesListView" VBox.vgrow="ALWAYS" />
         </VBox>
     </Tab>
 </TabPane>

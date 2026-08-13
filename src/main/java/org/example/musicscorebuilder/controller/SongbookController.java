@@ -4,8 +4,11 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import org.example.musicscorebuilder.components.dialog.CustomConfirmationDialog;
 import org.example.musicscorebuilder.components.music.Score;
 import org.example.musicscorebuilder.components.music.util.ScoreFactory;
 import org.example.musicscorebuilder.data.FileService;
@@ -21,6 +24,7 @@ public class SongbookController {
     @FXML private Label folderPathLabel;
     @FXML private CheckBox compressedOnlyCheckBox;
     @FXML private ListView<SongbookItem> jsonFilesListView;
+    @FXML private Button deleteButton;
 
     private final ObservableList<SongbookItem> jsonFilesList = FXCollections.observableArrayList();
     private final StorageService storageService = StorageService.getInstance();
@@ -28,9 +32,39 @@ public class SongbookController {
 
     @FXML
     public void initialize() {
-        jsonFilesListView.setItems(jsonFilesList);
-        jsonFilesListView.setCellFactory(param -> new SongbookListCell());
+        setupListView();
+        setupKeyBindings();
+        setupDeleteButtonState();
+        loadSavedDirectory();
+    }
 
+    private void setupListView() {
+        jsonFilesListView.setItems(jsonFilesList);
+        setupCellFactory();
+        setupMouseNavigation();
+    }
+
+    private void setupCellFactory() {
+        jsonFilesListView.setCellFactory(param -> {
+            SongbookListCell cell = new SongbookListCell();
+
+            ContextMenu contextMenu = new ContextMenu();
+            MenuItem deleteMenuItem = new MenuItem("Usuń");
+            deleteMenuItem.setOnAction(e -> handleDelete());
+            contextMenu.getItems().add(deleteMenuItem);
+
+            cell.itemProperty().addListener((obs, oldItem, newItem) -> {
+                if (newItem == null || newItem.type() == SongbookItem.Type.PARENT_DIR) {
+                    cell.setContextMenu(null);
+                } else {
+                    cell.setContextMenu(contextMenu);
+                }
+            });
+            return cell;
+        });
+    }
+
+    private void setupMouseNavigation() {
         jsonFilesListView.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
                 SongbookItem selected = jsonFilesListView.getSelectionModel().getSelectedItem();
@@ -42,7 +76,69 @@ public class SongbookController {
                 }
             }
         });
-        loadSavedDirectory();
+    }
+
+    private void setupKeyBindings() {
+        jsonFilesListView.sceneProperty().addListener((observable, oldScene, newScene) -> {
+            if (newScene != null) {
+                newScene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+                    if (event.getCode() == KeyCode.DELETE) {
+                        if (newScene.getFocusOwner() instanceof TextInputControl) return;
+
+                        SongbookItem selected = jsonFilesListView.getSelectionModel().getSelectedItem();
+                        if (selected != null && selected.type() != SongbookItem.Type.PARENT_DIR) {
+                            handleDelete();
+                            event.consume();
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    private void setupDeleteButtonState() {
+        if (deleteButton == null) return;
+
+        deleteButton.setDisable(true);
+        jsonFilesListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            boolean isDeletable = newVal != null && newVal.type() != SongbookItem.Type.PARENT_DIR;
+            deleteButton.setDisable(!isDeletable);
+        });
+    }
+
+    @FXML
+    private void handleDelete() {
+        SongbookItem selected = jsonFilesListView.getSelectionModel().getSelectedItem();
+        if (selected == null || selected.type() == SongbookItem.Type.PARENT_DIR) {
+            return;
+        }
+
+        File fileToDelete = selected.file();
+        if (fileToDelete == null || !fileToDelete.exists()) {
+            return;
+        }
+
+        boolean isDirectory = selected.type() == SongbookItem.Type.DIRECTORY;
+        String itemType = isDirectory ? "folder" : "plik";
+        String warningText = isDirectory
+                ? "\n\nUWAGA: Folder zostanie usunięty wraz z całą zawartością!"
+                : "";
+        String trashSvgPath = "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z";
+
+        new CustomConfirmationDialog()
+                .setTitle("Potwierdzenie usunięcia")
+                .setHeader("Czy na pewno chcesz usunąć ten " + itemType + "?")
+                .setContent(selected.displayName() + warningText)
+                .setIconSvg(trashSvgPath, "#DC2626")
+                .setConfirmButton("Usuń", () -> {
+                    if (fileService.deleteRecursively(fileToDelete)) {
+                        PreferencesService.getDirectoryFile().ifPresent(this::loadJsonFiles);
+                    } else {
+                        showErrorAlert("Błąd usuwania", "Nie udało się usunąć elementu: " + selected.displayName());
+                    }
+                })
+                .setCancelButton("Anuluj", null)
+                .showAndWait();
     }
 
     @FXML
@@ -190,10 +286,14 @@ public class SongbookController {
     }
 
     private void showErrorAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        String errorSvgPath = "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z";
+
+        new CustomConfirmationDialog()
+                .setTitle(title)
+                .setHeader(title)
+                .setContent(message)
+                .setIconSvg(errorSvgPath, "#EF4444")
+                .setConfirmButton("OK", null)
+                .showAndWait();
     }
 }

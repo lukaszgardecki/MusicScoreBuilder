@@ -79,4 +79,19 @@ public class FileService {
         String fileName = String.format(FILE_NAME_FORMAT, score.getNumberNew(), formattedTitle);
         return new File(directory, fileName);
     }
+
+    public boolean deleteRecursively(File file) {
+        if (file == null || !file.exists()) {
+            return false;
+        }
+        if (file.isDirectory()) {
+            File[] contents = file.listFiles();
+            if (contents != null) {
+                for (File child : contents) {
+                    deleteRecursively(child);
+                }
+            }
+        }
+        return file.delete();
+    }
 }
