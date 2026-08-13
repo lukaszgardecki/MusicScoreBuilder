@@ -1,11 +1,13 @@
 package org.example.musicscorebuilder.controller.songbookcontroller;
 
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import org.example.musicscorebuilder.components.music.Score;
@@ -13,6 +15,7 @@ import org.example.musicscorebuilder.components.music.util.ScoreFactory;
 import org.example.musicscorebuilder.data.FileService;
 import org.example.musicscorebuilder.data.PreferencesService;
 import org.example.musicscorebuilder.data.StorageService;
+import org.example.musicscorebuilder.managers.ScoreStateManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,22 +28,161 @@ public class SongbookController {
     @FXML private ListView<SongbookItem> jsonFilesListView;
     @FXML private Button deleteButton;
 
+    @FXML private VBox metadataContainer;
+    @FXML private TextField numberField;
+    @FXML private TextField oldNumberField;
+    @FXML private TextField titleField;
+    @FXML private TextField subtitleField;
+    @FXML private TextField composerField;
+
     private final ObservableList<SongbookItem> jsonFilesList = FXCollections.observableArrayList();
     private final StorageService storageService = StorageService.getInstance();
     private final FileService fileService = FileService.getInstance();
+
+    private File currentOpenedFile = null;
+    private boolean isUpdatingFields = false;
 
     @FXML
     public void initialize() {
         setupListView();
         setupKeyBindings();
         setupDeleteButtonState();
+        setupPlaceholders();
+        setupMetadataAutoSave();
+        clearAndDisableMetadataFields();
         loadSavedDirectory();
+    }
+
+    private void setupPlaceholders() {
+        numberField.setPromptText("123");
+        oldNumberField.setPromptText("123");
+        titleField.setPromptText("Tytuł");
+        subtitleField.setPromptText("Podtytuł");
+        composerField.setPromptText("Kompozytor");
     }
 
     private void setupListView() {
         jsonFilesListView.setItems(jsonFilesList);
         setupCellFactory();
         setupMouseNavigation();
+    }
+
+    private void setupMetadataAutoSave() {
+        ChangeListener<String> liveUpdateListener = (obs, oldVal, newVal) -> {
+            if (isUpdatingFields || currentOpenedFile == null) return;
+
+            Score activeScore = storageService.getScore();
+            activeScore.setNumberNew(numberField.getText());
+            activeScore.setNumberOld(oldNumberField.getText());
+            activeScore.setTitle(titleField.getText());
+            activeScore.setSubtitle(subtitleField.getText());
+            activeScore.setComposer(composerField.getText());
+
+            ScoreStateManager.getInstance().notifyScoreChanged();
+        };
+
+        numberField.textProperty().addListener(liveUpdateListener);
+        oldNumberField.textProperty().addListener(liveUpdateListener);
+        titleField.textProperty().addListener(liveUpdateListener);
+        subtitleField.textProperty().addListener(liveUpdateListener);
+        composerField.textProperty().addListener(liveUpdateListener);
+
+        ChangeListener<Boolean> focusChangeListener = (obs, wasFocused, isFocused) -> {
+            if (!isFocused && !isUpdatingFields && currentOpenedFile != null) {
+                saveMetadataChanges();
+            }
+        };
+
+        numberField.focusedProperty().addListener(focusChangeListener);
+        oldNumberField.focusedProperty().addListener(focusChangeListener);
+        titleField.focusedProperty().addListener(focusChangeListener);
+        subtitleField.focusedProperty().addListener(focusChangeListener);
+        composerField.focusedProperty().addListener(focusChangeListener);
+
+        numberField.setOnAction(e -> saveMetadataChanges());
+        oldNumberField.setOnAction(e -> saveMetadataChanges());
+        titleField.setOnAction(e -> saveMetadataChanges());
+        subtitleField.setOnAction(e -> saveMetadataChanges());
+        composerField.setOnAction(e -> saveMetadataChanges());
+    }
+
+    private void saveMetadataChanges() {
+        if (currentOpenedFile == null || isUpdatingFields) return;
+
+        Score activeScore = storageService.getScore();
+        File parentDir = currentOpenedFile.getParentFile();
+        if (parentDir == null) return;
+
+        File targetFile = fileService.getTargetFile(activeScore, parentDir);
+
+        if (!targetFile.equals(currentOpenedFile) && targetFile.exists()) {
+            showErrorAlert("Błąd zapisu", "Plik o nazwie '" + targetFile.getName() + "' już istnieje!");
+            return;
+        }
+
+        try {
+            if (!targetFile.equals(currentOpenedFile)) {
+                fileService.deleteRecursively(currentOpenedFile);
+            }
+
+            storageService.saveScoreFile(activeScore, parentDir);
+            this.currentOpenedFile = targetFile;
+
+            ScoreStateManager.getInstance().notifyScoreChanged();
+
+            loadJsonFiles(parentDir);
+            selectItemByFile(targetFile);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            showErrorAlert("Błąd zapisu", "Nie udało się zapisać zmian metadanych: " + e.getMessage());
+        }
+    }
+
+    private void updateMetadataPanel() {
+        Score activeScore = storageService.getScore();
+        if (activeScore != null && currentOpenedFile != null) {
+            isUpdatingFields = true;
+            try {
+                numberField.setText(activeScore.getNumberNew() != null ? activeScore.getNumberNew() : "");
+                oldNumberField.setText(activeScore.getNumberOld() != null ? activeScore.getNumberOld() : "");
+                titleField.setText(activeScore.getTitle() != null ? activeScore.getTitle() : "");
+                subtitleField.setText(activeScore.getSubtitle() != null ? activeScore.getSubtitle() : "");
+                composerField.setText(activeScore.getComposer() != null ? activeScore.getComposer() : "");
+
+                setMetadataFieldsDisabled(false);
+                metadataContainer.setVisible(true);
+            } finally {
+                isUpdatingFields = false;
+            }
+        } else {
+            clearAndDisableMetadataFields();
+        }
+    }
+
+    private void clearAndDisableMetadataFields() {
+        isUpdatingFields = true;
+        try {
+            currentOpenedFile = null;
+            numberField.clear();
+            oldNumberField.clear();
+            titleField.clear();
+            subtitleField.clear();
+            composerField.clear();
+
+            setMetadataFieldsDisabled(true);
+            metadataContainer.setVisible(true);
+        } finally {
+            isUpdatingFields = false;
+        }
+    }
+
+    private void setMetadataFieldsDisabled(boolean disabled) {
+        numberField.setDisable(disabled);
+        oldNumberField.setDisable(disabled);
+        titleField.setDisable(disabled);
+        subtitleField.setDisable(disabled);
+        composerField.setDisable(disabled);
     }
 
     private void setupCellFactory() {
@@ -81,35 +223,15 @@ public class SongbookController {
         });
     }
 
-    private void setupKeyBindings() {
-        jsonFilesListView.sceneProperty().addListener((observable, oldScene, newScene) -> {
-            if (newScene != null) {
-                newScene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
-                    if (newScene.getFocusOwner() instanceof TextInputControl) return;
-
-                    SongbookItem selected = jsonFilesListView.getSelectionModel().getSelectedItem();
-                    if (selected == null || selected.type() == SongbookItem.Type.PARENT_DIR) return;
-
-                    if (event.getCode() == KeyCode.DELETE) {
-                        handleDelete();
-                        event.consume();
-                    } else if (event.getCode() == KeyCode.F2) {
-                        handleRename();
-                        event.consume();
-                    }
-                });
-            }
-        });
-    }
-
-    private void setupDeleteButtonState() {
-        if (deleteButton == null) return;
-
-        deleteButton.setDisable(true);
-        jsonFilesListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            boolean isDeletable = newVal != null && newVal.type() != SongbookItem.Type.PARENT_DIR;
-            deleteButton.setDisable(!isDeletable);
-        });
+    private void loadScoreFileSafely(File file) {
+        try {
+            storageService.loadScoreFile(file);
+            this.currentOpenedFile = file;
+            updateMetadataPanel();
+        } catch (IOException e) {
+            e.printStackTrace();
+            showErrorAlert("Błąd wczytywania", "Nie udało się wczytać pliku: " + e.getMessage());
+        }
     }
 
     @FXML
@@ -158,6 +280,9 @@ public class SongbookController {
             }
 
             if (oldFile.renameTo(targetFile)) {
+                if (oldFile.equals(currentOpenedFile)) {
+                    currentOpenedFile = targetFile;
+                }
                 PreferencesService.getDirectoryFile().ifPresent(this::loadJsonFiles);
                 selectItemByFile(targetFile);
                 break;
@@ -185,6 +310,9 @@ public class SongbookController {
                 isDirectory,
                 () -> {
                     if (fileService.deleteRecursively(fileToDelete)) {
+                        if (fileToDelete.equals(currentOpenedFile)) {
+                            clearAndDisableMetadataFields();
+                        }
                         PreferencesService.getDirectoryFile().ifPresent(this::loadJsonFiles);
                     } else {
                         showErrorAlert("Błąd usuwania", "Nie udało się usunąć elementu: " + selected.displayName());
@@ -304,6 +432,7 @@ public class SongbookController {
             storageService.saveScoreFile(defaultScore, parentDir);
             loadJsonFiles(parentDir);
             selectItemByFile(targetFile);
+            loadScoreFileSafely(targetFile);
             return true;
         } catch (IOException e) {
             e.printStackTrace();
@@ -312,18 +441,40 @@ public class SongbookController {
         }
     }
 
+    private void setupKeyBindings() {
+        jsonFilesListView.sceneProperty().addListener((observable, oldScene, newScene) -> {
+            if (newScene != null) {
+                newScene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+                    if (newScene.getFocusOwner() instanceof TextInputControl) return;
+
+                    SongbookItem selected = jsonFilesListView.getSelectionModel().getSelectedItem();
+                    if (selected == null || selected.type() == SongbookItem.Type.PARENT_DIR) return;
+
+                    if (event.getCode() == KeyCode.DELETE) {
+                        handleDelete();
+                        event.consume();
+                    } else if (event.getCode() == KeyCode.F2) {
+                        handleRename();
+                        event.consume();
+                    }
+                });
+            }
+        });
+    }
+
+    private void setupDeleteButtonState() {
+        if (deleteButton == null) return;
+
+        deleteButton.setDisable(true);
+        jsonFilesListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            boolean isDeletable = newVal != null && newVal.type() != SongbookItem.Type.PARENT_DIR;
+            deleteButton.setDisable(!isDeletable);
+        });
+    }
+
     private void loadJsonFiles(File folder) {
         jsonFilesList.clear();
         jsonFilesList.addAll(fileService.getDirectoryContent(folder, compressedOnlyCheckBox.isSelected()));
-    }
-
-    private void loadScoreFileSafely(File file) {
-        try {
-            storageService.loadScoreFile(file);
-        } catch (IOException e) {
-            e.printStackTrace();
-            showErrorAlert("Błąd wczytywania", "Nie udało się wczytać pliku: " + e.getMessage());
-        }
     }
 
     private void loadSavedDirectory() {

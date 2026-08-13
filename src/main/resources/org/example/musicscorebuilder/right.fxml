@@ -11,6 +11,44 @@
 
     <Tab text="Śpiewnik">
         <VBox spacing="10" style="-fx-padding: 10;">
+
+            <VBox fx:id="metadataContainer" spacing="6" styleClass="metadata-panel" visible="false">
+                <Label text="Informacje o utworze" styleClass="metadata-title" />
+
+                <GridPane hgap="8" vgap="6">
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="50" />
+                        <ColumnConstraints percentWidth="50" />
+                    </columnConstraints>
+
+                    <VBox spacing="2" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                        <Label text="Nowy numer" styleClass="field-label" />
+                        <TextField fx:id="numberField" styleClass="metadata-input" promptText="np. 101" />
+                    </VBox>
+
+                    <VBox spacing="2" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                        <Label text="Stary numer" styleClass="field-label" />
+                        <TextField fx:id="oldNumberField" styleClass="metadata-input" promptText="np. 45" />
+                    </VBox>
+                </GridPane>
+
+                <VBox spacing="2">
+                    <Label text="Tytuł" styleClass="field-label" />
+                    <TextField fx:id="titleField" styleClass="metadata-input" promptText="Tytuł" />
+                </VBox>
+
+                <VBox spacing="2">
+                    <Label text="Podtytuł" styleClass="field-label" />
+                    <TextField fx:id="subtitleField" styleClass="metadata-input" promptText="Podtytuł" />
+                </VBox>
+
+                <VBox spacing="2">
+                    <Label text="Kompozytor" styleClass="field-label" />
+                    <TextField fx:id="composerField" styleClass="metadata-input" promptText="Kompozytor" />
+                </VBox>
+            </VBox>
+
+
             <Button fx:id="openFolderButton"
                     text="Otwórz folder"
                     onAction="#handleOpenFolder"
@@ -67,7 +105,13 @@
                       text="Pokaż skompresowane"
                       onAction="#handleFilterChange" />
             <Label text="Pliki śpiewnika:" style="-fx-font-weight: bold;" />
+
             <ListView fx:id="jsonFilesListView" VBox.vgrow="ALWAYS" />
+
+            <Separator />
+
+
+
         </VBox>
     </Tab>
 </TabPane>

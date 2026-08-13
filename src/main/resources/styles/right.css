@@ -26,7 +26,7 @@
 }
 
 .btn-folder .icon {
-    -fx-background-color: #F59E0B; /* Kolor z listy dla katalogu */
+    -fx-background-color: #F59E0B;
 }
 
 .btn-folder:hover .icon {
@@ -50,7 +50,7 @@
 }
 
 .btn-file .icon {
-    -fx-background-color: #3B82F6; /* Kolor z listy dla pliku */
+    -fx-background-color: #3B82F6;
 }
 
 .btn-file:hover .icon {
@@ -75,11 +75,11 @@
 }
 
 .btn-danger .icon {
-    -fx-background-color: #EF4444; /* Czerwony kolor kosza */
+    -fx-background-color: #EF4444;
 }
 
 .btn-danger:hover .icon {
-    -fx-background-color: #FFFFFF; /* Biała ikonka gdy przycisk jest czerwony */
+    -fx-background-color: #FFFFFF;
 }
 
 /* Stan zablokowany */
@@ -102,17 +102,61 @@
     -fx-max-height: 16px;
 }
 
-/* Kształt folderu dopasowany do ListCell + plusik */
 .icon-folder-add {
     -fx-shape: "M10 4H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2zm3 9h-2v2h-2v-2H7v-2h2V9h2v2h2v2z";
 }
 
-/* Kształt pliku dopasowany do ListCell + plusik */
 .icon-file-add {
     -fx-shape: "M6 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6H6zm7 7V3.5L18.5 9H13zm0 7h-2v2h-2v-2H7v-2h2v-2h2v2h2v2z";
 }
 
-/* Kształt kosza */
 .icon-trash {
     -fx-shape: "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z";
+}
+
+/* USUNIĘCIE NIEBIESKIEJ RAMKI FOCUSU W LISTVIEW */
+.list-view {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+/* --- SEKCJA METADANYCH UTWORU --- */
+.metadata-panel {
+    -fx-background-color: #FAFAFA;
+    -fx-border-color: #E5E7EB;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 8px 10px;
+}
+
+.metadata-panel:disabled {
+    -fx-opacity: 0.5;
+}
+
+.metadata-title {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #374151;
+}
+
+.field-label {
+    -fx-font-size: 10px;
+    -fx-text-fill: #6B7280;
+    -fx-font-weight: bold;
+}
+
+.metadata-input {
+    -fx-font-size: 11px;
+    -fx-padding: 4px 6px;
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #D1D5DB;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.metadata-input:focused {
+    -fx-border-color: #3B82F6;
 }
