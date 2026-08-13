@@ -7,7 +7,7 @@
          tabClosingPolicy="UNAVAILABLE"
          xmlns="http://javafx.com/javafx/17"
          xmlns:fx="http://javafx.com/fxml/1"
-         fx:controller="org.example.musicscorebuilder.controller.SongbookController">
+         fx:controller="org.example.musicscorebuilder.controller.songbookcontroller.SongbookController">
 
     <Tab text="Śpiewnik">
         <VBox spacing="10" style="-fx-padding: 10;">

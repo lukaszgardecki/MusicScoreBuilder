@@ -1,4 +1,4 @@
-package org.example.musicscorebuilder.controller;
+package org.example.musicscorebuilder.controller.songbookcontroller;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;

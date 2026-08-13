@@ -41,4 +41,8 @@ module org.example.musicscorebuilder {
     opens org.example.musicscorebuilder.controller.util.audio to javafx.fxml;
     exports org.example.musicscorebuilder.data to com.fasterxml.jackson.databind;
     opens org.example.musicscorebuilder.data to com.fasterxml.jackson.databind;
+    exports org.example.musicscorebuilder.controller.util;
+    opens org.example.musicscorebuilder.controller.util to javafx.fxml;
+    exports org.example.musicscorebuilder.controller.songbookcontroller;
+    opens org.example.musicscorebuilder.controller.songbookcontroller to javafx.fxml;
 }

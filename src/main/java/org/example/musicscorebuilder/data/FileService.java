@@ -1,7 +1,7 @@
 package org.example.musicscorebuilder.data;
 
 import org.example.musicscorebuilder.components.music.Score;
-import org.example.musicscorebuilder.controller.SongbookItem;
+import org.example.musicscorebuilder.controller.songbookcontroller.SongbookItem;
 
 import java.io.*;
 import java.util.*;

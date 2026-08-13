@@ -1,4 +1,4 @@
-package org.example.musicscorebuilder.controller;
+package org.example.musicscorebuilder.controller.songbookcontroller;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -8,7 +8,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
-import org.example.musicscorebuilder.components.dialog.CustomConfirmationDialog;
 import org.example.musicscorebuilder.components.music.Score;
 import org.example.musicscorebuilder.components.music.util.ScoreFactory;
 import org.example.musicscorebuilder.data.FileService;
@@ -47,7 +46,6 @@ public class SongbookController {
     private void setupCellFactory() {
         jsonFilesListView.setCellFactory(param -> {
             SongbookListCell cell = new SongbookListCell();
-
             ContextMenu contextMenu = new ContextMenu();
 
             MenuItem renameMenuItem = new MenuItem("Zmień nazwę");
@@ -117,46 +115,30 @@ public class SongbookController {
     @FXML
     private void handleRename() {
         SongbookItem selected = jsonFilesListView.getSelectionModel().getSelectedItem();
-        if (selected == null || selected.type() == SongbookItem.Type.PARENT_DIR) {
-            return;
-        }
+        if (selected == null || selected.type() == SongbookItem.Type.PARENT_DIR) return;
 
         File oldFile = selected.file();
-        if (oldFile == null || !oldFile.exists()) {
-            return;
-        }
+        if (oldFile == null || !oldFile.exists()) return;
 
         boolean isDirectory = selected.type() == SongbookItem.Type.DIRECTORY;
+        SongbookFileHelper.FileInfo fileInfo = SongbookFileHelper.extractFileInfo(oldFile, isDirectory);
+
+        String currentInput = fileInfo.baseName();
+        String iconPath = isDirectory ? SongbookDialogHelper.SVG_FOLDER : SongbookDialogHelper.SVG_RENAME;
+        String iconColor = isDirectory ? SongbookDialogHelper.COLOR_AMBER : SongbookDialogHelper.COLOR_BLUE;
         String itemType = isDirectory ? "folderu" : "pliku";
-        String extension = "";
-        String baseName = oldFile.getName();
-
-        if (!isDirectory) {
-            String lowerName = baseName.toLowerCase();
-            if (lowerName.endsWith(".json.gz")) {
-                extension = ".json.gz";
-                baseName = baseName.substring(0, baseName.length() - ".json.gz".length());
-            } else if (lowerName.endsWith(".json")) {
-                extension = ".json";
-                baseName = baseName.substring(0, baseName.length() - ".json".length());
-            } else {
-                int lastDotIndex = baseName.lastIndexOf('.');
-                if (lastDotIndex > 0) {
-                    extension = baseName.substring(lastDotIndex);
-                    baseName = baseName.substring(0, lastDotIndex);
-                }
-            }
-        }
-
-        String currentInput = baseName;
 
         while (true) {
-            TextInputDialog dialog = new TextInputDialog(currentInput);
-            dialog.setTitle("Zmiana nazwy");
-            dialog.setHeaderText("Zmiana nazwy " + itemType);
-            dialog.setContentText("Podaj nową nazwę:");
+            Optional<String> result = SongbookDialogHelper.showInputDialog(
+                    "Zmiana nazwy",
+                    "Zmiana nazwy " + itemType,
+                    "Wprowadź nową nazwę dla wybranego elementu:",
+                    currentInput,
+                    iconPath,
+                    iconColor,
+                    "Zmień"
+            );
 
-            Optional<String> result = dialog.showAndWait().map(String::trim);
             if (result.isEmpty()) break;
 
             currentInput = result.get();
@@ -165,7 +147,7 @@ public class SongbookController {
                 continue;
             }
 
-            String finalFileName = isDirectory ? currentInput : (currentInput + extension);
+            String finalFileName = isDirectory ? currentInput : (currentInput + fileInfo.extension());
             File targetFile = new File(oldFile.getParentFile(), finalFileName);
 
             if (targetFile.equals(oldFile)) break;
@@ -189,53 +171,26 @@ public class SongbookController {
     @FXML
     private void handleDelete() {
         SongbookItem selected = jsonFilesListView.getSelectionModel().getSelectedItem();
-        if (selected == null || selected.type() == SongbookItem.Type.PARENT_DIR) {
-            return;
-        }
+        if (selected == null || selected.type() == SongbookItem.Type.PARENT_DIR) return;
 
         File fileToDelete = selected.file();
-        if (fileToDelete == null || !fileToDelete.exists()) {
-            return;
-        }
+        if (fileToDelete == null || !fileToDelete.exists()) return;
 
         boolean isDirectory = selected.type() == SongbookItem.Type.DIRECTORY;
         String itemType = isDirectory ? "folder" : "plik";
-        String warningText = isDirectory
-                ? "\n\nUWAGA: Folder zostanie usunięty wraz z całą zawartością!"
-                : "";
-        String trashSvgPath = "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z";
 
-        new CustomConfirmationDialog()
-                .setTitle("Potwierdzenie usunięcia")
-                .setHeader("Czy na pewno chcesz usunąć ten " + itemType + "?")
-                .setContent(selected.displayName() + warningText)
-                .setIconSvg(trashSvgPath, "#DC2626")
-                .setConfirmButton("Usuń", () -> {
+        SongbookDialogHelper.showDeleteConfirmation(
+                itemType,
+                selected.displayName(),
+                isDirectory,
+                () -> {
                     if (fileService.deleteRecursively(fileToDelete)) {
                         PreferencesService.getDirectoryFile().ifPresent(this::loadJsonFiles);
                     } else {
                         showErrorAlert("Błąd usuwania", "Nie udało się usunąć elementu: " + selected.displayName());
                     }
-                })
-                .setCancelButton("Anuluj", null)
-                .showAndWait();
-    }
-
-    @FXML
-    private void handleOpenFolder() {
-        DirectoryChooser directoryChooser = new DirectoryChooser();
-        directoryChooser.setTitle("Wybierz folder śpiewnika");
-
-        PreferencesService.getDirectoryFile().ifPresent(directoryChooser::setInitialDirectory);
-
-        Stage stage = (Stage) openFolderButton.getScene().getWindow();
-        Optional.ofNullable(directoryChooser.showDialog(stage))
-                .ifPresent(this::navigateToDirectory);
-    }
-
-    @FXML
-    private void handleFilterChange() {
-        PreferencesService.getDirectoryFile().ifPresent(this::loadJsonFiles);
+                }
+        );
     }
 
     @FXML
@@ -250,12 +205,16 @@ public class SongbookController {
         String currentInput = "";
 
         while (true) {
-            TextInputDialog dialog = new TextInputDialog(currentInput);
-            dialog.setTitle("Nowy folder");
-            dialog.setHeaderText("Tworzenie nowego podfolderu w śpiewniku");
-            dialog.setContentText("Podaj nazwę folderu:");
+            Optional<String> result = SongbookDialogHelper.showInputDialog(
+                    "Nowy folder",
+                    "Tworzenie nowego podfolderu w śpiewniku",
+                    "Podaj nazwę nowego folderu:",
+                    currentInput,
+                    SongbookDialogHelper.SVG_ADD_FOLDER,
+                    SongbookDialogHelper.COLOR_AMBER,
+                    "Utwórz"
+            );
 
-            Optional<String> result = dialog.showAndWait().map(String::trim);
             if (result.isEmpty()) break;
 
             currentInput = result.get();
@@ -289,12 +248,15 @@ public class SongbookController {
         String currentInput = "";
 
         while (true) {
-            TextInputDialog dialog = new TextInputDialog(currentInput);
-            dialog.setTitle("Nowy plik");
-            dialog.setHeaderText("Tworzenie nowego utworu (.json)");
-            dialog.setContentText("Podaj nazwę pliku:");
-
-            Optional<String> result = dialog.showAndWait().map(String::trim);
+            Optional<String> result = SongbookDialogHelper.showInputDialog(
+                    "Nowy plik",
+                    "Tworzenie nowego utworu",
+                    "Podaj nazwę nowego pliku:",
+                    currentInput,
+                    SongbookDialogHelper.SVG_ADD_FILE,
+                    SongbookDialogHelper.COLOR_BLUE,
+                    "Utwórz"
+            );
 
             if (result.isEmpty()) break;
 
@@ -308,6 +270,23 @@ public class SongbookController {
                 break;
             }
         }
+    }
+
+    @FXML
+    private void handleOpenFolder() {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle("Wybierz folder śpiewnika");
+
+        PreferencesService.getDirectoryFile().ifPresent(directoryChooser::setInitialDirectory);
+
+        Stage stage = (Stage) openFolderButton.getScene().getWindow();
+        Optional.ofNullable(directoryChooser.showDialog(stage))
+                .ifPresent(this::navigateToDirectory);
+    }
+
+    @FXML
+    private void handleFilterChange() {
+        PreferencesService.getDirectoryFile().ifPresent(this::loadJsonFiles);
     }
 
     private boolean createAndSaveScore(File parentDir, String inputName) {
@@ -348,8 +327,7 @@ public class SongbookController {
     }
 
     private void loadSavedDirectory() {
-        PreferencesService.getDirectoryFile()
-                .ifPresent(this::navigateToDirectory);
+        PreferencesService.getDirectoryFile().ifPresent(this::navigateToDirectory);
     }
 
     private void navigateToDirectory(File dir) {
@@ -366,14 +344,6 @@ public class SongbookController {
     }
 
     private void showErrorAlert(String title, String message) {
-        String errorSvgPath = "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z";
-
-        new CustomConfirmationDialog()
-                .setTitle(title)
-                .setHeader(title)
-                .setContent(message)
-                .setIconSvg(errorSvgPath, "#EF4444")
-                .setConfirmButton("OK", null)
-                .showAndWait();
+        SongbookDialogHelper.showErrorAlert(title, message);
     }
 }

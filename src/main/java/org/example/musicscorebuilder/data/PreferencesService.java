@@ -1,6 +1,6 @@
 package org.example.musicscorebuilder.data;
 
-import org.example.musicscorebuilder.controller.SongbookController;
+import org.example.musicscorebuilder.controller.songbookcontroller.SongbookController;
 
 import java.io.File;
 import java.util.Optional;
