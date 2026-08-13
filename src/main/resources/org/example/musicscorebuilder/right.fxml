@@ -3,115 +3,116 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<TabPane prefWidth="300.0"
-         tabClosingPolicy="UNAVAILABLE"
-         xmlns="http://javafx.com/javafx/17"
-         xmlns:fx="http://javafx.com/fxml/1"
-         fx:controller="org.example.musicscorebuilder.controller.songbookcontroller.SongbookController">
+<VBox prefWidth="300.0"
+      spacing="0"
+      xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.example.musicscorebuilder.controller.songbookcontroller.SongbookController">
 
-    <Tab text="Śpiewnik">
-        <VBox spacing="10" style="-fx-padding: 10;">
+    <VBox fx:id="metadataContainer" spacing="6" styleClass="metadata-panel" style="-fx-padding: 10;">
+        <Label text="Informacje o utworze" styleClass="metadata-title" />
 
-            <VBox fx:id="metadataContainer" spacing="6" styleClass="metadata-panel" visible="false">
-                <Label text="Informacje o utworze" styleClass="metadata-title" />
+        <GridPane hgap="8" vgap="6">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="50" />
+                <ColumnConstraints percentWidth="50" />
+            </columnConstraints>
 
-                <GridPane hgap="8" vgap="6">
-                    <columnConstraints>
-                        <ColumnConstraints percentWidth="50" />
-                        <ColumnConstraints percentWidth="50" />
-                    </columnConstraints>
-
-                    <VBox spacing="2" GridPane.columnIndex="0" GridPane.rowIndex="0">
-                        <Label text="Nowy numer" styleClass="field-label" />
-                        <TextField fx:id="numberField" styleClass="metadata-input" promptText="np. 101" />
-                    </VBox>
-
-                    <VBox spacing="2" GridPane.columnIndex="1" GridPane.rowIndex="0">
-                        <Label text="Stary numer" styleClass="field-label" />
-                        <TextField fx:id="oldNumberField" styleClass="metadata-input" promptText="np. 45" />
-                    </VBox>
-                </GridPane>
-
-                <VBox spacing="2">
-                    <Label text="Tytuł" styleClass="field-label" />
-                    <TextField fx:id="titleField" styleClass="metadata-input" promptText="Tytuł" />
-                </VBox>
-
-                <VBox spacing="2">
-                    <Label text="Podtytuł" styleClass="field-label" />
-                    <TextField fx:id="subtitleField" styleClass="metadata-input" promptText="Podtytuł" />
-                </VBox>
-
-                <VBox spacing="2">
-                    <Label text="Kompozytor" styleClass="field-label" />
-                    <TextField fx:id="composerField" styleClass="metadata-input" promptText="Kompozytor" />
-                </VBox>
+            <VBox spacing="2" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                <Label text="Nowy numer" styleClass="field-label" />
+                <TextField fx:id="numberField" styleClass="metadata-input" />
             </VBox>
 
+            <VBox spacing="2" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                <Label text="Stary numer" styleClass="field-label" />
+                <TextField fx:id="oldNumberField" styleClass="metadata-input" />
+            </VBox>
+        </GridPane>
 
-            <Button fx:id="openFolderButton"
-                    text="Otwórz folder"
-                    onAction="#handleOpenFolder"
-                    styleClass="btn"
-                    maxWidth="Infinity"/>
-
-            <Label fx:id="folderPathLabel"
-                   text="Nie wybrano folderu"
-                   style="-fx-font-size: 11px; -fx-text-fill: #666666;"
-                   wrapText="true"/>
-
-            <Separator />
-
-            <HBox spacing="8">
-                <Button onAction="#handleAddFolder"
-                        styleClass="btn, btn-folder"
-                        maxWidth="Infinity"
-                        HBox.hgrow="ALWAYS">
-                    <tooltip>
-                        <Tooltip text="Nowy folder" />
-                    </tooltip>
-                    <graphic>
-                        <Region styleClass="icon, icon-folder-add" />
-                    </graphic>
-                </Button>
-                <Button onAction="#handleAddFile"
-                        styleClass="btn, btn-file"
-                        maxWidth="Infinity"
-                        HBox.hgrow="ALWAYS">
-                    <tooltip>
-                        <Tooltip text="Nowy plik" />
-                    </tooltip>
-                    <graphic>
-                        <Region styleClass="icon, icon-file-add" />
-                    </graphic>
-                </Button>
-                <Button fx:id="deleteButton"
-                        onAction="#handleDelete"
-                        styleClass="btn, btn-danger"
-                        maxWidth="Infinity"
-                        HBox.hgrow="ALWAYS">
-                    <tooltip>
-                        <Tooltip text="Usuń element" />
-                    </tooltip>
-                    <graphic>
-                        <Region styleClass="icon, icon-trash" />
-                    </graphic>
-                </Button>
-            </HBox>
-
-            <Separator />
-
-            <CheckBox fx:id="compressedOnlyCheckBox"
-                      text="Pokaż skompresowane"
-                      onAction="#handleFilterChange" />
-            <Label text="Pliki śpiewnika:" style="-fx-font-weight: bold;" />
-
-            <ListView fx:id="jsonFilesListView" VBox.vgrow="ALWAYS" />
-
-            <Separator />
-
-
-
+        <VBox spacing="2">
+            <Label text="Tytuł" styleClass="field-label" />
+            <TextField fx:id="titleField" styleClass="metadata-input" />
         </VBox>
-    </Tab>
-</TabPane>
+
+        <VBox spacing="2">
+            <Label text="Podtytuł" styleClass="field-label" />
+            <TextField fx:id="subtitleField" styleClass="metadata-input" />
+        </VBox>
+
+        <VBox spacing="2">
+            <Label text="Kompozytor" styleClass="field-label" />
+            <TextField fx:id="composerField" styleClass="metadata-input" />
+        </VBox>
+    </VBox>
+
+    <Separator />
+
+    <!-- PASEK ZAKŁADEK -->
+    <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+
+        <Tab text="Śpiewnik">
+            <VBox spacing="10" style="-fx-padding: 10;">
+
+                <Button fx:id="openFolderButton"
+                        text="Otwórz folder"
+                        onAction="#handleOpenFolder"
+                        styleClass="btn"
+                        maxWidth="Infinity"/>
+
+                <Label fx:id="folderPathLabel"
+                       text="Nie wybrano folderu"
+                       style="-fx-font-size: 11px; -fx-text-fill: #666666;"
+                       wrapText="true"/>
+
+                <Separator />
+
+                <HBox spacing="8">
+                    <Button onAction="#handleAddFolder"
+                            styleClass="btn, btn-folder"
+                            maxWidth="Infinity"
+                            HBox.hgrow="ALWAYS">
+                        <tooltip>
+                            <Tooltip text="Nowy folder" />
+                        </tooltip>
+                        <graphic>
+                            <Region styleClass="icon, icon-folder-add" />
+                        </graphic>
+                    </Button>
+                    <Button onAction="#handleAddFile"
+                            styleClass="btn, btn-file"
+                            maxWidth="Infinity"
+                            HBox.hgrow="ALWAYS">
+                        <tooltip>
+                            <Tooltip text="Nowy plik" />
+                        </tooltip>
+                        <graphic>
+                            <Region styleClass="icon, icon-file-add" />
+                        </graphic>
+                    </Button>
+                    <Button fx:id="deleteButton"
+                            onAction="#handleDelete"
+                            styleClass="btn, btn-danger"
+                            maxWidth="Infinity"
+                            HBox.hgrow="ALWAYS">
+                        <tooltip>
+                            <Tooltip text="Usuń element" />
+                        </tooltip>
+                        <graphic>
+                            <Region styleClass="icon, icon-trash" />
+                        </graphic>
+                    </Button>
+                </HBox>
+
+                <Separator />
+
+                <CheckBox fx:id="compressedOnlyCheckBox"
+                          text="Pokaż skompresowane"
+                          onAction="#handleFilterChange" />
+                <Label text="Pliki śpiewnika:" style="-fx-font-weight: bold;" />
+
+                <ListView fx:id="jsonFilesListView" VBox.vgrow="ALWAYS" />
+
+            </VBox>
+        </Tab>
+    </TabPane>
+</VBox>
