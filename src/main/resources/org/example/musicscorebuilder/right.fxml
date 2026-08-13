@@ -27,9 +27,20 @@
                       text="Pokaż skompresowane (GZIP)"
                       onAction="#handleFilterChange" />
 
-            <Label text="Pliki śpiewnika (.json):" style="-fx-font-weight: bold;" />
+            <Label text="Pliki śpiewnika:" style="-fx-font-weight: bold;" />
 
             <ListView fx:id="jsonFilesListView" VBox.vgrow="ALWAYS" />
+
+            <HBox spacing="10">
+                <Button text="+ Nowy folder"
+                        onAction="#handleAddFolder"
+                        maxWidth="Infinity"
+                        HBox.hgrow="ALWAYS"/>
+                <Button text="+ Nowy plik"
+                        onAction="#handleAddFile"
+                        maxWidth="Infinity"
+                        HBox.hgrow="ALWAYS"/>
+            </HBox>
         </VBox>
     </Tab>
 </TabPane>

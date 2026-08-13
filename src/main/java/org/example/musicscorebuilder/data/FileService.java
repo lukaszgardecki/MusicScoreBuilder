@@ -1,14 +1,17 @@
 package org.example.musicscorebuilder.data;
 
 import org.example.musicscorebuilder.components.music.Score;
+import org.example.musicscorebuilder.controller.SongbookItem;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class FileService {
+    public static final String JSON_EXTENSION = ".json";
+    public static final String GZ_EXTENSION = ".json.gz";
+
+    private static final String DEFAULT_TITLE = "utwor";
+    private static final String FILE_NAME_FORMAT = "%s_%s" + JSON_EXTENSION;
     private static FileService instance;
     private final JsonFileService jsonFileService = new JsonFileService();
 
@@ -21,11 +24,8 @@ public class FileService {
         return instance;
     }
 
-    public void saveToFile(Score score) throws IOException {
-//        String fileName = String.format("%s_%s_c.json", score.getNumberNew(), score.getTitle().replaceAll(" ", "-"));
-        String fileName = String.format("%s_%s.json", score.getNumberNew(), score.getTitle().replaceAll(" ", "-"));
-        File saveFile = new File(fileName);
-//            jsonFileService.saveToCompressedJson(score, saveFile);
+    public void saveToFile(Score score, File directory) throws IOException {
+        File saveFile = getTargetFile(score, directory);
         jsonFileService.saveToJson(score, saveFile);
     }
 
@@ -35,32 +35,48 @@ public class FileService {
         } else throw new IOException("Plik nie istnieje.");
     }
 
-    public List<String> getJsonFileNames(File folder, boolean compressed) {
+    public List<SongbookItem> getDirectoryContent(File folder, boolean compressed) {
         if (folder == null || !folder.isDirectory()) {
             return Collections.emptyList();
         }
 
-        FilenameFilter jsonFilter = (dir, name) -> {
-            String lower = name.toLowerCase();
-            return lower.endsWith(".json") || lower.endsWith(".json.gz");
-        };
+        List<SongbookItem> result = new ArrayList<>();
 
-        File[] files = folder.listFiles(jsonFilter);
-        if (files == null) {
-            return Collections.emptyList();
+        if (folder.getParentFile() != null) {
+            result.add(new SongbookItem(SongbookItem.Type.PARENT_DIR, folder.getParentFile(), ".."));
         }
 
-        return Arrays.stream(files)
-                .filter(file -> jsonFileService.isGzipCompressed(file) == compressed)
-                .map(File::getName)
-                .toList();
-    }
+        File[] files = folder.listFiles();
+        if (files != null) {
+            Arrays.stream(files)
+                    .filter(File::isDirectory)
+                    .sorted(Comparator.comparing(File::getName))
+                    .map(f -> new SongbookItem(SongbookItem.Type.DIRECTORY, f, f.getName()))
+                    .forEach(result::add);
 
-    public Optional<File> getFileFromSongbookDir(String fileName) {
-        return PreferencesService.getDirectoryFile().map(directory -> new File(directory, fileName));
+            Arrays.stream(files)
+                    .filter(File::isFile)
+                    .filter(f -> f.getName().toLowerCase().endsWith(JSON_EXTENSION) || f.getName().toLowerCase().endsWith(GZ_EXTENSION))
+                    .filter(f -> jsonFileService.isGzipCompressed(f) == compressed)
+                    .sorted(Comparator.comparing(File::getName))
+                    .map(f -> new SongbookItem(SongbookItem.Type.FILE, f, f.getName()))
+                    .forEach(result::add);
+        }
+
+        return result;
     }
 
     public Optional<File> getCurrentProjectFile() {
         return Optional.ofNullable(System.getProperty("user.dir")).map(File::new);
+    }
+
+    public File getTargetFile(Score score, File directory) {
+        String rawTitle = score.getTitle();
+        String formattedTitle = (rawTitle != null && !rawTitle.isBlank())
+                ? rawTitle.trim().replaceAll(" ", "-")
+                : DEFAULT_TITLE;
+
+        String fileName = String.format(FILE_NAME_FORMAT, score.getNumberNew(), formattedTitle);
+        return new File(directory, fileName);
     }
 }

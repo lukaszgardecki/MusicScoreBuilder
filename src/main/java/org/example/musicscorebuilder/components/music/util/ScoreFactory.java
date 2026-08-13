@@ -19,7 +19,7 @@ public class ScoreFactory {
         return scoreMode;
     }
 
-    public static Score createScore() {
+    public static Score createScoreTemplate() {
         Score score = new Score("000", "000", "Tytuł", "Podtytuł", "Kompozytor");
         score.add(createSoloMode(score));
         score.add(createHarmonyMode(score));

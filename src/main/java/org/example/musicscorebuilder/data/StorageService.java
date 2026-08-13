@@ -28,12 +28,17 @@ public class StorageService {
 
     public void saveCurrentScoreFile() throws IOException {
         Score score = getScore();
-        fileService.saveToFile(score);
+        File dest = PreferencesService.getDirectoryFile().orElseThrow(IOException::new);
+        fileService.saveToFile(score, dest);
+    }
+
+    public void saveScoreFile(Score score, File dest) throws IOException {
+        fileService.saveToFile(score, dest);
     }
 
     public Score getScore() {
         if (score != null) return score;
-        this.score = ScoreFactory.createScore();
+        this.score = ScoreFactory.createScoreTemplate();
         return score;
     }
 

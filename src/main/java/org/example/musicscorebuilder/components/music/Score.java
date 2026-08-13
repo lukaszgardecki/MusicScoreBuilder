@@ -50,4 +50,10 @@ public class Score {
 
     @JsonProperty("modes")
     public List<ScoreMode> getModes() { return scoreModes; }
+
+    public void setTitle(String title) { this.title = title; }
+    public void setSubtitle(String subtitle) { this.subtitle = subtitle; }
+    public void setComposer(String composer) { this.composer = composer; }
+    public void setNumberNew(String numberNew) { this.numberNew = numberNew; }
+    public void setNumberOld(String numberOld) { this.numberOld = numberOld; }
 }
