@@ -20,7 +20,7 @@ public class ScoreFactory {
     }
 
     public static Score createScore() {
-        Score score = new Score("251", "245", "O milcząca Hostio biała", "Podtytuł", "t. i m.: (Siedl.)");
+        Score score = new Score("000", "000", "Tytuł", "Podtytuł", "Kompozytor");
         score.add(createSoloMode(score));
         score.add(createHarmonyMode(score));
         return score;
