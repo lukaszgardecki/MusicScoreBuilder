@@ -49,9 +49,14 @@ public class SongbookController {
             SongbookListCell cell = new SongbookListCell();
 
             ContextMenu contextMenu = new ContextMenu();
+
+            MenuItem renameMenuItem = new MenuItem("Zmień nazwę");
+            renameMenuItem.setOnAction(e -> handleRename());
+
             MenuItem deleteMenuItem = new MenuItem("Usuń");
             deleteMenuItem.setOnAction(e -> handleDelete());
-            contextMenu.getItems().add(deleteMenuItem);
+
+            contextMenu.getItems().addAll(renameMenuItem, deleteMenuItem);
 
             cell.itemProperty().addListener((obs, oldItem, newItem) -> {
                 if (newItem == null || newItem.type() == SongbookItem.Type.PARENT_DIR) {
@@ -82,14 +87,17 @@ public class SongbookController {
         jsonFilesListView.sceneProperty().addListener((observable, oldScene, newScene) -> {
             if (newScene != null) {
                 newScene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
-                    if (event.getCode() == KeyCode.DELETE) {
-                        if (newScene.getFocusOwner() instanceof TextInputControl) return;
+                    if (newScene.getFocusOwner() instanceof TextInputControl) return;
 
-                        SongbookItem selected = jsonFilesListView.getSelectionModel().getSelectedItem();
-                        if (selected != null && selected.type() != SongbookItem.Type.PARENT_DIR) {
-                            handleDelete();
-                            event.consume();
-                        }
+                    SongbookItem selected = jsonFilesListView.getSelectionModel().getSelectedItem();
+                    if (selected == null || selected.type() == SongbookItem.Type.PARENT_DIR) return;
+
+                    if (event.getCode() == KeyCode.DELETE) {
+                        handleDelete();
+                        event.consume();
+                    } else if (event.getCode() == KeyCode.F2) {
+                        handleRename();
+                        event.consume();
                     }
                 });
             }
@@ -104,6 +112,78 @@ public class SongbookController {
             boolean isDeletable = newVal != null && newVal.type() != SongbookItem.Type.PARENT_DIR;
             deleteButton.setDisable(!isDeletable);
         });
+    }
+
+    @FXML
+    private void handleRename() {
+        SongbookItem selected = jsonFilesListView.getSelectionModel().getSelectedItem();
+        if (selected == null || selected.type() == SongbookItem.Type.PARENT_DIR) {
+            return;
+        }
+
+        File oldFile = selected.file();
+        if (oldFile == null || !oldFile.exists()) {
+            return;
+        }
+
+        boolean isDirectory = selected.type() == SongbookItem.Type.DIRECTORY;
+        String itemType = isDirectory ? "folderu" : "pliku";
+        String extension = "";
+        String baseName = oldFile.getName();
+
+        if (!isDirectory) {
+            String lowerName = baseName.toLowerCase();
+            if (lowerName.endsWith(".json.gz")) {
+                extension = ".json.gz";
+                baseName = baseName.substring(0, baseName.length() - ".json.gz".length());
+            } else if (lowerName.endsWith(".json")) {
+                extension = ".json";
+                baseName = baseName.substring(0, baseName.length() - ".json".length());
+            } else {
+                int lastDotIndex = baseName.lastIndexOf('.');
+                if (lastDotIndex > 0) {
+                    extension = baseName.substring(lastDotIndex);
+                    baseName = baseName.substring(0, lastDotIndex);
+                }
+            }
+        }
+
+        String currentInput = baseName;
+
+        while (true) {
+            TextInputDialog dialog = new TextInputDialog(currentInput);
+            dialog.setTitle("Zmiana nazwy");
+            dialog.setHeaderText("Zmiana nazwy " + itemType);
+            dialog.setContentText("Podaj nową nazwę:");
+
+            Optional<String> result = dialog.showAndWait().map(String::trim);
+            if (result.isEmpty()) break;
+
+            currentInput = result.get();
+            if (currentInput.isEmpty()) {
+                showErrorAlert("Błąd", "Nazwa nie może być pusta!");
+                continue;
+            }
+
+            String finalFileName = isDirectory ? currentInput : (currentInput + extension);
+            File targetFile = new File(oldFile.getParentFile(), finalFileName);
+
+            if (targetFile.equals(oldFile)) break;
+
+            if (targetFile.exists()) {
+                showErrorAlert("Błąd", "Element o nazwie '" + targetFile.getName() + "' już istnieje!");
+                continue;
+            }
+
+            if (oldFile.renameTo(targetFile)) {
+                PreferencesService.getDirectoryFile().ifPresent(this::loadJsonFiles);
+                selectItemByFile(targetFile);
+                break;
+            } else {
+                showErrorAlert("Błąd", "Nie udało się zmienić nazwy na dysku.");
+                break;
+            }
+        }
     }
 
     @FXML
