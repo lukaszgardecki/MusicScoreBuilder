@@ -19,7 +19,7 @@ public class MusicScoreBuilder extends Application {
         Scene scene = new Scene(fxmlLoader.load());
         scene.getStylesheets().addAll(
                 Objects.requireNonNull(getClass().getResource("/styles/center.css")).toExternalForm(),
-                Objects.requireNonNull(getClass().getResource("/styles/palette.css")).toExternalForm(),
+                Objects.requireNonNull(getClass().getResource("/styles/left.css")).toExternalForm(),
                 Objects.requireNonNull(getClass().getResource("/styles/toolbar.css")).toExternalForm(),
                 Objects.requireNonNull(getClass().getResource("/styles/menubar.css")).toExternalForm(),
                 Objects.requireNonNull(getClass().getResource("/styles/sheet.css")).toExternalForm()

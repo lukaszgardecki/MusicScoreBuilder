@@ -1,3 +1,72 @@
+/* ZAKŁADKI */
+.tab-pane {
+    -fx-tab-min-height: 32px;
+    -fx-tab-max-height: 32px;
+}
+
+.tab-pane > .tab-header-area {
+    -fx-padding: 0;
+}
+
+.tab-pane > .tab-header-area > .tab-header-background {
+    -fx-background-color: #eef1f5;
+    -fx-border-color: #dcdfe6;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.tab-pane > .tab-header-area > .headers-region {
+    -fx-padding: 0;
+}
+
+.tab-pane .focus-indicator {
+    -fx-border-color: transparent !important;
+    -fx-border-width: 0 !important;
+    -fx-padding: 0 !important;
+}
+
+.tab-pane .tab:focused {
+    -fx-focus-color: transparent !important;
+    -fx-faint-focus-color: transparent !important;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab {
+    -fx-background-color: #e4e7eb;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0 16px;
+    -fx-cursor: hand;
+    -fx-border-color: #dcdfe6;
+    -fx-border-width: 0 1px 1px 0;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab:hover {
+    -fx-background-color: #eaeef3;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab:selected {
+    -fx-background-color: #ffffff;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-border-color: #dcdfe6;
+    -fx-border-width: 0 1px 0 0;
+}
+
+.tab-pane .tab .tab-label {
+    -fx-text-fill: #606266;
+    -fx-font-size: 13px;
+    -fx-font-weight: normal;
+    -fx-alignment: CENTER;
+}
+
+.tab-pane .tab:selected .tab-label {
+    -fx-text-fill: #1a1a1a;
+    -fx-font-weight: bold;
+}
+
+
+
+
+/* ZAWARTOŚĆ ZAKŁADEK */
 .titled-pane {
     -fx-box-border: transparent;
     -fx-panes-speed: 0s;
