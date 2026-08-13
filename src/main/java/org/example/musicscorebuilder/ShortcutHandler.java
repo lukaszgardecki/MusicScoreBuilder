@@ -1,6 +1,7 @@
 package org.example.musicscorebuilder;
 
 import javafx.scene.Scene;
+import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyEvent;
 import org.example.musicscorebuilder.components.layout.NoteLayout;
 import org.example.musicscorebuilder.components.layout.RestLayout;
@@ -26,6 +27,11 @@ public class ShortcutHandler {
     }
 
     private void handleKeyPressed(KeyEvent event) {
+
+        if (event.getSource() instanceof Scene scene && scene.getFocusOwner() instanceof TextInputControl) {
+            return;
+        }
+
         if (modeManager.isEditTextMode()) return;
         boolean handled = true;
 
