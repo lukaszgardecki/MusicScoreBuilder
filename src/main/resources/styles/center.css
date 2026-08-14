@@ -8,14 +8,48 @@
     -fx-background-insets: 0;
 }
 
-.custom-button {
+/* ==========================================================================
+   SEGMENTED CONTROL (KONTENER + PRZYCISKI)
+   ========================================================================== */
+.segmented-control {
     -fx-background-color: #ffffff;
-    -fx-text-fill: #2c3e50;
-    -fx-border-color: #bdc3c7;
+    -fx-border-color: #cbd5e1;
+    -fx-border-width: 1px;
     -fx-border-radius: 20;
     -fx-background-radius: 20;
-    -fx-padding: 8 16 8 16;
+    -fx-padding: 2px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.12), 8, 0, 0, 2);
+}
+
+.custom-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #64748b;
+    -fx-border-color: transparent;
+    -fx-padding: 6px 18px;
     -fx-cursor: hand;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 8, 0, 0, 2);
+    -fx-font-size: 13px;
     -fx-font-weight: bold;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.custom-button:hover {
+    -fx-text-fill: #1e293b;
+}
+
+.custom-button:selected {
+    -fx-background-color: #2563eb;
+    -fx-text-fill: #ffffff;
+}
+
+.custom-button:selected:hover {
+    -fx-background-color: #1d4ed8;
+}
+
+#soloViewButton {
+    -fx-background-radius: 16 0 0 16;
+}
+
+#fullScoreViewButton {
+    -fx-background-radius: 0 16 16 0;
 }

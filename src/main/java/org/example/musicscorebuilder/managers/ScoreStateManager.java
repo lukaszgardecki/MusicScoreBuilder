@@ -28,11 +28,6 @@ public class ScoreStateManager {
         return instance;
     }
 
-    public void setCurrentModeIndex(int index) {
-        this.currentModeIndex = index;
-        notifyScoreChanged();
-    }
-
     public ScoreMode getCurrentMode() {
         Score score = StorageService.getInstance().getScore();
         if (score == null || score.getModes().isEmpty()) return null;
@@ -40,6 +35,10 @@ public class ScoreStateManager {
             return score.getModes().getFirst();
         }
         return score.getModes().get(currentModeIndex);
+    }
+
+    public int getCurrentModeIndex() {
+        return currentModeIndex;
     }
 
     public void setSelected(Selectable item) {
@@ -77,6 +76,11 @@ public class ScoreStateManager {
         for (SelectionChangeListener listener : selectionChangeListeners) {
             listener.onSelectionChanged(currentSelected);
         }
+    }
+
+    public void setCurrentModeIndex(int index) {
+        this.currentModeIndex = index;
+        notifyScoreChanged();
     }
 
     public void setPostRefreshAction(Consumer<ScoreLayout> action) {

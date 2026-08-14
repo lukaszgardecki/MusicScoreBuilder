@@ -3,6 +3,7 @@ package org.example.musicscorebuilder.controller;
 import javafx.fxml.FXML;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import org.example.musicscorebuilder.NoteDragHandler;
@@ -26,7 +27,9 @@ import java.util.Optional;
 public class PageAreaController {
     @FXML private ScrollPane scrollPane;
     @FXML private BackgroundView container;
-    @FXML private ToggleButton viewModeToggle;
+    @FXML private ToggleGroup viewModeGroup;
+    @FXML private ToggleButton soloViewButton;
+    @FXML private ToggleButton fullScoreViewButton;
 
     private ContextMenuController contextMenuController;
 
@@ -44,7 +47,7 @@ public class PageAreaController {
         initDragHandling();
         initClickHandling();
         initListeners();
-        initViewModeToggle();
+        initViewModeToggles();
         this.contextMenuController = ContextMenuController.create();
         this.layoutEngine = new LayoutEngine();
         MidiInputService.getInstance().startListening();
@@ -52,18 +55,30 @@ public class PageAreaController {
         refreshView();
     }
 
-    @FXML
-    private void toggleViewMode() {
-        Score score = storageService.getScore();
-        if (score.getModes().size() <= 1) return;
+    private void initViewModeToggles() {
+        soloViewButton.setSelected(true);
+        viewModeGroup.selectedToggleProperty().addListener((obs, oldToggle, newToggle) -> {
+            if (newToggle == null) {
+                oldToggle.setSelected(true);
+            }
+        });
+    }
 
-        if (viewModeToggle.isSelected()) {
-            viewModeToggle.setText("Widok: Głos Solowy");
-            stateManager.setCurrentModeIndex(0);
-        } else {
-            viewModeToggle.setText("Widok: Pełna Partytura");
-            stateManager.setCurrentModeIndex(1);
+    @FXML
+    private void handleViewModeChange() {
+        Score score = storageService.getScore();
+        int targetModeIndex = soloViewButton.isSelected() ? 0 : 1;
+
+        if (score == null || score.getModes().size() <= targetModeIndex) {
+            return;
         }
+
+        if (stateManager.getCurrentModeIndex() == targetModeIndex) {
+            return;
+        }
+
+        stateManager.setCurrentModeIndex(targetModeIndex);
+
         if (modeManager.isInsertMode()) modeManager.toggleInsertMode();
         scoreNavigator.clearCursor();
         stateManager.clearSelection();
@@ -177,11 +192,6 @@ public class PageAreaController {
         if (currentCursor != null && currentCursor.getSegment() != null) {
             currentCursor.getSegment().setCursor(null);
         }
-    }
-
-    private void initViewModeToggle() {
-        viewModeToggle.setSelected(true);
-        viewModeToggle.setText("Widok: Głos Solowy");
     }
 
     private void redraw() {

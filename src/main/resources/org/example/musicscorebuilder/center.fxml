@@ -3,22 +3,42 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import org.example.musicscorebuilder.components.views.BackgroundView?>
+
 <StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="org.example.musicscorebuilder.controller.PageAreaController">
 
     <ScrollPane fx:id="scrollPane" fitToWidth="false" fitToHeight="false">
         <BackgroundView fx:id="container"/>
     </ScrollPane>
 
-    <ToggleButton fx:id="viewModeToggle"
-                  text="Widok: Pełna Partytura"
-                  onAction="#toggleViewMode"
-                  styleClass="custom-button"
-                  StackPane.alignment="TOP_RIGHT">
+    <HBox alignment="TOP_CENTER"
+          spacing="0.0"
+          StackPane.alignment="TOP_CENTER"
+          maxWidth="-Infinity"
+          maxHeight="-Infinity"
+          pickOnBounds="false"
+          styleClass="segmented-control">
         <StackPane.margin>
-            <Insets top="15.0" right="25.0"/>
+            <Insets top="15.0"/>
         </StackPane.margin>
-    </ToggleButton>
+        <fx:define>
+            <ToggleGroup fx:id="viewModeGroup"/>
+        </fx:define>
+
+        <ToggleButton fx:id="soloViewButton"
+                      text="Głos Solowy"
+                      toggleGroup="$viewModeGroup"
+                      onAction="#handleViewModeChange"
+                      styleClass="custom-button"/>
+
+        <ToggleButton fx:id="fullScoreViewButton"
+                      text="Harmonizacja"
+                      toggleGroup="$viewModeGroup"
+                      onAction="#handleViewModeChange"
+                      styleClass="custom-button"/>
+    </HBox>
 
 </StackPane>
