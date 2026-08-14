@@ -243,7 +243,7 @@ public class PageAreaController {
             stateManager.setSelected(clickedElement, false);
             redraw();
         }
-        contextMenuController.setContext(clickedElement);
+        contextMenuController.setContext(clickedElement, () -> currentScoreLayout);
         contextMenuController.show(container, event.getScreenX(), event.getScreenY());
     }
 }

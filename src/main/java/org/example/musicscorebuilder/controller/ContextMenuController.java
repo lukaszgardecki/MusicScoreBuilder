@@ -8,11 +8,16 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
+import org.example.musicscorebuilder.components.dialog.CustomMeasurePropertiesDialog;
+import org.example.musicscorebuilder.components.dialog.util.MeasurePropertiesDialogHandler;
 import org.example.musicscorebuilder.components.layout.MeasureStaffSelection;
 import org.example.musicscorebuilder.components.layout.NoteLayout;
+import org.example.musicscorebuilder.components.layout.ScoreLayout;
 import org.example.musicscorebuilder.components.layout.Selectable;
+
 import java.io.IOException;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 public class ContextMenuController {
 
@@ -33,6 +38,7 @@ public class ContextMenuController {
     @FXML private MenuItem notePropertiesItem;
 
     private Selectable clickedElement;
+    private Supplier<ScoreLayout> scoreLayoutSupplier;
 
     @FXML
     public void initialize() {
@@ -57,8 +63,9 @@ public class ContextMenuController {
         }
     }
 
-    public void setContext(Selectable clickedElement) {
+    public void setContext(Selectable clickedElement, Supplier<ScoreLayout> scoreLayoutSupplier) {
         this.clickedElement = clickedElement;
+        this.scoreLayoutSupplier = scoreLayoutSupplier;
         updateMenuVisibility();
     }
 
@@ -94,50 +101,30 @@ public class ContextMenuController {
         return contextMenu != null && contextMenu.isShowing();
     }
 
-    @FXML
-    private void handleCut(ActionEvent event) {
-        System.out.println("Wycięto: " + clickedElement);
-    }
-    @FXML
-    private void handleCopy(ActionEvent event) {
-        System.out.println("Skopiowano: " + clickedElement);
-    }
-    @FXML
-    private void handlePaste(ActionEvent event) {
-        System.out.println("Wklejono");
-    }
-    @FXML
-    private void handleClearMeasures(ActionEvent event) {
-        System.out.println("Czyszczenie taktu: " + clickedElement);
-    }
-    @FXML
-    private void handleDeleteMeasures(ActionEvent event) {
-        System.out.println("Usuwanie taktu: " + clickedElement);
-    }
-    @FXML
-    private void handleStaffProperties(ActionEvent event) {
-        System.out.println("Właściwości pięciolinii");
-    }
-    @FXML
-    private void handleInsertMeasureBefore(ActionEvent event) {
-        System.out.println("Wstaw takt przed");
-    }
-    @FXML
-    private void handleInsertMeasureAfter(ActionEvent event) {
-        System.out.println("Wstaw takt po");
-    }
-    @FXML
-    private void handleInsertMultipleMeasures(ActionEvent event) {
-        System.out.println("Wstaw wiele taktów");
-    }
+    @FXML private void handleCut(ActionEvent event) {}
+    @FXML private void handleCopy(ActionEvent event) {}
+    @FXML private void handlePaste(ActionEvent event) {}
+    @FXML private void handleClearMeasures(ActionEvent event) {}
+    @FXML private void handleDeleteMeasures(ActionEvent event) {}
+    @FXML private void handleStaffProperties(ActionEvent event) {}
+    @FXML private void handleInsertMeasureBefore(ActionEvent event) {}
+    @FXML private void handleInsertMeasureAfter(ActionEvent event) {}
+    @FXML private void handleInsertMultipleMeasures(ActionEvent event) {}
+
     @FXML
     private void handleMeasureProperties(ActionEvent event) {
-        System.out.println("Właściwości taktu: " + clickedElement);
+        if (clickedElement instanceof MeasureStaffSelection selection) {
+            CustomMeasurePropertiesDialog dialog = new CustomMeasurePropertiesDialog();
+            MeasurePropertiesDialogHandler.attach(
+                    dialog,
+                    selection,
+                    scoreLayoutSupplier
+            );
+            dialog.showAndWait();
+        }
     }
-    @FXML
-    private void handleNoteProperties(ActionEvent event) {
-        System.out.println("Właściwości nuty: " + clickedElement);
-    }
+
+    @FXML private void handleNoteProperties(ActionEvent event) {}
 
     private void setVisible(MenuItem item, boolean visible) {
         if (item != null) {

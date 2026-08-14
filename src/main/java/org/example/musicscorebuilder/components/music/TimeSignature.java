@@ -9,31 +9,63 @@ import java.util.Objects;
 public class TimeSignature extends Element {
     public enum Type { FRACTIONAL, COMMON, CUT }
 
-    private final int beat;
-    private final int beatType;
+    @JsonProperty("nb")
+    private final int nominalBeat;
+
+    @JsonProperty("nbt")
+    private final int nominalBeatType;
+
+    @JsonProperty("ab")
+    private final int actualBeat;
+
+    @JsonProperty("abt")
+    private final int actualBeatType;
+
+    @JsonProperty("t")
     private final Type type;
 
     @JsonCreator
     public TimeSignature(
-            @JsonProperty("beat") int beat,
-            @JsonProperty("beatType") int beatType,
-            @JsonProperty("type") Type type
+            @JsonProperty("nb") Integer nominalBeat,
+            @JsonProperty("nbt") Integer nominalBeatType,
+            @JsonProperty("ab") Integer actualBeat,
+            @JsonProperty("abt") Integer actualBeatType,
+            @JsonProperty("t") Type type
     ) {
         super(null);
-        this.beat = beat;
-        this.beatType = beatType;
+        this.nominalBeat = nominalBeat != null ? nominalBeat : 4;
+        this.nominalBeatType = nominalBeatType != null ? nominalBeatType : 4;
+        this.actualBeat = actualBeat != null ? actualBeat : this.nominalBeat;
+        this.actualBeatType = actualBeatType != null ? actualBeatType : this.nominalBeatType;
+        this.type = type != null ? type : Type.FRACTIONAL;
+    }
+
+    public TimeSignature(int nominalBeat, int nominalBeatType, int actualBeat, int actualBeatType, Type type, Measure parent) {
+        super(parent);
+        this.nominalBeat = nominalBeat;
+        this.nominalBeatType = nominalBeatType;
+        this.actualBeat = actualBeat;
+        this.actualBeatType = actualBeatType;
         this.type = type != null ? type : Type.FRACTIONAL;
     }
 
     public TimeSignature(int beat, int beatType, Type type, Measure parent) {
-        super(parent);
-        this.beat = beat;
-        this.beatType = beatType;
-        this.type = type;
+        this(beat, beatType, beat, beatType, type, parent);
     }
 
-    public int getBeat() { return beat; }
-    public int getBeatType() { return beatType; }
+    public TimeSignature(int beat, int beatType, Type type) {
+        this(beat, beatType, beat, beatType, type, null);
+    }
+
+    public int getNominalBeat() { return nominalBeat; }
+    public int getNominalBeatType() { return nominalBeatType; }
+
+    public int getActualBeat() { return actualBeat; }
+    public int getActualBeatType() { return actualBeatType; }
+
+    public int getBeat() { return nominalBeat; }
+    public int getBeatType() { return nominalBeatType; }
+
     public Type getType() { return type; }
 
     @JsonIgnore
@@ -47,13 +79,20 @@ public class TimeSignature extends Element {
 
     @JsonIgnore
     public int getTotalTicks() {
-        if (beatType == 0) return 0;
-        int base = 3840 / beatType;
+        if (actualBeatType == 0) return 0;
+        int base = 3840 / actualBeatType;
 
-        if (beatType == 8 && beat % 3 == 0) {
-            return (beat / 3) * (base * 3);
+        if (actualBeatType == 8 && actualBeat % 3 == 0) {
+            return (actualBeat / 3) * (base * 3);
         }
-        return beat * base;
+        return actualBeat * base;
+    }
+
+    public boolean isVisuallyEqual(TimeSignature other) {
+        if (other == null) return false;
+        return nominalBeat == other.nominalBeat &&
+                nominalBeatType == other.nominalBeatType &&
+                type == other.type;
     }
 
     @Override
@@ -61,13 +100,11 @@ public class TimeSignature extends Element {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TimeSignature that = (TimeSignature) o;
-        return beat == that.beat &&
-                beatType == that.beatType &&
-                type == that.type;
+        return isVisuallyEqual(that);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(beat, beatType, type);
+        return Objects.hash(nominalBeat, nominalBeatType, type);
     }
 }

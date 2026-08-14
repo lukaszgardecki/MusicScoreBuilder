@@ -64,7 +64,10 @@ public class Measure {
     }
 
     public void recalculateSegmentDurations() {
-        int totalTicks = timeSignature.getTotalTicks();
+        TimeSignature ts = getTimeSignature();
+        if (ts == null) return;
+
+        int totalTicks = ts.getTotalTicks();
 
         List<Segment> noteRestSegments = segments.stream()
                 .filter(Segment::isNoteRest)
@@ -129,7 +132,31 @@ public class Measure {
         return rightBarline;
     }
 
-    public TimeSignature getTimeSignature() { return timeSignature; }
+    public TimeSignature getTimeSignature() {
+        if (this.timeSignature != null) {
+            return this.timeSignature;
+        }
+        if (prev != null) {
+            TimeSignature prevTs = prev.getTimeSignature();
+            if (prevTs != null) {
+                // Dziedziczymy metrum z poprzednika, ale TYLKO w wartościach nominalnych!
+                return new TimeSignature(
+                        prevTs.getNominalBeat(),
+                        prevTs.getNominalBeatType(),
+                        prevTs.getNominalBeat(),     // actualBeat = nominalBeat
+                        prevTs.getNominalBeatType(), // actualBeatType = nominalBeatType
+                        prevTs.getType(),
+                        this
+                );
+            }
+        }
+        return new TimeSignature(4, 4, TimeSignature.Type.FRACTIONAL, this);
+    }
+
+    public TimeSignature getExplicitTimeSignature() {
+        return this.timeSignature;
+    }
+
     public KeySignature getKeySignature() { return keySignature; }
 
     @JsonIgnore

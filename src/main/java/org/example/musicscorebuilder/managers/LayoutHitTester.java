@@ -357,6 +357,36 @@ public class LayoutHitTester {
         return null;
     }
 
+    public static MeasureStaffSelection findSelectionInScoreLayout(ScoreLayout scoreLayout, Measure targetMeasure, int staffIndex) {
+        if (scoreLayout == null || targetMeasure == null) return null;
+
+        List<PageLayout> pages = scoreLayout.getPages();
+        if (pages == null) return null;
+
+        for (PageLayout page : pages) {
+            if (page.getSystems() == null) continue;
+            for (SystemLayout system : page.getSystems()) {
+                if (system.getMeasures() == null) continue;
+                for (MeasureLayout ml : system.getMeasures()) {
+                    if (ml.getMeasure() == targetMeasure) {
+                        StaffLayout targetStaff = null;
+                        if (ml.getStaffs() != null && !ml.getStaffs().isEmpty()) {
+                            targetStaff = ml.getStaffs().stream()
+                                    .filter(s -> s.getStaffIndex() == staffIndex)
+                                    .findFirst()
+                                    .orElse(ml.getStaffs().getFirst());
+                        }
+
+                        if (targetStaff != null) {
+                            return new MeasureStaffSelection(ml, targetStaff);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     public record LyricHit(NoteLayout noteLayout, int verse) implements Selectable {
 
         @Override
