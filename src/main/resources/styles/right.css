@@ -114,10 +114,40 @@
     -fx-shape: "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z";
 }
 
-/* USUNIĘCIE NIEBIESKIEJ RAMKI FOCUSU W LISTVIEW */
+/* --- SEKCJA LISTVIEW --- */
 .list-view {
     -fx-focus-color: transparent;
     -fx-faint-focus-color: transparent;
+    -fx-border-color: #E5E7EB;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-background-color: transparent, #FFFFFF;
+    -fx-padding: 1px;
+}
+
+.list-view:focused {
+    -fx-border-color: #E5E7EB;
+    -fx-background-color: transparent, #FFFFFF;
+}
+
+.list-cell {
+    -fx-background-color: #FFFFFF;
+}
+
+.list-cell:odd,
+.list-cell:even,
+.list-cell:empty {
+    -fx-background-color: #FFFFFF;
+}
+
+.list-cell:filled:hover {
+    -fx-background-color: #F3F4F6;
+}
+
+.list-cell:filled:selected,
+.list-cell:filled:selected:hover {
+    -fx-background-color: #EFF6FF;
+    -fx-text-fill: #1D4ED8;
 }
 
 /* --- SEKCJA METADANYCH UTWORU --- */
