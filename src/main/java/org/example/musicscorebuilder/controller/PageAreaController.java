@@ -6,6 +6,7 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import org.example.musicscorebuilder.NoteDragHandler;
 import org.example.musicscorebuilder.ShortcutHandler;
 import org.example.musicscorebuilder.components.layout.NoteLayout;
@@ -27,9 +28,8 @@ import java.util.Optional;
 public class PageAreaController {
     @FXML private ScrollPane scrollPane;
     @FXML private BackgroundView container;
+    @FXML private HBox modeBarContainer;
     @FXML private ToggleGroup viewModeGroup;
-    @FXML private ToggleButton soloViewButton;
-    @FXML private ToggleButton fullScoreViewButton;
 
     private ContextMenuController contextMenuController;
 
@@ -47,7 +47,7 @@ public class PageAreaController {
         initDragHandling();
         initClickHandling();
         initListeners();
-        initViewModeToggles();
+        initViewModeGroup();
         this.contextMenuController = ContextMenuController.create();
         this.layoutEngine = new LayoutEngine();
         MidiInputService.getInstance().startListening();
@@ -55,34 +55,61 @@ public class PageAreaController {
         refreshView();
     }
 
-    private void initViewModeToggles() {
-        soloViewButton.setSelected(true);
+    private void initViewModeGroup() {
         viewModeGroup.selectedToggleProperty().addListener((obs, oldToggle, newToggle) -> {
-            if (newToggle == null) {
+            if (newToggle == null && oldToggle != null) {
                 oldToggle.setSelected(true);
             }
         });
     }
 
-    @FXML
-    private void handleViewModeChange() {
+    private void updateModeSelector() {
         Score score = storageService.getScore();
-        int targetModeIndex = soloViewButton.isSelected() ? 0 : 1;
-
-        if (score == null || score.getModes().size() <= targetModeIndex) {
+        if (score == null || score.getModes() == null || score.getModes().size() <= 1) {
+            modeBarContainer.setVisible(false);
+            modeBarContainer.setManaged(false);
             return;
         }
 
-        if (stateManager.getCurrentModeIndex() == targetModeIndex) {
-            return;
+        modeBarContainer.setVisible(true);
+        modeBarContainer.setManaged(true);
+        modeBarContainer.getChildren().clear();
+
+        List<ScoreMode> modes = score.getModes();
+        int activeIndex = stateManager.getCurrentModeIndex();
+
+        for (int i = 0; i < modes.size(); i++) {
+            ScoreMode mode = modes.get(i);
+            int modeIndex = i;
+
+            ToggleButton button = new ToggleButton(mode.getType().getName());
+            button.setToggleGroup(viewModeGroup);
+            button.getStyleClass().add("custom-button");
+
+            if (i == 0) {
+                button.getStyleClass().add("first-segment");
+            } else if (i == modes.size() - 1) {
+                button.getStyleClass().add("last-segment");
+            } else {
+                button.getStyleClass().add("middle-segment");
+            }
+
+            if (i == activeIndex) {
+                button.setSelected(true);
+            }
+
+            button.setOnAction(e -> {
+                if (stateManager.getCurrentModeIndex() != modeIndex) {
+                    stateManager.setCurrentModeIndex(modeIndex);
+                    if (modeManager.isInsertMode()) modeManager.toggleInsertMode();
+                    scoreNavigator.clearCursor();
+                    stateManager.clearSelection();
+                    refreshView();
+                }
+            });
+
+            modeBarContainer.getChildren().add(button);
         }
-
-        stateManager.setCurrentModeIndex(targetModeIndex);
-
-        if (modeManager.isInsertMode()) modeManager.toggleInsertMode();
-        scoreNavigator.clearCursor();
-        stateManager.clearSelection();
-        refreshView();
     }
 
     private void initContainerBinding() {
@@ -201,6 +228,7 @@ public class PageAreaController {
     }
 
     private void refreshView() {
+        updateModeSelector();
         ScoreMode activeScoreMode = stateManager.getCurrentMode();
         if (activeScoreMode == null) return;
         this.currentScoreLayout = layoutEngine.compute(activeScoreMode);

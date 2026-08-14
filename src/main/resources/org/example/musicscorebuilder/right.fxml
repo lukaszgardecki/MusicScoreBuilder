@@ -2,13 +2,13 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
 <VBox prefWidth="300.0"
       spacing="0"
       xmlns="http://javafx.com/javafx/17"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="org.example.musicscorebuilder.controller.songbookcontroller.SongbookController">
 
+    <!-- SEKCJA 1: INFORMACJE O UTWORZE -->
     <VBox fx:id="metadataContainer" spacing="6" styleClass="metadata-panel" style="-fx-padding: 10;">
         <Label text="Informacje o utworze" styleClass="metadata-title" />
 
@@ -45,9 +45,48 @@
         </VBox>
     </VBox>
 
+
     <Separator />
 
-    <!-- PASEK ZAKŁADEK -->
+
+    <!-- SEKCJA 2: TRYBY WIDOKU -->
+    <VBox spacing="6" styleClass="metadata-panel" style="-fx-padding: 10;">
+        <HBox alignment="CENTER_LEFT" spacing="6">
+            <Label text="Tryby widoku" styleClass="metadata-title" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+
+            <Button fx:id="addModeButton"
+                    onAction="#handleAddMode"
+                    styleClass="btn, btn-success"
+                    style="-fx-padding: 4px 6px;">
+                <tooltip>
+                    <Tooltip text="Dodaj tryb" />
+                </tooltip>
+                <graphic>
+                    <Region styleClass="icon, icon-plus" />
+                </graphic>
+            </Button>
+
+            <Button fx:id="deleteModeButton"
+                    onAction="#handleDeleteMode"
+                    styleClass="btn, btn-danger"
+                    style="-fx-padding: 4px 6px;">
+                <tooltip>
+                    <Tooltip text="Usuń tryb" />
+                </tooltip>
+                <graphic>
+                    <Region styleClass="icon, icon-trash" />
+                </graphic>
+            </Button>
+        </HBox>
+
+        <ListView fx:id="modesListView" prefHeight="90.0" maxHeight="120.0" />
+    </VBox>
+
+
+    <Separator />
+
+
+    <!-- SEKCJA 3: ZARZĄDZANIE ŚPIEWNIKIEM -->
     <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
 
         <Tab text="Śpiewnik">

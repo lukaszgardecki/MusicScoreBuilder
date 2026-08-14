@@ -9,7 +9,31 @@
     -fx-alignment: center;
 }
 
-/* --- PRZYCISK: NOWY FOLDER (Bursztynowy #F59E0B) --- */
+/* --- PRZYCISK: NOWY TRYB --- */
+.btn-success {
+    -fx-background-color: #ECFDF5;
+    -fx-border-color: #A7F3D0;
+    -fx-border-width: 1px;
+}
+
+.btn-success:hover {
+    -fx-background-color: #D1FAE5;
+    -fx-border-color: #6EE7B7;
+}
+
+.btn-success:pressed {
+    -fx-background-color: #A7F3D0;
+}
+
+.btn-success .icon {
+    -fx-background-color: #10B981;
+}
+
+.btn-success:hover .icon {
+    -fx-background-color: #059669;
+}
+
+/* --- PRZYCISK: NOWY FOLDER --- */
 .btn-folder {
     -fx-background-color: #FFFBEB;
     -fx-border-color: #FDE68A;
@@ -33,7 +57,7 @@
     -fx-background-color: #D97706;
 }
 
-/* --- PRZYCISK: NOWY PLIK (Niebieski #3B82F6) --- */
+/* --- PRZYCISK: NOWY PLIK --- */
 .btn-file {
     -fx-background-color: #EFF6FF;
     -fx-border-color: #BFDBFE;
@@ -57,7 +81,7 @@
     -fx-background-color: #1D4ED8;
 }
 
-/* --- PRZYCISK: USUŃ (Czerwony #EF4444 / #DC2626) --- */
+/* --- PRZYCISK: USUŃ --- */
 .btn-danger {
     -fx-background-color: #FEF2F2;
     -fx-border-color: #FECACA;
@@ -112,6 +136,10 @@
 
 .icon-trash {
     -fx-shape: "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z";
+}
+
+.icon-plus {
+    -fx-shape: "M19 10.5h-5.5V5h-3v5.5H5v3h5.5V19h3v-5.5H19v-3z";
 }
 
 /* --- SEKCJA LISTVIEW --- */

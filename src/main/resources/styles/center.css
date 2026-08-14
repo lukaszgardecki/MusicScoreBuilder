@@ -33,6 +33,18 @@
     -fx-faint-focus-color: transparent;
 }
 
+.custom-button.first-segment {
+    -fx-background-radius: 16 0 0 16;
+}
+
+.custom-button.last-segment {
+    -fx-background-radius: 0 16 16 0;
+}
+
+.custom-button.middle-segment {
+    -fx-background-radius: 0;
+}
+
 .custom-button:hover {
     -fx-text-fill: #1e293b;
 }
