@@ -26,6 +26,10 @@
                     <GridPane fx:id="keySignatureGrid" styleClass="palette-grid" snapToPixel="false"
                               maxWidth="-Infinity" maxHeight="-Infinity"/>
                 </TitledPane>
+                <TitledPane text="Układ" expanded="true" styleClass="titled-pane">
+                    <GridPane fx:id="layoutGrid" styleClass="palette-grid" snapToPixel="false"
+                              maxWidth="-Infinity" maxHeight="-Infinity"/>
+                </TitledPane>
             </VBox>
         </ScrollPane>
     </Tab>

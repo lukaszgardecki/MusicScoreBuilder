@@ -34,7 +34,14 @@ public class LayoutEngine {
             MeasureLayout measureLayout = getOrCreateMeasureLayout(measure, currentSystem);
 
             double courtesyPadding = calculateCourtesyPadding(measure, measureLayout);
-            boolean needsNewSystem = !canFitMeasureInSystem(currentPage, currentSystem, measureLayout, courtesyPadding);
+
+            boolean forcedBreak = false;
+            if (!currentSystem.getMeasures().isEmpty()) {
+                Measure previousMeasure = currentSystem.getMeasures().getLast().getMeasure();
+                forcedBreak = previousMeasure.hasSystemBreak();
+            }
+
+            boolean needsNewSystem = forcedBreak || !canFitMeasureInSystem(currentPage, currentSystem, measureLayout, courtesyPadding);
 
             if (needsNewSystem) {
                 addCourtesyAttributesToLastMeasure(currentSystem, measure);

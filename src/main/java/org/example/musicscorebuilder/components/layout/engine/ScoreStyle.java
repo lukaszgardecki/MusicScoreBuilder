@@ -91,6 +91,7 @@ public class ScoreStyle {
     private static final double FRAME_STROKE_THICKNESS                      = 0.15;
     private static final double FRAME_STROKE_DASH_LENGTH                    = 0.4;
     private static final double FRAME_STROKE_SPACE_LENGTH                   = 0.3;
+    private static final String FRAME_STROKE_COLOR                          = "#a0a0a4";
 
     private static final double TIE_MAX_THICKNESS                           = 0.2;
     private static final double SLUR_MAX_THICKNESS                          = 0.3;
@@ -178,6 +179,7 @@ public class ScoreStyle {
     private double frameStrokeThickness = FRAME_STROKE_THICKNESS;
     private double frameStrokeDashLength = FRAME_STROKE_DASH_LENGTH;
     private double frameStrokeSpaceLength = FRAME_STROKE_SPACE_LENGTH;
+    private String frameStrokeColor = FRAME_STROKE_COLOR;
 
     public double getPageSpacing() { return staffSpacingScale * pageSpacing; }
     public double getStaffSpacing() { return staffSpacingScale * staffSpacing; }
@@ -257,6 +259,7 @@ public class ScoreStyle {
     public double getFrameStrokeThickness() { return staffSpacingScale * frameStrokeThickness; }
     public double getFrameStrokeDashLength() { return staffSpacingScale * frameStrokeDashLength; }
     public double getFrameStrokeSpaceLength() { return staffSpacingScale * frameStrokeSpaceLength; }
+    public String getFrameStrokeColor() { return frameStrokeColor; }
 
     public double getTieMaxThickness() { return staffSpacingScale * TIE_MAX_THICKNESS; }
     public double getSlurMaxThickness() { return staffSpacingScale * SLUR_MAX_THICKNESS; }

@@ -19,7 +19,7 @@ public class HeaderView extends ComponentView {
         double headerWidth = header.getWidth() * sp;
         double contentHeight = header.getContentHeight() * sp;
         gc.save();
-        gc.setStroke(Color.web(header.isSelected() ? style.getSelectColor(header) : "#a0a0a4"));
+        gc.setStroke(Color.web(header.isSelected() ? style.getSelectColor(header) : style.getFrameStrokeColor()));
         gc.setLineWidth(style.getFrameStrokeThickness() * sp);
         gc.setLineDashes(style.getFrameStrokeDashLength() * sp, style.getFrameStrokeSpaceLength() * sp);
         gc.strokeRect(headerX, contentY, headerWidth, contentHeight);

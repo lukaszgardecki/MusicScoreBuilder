@@ -10,6 +10,7 @@ public class MeasureView extends ComponentView {
     private final BeamGroupView beamsView = new BeamGroupView();
     private final MeasureStaffSelectionView selectionView = new MeasureStaffSelectionView();
     private final EditCursorView editCursorView = new EditCursorView();
+    private final BreakSystemIconView breakSystemIcon = new  BreakSystemIconView();
 
     public void draw(GraphicsContext gc, MeasureLayout measure, double systemX, double systemY, double sp) {
         double measureX = measure.getX() * sp + systemX;
@@ -38,6 +39,10 @@ public class MeasureView extends ComponentView {
             if (selection.getMeasure().getMeasure().equals(measure.getMeasure())) {
                 selectionView.draw(gc, selection, systemX, systemY, sp);
             }
+        }
+
+        if (measure.getMeasure() != null && measure.getMeasure().hasSystemBreak()) {
+            breakSystemIcon.draw(gc, measureX, measureY, widthPx, measure.getScoreStyle(), sp);
         }
     }
 }

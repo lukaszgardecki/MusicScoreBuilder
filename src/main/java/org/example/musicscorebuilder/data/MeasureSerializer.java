@@ -32,6 +32,10 @@ public class MeasureSerializer extends JsonSerializer<Measure> {
             gen.writeObjectField("barline", m.getRightBarline());
         }
 
+        if (m.hasSystemBreak()) {
+            gen.writeBooleanField("systemBreak", true);
+        }
+
         if (m.getSegments() != null && !m.getSegments().isEmpty()) {
             gen.writeObjectField("segs", m.getSegments());
         }

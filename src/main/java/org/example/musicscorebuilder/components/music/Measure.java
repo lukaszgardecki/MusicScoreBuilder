@@ -19,6 +19,7 @@ public class Measure {
     private TimeSignature timeSignature;
     private KeySignature keySignature;
     private Barline rightBarline;
+    private boolean systemBreak = false;
 
     private final List<Staff> staves;
     private final List<Segment> segments = new ArrayList<>();
@@ -41,7 +42,8 @@ public class Measure {
             @JsonProperty("timeSig") TimeSignature timeSignature,
             @JsonProperty("keySig") KeySignature keySignature,
             @JsonProperty("barline") Barline rightBarline,
-            @JsonProperty("segs") List<Segment> segments
+            @JsonProperty("segs") List<Segment> segments,
+            @JsonProperty("systemBreak") Boolean systemBreak
     ) {
         this.staves = staves != null ? staves : new ArrayList<>();
         this.timeSignature = timeSignature;
@@ -50,6 +52,7 @@ public class Measure {
         if (segments != null) {
             this.segments.addAll(segments);
         }
+        this.systemBreak = systemBreak != null && systemBreak;
     }
 
     public Measure(List<Staff> staves) {
@@ -180,6 +183,10 @@ public class Measure {
         return activeAlter;
     }
 
+    public boolean hasSystemBreak() {
+        return systemBreak;
+    }
+
     public int countVoicesByStaff(int staffId) {
         return segments.stream()
                 .mapToInt(s -> s.getVoiceCountByStaff(staffId))
@@ -223,6 +230,11 @@ public class Measure {
 
     public void setKeySignature(KeySignature keySignature) {
         this.keySignature = keySignature;
+        setDirty(true);
+    }
+
+    public void setSystemBreak(boolean systemBreak) {
+        this.systemBreak = systemBreak;
         setDirty(true);
     }
 

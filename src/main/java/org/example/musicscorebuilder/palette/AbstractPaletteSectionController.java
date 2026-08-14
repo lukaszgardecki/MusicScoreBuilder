@@ -112,15 +112,21 @@ public abstract class AbstractPaletteSectionController<T> {
     }
 
     protected Canvas createBaseCanvas(boolean extraHeight) {
+        return createBaseCanvas(extraHeight, true);
+    }
+
+    protected Canvas createBaseCanvas(boolean extraHeight, boolean withStaff) {
         double canvasHeight = extraHeight ? defaultCanvasHeight + 10 : defaultCanvasHeight;
         Canvas canvas = new Canvas(defaultCanvasWidth, canvasHeight);
         GraphicsContext gc = canvas.getGraphicsContext2D();
         gc.setImageSmoothing(false);
 
-        double sMeasureY = Math.round((canvasHeight / 2.0) - (staffLayout.getHeight() / 2.0));
-        double sp = 1.0;
+        if (withStaff) {
+            double sMeasureY = Math.round((canvasHeight / 2.0) - (staffLayout.getHeight() / 2.0));
+            double sp = 1.0;
 
-        drawStaff(gc, staffLayout, 0, sMeasureY, sp);
+            drawStaff(gc, staffLayout, 0, sMeasureY, sp);
+        }
         return canvas;
     }
 

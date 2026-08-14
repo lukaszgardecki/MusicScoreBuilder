@@ -7,11 +7,13 @@ public class PaletteController {
     @FXML private GridPane timeSignatureGrid;
     @FXML private GridPane barLinesGrid;
     @FXML private GridPane keySignatureGrid;
+    @FXML private GridPane layoutGrid;
 
     @FXML
     public void initialize() {
         new TimeSignatureSectionController(timeSignatureGrid).build();
         new BarlinesSectionController(barLinesGrid).build();
         new KeySignatureSectionController(keySignatureGrid).build();
+        new LayoutSectionController(layoutGrid).build();
     }
 }
