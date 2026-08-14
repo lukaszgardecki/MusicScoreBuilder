@@ -102,6 +102,29 @@ public class SongbookController {
     }
 
     @FXML
+    private void handleDuplicate() {
+        SongbookItem selected = jsonFilesListView.getSelectionModel().getSelectedItem();
+        if (selected == null || selected.type() == SongbookItem.Type.PARENT_DIR) return;
+
+        File sourceFile = selected.file();
+        if (sourceFile == null || !sourceFile.exists()) return;
+
+        File parentDir = sourceFile.getParentFile();
+        if (parentDir == null || !parentDir.exists()) return;
+
+        File targetFile = generateUniqueCopyFile(parentDir, sourceFile);
+
+        try {
+            copyRecursively(sourceFile, targetFile);
+            loadJsonFiles(parentDir);
+            selectItemByFile(targetFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+            showErrorAlert("Błąd duplikowania", "Nie udało się zduplikować elementu: " + e.getMessage());
+        }
+    }
+
+    @FXML
     private void handleRename() {
         SongbookItem selected = jsonFilesListView.getSelectionModel().getSelectedItem();
         if (selected == null || selected.type() == SongbookItem.Type.PARENT_DIR) return;
@@ -370,6 +393,9 @@ public class SongbookController {
             MenuItem pasteMenuItem = new MenuItem("Wklej");
             pasteMenuItem.setOnAction(e -> handlePaste());
 
+            MenuItem duplicateMenuItem = new MenuItem("Duplikuj");
+            duplicateMenuItem.setOnAction(e -> handleDuplicate());
+
             MenuItem renameMenuItem = new MenuItem("Zmień nazwę");
             renameMenuItem.setOnAction(e -> handleRename());
 
@@ -379,6 +405,7 @@ public class SongbookController {
             itemContextMenu.getItems().addAll(
                     copyMenuItem,
                     pasteMenuItem,
+                    duplicateMenuItem,
                     new SeparatorMenuItem(),
                     renameMenuItem,
                     deleteMenuItem
@@ -567,6 +594,9 @@ public class SongbookController {
                         event.consume();
                     } else if (isShortcut && event.getCode() == KeyCode.V) {
                         handlePaste();
+                        event.consume();
+                    } else if (isShortcut && event.getCode() == KeyCode.D) {
+                        handleDuplicate();
                         event.consume();
                     } else if (event.getCode() == KeyCode.UP) {
                         if (currentIndex > 0) {
