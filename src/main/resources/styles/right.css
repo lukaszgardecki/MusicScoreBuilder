@@ -132,6 +132,7 @@
 
 .list-cell {
     -fx-background-color: #FFFFFF;
+    -fx-text-fill: #1F2937;
 }
 
 .list-cell:odd,
@@ -146,8 +147,8 @@
 
 .list-cell:filled:selected,
 .list-cell:filled:selected:hover {
-    -fx-background-color: #EFF6FF;
-    -fx-text-fill: #1D4ED8;
+    -fx-background-color: #DBEAFE;
+    -fx-text-fill: #1E40AF;
 }
 
 /* --- SEKCJA METADANYCH UTWORU --- */

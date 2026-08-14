@@ -88,13 +88,17 @@ public class SongbookController {
                     cell.setContextMenu(itemContextMenu);
                 }
             });
+
+            cell.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !cell.isEmpty() && cell.getItem() != null) {
+                    openItem(cell.getItem());
+                }
+            });
+
             return cell;
         });
 
-        jsonFilesListView.setOnMouseClicked(event -> {
-            jsonFilesListView.requestFocus();
-            if (event.getClickCount() == 2) openItem(getSelectedItem());
-        });
+        jsonFilesListView.setOnMouseClicked(event -> jsonFilesListView.requestFocus());
     }
 
     private void setupKeyBindings() {
