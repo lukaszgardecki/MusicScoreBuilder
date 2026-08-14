@@ -1,41 +1,22 @@
 package org.example.musicscorebuilder.controller.songbookcontroller;
 
-import javafx.animation.PauseTransition;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCombination;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.SVGPath;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
-import javafx.util.Duration;
-import org.example.musicscorebuilder.components.music.Score;
-import org.example.musicscorebuilder.components.music.util.ScoreFactory;
 import org.example.musicscorebuilder.data.FileService;
 import org.example.musicscorebuilder.data.PreferencesService;
 import org.example.musicscorebuilder.data.StorageService;
-import org.example.musicscorebuilder.managers.ScoreStateManager;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.Optional;
 
 public class SongbookController {
-    private static final String SVG_COPY = "M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z";
-    private static final String SVG_PASTE = "M19 2h-4.18C14.4.84 13.3 0 12 0S9.6.84 9.18 2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM5 20V4h2v3h10V4h2v16H5z";
-    private static final String SVG_DUPLICATE = "M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm-1 7H8c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h7c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm0 13H8V10h7v11z";
-    private static final String SVG_RENAME = "M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z";
-    private static final String SVG_DELETE = "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z";
-
     @FXML private Button openFolderButton;
     @FXML private Label folderPathLabel;
     @FXML private CheckBox compressedOnlyCheckBox;
@@ -50,418 +31,81 @@ public class SongbookController {
     @FXML private TextField composerField;
 
     private final ObservableList<SongbookItem> jsonFilesList = FXCollections.observableArrayList();
-    private final StorageService storageService = StorageService.getInstance();
     private final FileService fileService = FileService.getInstance();
-    private File currentOpenedFile = null;
-    private File copiedFile = null;
-    private boolean isUpdatingFields = false;
-    private final PauseTransition liveUpdateDebounce = new PauseTransition(Duration.millis(200));
+    private final StorageService storageService = StorageService.getInstance();
+
+    private final SongbookActionManager actionManager = new SongbookActionManager();
+    private SongbookMetadataHandler metadataHandler;
 
     @FXML
     public void initialize() {
+        metadataHandler = new SongbookMetadataHandler(
+                metadataContainer, numberField, oldNumberField, titleField, subtitleField, composerField
+        );
+
+        metadataHandler.init(this::refreshDirectoryAndSelect);
         setupListView();
         setupKeyBindings();
         setupDeleteButtonState();
-        setupPlaceholders();
-        setupMetadataAutoSave();
-        clearAndDisableMetadataFields();
         loadSavedDirectory();
     }
 
-    @FXML
-    private void handleCopy() {
-        SongbookItem selected = jsonFilesListView.getSelectionModel().getSelectedItem();
-        if (selected == null || selected.type() == SongbookItem.Type.PARENT_DIR) return;
-
-        File fileToCopy = selected.file();
-        if (fileToCopy != null && fileToCopy.exists()) {
-            this.copiedFile = fileToCopy;
-        }
-    }
-
-    @FXML
-    private void handlePaste() {
-        if (copiedFile == null || !copiedFile.exists()) {
-            showErrorAlert("Błąd wklejania", "Brak skopiowanego pliku lub folderu.");
-            return;
-        }
-
-        Optional<File> currentDirOpt = PreferencesService.getDirectoryFile();
-        if (currentDirOpt.isEmpty()) {
-            showErrorAlert("Błąd zapisu", "Najpierw wybierz folder śpiewnika!");
-            return;
-        }
-
-        File currentDir = currentDirOpt.get();
-        File targetFile = generateUniqueCopyFile(currentDir, copiedFile);
-
-        try {
-            if (copiedFile.isDirectory() && targetFile.getCanonicalPath().startsWith(copiedFile.getCanonicalPath() + File.separator)) {
-                showErrorAlert("Błąd kopiowania", "Nie można skopiować folderu do jego własnego podfolderu!");
-                return;
-            }
-
-            copyRecursively(copiedFile, targetFile);
-            loadJsonFiles(currentDir);
-            selectItemByFile(targetFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-            showErrorAlert("Błąd kopiowania", "Nie udało się wkleić elementu: " + e.getMessage());
-        }
-    }
-
-    @FXML
-    private void handleDuplicate() {
-        SongbookItem selected = jsonFilesListView.getSelectionModel().getSelectedItem();
-        if (selected == null || selected.type() == SongbookItem.Type.PARENT_DIR) return;
-
-        File sourceFile = selected.file();
-        if (sourceFile == null || !sourceFile.exists()) return;
-
-        File parentDir = sourceFile.getParentFile();
-        if (parentDir == null || !parentDir.exists()) return;
-
-        File targetFile = generateUniqueCopyFile(parentDir, sourceFile);
-
-        try {
-            copyRecursively(sourceFile, targetFile);
-            loadJsonFiles(parentDir);
-            selectItemByFile(targetFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-            showErrorAlert("Błąd duplikowania", "Nie udało się zduplikować elementu: " + e.getMessage());
-        }
-    }
-
-    @FXML
-    private void handleRename() {
-        SongbookItem selected = jsonFilesListView.getSelectionModel().getSelectedItem();
-        if (selected == null || selected.type() == SongbookItem.Type.PARENT_DIR) return;
-
-        File oldFile = selected.file();
-        if (oldFile == null || !oldFile.exists()) return;
-
-        boolean isDirectory = selected.type() == SongbookItem.Type.DIRECTORY;
-        SongbookFileHelper.FileInfo fileInfo = SongbookFileHelper.extractFileInfo(oldFile, isDirectory);
-
-        String currentInput = fileInfo.baseName();
-        String iconPath = isDirectory ? SongbookDialogHelper.SVG_FOLDER : SongbookDialogHelper.SVG_RENAME;
-        String iconColor = isDirectory ? SongbookDialogHelper.COLOR_AMBER : SongbookDialogHelper.COLOR_BLUE;
-        String itemType = isDirectory ? "folderu" : "pliku";
-
-        while (true) {
-            Optional<String> result = SongbookDialogHelper.showInputDialog(
-                    "Zmiana nazwy",
-                    "Zmiana nazwy " + itemType,
-                    "Wprowadź nową nazwę dla wybranego elementu:",
-                    currentInput,
-                    iconPath,
-                    iconColor,
-                    "Zmień"
-            );
-
-            if (result.isEmpty()) break;
-
-            currentInput = result.get();
-            if (currentInput.isEmpty()) {
-                showErrorAlert("Błąd", "Nazwa nie może być pusta!");
-                continue;
-            }
-
-            String finalFileName = isDirectory ? currentInput : (currentInput + fileInfo.extension());
-            File targetFile = new File(oldFile.getParentFile(), finalFileName);
-
-            if (targetFile.equals(oldFile)) break;
-
-            if (targetFile.exists()) {
-                showErrorAlert("Błąd", "Element o nazwie '" + targetFile.getName() + "' już istnieje!");
-                continue;
-            }
-
-            if (oldFile.renameTo(targetFile)) {
-                if (oldFile.equals(currentOpenedFile)) {
-                    currentOpenedFile = targetFile;
-                }
-                PreferencesService.getDirectoryFile().ifPresent(this::loadJsonFiles);
-                selectItemByFile(targetFile);
-                break;
-            } else {
-                showErrorAlert("Błąd", "Nie udało się zmienić nazwy na dysku.");
-                break;
-            }
-        }
-    }
-
-    @FXML
-    private void handleDelete() {
-        SongbookItem selected = jsonFilesListView.getSelectionModel().getSelectedItem();
-        if (selected == null || selected.type() == SongbookItem.Type.PARENT_DIR) return;
-
-        File fileToDelete = selected.file();
-        if (fileToDelete == null || !fileToDelete.exists()) return;
-
-        boolean isDirectory = selected.type() == SongbookItem.Type.DIRECTORY;
-        String itemType = isDirectory ? "folder" : "plik";
-
-        SongbookDialogHelper.showDeleteConfirmation(
-                itemType,
-                selected.displayName(),
-                isDirectory,
-                () -> {
-                    if (fileService.deleteRecursively(fileToDelete)) {
-                        if (fileToDelete.equals(currentOpenedFile)) {
-                            clearAndDisableMetadataFields();
-                        }
-                        PreferencesService.getDirectoryFile().ifPresent(this::loadJsonFiles);
-                    } else {
-                        showErrorAlert("Błąd usuwania", "Nie udało się usunąć elementu: " + selected.displayName());
-                    }
-                }
-        );
-    }
-
-    @FXML
-    private void handleAddFolder() {
-        Optional<File> parentDirOpt = PreferencesService.getDirectoryFile();
-        if (parentDirOpt.isEmpty()) {
-            showErrorAlert("Brak folderu", "Najpierw wybierz folder śpiewnika!");
-            return;
-        }
-
-        File parentDir = parentDirOpt.get();
-        String currentInput = "";
-
-        while (true) {
-            Optional<String> result = SongbookDialogHelper.showInputDialog(
-                    "Nowy folder",
-                    "Tworzenie nowego podfolderu w śpiewniku",
-                    "Podaj nazwę nowego folderu:",
-                    currentInput,
-                    SongbookDialogHelper.SVG_ADD_FOLDER,
-                    SongbookDialogHelper.COLOR_AMBER,
-                    "Utwórz"
-            );
-
-            if (result.isEmpty()) break;
-
-            currentInput = result.get();
-            if (currentInput.isEmpty()) {
-                showErrorAlert("Błąd", "Nazwa folderu nie może być pusta!");
-                continue;
-            }
-
-            File newDir = new File(parentDir, currentInput);
-            if (newDir.exists()) {
-                showErrorAlert("Błąd", "Folder o nazwie '" + currentInput + "' już istnieje!");
-            } else if (newDir.mkdirs()) {
-                loadJsonFiles(parentDir);
-                selectItemByFile(newDir);
-                break;
-            } else {
-                showErrorAlert("Błąd", "Nie udało się utworzyć folderu na dysku.");
-            }
-        }
-    }
-
-    @FXML
-    private void handleAddFile() {
-        Optional<File> parentDirOpt = PreferencesService.getDirectoryFile();
-        if (parentDirOpt.isEmpty()) {
-            showErrorAlert("Brak folderu", "Najpierw wybierz folder śpiewnika!");
-            return;
-        }
-
-        File parentDir = parentDirOpt.get();
-        String currentInput = "";
-
-        while (true) {
-            Optional<String> result = SongbookDialogHelper.showInputDialog(
-                    "Nowy plik",
-                    "Tworzenie nowego utworu",
-                    "Podaj nazwę nowego pliku:",
-                    currentInput,
-                    SongbookDialogHelper.SVG_ADD_FILE,
-                    SongbookDialogHelper.COLOR_BLUE,
-                    "Utwórz"
-            );
-
-            if (result.isEmpty()) break;
-
-            currentInput = result.get();
-            if (currentInput.isEmpty()) {
-                showErrorAlert("Błąd", "Nazwa pliku nie może być pusta!");
-                continue;
-            }
-
-            if (createAndSaveScore(parentDir, currentInput)) {
-                break;
-            }
-        }
-    }
+    @FXML private void handleCopy() { actionManager.handleCopy(getSelectedItem()); }
+    @FXML private void handlePaste() { actionManager.handlePaste(this::refreshDirectory, this::selectItemByFile); }
+    @FXML private void handleDuplicate() { actionManager.handleDuplicate(getSelectedItem(), this::refreshDirectory, this::selectItemByFile); }
+    @FXML private void handleRename() { actionManager.handleRename(getSelectedItem(), metadataHandler.getCurrentOpenedFile(), this::refreshDirectory, this::selectItemByFile, metadataHandler::setCurrentOpenedFile); }
+    @FXML private void handleDelete() { actionManager.handleDelete(getSelectedItem(), metadataHandler.getCurrentOpenedFile(), this::refreshDirectory, metadataHandler::clearAndDisable); }
+    @FXML private void handleAddFolder() { actionManager.handleAddFolder(this::refreshDirectory, this::selectItemByFile); }
+    @FXML private void handleAddFile() { actionManager.handleAddFile(this::refreshDirectory, this::selectItemByFile, this::loadScoreFileSafely); }
+    @FXML private void handleFilterChange() { refreshDirectory(); }
 
     @FXML
     private void handleOpenFolder() {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Wybierz folder śpiewnika");
-
         PreferencesService.getDirectoryFile().ifPresent(directoryChooser::setInitialDirectory);
 
         Stage stage = (Stage) openFolderButton.getScene().getWindow();
-        Optional.ofNullable(directoryChooser.showDialog(stage))
-                .ifPresent(this::navigateToDirectory);
-    }
-
-    @FXML
-    private void handleFilterChange() {
-        PreferencesService.getDirectoryFile().ifPresent(this::loadJsonFiles);
-    }
-
-    private void setMetadataFieldsDisabled(boolean disabled) {
-        numberField.setDisable(disabled);
-        oldNumberField.setDisable(disabled);
-        titleField.setDisable(disabled);
-        subtitleField.setDisable(disabled);
-        composerField.setDisable(disabled);
-    }
-
-    private void setupPlaceholders() {
-        numberField.setPromptText("123");
-        oldNumberField.setPromptText("123");
-        titleField.setPromptText("Tytuł");
-        subtitleField.setPromptText("Podtytuł");
-        composerField.setPromptText("Kompozytor");
+        Optional.ofNullable(directoryChooser.showDialog(stage)).ifPresent(this::navigateToDirectory);
     }
 
     private void setupListView() {
         jsonFilesListView.setItems(jsonFilesList);
-        setupCellFactory();
-        setupMouseNavigation();
-        setupListViewContextMenu();
-    }
+        jsonFilesListView.setContextMenu(SongbookContextMenuFactory.createEmptyAreaContextMenu(this::handlePaste, actionManager::isPasteDisabled));
 
-    private MenuItem createStyledMenuItem(String text, String svgPathData, String accelerator, Runnable action) {
-        MenuItem item = new MenuItem(text);
-        if (accelerator != null) {
-            item.setAccelerator(KeyCombination.keyCombination(accelerator));
-        }
-        item.setOnAction(e -> action.run());
-
-        if (svgPathData != null) {
-            SVGPath svg = new SVGPath();
-            svg.setContent(svgPathData);
-            svg.setFill(Color.web("#4a4a4a"));
-            svg.setScaleX(0.65);
-            svg.setScaleY(0.65);
-            svg.getStyleClass().add("svg-path");
-            item.setGraphic(svg);
-        }
-        return item;
-    }
-
-    private void setupListViewContextMenu() {
-        ContextMenu emptyAreaContextMenu = new ContextMenu();
-        emptyAreaContextMenu.getStyleClass().add("score-context-menu");
-
-        MenuItem pasteMenuItem = createStyledMenuItem("Wklej", SVG_PASTE, "Shortcut+V", this::handlePaste);
-
-        emptyAreaContextMenu.getItems().add(pasteMenuItem);
-        emptyAreaContextMenu.setOnShowing(e -> pasteMenuItem.setDisable(copiedFile == null));
-
-        jsonFilesListView.setContextMenu(emptyAreaContextMenu);
-    }
-
-    private void setupMetadataAutoSave() {
-        liveUpdateDebounce.setOnFinished(e -> {
-            if (isUpdatingFields || currentOpenedFile == null) return;
-
-            Score activeScore = storageService.getScore();
-            if (activeScore != null) {
-                applyFieldsToScore(activeScore);
-                ScoreStateManager.getInstance().notifyScoreChanged();
-            }
-        });
-
-        ChangeListener<String> liveUpdateListener = (obs, oldVal, newVal) -> {
-            if (isUpdatingFields || currentOpenedFile == null) return;
-            liveUpdateDebounce.playFromStart();
-        };
-
-        numberField.textProperty().addListener(liveUpdateListener);
-        oldNumberField.textProperty().addListener(liveUpdateListener);
-        titleField.textProperty().addListener(liveUpdateListener);
-        subtitleField.textProperty().addListener(liveUpdateListener);
-        composerField.textProperty().addListener(liveUpdateListener);
-
-        ChangeListener<Boolean> focusChangeListener = (obs, wasFocused, isFocused) -> {
-            if (!isFocused && !isUpdatingFields && currentOpenedFile != null) {
-                saveMetadataChanges();
-            }
-        };
-
-        numberField.focusedProperty().addListener(focusChangeListener);
-        oldNumberField.focusedProperty().addListener(focusChangeListener);
-        titleField.focusedProperty().addListener(focusChangeListener);
-        subtitleField.focusedProperty().addListener(focusChangeListener);
-        composerField.focusedProperty().addListener(focusChangeListener);
-
-        numberField.setOnAction(e -> saveMetadataChanges());
-        oldNumberField.setOnAction(e -> saveMetadataChanges());
-        titleField.setOnAction(e -> saveMetadataChanges());
-        subtitleField.setOnAction(e -> saveMetadataChanges());
-        composerField.setOnAction(e -> saveMetadataChanges());
-    }
-
-    private void setupCellFactory() {
         jsonFilesListView.setCellFactory(param -> {
             SongbookListCell cell = new SongbookListCell();
-
-            ContextMenu itemContextMenu = new ContextMenu();
-            itemContextMenu.getStyleClass().add("score-context-menu");
-
-            MenuItem copyMenuItem = createStyledMenuItem("Kopiuj", SVG_COPY, "Shortcut+C", this::handleCopy);
-            MenuItem pasteMenuItem = createStyledMenuItem("Wklej", SVG_PASTE, "Shortcut+V", this::handlePaste);
-            MenuItem duplicateMenuItem = createStyledMenuItem("Duplikuj", SVG_DUPLICATE, "Shortcut+D", this::handleDuplicate);
-            MenuItem renameMenuItem = createStyledMenuItem("Zmień nazwę", SVG_RENAME, "F2", this::handleRename);
-            MenuItem deleteMenuItem = createStyledMenuItem("Usuń", SVG_DELETE, "Delete", this::handleDelete);
-
-            itemContextMenu.getItems().addAll(
-                    copyMenuItem,
-                    pasteMenuItem,
-                    duplicateMenuItem,
-                    new SeparatorMenuItem(),
-                    renameMenuItem,
-                    deleteMenuItem
+            ContextMenu itemContextMenu = SongbookContextMenuFactory.createItemContextMenu(
+                    this::handleCopy, this::handlePaste, this::handleDuplicate, this::handleRename, this::handleDelete, actionManager::isPasteDisabled
             );
-
-            itemContextMenu.setOnShowing(e -> pasteMenuItem.setDisable(copiedFile == null));
 
             cell.itemProperty().addListener((obs, oldItem, newItem) -> {
                 if (newItem == null) {
                     cell.setContextMenu(null);
                 } else if (newItem.type() == SongbookItem.Type.PARENT_DIR) {
-                    ContextMenu parentMenu = new ContextMenu();
-                    parentMenu.getStyleClass().add("score-context-menu");
-
-                    MenuItem parentPasteItem = createStyledMenuItem("Wklej", SVG_PASTE, "Shortcut+V", this::handlePaste);
-                    parentPasteItem.setDisable(copiedFile == null);
-
-                    parentMenu.getItems().add(parentPasteItem);
-                    cell.setContextMenu(parentMenu);
+                    cell.setContextMenu(SongbookContextMenuFactory.createParentDirContextMenu(this::handlePaste, actionManager::isPasteDisabled));
                 } else {
                     cell.setContextMenu(itemContextMenu);
                 }
             });
             return cell;
         });
-    }
 
-    private void setupMouseNavigation() {
         jsonFilesListView.setOnMouseClicked(event -> {
             jsonFilesListView.requestFocus();
-            if (event.getClickCount() == 2) {
-                SongbookItem selected = jsonFilesListView.getSelectionModel().getSelectedItem();
-                openItem(selected);
-            }
+            if (event.getClickCount() == 2) openItem(getSelectedItem());
+        });
+    }
+
+    private void setupKeyBindings() {
+        SongbookKeyHandler.attachKeyBindings(jsonFilesListView, new SongbookKeyHandler.KeyActions() {
+            @Override public void onCopy() { handleCopy(); }
+            @Override public void onPaste() { handlePaste(); }
+            @Override public void onDuplicate() { handleDuplicate(); }
+            @Override public void onRename() { handleRename(); }
+            @Override public void onDelete() { handleDelete(); }
+            @Override public void onOpenSelected() { openItem(getSelectedItem()); }
+            @Override public void onNavigateUp() { navigateUp(); }
         });
     }
 
@@ -476,214 +120,27 @@ public class SongbookController {
     private void navigateUp() {
         PreferencesService.getDirectoryFile().ifPresent(currentDir -> {
             File parentDir = currentDir.getParentFile();
-            if (parentDir != null && parentDir.exists()) {
-                navigateToDirectory(parentDir);
-            }
+            if (parentDir != null && parentDir.exists()) navigateToDirectory(parentDir);
         });
     }
 
     private void loadScoreFileSafely(File file) {
         try {
             storageService.loadScoreFile(file);
-            this.currentOpenedFile = file;
-            updateMetadataPanel();
+            metadataHandler.updatePanel(file);
         } catch (IOException e) {
             e.printStackTrace();
-            showErrorAlert("Błąd wczytywania", "Nie udało się wczytać pliku: " + e.getMessage());
+            SongbookDialogHelper.showErrorAlert("Błąd wczytywania", "Nie udało się wczytać pliku: " + e.getMessage());
         }
     }
 
-    private void applyFieldsToScore(Score activeScore) {
-        activeScore.setNumberNew(numberField.getText());
-        activeScore.setNumberOld(oldNumberField.getText());
-        activeScore.setTitle(titleField.getText());
-        activeScore.setSubtitle(subtitleField.getText());
-        activeScore.setComposer(composerField.getText());
+    private void refreshDirectory() {
+        PreferencesService.getDirectoryFile().ifPresent(this::loadJsonFiles);
     }
 
-    private void saveMetadataChanges() {
-        if (currentOpenedFile == null || isUpdatingFields) return;
-
-        liveUpdateDebounce.stop();
-
-        Score activeScore = storageService.getScore();
-        if (activeScore == null) return;
-
-        applyFieldsToScore(activeScore);
-
-        File parentDir = currentOpenedFile.getParentFile();
-        if (parentDir == null) return;
-
-        File targetFile = fileService.getTargetFile(activeScore, parentDir);
-
-        if (!targetFile.equals(currentOpenedFile) && targetFile.exists()) {
-            showErrorAlert("Błąd zapisu", "Plik o nazwie '" + targetFile.getName() + "' już istnieje!");
-            return;
-        }
-
-        try {
-            if (!targetFile.equals(currentOpenedFile)) {
-                fileService.deleteRecursively(currentOpenedFile);
-            }
-
-            storageService.saveScoreFile(activeScore, parentDir);
-            this.currentOpenedFile = targetFile;
-
-            ScoreStateManager.getInstance().notifyScoreChanged();
-
-            loadJsonFiles(parentDir);
-            selectItemByFile(targetFile);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            showErrorAlert("Błąd zapisu", "Nie udało się zapisać zmian metadanych: " + e.getMessage());
-        }
-    }
-
-    private void updateMetadataPanel() {
-        Score activeScore = storageService.getScore();
-        if (activeScore != null && currentOpenedFile != null) {
-            isUpdatingFields = true;
-            try {
-                numberField.setText(activeScore.getNumberNew() != null ? activeScore.getNumberNew() : "");
-                oldNumberField.setText(activeScore.getNumberOld() != null ? activeScore.getNumberOld() : "");
-                titleField.setText(activeScore.getTitle() != null ? activeScore.getTitle() : "");
-                subtitleField.setText(activeScore.getSubtitle() != null ? activeScore.getSubtitle() : "");
-                composerField.setText(activeScore.getComposer() != null ? activeScore.getComposer() : "");
-
-                setMetadataFieldsDisabled(false);
-                metadataContainer.setVisible(true);
-            } finally {
-                isUpdatingFields = false;
-            }
-        } else {
-            clearAndDisableMetadataFields();
-        }
-    }
-
-    private void clearAndDisableMetadataFields() {
-        isUpdatingFields = true;
-        try {
-            currentOpenedFile = null;
-            numberField.clear();
-            oldNumberField.clear();
-            titleField.clear();
-            subtitleField.clear();
-            composerField.clear();
-
-            setMetadataFieldsDisabled(true);
-            metadataContainer.setVisible(true);
-        } finally {
-            isUpdatingFields = false;
-        }
-    }
-
-    private boolean createAndSaveScore(File parentDir, String inputName) {
-        String cleanTitle = inputName.replaceAll("(?i)\\.json(\\.gz)?$", "");
-        Score defaultScore = ScoreFactory.createScoreTemplate();
-        defaultScore.setTitle(cleanTitle);
-
-        File targetFile = fileService.getTargetFile(defaultScore, parentDir);
-        if (targetFile.exists()) {
-            showErrorAlert("Błąd", "Plik o nazwie '" + targetFile.getName() + "' już istnieje!");
-            return false;
-        }
-
-        try {
-            storageService.saveScoreFile(defaultScore, parentDir);
-            loadJsonFiles(parentDir);
-            selectItemByFile(targetFile);
-            loadScoreFileSafely(targetFile);
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
-            showErrorAlert("Błąd zapisu", "Nie udało się utworzyć nowego pliku: " + e.getMessage());
-            return false;
-        }
-    }
-
-    private void setupKeyBindings() {
-        jsonFilesListView.sceneProperty().addListener((observable, oldScene, newScene) -> {
-            if (newScene != null) {
-                newScene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
-                    if (newScene.getFocusOwner() instanceof TextInputControl) return;
-
-                    int currentIndex = jsonFilesListView.getSelectionModel().getSelectedIndex();
-                    int totalItems = jsonFilesListView.getItems().size();
-
-                    boolean isShortcut = event.isControlDown() || event.isShortcutDown();
-
-                    if (isShortcut && event.getCode() == KeyCode.C) {
-                        handleCopy();
-                        event.consume();
-                    } else if (isShortcut && event.getCode() == KeyCode.V) {
-                        handlePaste();
-                        event.consume();
-                    } else if (isShortcut && event.getCode() == KeyCode.D) {
-                        handleDuplicate();
-                        event.consume();
-                    } else if (event.getCode() == KeyCode.UP) {
-                        if (currentIndex > 0) {
-                            int nextIndex = currentIndex - 1;
-                            jsonFilesListView.getSelectionModel().select(nextIndex);
-                            jsonFilesListView.scrollTo(nextIndex);
-                            jsonFilesListView.requestFocus();
-                        }
-                        event.consume();
-                    } else if (event.getCode() == KeyCode.DOWN) {
-                        if (currentIndex < totalItems - 1) {
-                            int nextIndex = currentIndex + 1;
-                            jsonFilesListView.getSelectionModel().select(nextIndex);
-                            jsonFilesListView.scrollTo(nextIndex);
-                            jsonFilesListView.requestFocus();
-                        }
-                        event.consume();
-                    } else if (event.getCode() == KeyCode.ENTER) {
-                        SongbookItem selected = jsonFilesListView.getSelectionModel().getSelectedItem();
-                        if (selected != null) {
-                            openItem(selected);
-                        }
-                        event.consume();
-                    } else if (event.getCode() == KeyCode.BACK_SPACE) {
-                        navigateUp();
-                        event.consume();
-                    } else if (event.getCode() == KeyCode.DELETE) {
-                        SongbookItem selected = jsonFilesListView.getSelectionModel().getSelectedItem();
-                        if (selected != null && selected.type() != SongbookItem.Type.PARENT_DIR) {
-                            handleDelete();
-                        }
-                        event.consume();
-                    } else if (event.getCode() == KeyCode.F2) {
-                        SongbookItem selected = jsonFilesListView.getSelectionModel().getSelectedItem();
-                        if (selected != null && selected.type() != SongbookItem.Type.PARENT_DIR) {
-                            handleRename();
-                        }
-                        event.consume();
-                    }
-                });
-            }
-        });
-    }
-
-    private void setupDeleteButtonState() {
-        if (deleteButton == null) return;
-
-        deleteButton.setDisable(true);
-        jsonFilesListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            boolean isDeletable = newVal != null && newVal.type() != SongbookItem.Type.PARENT_DIR;
-            deleteButton.setDisable(!isDeletable);
-        });
-    }
-
-    private void loadJsonFiles(File folder) {
-        jsonFilesList.clear();
-        jsonFilesList.addAll(fileService.getDirectoryContent(folder, compressedOnlyCheckBox.isSelected()));
-
-        if (!jsonFilesList.isEmpty()) {
-            jsonFilesListView.getSelectionModel().select(0);
-        }
-
-        Platform.runLater(() -> jsonFilesListView.requestFocus());
+    private void refreshDirectoryAndSelect(File fileToSelect) {
+        refreshDirectory();
+        selectItemByFile(fileToSelect);
     }
 
     private void loadSavedDirectory() {
@@ -696,6 +153,13 @@ public class SongbookController {
         loadJsonFiles(dir);
     }
 
+    private void loadJsonFiles(File folder) {
+        jsonFilesList.clear();
+        jsonFilesList.addAll(fileService.getDirectoryContent(folder, compressedOnlyCheckBox.isSelected()));
+        if (!jsonFilesList.isEmpty()) jsonFilesListView.getSelectionModel().select(0);
+        Platform.runLater(() -> jsonFilesListView.requestFocus());
+    }
+
     private void selectItemByFile(File file) {
         jsonFilesList.stream()
                 .filter(item -> item.file() != null && item.file().equals(file))
@@ -703,53 +167,15 @@ public class SongbookController {
                 .ifPresent(item -> jsonFilesListView.getSelectionModel().select(item));
     }
 
-    private File generateUniqueCopyFile(File targetDir, File sourceFile) {
-        String originalName = sourceFile.getName();
-        File dest = new File(targetDir, originalName);
-
-        if (!dest.exists()) {
-            return dest;
-        }
-
-        boolean isDirectory = sourceFile.isDirectory();
-        SongbookFileHelper.FileInfo info = SongbookFileHelper.extractFileInfo(sourceFile, isDirectory);
-        String baseName = info.baseName();
-        String ext = isDirectory ? "" : info.extension();
-
-        String copyName = baseName + " - kopia" + ext;
-        dest = new File(targetDir, copyName);
-        int counter = 2;
-
-        while (dest.exists()) {
-            copyName = baseName + " - kopia (" + counter + ")" + ext;
-            dest = new File(targetDir, copyName);
-            counter++;
-        }
-
-        return dest;
+    private void setupDeleteButtonState() {
+        if (deleteButton == null) return;
+        deleteButton.setDisable(true);
+        jsonFilesListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            deleteButton.setDisable(newVal == null || newVal.type() == SongbookItem.Type.PARENT_DIR);
+        });
     }
 
-    private void copyRecursively(File source, File target) throws IOException {
-        if (source.isDirectory()) {
-            if (!target.exists() && !target.mkdirs()) {
-                throw new IOException("Nie udało się utworzyć folderu: " + target.getAbsolutePath());
-            }
-            File[] files = source.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    copyRecursively(file, new File(target, file.getName()));
-                }
-            }
-        } else {
-            File parentDir = target.getParentFile();
-            if (parentDir != null && !parentDir.exists()) {
-                parentDir.mkdirs();
-            }
-            Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        }
-    }
-
-    private void showErrorAlert(String title, String message) {
-        SongbookDialogHelper.showErrorAlert(title, message);
+    private SongbookItem getSelectedItem() {
+        return jsonFilesListView.getSelectionModel().getSelectedItem();
     }
 }
