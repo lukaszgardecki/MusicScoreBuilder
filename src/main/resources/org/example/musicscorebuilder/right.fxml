@@ -12,6 +12,16 @@
     <VBox fx:id="metadataContainer" spacing="6" styleClass="metadata-panel" style="-fx-padding: 10;">
         <Label text="Informacje o utworze" styleClass="metadata-title" />
 
+        <VBox spacing="2">
+            <Label text="Tytuł" styleClass="field-label" />
+            <TextField fx:id="titleField" styleClass="metadata-input" />
+        </VBox>
+
+        <VBox spacing="2">
+            <Label text="Podtytuł" styleClass="field-label" />
+            <TextField fx:id="subtitleField" styleClass="metadata-input" />
+        </VBox>
+
         <GridPane hgap="8" vgap="6">
             <columnConstraints>
                 <ColumnConstraints percentWidth="50" />
@@ -28,16 +38,6 @@
                 <TextField fx:id="oldNumberField" styleClass="metadata-input" />
             </VBox>
         </GridPane>
-
-        <VBox spacing="2">
-            <Label text="Tytuł" styleClass="field-label" />
-            <TextField fx:id="titleField" styleClass="metadata-input" />
-        </VBox>
-
-        <VBox spacing="2">
-            <Label text="Podtytuł" styleClass="field-label" />
-            <TextField fx:id="subtitleField" styleClass="metadata-input" />
-        </VBox>
 
         <VBox spacing="2">
             <Label text="Kompozytor" styleClass="field-label" />

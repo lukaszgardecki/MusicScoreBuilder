@@ -56,7 +56,7 @@ public class Measure {
         this.staves = staves;
         staves.forEach(staff -> staff.getDefaultClef().setParent(this));
         this.timeSignature = new TimeSignature(4, 4, TimeSignature.Type.FRACTIONAL, this);
-        this.keySignature = new KeySignature(-2, this);
+        this.keySignature = new KeySignature(0, this);
         this.rightBarline = new Barline(BarlineStyle.FINAL, this);
     }
 

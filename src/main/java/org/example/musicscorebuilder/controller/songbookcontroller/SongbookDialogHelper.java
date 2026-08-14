@@ -2,6 +2,7 @@ package org.example.musicscorebuilder.controller.songbookcontroller;
 
 import org.example.musicscorebuilder.components.dialog.CustomConfirmationDialog;
 import org.example.musicscorebuilder.components.dialog.CustomInputDialog;
+import org.example.musicscorebuilder.components.dialog.CustomNewFileDialog;
 
 import java.util.Optional;
 
@@ -30,6 +31,17 @@ public class SongbookDialogHelper {
                 .setCancelButton("Anuluj")
                 .showAndWait()
                 .map(String::trim);
+    }
+
+    public static Optional<SongbookScoreMetadata> showNewFileDialog() {
+        return new CustomNewFileDialog()
+                .setTitle("Nowy plik")
+                .setHeader("Tworzenie nowego utworu")
+                .setContent("Wypełnij metadane dla nowego pliku:")
+                .setIconSvg(SVG_ADD_FILE, COLOR_BLUE)
+                .setConfirmButton("Utwórz")
+                .setCancelButton("Anuluj")
+                .showAndWait();
     }
 
     public static void showDeleteConfirmation(String itemType, String displayName, boolean isDirectory, Runnable onConfirm) {

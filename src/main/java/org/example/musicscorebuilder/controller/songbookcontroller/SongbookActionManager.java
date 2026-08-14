@@ -216,37 +216,27 @@ public class SongbookActionManager {
         }
 
         File parentDir = parentDirOpt.get();
-        String currentInput = "";
 
-        while (true) {
-            Optional<String> result = SongbookDialogHelper.showInputDialog(
-                    "Nowy plik",
-                    "Tworzenie nowego utworu",
-                    "Podaj nazwę nowego pliku:",
-                    currentInput,
-                    SongbookDialogHelper.SVG_ADD_FILE,
-                    SongbookDialogHelper.COLOR_BLUE,
-                    "Utwórz"
-            );
+        Optional<SongbookScoreMetadata> result = SongbookDialogHelper.showNewFileDialog();
+        if (result.isEmpty()) return;
 
-            if (result.isEmpty()) break;
-
-            currentInput = result.get();
-            if (currentInput.isEmpty()) {
-                SongbookDialogHelper.showErrorAlert("Błąd", "Nazwa pliku nie może być pusta!");
-                continue;
-            }
-
-            if (createAndSaveScore(parentDir, currentInput, refreshCallback, selectFileCallback, openFileCallback)) {
-                break;
-            }
-        }
+        SongbookScoreMetadata metadata = result.get();
+        createAndSaveScore(parentDir, metadata, refreshCallback, selectFileCallback, openFileCallback);
     }
 
-    private boolean createAndSaveScore(File parentDir, String inputName, Runnable refreshCallback, Consumer<File> selectFileCallback, Consumer<File> openFileCallback) {
-        String cleanTitle = inputName.replaceAll("(?i)\\.json(\\.gz)?$", "");
+    private boolean createAndSaveScore(
+            File parentDir,
+            SongbookScoreMetadata metadata,
+            Runnable refreshCallback,
+            Consumer<File> selectFileCallback,
+            Consumer<File> openFileCallback
+    ) {
         Score defaultScore = ScoreFactory.createScoreTemplate();
-        defaultScore.setTitle(cleanTitle);
+        defaultScore.setNumberNew(metadata.numberNew());
+        defaultScore.setNumberOld(metadata.numberOld());
+        defaultScore.setTitle(metadata.title());
+        defaultScore.setSubtitle(metadata.subtitle());
+        defaultScore.setComposer(metadata.composer());
 
         File targetFile = fileService.getTargetFile(defaultScore, parentDir);
         if (targetFile.exists()) {
