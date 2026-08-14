@@ -22,6 +22,8 @@ import org.example.musicscorebuilder.managers.ScoreStateManager;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Optional;
 
 public class SongbookController {
@@ -42,6 +44,7 @@ public class SongbookController {
     private final StorageService storageService = StorageService.getInstance();
     private final FileService fileService = FileService.getInstance();
     private File currentOpenedFile = null;
+    private File copiedFile = null;
     private boolean isUpdatingFields = false;
     private final PauseTransition liveUpdateDebounce = new PauseTransition(Duration.millis(200));
 
@@ -54,6 +57,48 @@ public class SongbookController {
         setupMetadataAutoSave();
         clearAndDisableMetadataFields();
         loadSavedDirectory();
+    }
+
+    @FXML
+    private void handleCopy() {
+        SongbookItem selected = jsonFilesListView.getSelectionModel().getSelectedItem();
+        if (selected == null || selected.type() == SongbookItem.Type.PARENT_DIR) return;
+
+        File fileToCopy = selected.file();
+        if (fileToCopy != null && fileToCopy.exists()) {
+            this.copiedFile = fileToCopy;
+        }
+    }
+
+    @FXML
+    private void handlePaste() {
+        if (copiedFile == null || !copiedFile.exists()) {
+            showErrorAlert("Błąd wklejania", "Brak skopiowanego pliku lub folderu.");
+            return;
+        }
+
+        Optional<File> currentDirOpt = PreferencesService.getDirectoryFile();
+        if (currentDirOpt.isEmpty()) {
+            showErrorAlert("Błąd zapisu", "Najpierw wybierz folder śpiewnika!");
+            return;
+        }
+
+        File currentDir = currentDirOpt.get();
+        File targetFile = generateUniqueCopyFile(currentDir, copiedFile);
+
+        try {
+            if (copiedFile.isDirectory() && targetFile.getCanonicalPath().startsWith(copiedFile.getCanonicalPath() + File.separator)) {
+                showErrorAlert("Błąd kopiowania", "Nie można skopiować folderu do jego własnego podfolderu!");
+                return;
+            }
+
+            copyRecursively(copiedFile, targetFile);
+            loadJsonFiles(currentDir);
+            selectItemByFile(targetFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+            showErrorAlert("Błąd kopiowania", "Nie udało się wkleić elementu: " + e.getMessage());
+        }
     }
 
     @FXML
@@ -259,6 +304,18 @@ public class SongbookController {
         jsonFilesListView.setItems(jsonFilesList);
         setupCellFactory();
         setupMouseNavigation();
+        setupListViewContextMenu();
+    }
+
+    private void setupListViewContextMenu() {
+        ContextMenu emptyAreaContextMenu = new ContextMenu();
+        MenuItem pasteMenuItem = new MenuItem("Wklej");
+        pasteMenuItem.setOnAction(e -> handlePaste());
+
+        emptyAreaContextMenu.getItems().add(pasteMenuItem);
+        emptyAreaContextMenu.setOnShowing(e -> pasteMenuItem.setDisable(copiedFile == null));
+
+        jsonFilesListView.setContextMenu(emptyAreaContextMenu);
     }
 
     private void setupMetadataAutoSave() {
@@ -305,7 +362,13 @@ public class SongbookController {
     private void setupCellFactory() {
         jsonFilesListView.setCellFactory(param -> {
             SongbookListCell cell = new SongbookListCell();
-            ContextMenu contextMenu = new ContextMenu();
+
+            ContextMenu itemContextMenu = new ContextMenu();
+            MenuItem copyMenuItem = new MenuItem("Kopiuj");
+            copyMenuItem.setOnAction(e -> handleCopy());
+
+            MenuItem pasteMenuItem = new MenuItem("Wklej");
+            pasteMenuItem.setOnAction(e -> handlePaste());
 
             MenuItem renameMenuItem = new MenuItem("Zmień nazwę");
             renameMenuItem.setOnAction(e -> handleRename());
@@ -313,13 +376,28 @@ public class SongbookController {
             MenuItem deleteMenuItem = new MenuItem("Usuń");
             deleteMenuItem.setOnAction(e -> handleDelete());
 
-            contextMenu.getItems().addAll(renameMenuItem, deleteMenuItem);
+            itemContextMenu.getItems().addAll(
+                    copyMenuItem,
+                    pasteMenuItem,
+                    new SeparatorMenuItem(),
+                    renameMenuItem,
+                    deleteMenuItem
+            );
+
+            itemContextMenu.setOnShowing(e -> pasteMenuItem.setDisable(copiedFile == null));
 
             cell.itemProperty().addListener((obs, oldItem, newItem) -> {
-                if (newItem == null || newItem.type() == SongbookItem.Type.PARENT_DIR) {
+                if (newItem == null) {
                     cell.setContextMenu(null);
+                } else if (newItem.type() == SongbookItem.Type.PARENT_DIR) {
+                    ContextMenu parentMenu = new ContextMenu();
+                    MenuItem parentPasteItem = new MenuItem("Wklej");
+                    parentPasteItem.setDisable(copiedFile == null);
+                    parentPasteItem.setOnAction(e -> handlePaste());
+                    parentMenu.getItems().add(parentPasteItem);
+                    cell.setContextMenu(parentMenu);
                 } else {
-                    cell.setContextMenu(contextMenu);
+                    cell.setContextMenu(itemContextMenu);
                 }
             });
             return cell;
@@ -482,7 +560,15 @@ public class SongbookController {
                     int currentIndex = jsonFilesListView.getSelectionModel().getSelectedIndex();
                     int totalItems = jsonFilesListView.getItems().size();
 
-                    if (event.getCode() == KeyCode.UP) {
+                    boolean isShortcut = event.isControlDown() || event.isShortcutDown();
+
+                    if (isShortcut && event.getCode() == KeyCode.C) {
+                        handleCopy();
+                        event.consume();
+                    } else if (isShortcut && event.getCode() == KeyCode.V) {
+                        handlePaste();
+                        event.consume();
+                    } else if (event.getCode() == KeyCode.UP) {
                         if (currentIndex > 0) {
                             int nextIndex = currentIndex - 1;
                             jsonFilesListView.getSelectionModel().select(nextIndex);
@@ -561,6 +647,52 @@ public class SongbookController {
                 .filter(item -> item.file() != null && item.file().equals(file))
                 .findFirst()
                 .ifPresent(item -> jsonFilesListView.getSelectionModel().select(item));
+    }
+
+    private File generateUniqueCopyFile(File targetDir, File sourceFile) {
+        String originalName = sourceFile.getName();
+        File dest = new File(targetDir, originalName);
+
+        if (!dest.exists()) {
+            return dest;
+        }
+
+        boolean isDirectory = sourceFile.isDirectory();
+        SongbookFileHelper.FileInfo info = SongbookFileHelper.extractFileInfo(sourceFile, isDirectory);
+        String baseName = info.baseName();
+        String ext = isDirectory ? "" : info.extension();
+
+        String copyName = baseName + " - kopia" + ext;
+        dest = new File(targetDir, copyName);
+        int counter = 2;
+
+        while (dest.exists()) {
+            copyName = baseName + " - kopia (" + counter + ")" + ext;
+            dest = new File(targetDir, copyName);
+            counter++;
+        }
+
+        return dest;
+    }
+
+    private void copyRecursively(File source, File target) throws IOException {
+        if (source.isDirectory()) {
+            if (!target.exists() && !target.mkdirs()) {
+                throw new IOException("Nie udało się utworzyć folderu: " + target.getAbsolutePath());
+            }
+            File[] files = source.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    copyRecursively(file, new File(target, file.getName()));
+                }
+            }
+        } else {
+            File parentDir = target.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                parentDir.mkdirs();
+            }
+            Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        }
     }
 
     private void showErrorAlert(String title, String message) {
