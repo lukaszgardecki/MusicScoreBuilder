@@ -1,8 +1,10 @@
 package org.example.musicscorebuilder.data;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.example.musicscorebuilder.components.music.*;
 
 import java.io.*;
@@ -14,9 +16,19 @@ public class JsonFileService {
 
     public JsonFileService() {
         this.mapper = new ObjectMapper();
-//        this.mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        this.mapper.enable(SerializationFeature.INDENT_OUTPUT);
         mapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+
+    public String toJsonString(Score score) {
+        if (score == null) return "";
+        try {
+            return mapper.writeValueAsString(score);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return "";
+        }
     }
 
     public void saveToJson(Score score, File file) throws IOException {

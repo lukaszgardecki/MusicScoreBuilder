@@ -35,6 +35,11 @@ public class FileService {
         } else throw new IOException("Plik nie istnieje.");
     }
 
+    public String serializeToString(Score score) {
+        if (score == null) return "";
+        return jsonFileService.toJsonString(score);
+    }
+
     public List<SongbookItem> getDirectoryContent(File folder, boolean compressed) {
         if (folder == null || !folder.isDirectory()) {
             return Collections.emptyList();

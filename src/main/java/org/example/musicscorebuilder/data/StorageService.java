@@ -10,6 +10,8 @@ import java.io.IOException;
 public class StorageService {
     private static StorageService instance;
     private Score score;
+    private File currentFile;
+    private String initialSnapshot = "";
     private final FileService fileService = FileService.getInstance();
 
     private StorageService() {}
@@ -22,28 +24,63 @@ public class StorageService {
     }
 
     public void loadScoreFile(File file) throws IOException {
-        var score = fileService.loadScore(file);
-        setScore(score);
+        var loadedScore = fileService.loadScore(file);
+        this.currentFile = file;
+        setScore(loadedScore);
+        this.initialSnapshot = takeSnapshot();
     }
 
     public void saveCurrentScoreFile() throws IOException {
-        Score score = getScore();
-        File dest = PreferencesService.getDirectoryFile().orElseThrow(IOException::new);
-        fileService.saveToFile(score, dest);
+        Score currentScore = getScore();
+        File destDir = (currentFile != null && currentFile.getParentFile() != null)
+                ? currentFile.getParentFile()
+                : PreferencesService.getDirectoryFile().orElseThrow(IOException::new);
+
+        fileService.saveToFile(currentScore, destDir);
+        this.initialSnapshot = takeSnapshot();
     }
 
-    public void saveScoreFile(Score score, File dest) throws IOException {
-        fileService.saveToFile(score, dest);
+    public void saveScoreFile(Score scoreToSave, File destDir) throws IOException {
+        fileService.saveToFile(scoreToSave, destDir);
+        if (scoreToSave == this.score) {
+            this.initialSnapshot = takeSnapshot();
+        }
     }
 
     public Score getScore() {
-        if (score != null) return score;
-        this.score = ScoreFactory.createScoreTemplate();
+        if (score == null) {
+            this.score = ScoreFactory.createScoreTemplate();
+            this.initialSnapshot = takeSnapshot();
+        }
         return score;
     }
 
     private void setScore(Score score) {
         this.score = score;
         ScoreStateManager.getInstance().notifyScoreChanged();
+    }
+
+    public boolean hasUnsavedChanges() {
+        if (score == null) return false;
+        String currentSnapshot = takeSnapshot();
+        return !initialSnapshot.equals(currentSnapshot);
+    }
+
+    private String takeSnapshot() {
+        if (score == null) return "";
+        try {
+            return fileService.serializeToString(score);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    public File getCurrentFile() {
+        return currentFile;
+    }
+
+    public void setCurrentFile(File currentFile) {
+        this.currentFile = currentFile;
     }
 }

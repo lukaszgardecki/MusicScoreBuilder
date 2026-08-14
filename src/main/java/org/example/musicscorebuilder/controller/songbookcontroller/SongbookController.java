@@ -8,6 +8,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import org.example.musicscorebuilder.components.dialog.CustomConfirmationDialog;
 import org.example.musicscorebuilder.data.FileService;
 import org.example.musicscorebuilder.data.PreferencesService;
 import org.example.musicscorebuilder.data.StorageService;
@@ -66,7 +67,8 @@ public class SongbookController {
         PreferencesService.getDirectoryFile().ifPresent(directoryChooser::setInitialDirectory);
 
         Stage stage = (Stage) openFolderButton.getScene().getWindow();
-        Optional.ofNullable(directoryChooser.showDialog(stage)).ifPresent(this::navigateToDirectory);
+        Optional.ofNullable(directoryChooser.showDialog(stage))
+                .ifPresent(dir -> confirmUnsavedChanges(() -> navigateToDirectory(dir)));
     }
 
     private void setupListView() {
@@ -116,7 +118,7 @@ public class SongbookController {
     private void openItem(SongbookItem item) {
         if (item == null) return;
         switch (item.type()) {
-            case PARENT_DIR, DIRECTORY -> navigateToDirectory(item.file());
+            case PARENT_DIR, DIRECTORY -> confirmUnsavedChanges(() -> navigateToDirectory(item.file()));
             case FILE -> loadScoreFileSafely(item.file());
         }
     }
@@ -124,17 +126,48 @@ public class SongbookController {
     private void navigateUp() {
         PreferencesService.getDirectoryFile().ifPresent(currentDir -> {
             File parentDir = currentDir.getParentFile();
-            if (parentDir != null && parentDir.exists()) navigateToDirectory(parentDir);
+            if (parentDir != null && parentDir.exists()) {
+                confirmUnsavedChanges(() -> navigateToDirectory(parentDir));
+            }
         });
     }
 
     private void loadScoreFileSafely(File file) {
-        try {
-            storageService.loadScoreFile(file);
-            metadataHandler.updatePanel(file);
-        } catch (IOException e) {
-            e.printStackTrace();
-            SongbookDialogHelper.showErrorAlert("Błąd wczytywania", "Nie udało się wczytać pliku: " + e.getMessage());
+        confirmUnsavedChanges(() -> {
+            try {
+                storageService.loadScoreFile(file);
+                metadataHandler.updatePanel(file);
+            } catch (IOException e) {
+                e.printStackTrace();
+                SongbookDialogHelper.showErrorAlert("Błąd wczytywania", "Nie udało się wczytać pliku: " + e.getMessage());
+            }
+        });
+    }
+
+    private void confirmUnsavedChanges(Runnable onProceed) {
+        if (storageService.hasUnsavedChanges()) {
+            String scoreTitle = (storageService.getScore() != null && storageService.getScore().getTitle() != null)
+                    ? storageService.getScore().getTitle()
+                    : "Bez tytułu";
+
+            new CustomConfirmationDialog()
+                    .setTitle("MusicScore Builder")
+                    .setHeader("Chcesz zapisać zmiany w partyturze „" + scoreTitle + "” przed opuszczeniem?")
+                    .setContent("Twoje zmiany zostaną utracone, jeśli ich nie zapiszesz.")
+                    .setConfirmButton("Zapisz", () -> {
+                        try {
+                            storageService.saveCurrentScoreFile();
+                            onProceed.run();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            SongbookDialogHelper.showErrorAlert("Błąd zapisu", "Nie udało się zapisać partytury: " + e.getMessage());
+                        }
+                    })
+                    .setDenyButton("Nie zapisuj", onProceed)
+                    .setCancelButton("Anuluj", null)
+                    .showAndWait();
+        } else {
+            onProceed.run();
         }
     }
 
@@ -161,6 +194,7 @@ public class SongbookController {
         jsonFilesList.clear();
         jsonFilesList.addAll(fileService.getDirectoryContent(folder, compressedOnlyCheckBox.isSelected()));
         jsonFilesList.sort(this::compareSongbookItems);
+
         if (!jsonFilesList.isEmpty()) jsonFilesListView.getSelectionModel().select(0);
         Platform.runLater(() -> jsonFilesListView.requestFocus());
     }
