@@ -207,14 +207,14 @@ public class LyricLayout {
         }
 
         List<HyphenLayout> result = new ArrayList<>();
-        NotePos currentPos = findCurrentNotePos(scoreLayout);
+        NotePos currentPos = createNotePos(this.noteLayout);
         if (currentPos == null) return EMPTY_HYPHENS;
 
         double fontSize = getFontSize();
 
         // 1. Myślnik PO sylabie (dla BEGIN i MIDDLE)
         if (type == SyllableType.BEGIN || type == SyllableType.MIDDLE) {
-            NotePos nextPos = findNextNotePos(scoreLayout);
+            NotePos nextPos = createNotePos(noteLayout.getNextNoteInVoice());
 
             if (nextPos != null) {
                 if (currentPos.system() == nextPos.system()) {
@@ -259,7 +259,7 @@ public class LyricLayout {
 
         // 2. Myślnik PRZED sylabą na nowej linii (dla MIDDLE i END)
         if (type == SyllableType.MIDDLE || type == SyllableType.END) {
-            NotePos prevPos = findPrevNotePos(scoreLayout);
+            NotePos prevPos = createNotePos(noteLayout.getPrevNoteInVoice());
 
             if (prevPos != null && currentPos.system() != prevPos.system()) {
                 // Początek nowego systemu (złamanie linii)
@@ -271,94 +271,18 @@ public class LyricLayout {
         return result;
     }
 
-    private NotePos findCurrentNotePos(ScoreLayout score) {
-        if (score == null || score.getPages() == null || noteLayout == null) return null;
-        for (PageLayout page : score.getPages()) {
-            if (page == null || page.getSystems() == null) continue;
-            for (SystemLayout system : page.getSystems()) {
-                if (system == null || system.getMeasures() == null) continue;
-                for (MeasureLayout measure : system.getMeasures()) {
-                    if (measure == null || measure.getSegments() == null) continue;
-                    for (SegmentLayout segment : measure.getSegments()) {
-                        if (segment == null || segment.getElements() == null) continue;
-                        for (ElementLayout el : segment.getElements()) {
-                            if (el == this.noteLayout) {
-                                double absX = measure.getX() + segment.getX() + this.noteLayout.getX();
-                                return new NotePos(system, absX, this.noteLayout);
-                            }
-                        }
-                    }
-                }
+    private NotePos createNotePos(NoteLayout target) {
+        if (target == null) return null;
+
+        SystemLayout system = (target.getStaff() != null) ? target.getStaff().getParent().getParent() : null;
+
+        double absX = target.getX();
+        if (target.getSegment() != null) {
+            absX += target.getSegment().getX();
+            if (target.getSegment().getParent() != null) {
+                absX += target.getSegment().getParent().getX();
             }
         }
-        return null;
-    }
-
-    private NotePos findNextNotePos(ScoreLayout score) {
-        if (score == null || score.getPages() == null || noteLayout == null || noteLayout.getNote() == null) return null;
-        int voice = noteLayout.getNote().getVoice();
-        int staffIdx = (noteLayout.getStaff() != null) ? noteLayout.getStaff().getStaffIndex() : 0;
-        boolean foundSelf = false;
-
-        for (PageLayout page : score.getPages()) {
-            if (page == null || page.getSystems() == null) continue;
-            for (SystemLayout system : page.getSystems()) {
-                if (system == null || system.getMeasures() == null) continue;
-                for (MeasureLayout measure : system.getMeasures()) {
-                    if (measure == null || measure.getSegments() == null) continue;
-                    for (SegmentLayout segment : measure.getSegments()) {
-                        if (segment == null || segment.getElements() == null) continue;
-                        for (ElementLayout el : segment.getElements()) {
-                            if (el instanceof NoteLayout nl && nl.getNote() != null) {
-                                int currentStaffIdx = (nl.getStaff() != null) ? nl.getStaff().getStaffIndex() : 0;
-                                if (currentStaffIdx == staffIdx && nl.getNote().getVoice() == voice) {
-                                    if (foundSelf) {
-                                        double absX = measure.getX() + segment.getX() + nl.getX();
-                                        return new NotePos(system, absX, nl);
-                                    }
-                                    if (nl == this.noteLayout || nl.getNote() == this.noteLayout.getNote()) {
-                                        foundSelf = true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    private NotePos findPrevNotePos(ScoreLayout score) {
-        if (score == null || score.getPages() == null || noteLayout == null || noteLayout.getNote() == null) return null;
-        int voice = noteLayout.getNote().getVoice();
-        int staffIdx = (noteLayout.getStaff() != null) ? noteLayout.getStaff().getStaffIndex() : 0;
-        NotePos lastFound = null;
-
-        for (PageLayout page : score.getPages()) {
-            if (page == null || page.getSystems() == null) continue;
-            for (SystemLayout system : page.getSystems()) {
-                if (system == null || system.getMeasures() == null) continue;
-                for (MeasureLayout measure : system.getMeasures()) {
-                    if (measure == null || measure.getSegments() == null) continue;
-                    for (SegmentLayout segment : measure.getSegments()) {
-                        if (segment == null || segment.getElements() == null) continue;
-                        for (ElementLayout el : segment.getElements()) {
-                            if (el instanceof NoteLayout nl && nl.getNote() != null) {
-                                int currentStaffIdx = (nl.getStaff() != null) ? nl.getStaff().getStaffIndex() : 0;
-                                if (currentStaffIdx == staffIdx && nl.getNote().getVoice() == voice) {
-                                    if (nl == this.noteLayout || nl.getNote() == this.noteLayout.getNote()) {
-                                        return lastFound;
-                                    }
-                                    double absX = measure.getX() + segment.getX() + nl.getX();
-                                    lastFound = new NotePos(system, absX, nl);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return null;
+        return new NotePos(system, absX, target);
     }
 }

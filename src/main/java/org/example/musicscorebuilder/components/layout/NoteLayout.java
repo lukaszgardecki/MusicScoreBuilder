@@ -6,11 +6,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class NoteLayout extends ElementLayout {
+public class NoteLayout extends NoteRestLayout {
     private static final List<LedgerLine> EMPTY_LEDGER_LINES = Collections.emptyList();
     private final Leland fontData;
     private final Note note;
     private final StemLayout stem;
+    private NoteLayout nextNoteInVoice;
+    private NoteLayout prevNoteInVoice;
     private final BeamSingleLayout singleBeam;
     private final List<DotLayout> dots = new ArrayList<>();
     private final List<LyricLayout> lyrics = new ArrayList<>();
@@ -58,6 +60,8 @@ public class NoteLayout extends ElementLayout {
     }
 
     public Note getNote() { return note; }
+    public NoteLayout getNextNoteInVoice() { return nextNoteInVoice; }
+    public NoteLayout getPrevNoteInVoice() { return prevNoteInVoice; }
     public double getBoxX() { return getX(); }
     public double getFontWidth() { return (fontData.getHeight() * fontData.getRatio()) * style.getStaffLineSpacing(); }
     public double getBoxWidth() { return getFontWidth(); }
@@ -118,6 +122,8 @@ public class NoteLayout extends ElementLayout {
         return lines;
     }
 
+    public void setNextNoteInVoice(NoteLayout nextNoteInVoice) { this.nextNoteInVoice = nextNoteInVoice; }
+    public void setPrevNoteInVoice(NoteLayout prevNoteInVoice) { this.prevNoteInVoice = prevNoteInVoice; }
     public void setXOffset(double xOffset) { this.xOffset = xOffset; }
     public void setBeamGroup(BeamGroupLayout beamGroup) { this.beamGroup = beamGroup; }
 

@@ -9,7 +9,6 @@ import org.example.musicscorebuilder.data.StorageService;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 public class ScoreStateManager {
     private static ScoreStateManager instance;
@@ -341,21 +340,16 @@ public class ScoreStateManager {
         if (!(selected instanceof NoteLayout noteLayout)) return;
 
         Note currentNote = noteLayout.getNote();
-        SegmentLayout segLayout = noteLayout.getSegment();
-        StaffLayout staffLayout = noteLayout.getStaff();
+        if (currentNote == null) return;
 
-        if (currentNote == null || segLayout == null || staffLayout == null) return;
-
-        int staffId = staffLayout.getStaffIndex();
+        NoteLayout nextNoteLayout = (noteLayout.getNextInVoice() instanceof NoteLayout n) ? n : null;
 
         if (currentNote.isTieStart()) {
             currentNote.setTieStart(false);
-            NoteLayout nextNoteLayout = findNextNoteInVoice(segLayout, staffId, currentNote.getVoice(), false);
             if (nextNoteLayout != null && isSamePitch(currentNote, nextNoteLayout.getNote())) {
                 nextNoteLayout.getNote().setTieStop(false);
             }
         } else {
-            NoteLayout nextNoteLayout = findNextNoteInVoice(segLayout, staffId, currentNote.getVoice(), false);
             if (nextNoteLayout != null && isSamePitch(currentNote, nextNoteLayout.getNote())) {
                 currentNote.setTieStart(true);
                 nextNoteLayout.getNote().setTieStop(true);
@@ -390,12 +384,7 @@ public class ScoreStateManager {
             }
         } else if (getSelectedItem() instanceof NoteLayout startLayout) {
             startNote = startLayout.getNote();
-            NoteLayout endLayout = findNextNoteInVoice(
-                    startLayout.getSegment(),
-                    startLayout.getStaff().getStaffIndex(),
-                    startNote.getVoice(),
-                    true // ignoruj pauzy
-            );
+            NoteLayout endLayout = startLayout.getNextNoteInVoice();
             if (endLayout != null) {
                 endNote = endLayout.getNote();
             }
@@ -474,31 +463,6 @@ public class ScoreStateManager {
         return n1.getStep() == n2.getStep()
                 && n1.getAlter() == n2.getAlter()
                 && n1.getOctave() == n2.getOctave();
-    }
-
-    private NoteLayout findNextNoteInVoice(SegmentLayout startSegment, int staffId, int voice, boolean ignoreRests, Predicate<NoteLayout> filter) {
-        SegmentLayout current = startSegment.getNext();
-
-        while (current != null) {
-            for (ElementLayout el : current.getElements()) {
-                if (el.getStaff() != null && el.getStaff().getStaffIndex() == staffId && el.getVoice() == voice) {
-                    if (el instanceof NoteLayout note) {
-                        if (filter.test(note)) {
-                            return note;
-                        }
-                    } else if (!ignoreRests && el instanceof RestLayout) {
-                        return null;
-                    }
-                }
-            }
-            current = current.getNext();
-        }
-
-        return null;
-    }
-
-    private NoteLayout findNextNoteInVoice(SegmentLayout startSegment, int staffId, int voice, boolean ignoreRests) {
-        return findNextNoteInVoice(startSegment, staffId, voice, ignoreRests, note -> true);
     }
 
     private boolean isPitchWithinLedgerBounds(Pitch pitch, Clef clef, int maxLedgerLines) {

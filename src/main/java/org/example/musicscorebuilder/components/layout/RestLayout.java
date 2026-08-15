@@ -7,7 +7,7 @@ import org.example.musicscorebuilder.components.music.SegmentType;
 
 import java.util.List;
 
-public class RestLayout extends ElementLayout {
+public class RestLayout extends NoteRestLayout {
     private final Leland fontData;
     private final Rest rest;
     private final double height;
