@@ -4,7 +4,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-import org.example.musicscorebuilder.components.layout.util.LyricHyphenCalculator;
 import org.example.musicscorebuilder.components.music.Lyric;
 import org.example.musicscorebuilder.components.music.LyricFragment;
 import org.example.musicscorebuilder.components.music.SyllableType;
@@ -58,11 +57,12 @@ public class LyricLayout {
         }
     }
 
+    private record NotePos(SystemLayout system, double absX, NoteLayout noteLayout) {}
+
     private final Lyric lyric;
     private final NoteLayout noteLayout;
     private final int verse;
     private final List<FragmentLayout> fragmentLayouts = new ArrayList<>();
-    private List<HyphenLayout> cachedHyphens = null;
     private double totalWidth = 0.0;
     private int lastKnownHash = -1;
 
@@ -109,10 +109,13 @@ public class LyricLayout {
         if (l != null && l.getFontSize() != null && l.getFontSize() > 0.0) {
             return l.getFontSize();
         }
-        return noteLayout.getScoreStyle().getNoteLyricFontSize();
+        return (noteLayout != null && noteLayout.getScoreStyle() != null)
+                ? noteLayout.getScoreStyle().getNoteLyricFontSize()
+                : 12.0;
     }
 
     public double getModelY() {
+        if (noteLayout == null) return 0.0;
         StaffLayout staff = noteLayout.getStaff();
         if (staff == null) return 0.0;
         double staffBottomY = staff.getY() + staff.getHeight();
@@ -120,6 +123,7 @@ public class LyricLayout {
     }
 
     public double getNoteCenterX() {
+        if (noteLayout == null) return 0.0;
         return noteLayout.getX() + (noteLayout.getFontWidth() / 2.0);
     }
 
@@ -155,7 +159,6 @@ public class LyricLayout {
 
     public void refresh() {
         fragmentLayouts.clear();
-        cachedHyphens = null;
         totalWidth = 0.0;
 
         Lyric currentLyric = getLyric();
@@ -198,16 +201,164 @@ public class LyricLayout {
     }
 
     public List<HyphenLayout> computeHyphenLayouts(ScoreLayout scoreLayout) {
-        checkAndRefreshIfStale();
         SyllableType type = getType();
-
-        if (type == null || type == SyllableType.SINGLE || type == SyllableType.END) {
+        if (type == SyllableType.SINGLE || scoreLayout == null || noteLayout == null || noteLayout.getNote() == null) {
             return EMPTY_HYPHENS;
         }
 
-        if (cachedHyphens == null) {
-            cachedHyphens = LyricHyphenCalculator.calculateHyphens(this, scoreLayout);
+        List<HyphenLayout> result = new ArrayList<>();
+        NotePos currentPos = findCurrentNotePos(scoreLayout);
+        if (currentPos == null) return EMPTY_HYPHENS;
+
+        double fontSize = getFontSize();
+
+        // 1. Myślnik PO sylabie (dla BEGIN i MIDDLE)
+        if (type == SyllableType.BEGIN || type == SyllableType.MIDDLE) {
+            NotePos nextPos = findNextNotePos(scoreLayout);
+
+            if (nextPos != null) {
+                if (currentPos.system() == nextPos.system()) {
+                    double startAbsX = currentPos.absX() + getStartX() + getTotalWidth();
+                    double endAbsX = nextPos.absX();
+
+                    LyricLayout nextLyric = null;
+                    if (nextPos.noteLayout().getLyrics() != null) {
+                        for (LyricLayout l : nextPos.noteLayout().getLyrics()) {
+                            if (l.getVerse() == getVerse()) {
+                                nextLyric = l;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (nextLyric != null && !nextLyric.getFragmentLayouts().isEmpty()) {
+                        endAbsX += nextLyric.getStartX();
+                    } else {
+                        endAbsX += nextPos.noteLayout().getFontWidth() / 2.0;
+                    }
+
+                    double distance = endAbsX - startAbsX;
+                    double margin = fontSize * 0.15; // Bezpieczny odstęp od tekstu z obu stron
+                    double availableSpace = distance - (2 * margin);
+
+                    if (availableSpace > 0) {
+                        double defaultHyphenWidth = fontSize * 0.35;
+                        double scaleX = Math.min(1.0, Math.max(0.15, availableSpace / defaultHyphenWidth));
+
+                        double hyphenAbsX = startAbsX + (distance / 2.0);
+                        double hyphenModelX = hyphenAbsX - currentPos.absX();
+                        result.add(new HyphenLayout(hyphenModelX, getModelY(), scaleX, fontSize));
+                    }
+                } else {
+                    // Koniec obecnego systemu (złamanie linii)
+                    double hyphenModelX = getStartX() + getTotalWidth() + (fontSize * 0.25);
+                    result.add(new HyphenLayout(hyphenModelX, getModelY(), 0.8, fontSize));
+                }
+            }
         }
-        return cachedHyphens;
+
+        // 2. Myślnik PRZED sylabą na nowej linii (dla MIDDLE i END)
+        if (type == SyllableType.MIDDLE || type == SyllableType.END) {
+            NotePos prevPos = findPrevNotePos(scoreLayout);
+
+            if (prevPos != null && currentPos.system() != prevPos.system()) {
+                // Początek nowego systemu (złamanie linii)
+                double hyphenModelX = getStartX() - (fontSize * 0.35);
+                result.add(new HyphenLayout(hyphenModelX, getModelY(), 0.8, fontSize));
+            }
+        }
+
+        return result;
+    }
+
+    private NotePos findCurrentNotePos(ScoreLayout score) {
+        if (score == null || score.getPages() == null || noteLayout == null) return null;
+        for (PageLayout page : score.getPages()) {
+            if (page == null || page.getSystems() == null) continue;
+            for (SystemLayout system : page.getSystems()) {
+                if (system == null || system.getMeasures() == null) continue;
+                for (MeasureLayout measure : system.getMeasures()) {
+                    if (measure == null || measure.getSegments() == null) continue;
+                    for (SegmentLayout segment : measure.getSegments()) {
+                        if (segment == null || segment.getElements() == null) continue;
+                        for (ElementLayout el : segment.getElements()) {
+                            if (el == this.noteLayout) {
+                                double absX = measure.getX() + segment.getX() + this.noteLayout.getX();
+                                return new NotePos(system, absX, this.noteLayout);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private NotePos findNextNotePos(ScoreLayout score) {
+        if (score == null || score.getPages() == null || noteLayout == null || noteLayout.getNote() == null) return null;
+        int voice = noteLayout.getNote().getVoice();
+        int staffIdx = (noteLayout.getStaff() != null) ? noteLayout.getStaff().getStaffIndex() : 0;
+        boolean foundSelf = false;
+
+        for (PageLayout page : score.getPages()) {
+            if (page == null || page.getSystems() == null) continue;
+            for (SystemLayout system : page.getSystems()) {
+                if (system == null || system.getMeasures() == null) continue;
+                for (MeasureLayout measure : system.getMeasures()) {
+                    if (measure == null || measure.getSegments() == null) continue;
+                    for (SegmentLayout segment : measure.getSegments()) {
+                        if (segment == null || segment.getElements() == null) continue;
+                        for (ElementLayout el : segment.getElements()) {
+                            if (el instanceof NoteLayout nl && nl.getNote() != null) {
+                                int currentStaffIdx = (nl.getStaff() != null) ? nl.getStaff().getStaffIndex() : 0;
+                                if (currentStaffIdx == staffIdx && nl.getNote().getVoice() == voice) {
+                                    if (foundSelf) {
+                                        double absX = measure.getX() + segment.getX() + nl.getX();
+                                        return new NotePos(system, absX, nl);
+                                    }
+                                    if (nl == this.noteLayout || nl.getNote() == this.noteLayout.getNote()) {
+                                        foundSelf = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private NotePos findPrevNotePos(ScoreLayout score) {
+        if (score == null || score.getPages() == null || noteLayout == null || noteLayout.getNote() == null) return null;
+        int voice = noteLayout.getNote().getVoice();
+        int staffIdx = (noteLayout.getStaff() != null) ? noteLayout.getStaff().getStaffIndex() : 0;
+        NotePos lastFound = null;
+
+        for (PageLayout page : score.getPages()) {
+            if (page == null || page.getSystems() == null) continue;
+            for (SystemLayout system : page.getSystems()) {
+                if (system == null || system.getMeasures() == null) continue;
+                for (MeasureLayout measure : system.getMeasures()) {
+                    if (measure == null || measure.getSegments() == null) continue;
+                    for (SegmentLayout segment : measure.getSegments()) {
+                        if (segment == null || segment.getElements() == null) continue;
+                        for (ElementLayout el : segment.getElements()) {
+                            if (el instanceof NoteLayout nl && nl.getNote() != null) {
+                                int currentStaffIdx = (nl.getStaff() != null) ? nl.getStaff().getStaffIndex() : 0;
+                                if (currentStaffIdx == staffIdx && nl.getNote().getVoice() == voice) {
+                                    if (nl == this.noteLayout || nl.getNote() == this.noteLayout.getNote()) {
+                                        return lastFound;
+                                    }
+                                    double absX = measure.getX() + segment.getX() + nl.getX();
+                                    lastFound = new NotePos(system, absX, nl);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

@@ -27,6 +27,7 @@ import org.example.musicscorebuilder.components.music.Note;
 import org.example.musicscorebuilder.components.music.SyllableType;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class LyricEditorManager {
@@ -191,6 +192,14 @@ public class LyricEditorManager {
         inputField.textProperty().addListener((obs, oldText, newText) -> {
             if (!isLoadingLyric) {
                 styleHelper.syncCharStyles(oldText, newText);
+                if (isEditing && currentNoteLayout != null) {
+                    Lyric existing = currentNoteLayout.getNote().getLyric(currentVerse);
+                    SyllableType currentType = (existing != null && existing.getType() != null)
+                            ? existing.getType()
+                            : SyllableType.SINGLE;
+                    commitCurrentText(currentType, false);
+                    ScoreStateManager.getInstance().notifyScoreChanged();
+                }
             }
             rebuildTextFlow();
             updatePosition();
@@ -377,11 +386,18 @@ public class LyricEditorManager {
             type = SyllableType.END;
         }
 
-        boolean isHyphenType = (type == SyllableType.BEGIN || type == SyllableType.MIDDLE);
+        boolean isConnectedType = (type == SyllableType.BEGIN || type == SyllableType.MIDDLE || type == SyllableType.END);
         Lyric resultingLyric = null;
 
-        if (!text.isEmpty() || isHyphenType) {
+        if (!text.isEmpty() || isConnectedType) {
             List<LyricFragment> fragments = styleHelper.exportToFragments(rawText);
+
+            // KLUCZOWA POPRAWKA: Pusta lista fragmentów uniemożliwiała utworzenie LyricLayout.
+            // Dla typów połączonych (np. END) musimy zachować przynajmniej pusty fragment, aby utworzyć layout do rysowania myślnika.
+            if (fragments.isEmpty() && isConnectedType) {
+                fragments.add(new LyricFragment());
+            }
+
             Lyric lyric = note.getLyric(currentVerse);
 
             double activeEditorSize = currentNoteLayout.getScoreStyle().getNoteLyricFontSize();
@@ -556,14 +572,27 @@ public class LyricEditorManager {
             this.currentNoteLayout = targetNoteLayout;
 
             Lyric lyric = targetModel.getLyric(currentVerse);
+            boolean isConnecting = (commitType == SyllableType.BEGIN || commitType == SyllableType.MIDDLE);
 
-            if (lyric == null && (commitType == SyllableType.BEGIN || commitType == SyllableType.MIDDLE)) {
-                lyric = new Lyric(new ArrayList<>(), SyllableType.END, currentVerse, null);
-                targetModel.setLyric(currentVerse, lyric);
+            if (isConnecting) {
+                List<LyricFragment> defaultFrags = new ArrayList<>();
+                defaultFrags.add(new LyricFragment());
+
+                if (lyric == null) {
+                    lyric = new Lyric(defaultFrags, SyllableType.END, currentVerse, null);
+                    targetModel.setLyric(currentVerse, lyric);
+                } else {
+                    lyric.setType(SyllableType.END);
+                    if (lyric.getFragments() == null || lyric.getFragments().isEmpty()) {
+                        lyric.setFragments(defaultFrags);
+                    }
+                }
                 updateNoteLayoutLyrics(targetNoteLayout, currentVerse, lyric);
             }
 
             loadLyricIntoEditor(lyric);
+
+            // Wymuś natychmiastowe przeliczenie widoku nut oraz myślników
             ScoreStateManager.getInstance().notifyScoreChanged();
 
             Platform.runLater(() -> {
@@ -594,48 +623,46 @@ public class LyricEditorManager {
         navigateTo(findPreviousNoteLayout(currentNoteLayout), SyllableType.SINGLE, false);
     }
 
-    private NoteLayout findNextNoteLayout(NoteLayout current) {
-        if (current == null || current.getNote() == null || current.getSegment() == null) return null;
+    private List<NoteLayout> getScoreNoteLayouts() {
+        ScoreLayout score = getScoreLayout();
+        if (score == null) return Collections.emptyList();
 
-        int targetVoice = current.getNote().getVoice();
-        int targetStaff = current.getStaff().getStaffIndex();
-
-        SegmentLayout segmentNode = current.getSegment().getNextSameType();
-
-        while (segmentNode != null) {
-            for (ElementLayout element : segmentNode.getElements()) {
-                if (element instanceof NoteLayout nextNote) {
-                    if (nextNote.getNote() != null
-                            && nextNote.getNote().getVoice() == targetVoice
-                            && nextNote.getStaff().getStaffIndex() == targetStaff) {
-                        return nextNote;
+        List<NoteLayout> list = new ArrayList<>();
+        for (PageLayout page : score.getPages()) {
+            if (page.getSystems() == null) continue;
+            for (SystemLayout sys : page.getSystems()) {
+                if (sys.getMeasures() == null) continue;
+                for (MeasureLayout m : sys.getMeasures()) {
+                    if (m.getSegments() == null) continue;
+                    for (SegmentLayout seg : m.getSegments()) {
+                        for (ElementLayout el : seg.getElements()) {
+                            if (el instanceof NoteLayout nl && nl.getNote() != null) {
+                                list.add(nl);
+                            }
+                        }
                     }
                 }
             }
-            segmentNode = segmentNode.getNextSameType();
+        }
+        return list;
+    }
+
+    private NoteLayout findNextNoteLayout(NoteLayout current) {
+        if (current == null || current.getNote() == null) return null;
+        List<NoteLayout> notes = getScoreNoteLayouts();
+        int idx = notes.indexOf(current);
+        if (idx != -1 && idx + 1 < notes.size()) {
+            return notes.get(idx + 1);
         }
         return null;
     }
 
     private NoteLayout findPreviousNoteLayout(NoteLayout current) {
-        if (current == null || current.getNote() == null || current.getSegment() == null) return null;
-
-        int targetVoice = current.getNote().getVoice();
-        int targetStaff = current.getStaff().getStaffIndex();
-
-        SegmentLayout segmentNode = current.getSegment().getPrevSameType();
-
-        while (segmentNode != null) {
-            for (ElementLayout element : segmentNode.getElements()) {
-                if (element instanceof NoteLayout prevNote) {
-                    if (prevNote.getNote() != null
-                            && prevNote.getNote().getVoice() == targetVoice
-                            && prevNote.getStaff().getStaffIndex() == targetStaff) {
-                        return prevNote;
-                    }
-                }
-            }
-            segmentNode = segmentNode.getPrevSameType();
+        if (current == null || current.getNote() == null) return null;
+        List<NoteLayout> notes = getScoreNoteLayouts();
+        int idx = notes.indexOf(current);
+        if (idx > 0) {
+            return notes.get(idx - 1);
         }
         return null;
     }
