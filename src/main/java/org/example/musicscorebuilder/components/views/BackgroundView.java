@@ -102,19 +102,23 @@ public class BackgroundView extends Pane {
             double dx = e.getSceneX() - lastX;
             double dy = e.getSceneY() - lastY;
 
-            if (Math.hypot(dx, dy) > 2.0) wasDragged = true;
-
-            offsetX += dx;
-            offsetY += dy;
-
-            lastX = e.getSceneX();
-            lastY = e.getSceneY();
-
-            if (scoreView != null) {
-                scoreView.setViewportTransform(offsetX, offsetY, zoom);
+            if (Math.hypot(dx, dy) > 2.0) {
+                wasDragged = true;
             }
 
-            updateLyricPosition();
+            if (dx != 0 || dy != 0) {
+                offsetX += dx;
+                offsetY += dy;
+
+                lastX = e.getSceneX();
+                lastY = e.getSceneY();
+
+                if (scoreView != null) {
+                    scoreView.setViewportTransform(offsetX, offsetY, zoom);
+                }
+
+                updateLyricPosition();
+            }
         });
     }
 
@@ -133,6 +137,7 @@ public class BackgroundView extends Pane {
             double oldZoom = this.zoom;
             this.zoom = Math.max(minZoom, Math.min(this.zoom * zoomFactor, maxZoom));
 
+            if (this.zoom == oldZoom) return;
             double actualFactor = this.zoom / oldZoom;
 
             double mouseX = e.getX();

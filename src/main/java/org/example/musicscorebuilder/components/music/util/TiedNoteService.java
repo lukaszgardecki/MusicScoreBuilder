@@ -3,6 +3,7 @@ package org.example.musicscorebuilder.components.music.util;
 import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.music.Note;
 import org.example.musicscorebuilder.components.music.Pitch;
+import org.example.musicscorebuilder.components.music.PitchStep;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,24 +20,31 @@ public class TiedNoteService {
         if (targetPitch == null) return;
 
         List<NoteLayout> tiedChain = findTiedChain(sourceNoteLayout);
+        if (tiedChain.size() <= 1) return;
 
-        for (NoteLayout tiedNoteLayout : tiedChain) {
+        PitchStep step = targetPitch.getStep();
+        int alter = targetPitch.getAlter();
+        int octave = targetPitch.getOctave();
+
+        for (int i = 0; i < tiedChain.size(); i++) {
+            NoteLayout tiedNoteLayout = tiedChain.get(i);
             if (tiedNoteLayout == sourceNoteLayout) continue;
 
             Note tiedNote = tiedNoteLayout.getNote();
             if (tiedNote != null) {
-                tiedNote.setPitch(new Pitch(targetPitch.getStep(), targetPitch.getAlter(), targetPitch.getOctave()));
+                tiedNote.setPitch(new Pitch(step, alter, octave));
                 tiedNoteLayout.refreshMeasureAccidentals();
             }
         }
     }
 
     private static List<NoteLayout> findTiedChain(NoteLayout targetNoteLayout) {
-        List<NoteLayout> chain = new ArrayList<>();
+        List<NoteLayout> chain = new ArrayList<>(8);
         if (targetNoteLayout == null || targetNoteLayout.getSegment() == null) return chain;
 
         chain.add(targetNoteLayout);
 
+        if (targetNoteLayout.getStaff() == null) return chain;
         int staffId = targetNoteLayout.getStaff().getStaffIndex();
         int voice = targetNoteLayout.getVoice();
 
@@ -70,14 +78,14 @@ public class TiedNoteService {
         SegmentLayout current = startSegment.getNext();
 
         while (current != null) {
-            if (current.getElements() != null) {
-                for (ElementLayout el : current.getElements()) {
-                    if (el.getStaff() != null && el.getStaff().getStaffIndex() == staffId && el.getVoice() == voice) {
-                        if (el instanceof NoteLayout noteLayout) {
-                            return noteLayout;
-                        } else if (el instanceof RestLayout) {
-                            return null; // Pauza przerywa łańcuch
-                        }
+            List<ElementLayout> elements = current.getElements();
+            for (int i = 0; i < elements.size(); i++) {
+                ElementLayout el = elements.get(i);
+                if (el.getStaff() != null && el.getStaff().getStaffIndex() == staffId && el.getVoice() == voice) {
+                    if (el instanceof NoteLayout noteLayout) {
+                        return noteLayout;
+                    } else if (el instanceof RestLayout) {
+                        return null; // Pauza przerywa łańcuch
                     }
                 }
             }
@@ -91,14 +99,14 @@ public class TiedNoteService {
         SegmentLayout current = startSegment.getPrev();
 
         while (current != null) {
-            if (current.getElements() != null) {
-                for (ElementLayout el : current.getElements()) {
-                    if (el.getStaff() != null && el.getStaff().getStaffIndex() == staffId && el.getVoice() == voice) {
-                        if (el instanceof NoteLayout noteLayout) {
-                            return noteLayout;
-                        } else if (el instanceof RestLayout) {
-                            return null; // Pauza przerywa łańcuch
-                        }
+            List<ElementLayout> elements = current.getElements();
+            for (int i = 0; i < elements.size(); i++) {
+                ElementLayout el = elements.get(i);
+                if (el.getStaff() != null && el.getStaff().getStaffIndex() == staffId && el.getVoice() == voice) {
+                    if (el instanceof NoteLayout noteLayout) {
+                        return noteLayout;
+                    } else if (el instanceof RestLayout) {
+                        return null; // Pauza przerywa łańcuch
                     }
                 }
             }

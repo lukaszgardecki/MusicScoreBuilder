@@ -5,7 +5,8 @@ import org.example.musicscorebuilder.components.layout.MeasureLayout;
 import org.example.musicscorebuilder.components.layout.SlurLayout;
 import org.example.musicscorebuilder.components.layout.SystemLayout;
 import org.example.musicscorebuilder.components.layout.TieLayout;
-import org.example.musicscorebuilder.util.Util;
+
+import java.util.List;
 
 public class SystemView extends ComponentView {
     private final MeasureView measureView = new MeasureView();
@@ -16,18 +17,25 @@ public class SystemView extends ComponentView {
     public void draw(GraphicsContext gc, SystemLayout system, double pageX, double pageY, double sp) {
         double systemX = system.getX() * sp + pageX;
         double systemY = system.getY() * sp + pageY;
-        double widthPx = system.getWidth() * sp;
-        double heightPx = system.getHeight() * sp;
-
-//        fillBackground(gc, Util.generateRandomColor(), systemX, systemY, widthPx, heightPx);
 
         system.getBraceLayout().ifPresent(brace -> braceView.draw(gc, brace, systemX, systemY, sp));
 
-        for (MeasureLayout measure : system.getMeasures()) {
-            measureView.draw(gc, measure, systemX, systemY, sp);
+        List<MeasureLayout> measures = system.getMeasures();
+        int measureCount = measures.size();
+        for (int i = 0; i < measureCount; i++) {
+            measureView.draw(gc, measures.get(i), systemX, systemY, sp);
         }
 
-        for (TieLayout tie : system.getTies()) tieView.draw(gc, tie, systemX, systemY, sp);
-        for (SlurLayout slur : system.getSlurs()) slurView.draw(gc, slur, systemX, systemY, sp);
+        List<TieLayout> ties = system.getTies();
+        int tieCount = ties.size();
+        for (int i = 0; i < tieCount; i++) {
+            tieView.draw(gc, ties.get(i), systemX, systemY, sp);
+        }
+
+        List<SlurLayout> slurs = system.getSlurs();
+        int slurCount = slurs.size();
+        for (int i = 0; i < slurCount; i++) {
+            slurView.draw(gc, slurs.get(i), systemX, systemY, sp);
+        }
     }
 }

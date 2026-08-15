@@ -3,7 +3,9 @@ package org.example.musicscorebuilder.components.layout;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.music.SegmentType;
 
-public class SlurLayout  implements Selectable {
+import java.util.List;
+
+public class SlurLayout implements Selectable {
     private final NoteLayout startNote;
     private final NoteLayout endNote;
     private final SystemLayout system;
@@ -24,20 +26,33 @@ public class SlurLayout  implements Selectable {
         BowCurveGeometry geom = getCurveGeometry();
         if (geom == null || geom.getDx() <= 0) return false;
 
-        double strokePadding = getScoreStyle().getBowTipRoundingFactor() / 2.0;
+        ScoreStyle style = getScoreStyle();
+        double strokePadding = style.getBowTipRoundingFactor() * 0.5;
 
-        if (x < geom.getStartX() - strokePadding || x > geom.getEndX() + strokePadding) {
+        double startX = geom.getStartX();
+        double endX = geom.getEndX();
+
+        if (x < startX - strokePadding || x > endX + strokePadding) {
             return false;
         }
 
-        double targetX = Math.max(geom.getStartX(), Math.min(geom.getEndX(), x));
+        double targetX = Math.max(startX, Math.min(endX, x));
         double t = geom.findTForX(targetX);
 
-        double yOuter = geom.calculateBezierCoordinate(t, geom.getStartY(), geom.getCp1yOuter(), geom.getCp2yOuter(), geom.getEndY());
-        double yInner = geom.calculateBezierCoordinate(t, geom.getStartY(), geom.getCp1yInner(), geom.getCp2yInner(), geom.getEndY());
+        double startY = geom.getStartY();
+        double endY = geom.getEndY();
 
-        double minY = Math.min(yOuter, yInner) - strokePadding;
-        double maxY = Math.max(yOuter, yInner) + strokePadding;
+        double yOuter = geom.calculateBezierCoordinate(t, startY, geom.getCp1yOuter(), geom.getCp2yOuter(), endY);
+        double yInner = geom.calculateBezierCoordinate(t, startY, geom.getCp1yInner(), geom.getCp2yInner(), endY);
+
+        double minY, maxY;
+        if (yOuter < yInner) {
+            minY = yOuter - strokePadding;
+            maxY = yInner + strokePadding;
+        } else {
+            minY = yInner - strokePadding;
+            maxY = yOuter + strokePadding;
+        }
 
         return y >= minY && y <= maxY;
     }
@@ -49,6 +64,7 @@ public class SlurLayout  implements Selectable {
     public NoteLayout getEndNote() { return endNote; }
     public SystemLayout getSystem() { return system; }
     public ScoreStyle getScoreStyle() { return startNote != null ? startNote.getScoreStyle() : endNote.getScoreStyle(); }
+
     public BowCurveGeometry getCurveGeometry() {
         return new BowCurveGeometry(
                 getStartX(), getStartY(),
@@ -60,59 +76,82 @@ public class SlurLayout  implements Selectable {
 
     public boolean isCurveUp() {
         NoteLayout ref = startNote != null ? startNote : endNote;
-        if (isPolyphonic(ref)) {
-            return ref.getVoice() % 2 == 1;
+        if (ref != null && isPolyphonic(ref)) {
+            return (ref.getVoice() % 2) == 1;
         }
 
-        Boolean isStem1Up = (startNote != null && startNote.getStem() != null) ? startNote.getStem().isUp() : null;
-        Boolean isStem2Up = (endNote != null && endNote.getStem() != null) ? endNote.getStem().isUp() : null;
-
-        if (Boolean.TRUE.equals(isStem1Up) && Boolean.TRUE.equals(isStem2Up)) return false;
-        if (Boolean.FALSE.equals(isStem1Up) && Boolean.FALSE.equals(isStem2Up)) return true;
-
-        if (isStem1Up != null) return !isStem1Up;
-        if (isStem2Up != null) return !isStem2Up;
+        if (startNote != null) {
+            StemLayout stem = startNote.getStem();
+            if (stem != null) {
+                return !stem.isUp();
+            }
+        }
+        if (endNote != null) {
+            StemLayout stem = endNote.getStem();
+            if (stem != null) {
+                return !stem.isUp();
+            }
+        }
         return true;
     }
 
     private boolean isPolyphonic(NoteLayout note) {
-        var segment = note.getSegment();
-        if (segment.getType() != SegmentType.NOTEREST) return false;
-        return segment.getVoiceCountForStaff(note.getStaff().getStaffIndex()) > 1;
+        SegmentLayout segment = note.getSegment();
+        if (segment == null || segment.getType() != SegmentType.NOTEREST) return false;
+        StaffLayout staff = note.getStaff();
+        return staff != null && segment.getVoiceCountForStaff(staff.getStaffIndex()) > 1;
     }
 
     public double getStartX() {
         if (startNote == null) {
-            if (system != null && !system.getMeasures().isEmpty()) {
-                MeasureLayout firstMeasure = system.getMeasures().getFirst();
-                double measureX = firstMeasure.getX();
+            if (system != null) {
+                List<MeasureLayout> measures = system.getMeasures();
+                if (!measures.isEmpty()) {
+                    MeasureLayout firstMeasure = measures.getFirst();
+                    double measureX = firstMeasure.getX();
 
-                double segmentX = firstMeasure.getSegments().stream()
-                        .filter(s -> s.getType() == SegmentType.NOTEREST)
-                        .findFirst()
-                        .map(SegmentLayout::getX)
-                        .orElse(0.0);
-
-                return measureX + segmentX;
+                    double segmentX = 0.0;
+                    List<SegmentLayout> segments = firstMeasure.getSegments();
+                    int segCount = segments.size();
+                    for (int i = 0; i < segCount; i++) {
+                        SegmentLayout s = segments.get(i);
+                        if (s.getType() == SegmentType.NOTEREST) {
+                            segmentX = s.getX();
+                            break;
+                        }
+                    }
+                    return measureX + segmentX;
+                }
             }
             return 0.0;
         }
 
-        MeasureLayout measure = startNote.getSegment().getParent();
-        double absoluteNoteX = measure.getX() + startNote.getSegment().getX() + startNote.getX();
+        SegmentLayout seg = startNote.getSegment();
+        MeasureLayout measure = seg.getParent();
+        double absoluteNoteX = measure.getX() + seg.getX() + startNote.getX();
         double headWidth = startNote.getFontWidth();
-        double correctedX = headWidth * ((startNote.getStem() != null && startNote.getStem().isUp() && isCurveUp()) ? 1.0 : 0.5);
+        StemLayout stem = startNote.getStem();
+
+        boolean isStemUp = stem != null && stem.isUp();
+        double correctedX = headWidth * (isStemUp && isCurveUp() ? 1.0 : 0.5);
         return absoluteNoteX + correctedX + getScoreStyle().getBowXNoteSpace();
     }
 
     public double getEndX() {
-        if (endNote == null) return system.getWidth() - getScoreStyle().getBowSystemBreakEndXMargin();
+        ScoreStyle style = getScoreStyle();
+        if (endNote == null) {
+            return system != null ? system.getWidth() - style.getBowSystemBreakEndXMargin() : 0.0;
+        }
 
-        MeasureLayout measure = endNote.getSegment().getParent();
-        double absoluteNoteX = measure.getX() + endNote.getSegment().getX() + endNote.getX();
+        SegmentLayout seg = endNote.getSegment();
+        MeasureLayout measure = seg.getParent();
+        double absoluteNoteX = measure.getX() + seg.getX() + endNote.getX();
         double headWidth = endNote.getFontWidth();
-        double correctedX = headWidth * ((endNote.getStem() != null && endNote.getStem().isDown() && !isCurveUp()) ? 0.0 : 0.5);
-        return absoluteNoteX + correctedX - getScoreStyle().getBowXNoteSpace();
+        StemLayout stem = endNote.getStem();
+
+        boolean isStemDown = stem != null && stem.isDown();
+        double correctedX = headWidth * (isStemDown && !isCurveUp() ? 0.0 : 0.5);
+        return absoluteNoteX + correctedX - style.getBowXNoteSpace();
     }
 
     public double getStartY() { return calculateY(startNote, endNote); }
@@ -120,9 +159,12 @@ public class SlurLayout  implements Selectable {
 
     private double calculateY(NoteLayout primaryNote, NoteLayout secondaryNote) {
         NoteLayout targetNote = primaryNote != null ? primaryNote : secondaryNote;
+        if (targetNote == null) return 0.0;
+
         double noteCenterY = targetNote.getY();
-        double halfSpacing = targetNote.getScoreStyle().getStaffLineSpacing() / 2.0 ;
-        double verticalMargin = halfSpacing + getScoreStyle().getBowYNoteSpace();
+        ScoreStyle style = targetNote.getScoreStyle();
+        double halfSpacing = style.getStaffLineSpacing() * 0.5;
+        double verticalMargin = halfSpacing + style.getBowYNoteSpace();
         return noteCenterY + (isCurveUp() ? -verticalMargin : verticalMargin);
     }
 }

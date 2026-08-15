@@ -23,8 +23,9 @@ public class StaffView extends ComponentView {
 
         double drawStartX = Math.round(staffX);
         double drawEndX = Math.round(staffX + widthPx);
+        int linesNumber = staff.getLinesNumber();
 
-        for (int i = 0; i < staff.getLinesNumber(); i++) {
+        for (int i = 0; i < linesNumber; i++) {
             double currentLineY = Math.round(staffY + (i * lineSpacingPx));
             gc.strokeLine(drawStartX, currentLineY, drawEndX, currentLineY);
         }
@@ -42,8 +43,9 @@ public class StaffView extends ComponentView {
 
         double drawStartX = Math.round(staffX);
         double drawEndX = Math.round(staffX + widthPx);
+        int linesNumber = staff.getLinesNumber();
 
-        for (int i = 0; i < staff.getLinesNumber(); i++) {
+        for (int i = 0; i < linesNumber; i++) {
             double currentLineY = Math.round(staffY + (i * lineSpacingPx)) + 0.5;
             gc.strokeLine(drawStartX, currentLineY, drawEndX, currentLineY);
         }

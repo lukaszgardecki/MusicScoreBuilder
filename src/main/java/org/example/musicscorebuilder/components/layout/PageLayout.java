@@ -12,11 +12,11 @@ public class PageLayout {
     private final double width;
     private final double effectiveHeight;
     private final double effectiveWidth;
-    private final double marginTop ;
+    private final double marginTop;
     private final double marginBottom;
     private final double marginLeft;
     private final double marginRight;
-    private double x;
+    private double x, y = 0;
     private final int number;
 
     public PageLayout(ScoreLayout parent, int pageIndex) {
@@ -55,20 +55,32 @@ public class PageLayout {
     public double getMarginBottom() { return marginBottom; }
     public double getMarginLeft() { return marginLeft; }
     public double getMarginRight() { return marginRight; }
-    public double getRemainingWidth() { return  effectiveWidth - getOccupiedWidth(); }
+    public double getRemainingWidth() { return effectiveWidth - getOccupiedWidth(); }
     public double getRemainingHeight() {
         var headerHeight = header != null ? header.getHeight() : 0;
-        return effectiveHeight - headerHeight - footer.getHeight() - getOccupiedHeight(); }
-    public double getOccupiedWidth() {
-        return systems.stream().mapToDouble(SystemLayout::getWidth).max().orElse(0.0);
+        return effectiveHeight - headerHeight - footer.getHeight() - getOccupiedHeight();
     }
+
+    public double getOccupiedWidth() {
+        double max = 0.0;
+        for (int i = 0; i < systems.size(); i++) {
+            double w = systems.get(i).getWidth();
+            if (w > max) max = w;
+        }
+        return max;
+    }
+
     public double getOccupiedHeight() {
         if (systems.isEmpty()) return 0.0;
-        return systems.stream()
-                .mapToDouble(SystemLayout::getHeight)
-                .sum();
+        double sum = 0.0;
+        for (int i = 0; i < systems.size(); i++) {
+            sum += systems.get(i).getHeight();
+        }
+        return sum;
     }
+
     public double getX() { return x; }
+    public double getY() { return y; }
     public int getNumber() { return number; }
     public FrameLayout getHeader() { return header; }
     public FooterLayout getFooter() { return footer; }

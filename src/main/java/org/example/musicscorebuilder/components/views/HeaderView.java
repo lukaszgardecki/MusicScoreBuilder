@@ -10,7 +10,35 @@ import javafx.scene.text.*;
 import org.example.musicscorebuilder.components.layout.FrameLayout;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class HeaderView extends ComponentView {
+
+    private static final Map<String, Color> COLOR_CACHE = new HashMap<>();
+    private static final Map<String, Font> FONT_CACHE = new HashMap<>();
+
+    private static final Color START_COLOR  = Color.web("#dceafc");
+    private static final Color END_COLOR    = Color.web("#a4c9fc");
+    private static final Color BORDER_COLOR = Color.web("#76a3e3");
+
+    private static final LinearGradient BOX_GRADIENT = new LinearGradient(
+            0, 0, 1, 1, true,
+            CycleMethod.NO_CYCLE,
+            new Stop(0.0, START_COLOR),
+            new Stop(1.0, END_COLOR)
+    );
+
+    private static Color getCachedColor(String hex) {
+        if (hex == null) return Color.BLACK;
+        return COLOR_CACHE.computeIfAbsent(hex, Color::web);
+    }
+
+    private static Font getFont(String family, FontWeight weight, FontPosture posture, double size) {
+        double roundedSize = Math.round(size * 10.0) / 10.0;
+        String key = family + "_" + weight + "_" + posture + "_" + roundedSize;
+        return FONT_CACHE.computeIfAbsent(key, k -> Font.font(family, weight, posture, roundedSize));
+    }
 
     public void draw(GraphicsContext gc, FrameLayout header, double pageX, double pageY, double sp) {
         ScoreStyle style = header.getScoreStyle();
@@ -19,7 +47,7 @@ public class HeaderView extends ComponentView {
         double headerWidth = header.getWidth() * sp;
         double contentHeight = header.getContentHeight() * sp;
         gc.save();
-        gc.setStroke(Color.web(header.isSelected() ? style.getSelectColor(header) : style.getFrameStrokeColor()));
+        gc.setStroke(getCachedColor(header.isSelected() ? style.getSelectColor(header) : style.getFrameStrokeColor()));
         gc.setLineWidth(style.getFrameStrokeThickness() * sp);
         gc.setLineDashes(style.getFrameStrokeDashLength() * sp, style.getFrameStrokeSpaceLength() * sp);
         gc.strokeRect(headerX, contentY, headerWidth, contentHeight);
@@ -71,12 +99,12 @@ public class HeaderView extends ComponentView {
 
         if (hasTop) {
             double line1CenterY = startY + topHeight / 2.0;
-            drawNumberNew(gc, header, centerX, line1CenterY, sp);
+            drawNumberNode(gc, topNode, centerX, line1CenterY);
         }
 
         if (hasBottom) {
             double line2CenterY = startY + (hasTop ? topHeight + spacing : 0) + bottomHeight / 2.0;
-            drawNumberOld(gc, header, centerX, line2CenterY, sp);
+            drawNumberNode(gc, bottomNode, centerX, line2CenterY);
         }
     }
 
@@ -84,38 +112,15 @@ public class HeaderView extends ComponentView {
         double boxRadius = header.getNumBoxRadius() * sp;
         double strokeWidth = header.getNumBoxStrokeWidth() * sp;
 
-        Color startColor  = Color.web("#dceafc");
-        Color endColor    = Color.web("#a4c9fc");
-        Color borderColor = Color.web("#76a3e3");
-
-        LinearGradient gradient45deg = new LinearGradient(
-                0, 0, 1, 1, true,
-                CycleMethod.NO_CYCLE,
-                new Stop(0.0, startColor),
-                new Stop(1.0, endColor)
-        );
-
-        gc.setFill(gradient45deg);
+        gc.setFill(BOX_GRADIENT);
         gc.fillRoundRect(x, y, width, height, boxRadius, boxRadius);
 
-        gc.setStroke(borderColor);
+        gc.setStroke(BORDER_COLOR);
         gc.setLineWidth(strokeWidth);
         gc.strokeRoundRect(x, y, width, height, boxRadius, boxRadius);
     }
 
-    private void drawNumberNew(GraphicsContext gc, FrameLayout header, double centerX, double centerY, double sp) {
-        Text node = createNewNumberTextNode(header, sp);
-        if (node.getText().isEmpty()) return;
-
-        gc.setTextAlign(TextAlignment.CENTER);
-        gc.setTextBaseline(VPos.CENTER);
-        gc.setFont(node.getFont());
-        gc.setFill(Color.BLACK);
-        gc.fillText(node.getText(), centerX, centerY);
-    }
-
-    private void drawNumberOld(GraphicsContext gc, FrameLayout header, double centerX, double centerY, double sp) {
-        Text node = createOldNumberTextNode(header, sp);
+    private void drawNumberNode(GraphicsContext gc, Text node, double centerX, double centerY) {
         if (node.getText().isEmpty()) return;
 
         gc.setTextAlign(TextAlignment.CENTER);
@@ -127,7 +132,7 @@ public class HeaderView extends ComponentView {
 
     private Text createNewNumberTextNode(FrameLayout header, double sp) {
         String newNum = header.getNumberNew() != null ? String.valueOf(header.getNumberNew()) : "";
-        Font font = Font.font("Times New Roman", FontWeight.BOLD, header.getNumberNewFontSize() * sp);
+        Font font = getFont("Times New Roman", FontWeight.BOLD, FontPosture.REGULAR, header.getNumberNewFontSize() * sp);
         Text textNode = new Text(newNum);
         textNode.setFont(font);
         textNode.setBoundsType(TextBoundsType.VISUAL);
@@ -137,7 +142,7 @@ public class HeaderView extends ComponentView {
     private Text createOldNumberTextNode(FrameLayout header, double sp) {
         String oldNum = header.getNumberOld() != null ? String.valueOf(header.getNumberOld()) : "";
         String formatted = oldNum.isEmpty() ? "" : "[" + oldNum + "]";
-        Font font = Font.font("Times New Roman", FontWeight.NORMAL, header.getNumberOldFontSize() * sp);
+        Font font = getFont("Times New Roman", FontWeight.NORMAL, FontPosture.REGULAR, header.getNumberOldFontSize() * sp);
         Text textNode = new Text(formatted);
         textNode.setFont(font);
         textNode.setBoundsType(TextBoundsType.VISUAL);
@@ -148,7 +153,7 @@ public class HeaderView extends ComponentView {
         String title = header.getTitle() != null ? header.getTitle() : "";
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.TOP);
-        gc.setFont(Font.font("Times New Roman", FontWeight.BOLD, header.getTitleFontSize() * sp));
+        gc.setFont(getFont("Times New Roman", FontWeight.BOLD, FontPosture.REGULAR, header.getTitleFontSize() * sp));
         gc.setFill(Color.BLACK);
         gc.fillText(title, x, y);
     }
@@ -158,7 +163,8 @@ public class HeaderView extends ComponentView {
         double subtitleY = y + (header.getTitleFontSize() + 2.5) * sp;
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.TOP);
-        gc.setFont(Font.font("Times New Roman", FontWeight.NORMAL, FontPosture.ITALIC, header.getSubtitleFontSize() * sp));
+        gc.setFont(getFont("Times New Roman", FontWeight.NORMAL, FontPosture.ITALIC, header.getSubtitleFontSize() * sp));
+        gc.setFill(Color.BLACK);
         gc.fillText(subtitle, x, subtitleY);
     }
 
@@ -167,7 +173,8 @@ public class HeaderView extends ComponentView {
         double composerY = y + (header.getContentHeight() - header.getComposerFontSize()) * sp;
         gc.setTextAlign(TextAlignment.RIGHT);
         gc.setTextBaseline(VPos.TOP);
-        gc.setFont(Font.font("Times New Roman", FontWeight.NORMAL, FontPosture.REGULAR, header.getComposerFontSize() * sp));
+        gc.setFont(getFont("Times New Roman", FontWeight.NORMAL, FontPosture.REGULAR, header.getComposerFontSize() * sp));
+        gc.setFill(Color.BLACK);
         gc.fillText(composer, x, composerY);
     }
 }

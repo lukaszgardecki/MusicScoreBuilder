@@ -7,24 +7,50 @@ import org.example.musicscorebuilder.components.music.Lyric;
 import org.example.musicscorebuilder.components.music.LyricFragment;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class LyricStyleHelper {
 
     public static class CharStyle {
-        public boolean bold;
-        public boolean italic;
-        public boolean underline;
+        public final boolean bold;
+        public final boolean italic;
+        public final boolean underline;
 
-        public CharStyle(boolean bold, boolean italic, boolean underline) {
+        private static final CharStyle[] CACHE = new CharStyle[8];
+
+        static {
+            for (int i = 0; i < 8; i++) {
+                boolean b = (i & 1) != 0;
+                boolean it = (i & 2) != 0;
+                boolean u = (i & 4) != 0;
+                CACHE[i] = new CharStyle(b, it, u);
+            }
+        }
+
+        private CharStyle(boolean bold, boolean italic, boolean underline) {
             this.bold = bold;
             this.italic = italic;
             this.underline = underline;
         }
 
-        public boolean matches(CharStyle other) {
-            return this.bold == other.bold && this.italic == other.italic && this.underline == other.underline;
+        public static CharStyle get(boolean bold, boolean italic, boolean underline) {
+            int index = (bold ? 1 : 0) | (italic ? 2 : 0) | (underline ? 4 : 0);
+            return CACHE[index];
         }
+
+        public boolean matches(CharStyle other) {
+            return this == other || (this.bold == other.bold && this.italic == other.italic && this.underline == other.underline);
+        }
+    }
+
+    private static final Text MEASURE_TEXT = new Text();
+    private static final Map<String, Font> FONT_CACHE = new HashMap<>();
+
+    private static Font getFont(String family, FontWeight weight, FontPosture posture, double size) {
+        String key = family + "_" + weight + "_" + posture + "_" + size;
+        return FONT_CACHE.computeIfAbsent(key, k -> Font.font(family, weight, posture, size));
     }
 
     private final List<CharStyle> charStyles = new ArrayList<>();
@@ -42,9 +68,11 @@ public class LyricStyleHelper {
 
         if (lyric != null && lyric.getFragments() != null && !lyric.getFragments().isEmpty()) {
             for (LyricFragment frag : lyric.getFragments()) {
-                textOutput.append(frag.getText());
-                for (int i = 0; i < frag.getText().length(); i++) {
-                    charStyles.add(new CharStyle(frag.isBold(), frag.isItalic(), frag.isUnderline()));
+                String text = frag.getText();
+                textOutput.append(text);
+                CharStyle style = CharStyle.get(frag.isBold(), frag.isItalic(), frag.isUnderline());
+                for (int i = 0, len = text.length(); i < len; i++) {
+                    charStyles.add(style);
                 }
             }
             if (!charStyles.isEmpty()) {
@@ -54,9 +82,11 @@ public class LyricStyleHelper {
                 currentUnderline = last.underline;
             }
         } else if (lyric != null && lyric.getText() != null && !lyric.getText().isEmpty()) {
-            textOutput.append(lyric.getText());
-            for (int i = 0; i < lyric.getText().length(); i++) {
-                charStyles.add(new CharStyle(currentBold, currentItalic, currentUnderline));
+            String text = lyric.getText();
+            textOutput.append(text);
+            CharStyle style = CharStyle.get(currentBold, currentItalic, currentUnderline);
+            for (int i = 0, len = text.length(); i < len; i++) {
+                charStyles.add(style);
             }
         }
     }
@@ -72,13 +102,14 @@ public class LyricStyleHelper {
 
     public void toggleStyle(int mode, IndexRange selection) {
         if (selection != null && selection.getLength() > 0) {
-            for (int i = selection.getStart(); i < selection.getEnd(); i++) {
-                if (i < charStyles.size()) {
-                    CharStyle s = charStyles.get(i);
-                    if (mode == 1) s.bold = !s.bold;
-                    if (mode == 2) s.italic = !s.italic;
-                    if (mode == 3) s.underline = !s.underline;
-                }
+            int start = selection.getStart();
+            int end = Math.min(selection.getEnd(), charStyles.size());
+            for (int i = start; i < end; i++) {
+                CharStyle s = charStyles.get(i);
+                boolean b = (mode == 1) ? !s.bold : s.bold;
+                boolean it = (mode == 2) ? !s.italic : s.italic;
+                boolean u = (mode == 3) ? !s.underline : s.underline;
+                charStyles.set(i, CharStyle.get(b, it, u));
             }
         } else {
             if (mode == 1) currentBold = !currentBold;
@@ -108,22 +139,25 @@ public class LyricStyleHelper {
         int removedCount = oldLen - prefix - suffix;
         int insertedCount = newLen - prefix - suffix;
 
-        for (int i = 0; i < removedCount; i++) {
-            if (prefix < charStyles.size()) {
-                charStyles.remove(prefix);
-            }
+        if (removedCount > 0 && prefix < charStyles.size()) {
+            int removeEnd = Math.min(prefix + removedCount, charStyles.size());
+            charStyles.subList(prefix, removeEnd).clear();
         }
 
-        for (int i = 0; i < insertedCount; i++) {
-            int insertPos = Math.min(prefix + i, charStyles.size());
-            charStyles.add(insertPos, new CharStyle(currentBold, currentItalic, currentUnderline));
+        if (insertedCount > 0) {
+            CharStyle currentStyle = CharStyle.get(currentBold, currentItalic, currentUnderline);
+            int insertPos = Math.min(prefix, charStyles.size());
+            for (int i = 0; i < insertedCount; i++) {
+                charStyles.add(insertPos + i, currentStyle);
+            }
         }
 
         while (charStyles.size() > newLen) {
             charStyles.removeLast();
         }
+        CharStyle defaultStyle = CharStyle.get(currentBold, currentItalic, currentUnderline);
         while (charStyles.size() < newLen) {
-            charStyles.add(new CharStyle(currentBold, currentItalic, currentUnderline));
+            charStyles.add(defaultStyle);
         }
     }
 
@@ -136,7 +170,7 @@ public class LyricStyleHelper {
         while (i < actualEnd) {
             CharStyle current = (i < charStyles.size())
                     ? charStyles.get(i)
-                    : new CharStyle(currentBold, currentItalic, currentUnderline);
+                    : CharStyle.get(currentBold, currentItalic, currentUnderline);
 
             int chunkEnd = i;
             while (chunkEnd < actualEnd && (chunkEnd >= charStyles.size() || charStyles.get(chunkEnd).matches(current))) {
@@ -144,12 +178,15 @@ public class LyricStyleHelper {
             }
 
             String chunk = text.substring(i, chunkEnd);
-            Text t = new Text(chunk);
+
             FontWeight weight = current.bold ? FontWeight.BOLD : FontWeight.NORMAL;
             FontPosture posture = current.italic ? FontPosture.ITALIC : FontPosture.REGULAR;
-            t.setFont(Font.font(baseFont.getFamily(), weight, posture, baseFont.getSize()));
+            Font font = getFont(baseFont.getFamily(), weight, posture, baseFont.getSize());
 
-            width += t.getLayoutBounds().getWidth();
+            MEASURE_TEXT.setText(chunk);
+            MEASURE_TEXT.setFont(font);
+
+            width += MEASURE_TEXT.getLayoutBounds().getWidth();
             i = chunkEnd;
         }
         return width;
@@ -163,7 +200,7 @@ public class LyricStyleHelper {
         while (start < text.length()) {
             CharStyle current = (start < charStyles.size())
                     ? charStyles.get(start)
-                    : new CharStyle(currentBold, currentItalic, currentUnderline);
+                    : CharStyle.get(currentBold, currentItalic, currentUnderline);
 
             int end = start;
             while (end < text.length() && (end >= charStyles.size() || charStyles.get(end).matches(current))) {
@@ -176,7 +213,7 @@ public class LyricStyleHelper {
             FontWeight weight = current.bold ? FontWeight.BOLD : FontWeight.NORMAL;
             FontPosture posture = current.italic ? FontPosture.ITALIC : FontPosture.REGULAR;
 
-            textNode.setFont(Font.font(baseFont.getFamily(), weight, posture, baseFont.getSize()));
+            textNode.setFont(getFont(baseFont.getFamily(), weight, posture, baseFont.getSize()));
             textNode.setUnderline(current.underline);
             textNode.setFill(Color.BLACK);
 
@@ -193,13 +230,13 @@ public class LyricStyleHelper {
         while (start < text.length()) {
             CharStyle current = (start < charStyles.size())
                     ? charStyles.get(start)
-                    : new CharStyle(currentBold, currentItalic, currentUnderline);
+                    : CharStyle.get(currentBold, currentItalic, currentUnderline);
 
             int end = start;
             while (end < text.length()) {
                 CharStyle styleAtEnd = (end < charStyles.size())
                         ? charStyles.get(end)
-                        : new CharStyle(currentBold, currentItalic, currentUnderline);
+                        : CharStyle.get(currentBold, currentItalic, currentUnderline);
                 if (!styleAtEnd.matches(current)) {
                     break;
                 }

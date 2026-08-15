@@ -30,7 +30,6 @@ public class NoteDragHandler {
 
     private DragSession session = null;
     private boolean isDragActive = false;
-    private boolean isDraggingOtherElement = false;
 
     public NoteDragHandler(
             BackgroundView container,
@@ -49,35 +48,28 @@ public class NoteDragHandler {
         }
 
         Selectable clicked = elementFinder.apply(event);
-        if (clicked instanceof NoteLayout note) startNoteDragSession(note, event);
-        else if (clicked != null) startOtherElementDragSession();
-        else reset();
+        if (clicked instanceof NoteLayout note) {
+            startNoteDragSession(note, event);
+        } else {
+            reset();
+        }
     }
 
     public void handleDragged(MouseEvent event) {
-        if (modeManager.isInsertMode()) return;
+        if (modeManager.isInsertMode() || session == null) return;
 
         ScoreLayout layout = layoutProvider.get();
-        if (layout == null) return;
-
-        if (session != null) processNoteDrag(event);
-        else if (isDraggingOtherElement) container.updateContent(layout);
+        if (layout != null) {
+            processNoteDrag(event);
+        }
     }
 
     public void handleReleased(MouseEvent event) {
         if (modeManager.isInsertMode()) return;
 
-        ScoreLayout layout = layoutProvider.get();
-        if (layout == null) {
-            reset();
-            return;
-        }
-
         if (session != null && isDragActive) {
             stateManager.notifyScoreChanged();
             event.consume();
-        } else if (isDraggingOtherElement) {
-            container.updateContent(layout);
         }
 
         reset();
@@ -118,13 +110,6 @@ public class NoteDragHandler {
 
         session = new DragSession(note, mouseModelY, mouseModelY - note.getY());
         isDragActive = false;
-        isDraggingOtherElement = false;
-    }
-
-    private void startOtherElementDragSession() {
-        session = null;
-        isDragActive = false;
-        isDraggingOtherElement = true;
     }
 
     private void processNoteDrag(MouseEvent event) {
@@ -161,6 +146,5 @@ public class NoteDragHandler {
     private void reset() {
         session = null;
         isDragActive = false;
-        isDraggingOtherElement = false;
     }
 }

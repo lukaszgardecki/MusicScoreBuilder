@@ -37,7 +37,10 @@ public class MeasureNoteInserter {
         Map<Measure, List<NonNoteRestPos>> savedPositions = new HashMap<>();
         Measure curr = measure;
         while (curr != null) {
-            savedPositions.put(curr, saveNonNoteRestPositions(curr));
+            List<NonNoteRestPos> saved = saveNonNoteRestPositions(curr);
+            if (saved != null && !saved.isEmpty()) {
+                savedPositions.put(curr, saved);
+            }
             curr = curr.getNext();
         }
 
@@ -47,35 +50,47 @@ public class MeasureNoteInserter {
 
         MeasureTimeSignatureAdjuster.adjustFromMeasure(measure);
 
-        for (Map.Entry<Measure, List<NonNoteRestPos>> entry : savedPositions.entrySet()) {
-            restoreNonNoteRestPositions(entry.getKey(), entry.getValue());
+        if (!savedPositions.isEmpty()) {
+            for (Map.Entry<Measure, List<NonNoteRestPos>> entry : savedPositions.entrySet()) {
+                restoreNonNoteRestPositions(entry.getKey(), entry.getValue());
+            }
         }
 
         return findNextFreeSegment(measure, endTick);
     }
 
     private static List<NonNoteRestPos> saveNonNoteRestPositions(Measure measure) {
-        List<NonNoteRestPos> saved = new ArrayList<>();
-        if (measure == null || measure.getSegments() == null) return saved;
+        if (measure == null || measure.getSegments() == null) return null;
 
-        for (Segment seg : measure.getSegments()) {
+        List<Segment> segments = measure.getSegments();
+        List<NonNoteRestPos> saved = null;
+        int currentTick = 0;
+
+        for (int i = 0; i < segments.size(); i++) {
+            Segment seg = segments.get(i);
             if (!seg.isNoteRest()) {
-                int tick = getStartTickOfSegment(measure, seg);
-                if (tick >= 0) {
-                    saved.add(new NonNoteRestPos(seg, tick));
-                }
+                if (saved == null) saved = new ArrayList<>(2);
+                saved.add(new NonNoteRestPos(seg, currentTick));
+            } else {
+                currentTick += seg.getDuration();
             }
         }
         return saved;
     }
 
     private static void restoreNonNoteRestPositions(Measure measure, List<NonNoteRestPos> saved) {
-        if (measure == null || measure.getSegments() == null || saved == null || saved.isEmpty()) return;
+        if (measure == null || saved == null || saved.isEmpty()) return;
 
         List<Segment> segments = measure.getSegments();
-        segments.removeIf(seg -> !seg.isNoteRest());
 
-        for (NonNoteRestPos pos : saved) {
+        for (int i = segments.size() - 1; i >= 0; i--) {
+            if (!segments.get(i).isNoteRest()) {
+                segments.remove(i);
+            }
+        }
+
+        for (int s = 0; s < saved.size(); s++) {
+            NonNoteRestPos pos = saved.get(s);
             int targetTick = pos.tick;
             int currentTick = 0;
             int insertIndex = 0;
@@ -96,8 +111,12 @@ public class MeasureNoteInserter {
     }
 
     private static int getStartTickOfSegment(Measure measure, Segment targetSegment) {
+        if (measure == null || targetSegment == null) return -1;
+        List<Segment> segments = measure.getSegments();
+
         int currentTick = 0;
-        for (Segment seg : measure.getSegments()) {
+        for (int i = 0; i < segments.size(); i++) {
+            Segment seg = segments.get(i);
             if (seg == targetSegment) return currentTick;
             if (seg.isNoteRest()) {
                 currentTick += seg.getDuration();
@@ -116,17 +135,21 @@ public class MeasureNoteInserter {
                     ? currentMeasure.getTimeSignature().getTotalTicks()
                     : 1920;
 
-            for (Segment seg : new ArrayList<>(currentMeasure.getSegments())) {
+            List<Segment> segments = currentMeasure.getSegments();
+            for (int s = 0; s < segments.size(); s++) {
+                Segment seg = segments.get(s);
                 if (!seg.isNoteRest()) continue;
 
                 int segDur = seg.getDuration();
                 int segStartGlobal = currentMeasureStartTick + currentTickInMeasure;
                 int segEndGlobal = segStartGlobal + segDur;
 
-                List<NoteRestElement> elements = new ArrayList<>(seg.getNoteRestByStaffAndVoice(staffId, voice));
-                for (NoteRestElement el : elements) {
-                    if (segStartGlobal < targetEndTick && segEndGlobal > startTick) {
-                        seg.removeNoteRest(staffId, el);
+                if (segStartGlobal < targetEndTick && segEndGlobal > startTick) {
+                    List<NoteRestElement> elements = seg.getNoteRestByStaffAndVoice(staffId, voice);
+                    if (elements != null && !elements.isEmpty()) {
+                        for (int i = elements.size() - 1; i >= 0; i--) {
+                            seg.removeNoteRest(staffId, elements.get(i));
+                        }
                     }
                 }
 
@@ -148,8 +171,10 @@ public class MeasureNoteInserter {
 
         while (currentMeasure != null) {
             int currentTickInMeasure = 0;
+            List<Segment> segments = currentMeasure.getSegments();
 
-            for (Segment seg : currentMeasure.getSegments()) {
+            for (int i = 0; i < segments.size(); i++) {
+                Segment seg = segments.get(i);
                 if (!seg.isNoteRest()) continue;
 
                 int segStartGlobal = currentMeasureStartTick + currentTickInMeasure;

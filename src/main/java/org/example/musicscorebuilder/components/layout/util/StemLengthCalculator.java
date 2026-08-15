@@ -5,20 +5,23 @@ import org.example.musicscorebuilder.components.layout.NoteLayout;
 import org.example.musicscorebuilder.components.layout.StemLayout;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 
+import java.util.List;
+
 public final class StemLengthCalculator {
 
     private StemLengthCalculator() {}
 
     public static double calculate(NoteLayout parentNote, double middleY, double spacing) {
         int activeVoices = parentNote.getParent().getVoiceCountForStaff(parentNote.getStaff().getStaffIndex());
+        BeamGroupLayout beamGroup = parentNote.getBeamGroup();
 
         if (activeVoices == 1) {
-            if (parentNote.getBeamGroup() != null) {
+            if (beamGroup != null) {
                 return calculateSingleVoiceBeamedFactor(parentNote, middleY, spacing);
             }
             return calculateSingleVoiceUnbeamedFactor(parentNote, middleY, spacing);
         } else {
-            if (parentNote.getBeamGroup() != null) {
+            if (beamGroup != null) {
                 return calculateMultiVoiceBeamedFactor(parentNote, spacing);
             }
             return calculateMultiVoiceUnbeamedFactor(parentNote, middleY, spacing);
@@ -44,7 +47,7 @@ public final class StemLengthCalculator {
             double diff = parentNote.getScoreStyle().getNoteStemHeightDiffFactor();
             double stemLengthFactor = calculate(parentNote, middleY, spacing);
             double standardStemHeight = (stemLengthFactor * spacing) - diff;
-            boolean stemIsUp = parentNote.getStem() == null || parentNote.getStem().isUp();
+            boolean stemIsUp = isStemUp(parentNote);
 
             double stemHeight = standardStemHeight;
             double distanceToMiddle = Math.abs(middleY - startY);
@@ -71,7 +74,7 @@ public final class StemLengthCalculator {
     }
 
     private static double calculateSingleVoiceUnbeamedFactor(NoteLayout parentNote, double middleY, double spacing) {
-        long stepsFromMiddle = Math.round(Math.abs(middleY - parentNote.getY()) / (spacing / 2.0));
+        long stepsFromMiddle = Math.round(Math.abs(middleY - parentNote.getY()) * (2.0 / spacing));
         if (stepsFromMiddle == 0) return 3.0;
         if (stepsFromMiddle == 1) return 3.25;
         return 3.5;
@@ -84,6 +87,8 @@ public final class StemLengthCalculator {
 
     private static double calculateSingleVoiceBeamYAtNoteInternal(NoteLayout parentNote, double middleY, double spacing) {
         BeamGroupLayout beamGroup = parentNote.getBeamGroup();
+        if (beamGroup == null) return parentNote.getY();
+
         NoteLayout first = beamGroup.getFirstNote();
         NoteLayout last = beamGroup.getLastNote();
 
@@ -96,26 +101,25 @@ public final class StemLengthCalculator {
         double y1 = resolveSingleVoiceInitialBeamY(first);
         double y2 = resolveSingleVoiceInitialBeamY(last);
 
-        BeamEndpoints clamped = clampBeamSlope(x1, y1, x2, y2, beamGroup.size(), spacing);
-        BeamEndpoints adjusted = enforceSingleVoiceConstraints(first, clamped.y1(), clamped.y2(), x1, x2, middleY, spacing);
+        int noteCount = beamGroup.size();
+        double maxSlopeInSpaces = (noteCount <= 2) ? 0.35 : (noteCount == 3 ? 0.75 : 1.0);
+        double maxPixelDelta = maxSlopeInSpaces * spacing;
+        double currentDelta = y2 - y1;
 
-        double noteX = resolveNoteX(parentNote, stemWidth);
-        return interpolateBeamY(x1, adjusted.y1(), x2, adjusted.y2(), noteX);
-    }
+        if (Math.abs(currentDelta) > maxPixelDelta) {
+            double clampedDelta = Math.copySign(maxPixelDelta, currentDelta);
+            double centerY = (y1 + y2) * 0.5;
+            y1 = centerY - clampedDelta * 0.5;
+            y2 = centerY + clampedDelta * 0.5;
+        }
 
-    private static double resolveSingleVoiceInitialBeamY(NoteLayout note) {
-        boolean isUp = isStemUp(note);
-        double stemLength = note.getScoreStyle().getNoteStemBeamedDefaultHeight();
-        return note.getParent().getY() + note.getY() + (isUp ? -stemLength : stemLength);
-    }
-
-    private static BeamEndpoints enforceSingleVoiceConstraints(NoteLayout first, double y1, double y2, double x1, double x2, double middleY, double spacing) {
         boolean firstIsUp = isStemUp(first);
-        BeamGroupLayout beamGroup = first.getBeamGroup();
         double shiftNeeded = 0.0;
-        double stemWidth = resolveStemWidth(first);
+        List<NoteLayout> notes = beamGroup.getNotes();
+        int numNotes = notes.size();
 
-        for (NoteLayout note : beamGroup.getNotes()) {
+        for (int i = 0; i < numNotes; i++) {
+            NoteLayout note = notes.get(i);
             double requiredStem = calculateRequiredStemLength(note, spacing);
             double noteX = resolveNoteX(note, stemWidth);
             double currentBeamY = interpolateBeamY(x1, y1, x2, y2, noteX);
@@ -133,21 +137,33 @@ public final class StemLengthCalculator {
         y1 += shiftNeeded;
         y2 += shiftNeeded;
 
-        // Dociąganie do linii środkowej (TYLKO DLA SINGLE VOICE)
-        for (NoteLayout note : beamGroup.getNotes()) {
+        for (int i = 0; i < numNotes; i++) {
+            NoteLayout note = notes.get(i);
             boolean noteIsUp = isStemUp(note);
             double noteX = resolveNoteX(note, stemWidth);
             double currentBeamY = interpolateBeamY(x1, y1, x2, y2, noteX);
 
             if (noteIsUp && currentBeamY > middleY) {
                 double diff = middleY - currentBeamY;
-                y1 += diff; y2 += diff; break;
+                y1 += diff;
+                y2 += diff;
+                break;
             } else if (!noteIsUp && currentBeamY < middleY) {
                 double diff = middleY - currentBeamY;
-                y1 += diff; y2 += diff; break;
+                y1 += diff;
+                y2 += diff;
+                break;
             }
         }
-        return new BeamEndpoints(y1, y2);
+
+        double noteX = resolveNoteX(parentNote, stemWidth);
+        return interpolateBeamY(x1, y1, x2, y2, noteX);
+    }
+
+    private static double resolveSingleVoiceInitialBeamY(NoteLayout note) {
+        boolean isUp = isStemUp(note);
+        double stemLength = note.getScoreStyle().getNoteStemBeamedDefaultHeight();
+        return note.getParent().getY() + note.getY() + (isUp ? -stemLength : stemLength);
     }
 
     private static double calculateMultiVoiceUnbeamedFactor(NoteLayout parentNote, double middleY, double spacing) {
@@ -155,8 +171,8 @@ public final class StemLengthCalculator {
         StemLayout stem = parentNote.getStem();
 
         if (parentNote.getNote().getType().isEighth()) {
-            boolean isUpper = stem.isUp() && stepsFromMiddle >= 0;
-            boolean isLower = !stem.isUp() && stepsFromMiddle <= 0;
+            boolean isUpper = (stem != null && stem.isUp()) && stepsFromMiddle >= 0;
+            boolean isLower = (stem == null || !stem.isUp()) && stepsFromMiddle <= 0;
             return isUpper || isLower ? 3.25 : 3.5;
         }
 
@@ -176,6 +192,8 @@ public final class StemLengthCalculator {
 
     private static double calculateMultiVoiceBeamYAtNoteInternal(NoteLayout parentNote, double spacing) {
         BeamGroupLayout beamGroup = parentNote.getBeamGroup();
+        if (beamGroup == null) return parentNote.getY();
+
         NoteLayout first = beamGroup.getFirstNote();
         NoteLayout last = beamGroup.getLastNote();
 
@@ -188,26 +206,25 @@ public final class StemLengthCalculator {
         double y1 = resolveMultiVoiceInitialBeamY(first);
         double y2 = resolveMultiVoiceInitialBeamY(last);
 
-        BeamEndpoints clamped = clampBeamSlope(x1, y1, x2, y2, beamGroup.size(), spacing);
-        BeamEndpoints adjusted = enforceMultiVoiceConstraints(first, clamped.y1(), clamped.y2(), x1, x2, spacing);
+        int noteCount = beamGroup.size();
+        double maxSlopeInSpaces = (noteCount <= 2) ? 0.35 : (noteCount == 3 ? 0.75 : 1.0);
+        double maxPixelDelta = maxSlopeInSpaces * spacing;
+        double currentDelta = y2 - y1;
 
-        double noteX = resolveNoteX(parentNote, stemWidth);
-        return interpolateBeamY(x1, adjusted.y1(), x2, adjusted.y2(), noteX);
-    }
+        if (Math.abs(currentDelta) > maxPixelDelta) {
+            double clampedDelta = Math.copySign(maxPixelDelta, currentDelta);
+            double centerY = (y1 + y2) * 0.5;
+            y1 = centerY - clampedDelta * 0.5;
+            y2 = centerY + clampedDelta * 0.5;
+        }
 
-    private static double resolveMultiVoiceInitialBeamY(NoteLayout note) {
-        boolean isUp = isStemUp(note);
-        double stemLength = note.getScoreStyle().getNoteStemMinHeight();
-        return note.getParent().getY() + note.getY() + (isUp ? -stemLength : stemLength);
-    }
-
-    private static BeamEndpoints enforceMultiVoiceConstraints(NoteLayout first, double y1, double y2, double x1, double x2, double spacing) {
         boolean firstIsUp = isStemUp(first);
-        BeamGroupLayout beamGroup = first.getBeamGroup();
         double shiftNeeded = 0.0;
-        double stemWidth = resolveStemWidth(first);
+        List<NoteLayout> notes = beamGroup.getNotes();
+        int numNotes = notes.size();
 
-        for (NoteLayout note : beamGroup.getNotes()) {
+        for (int i = 0; i < numNotes; i++) {
+            NoteLayout note = notes.get(i);
             double requiredStem = calculateRequiredStemLength(note, spacing);
             double noteX = resolveNoteX(note, stemWidth);
             double currentBeamY = interpolateBeamY(x1, y1, x2, y2, noteX);
@@ -222,7 +239,17 @@ public final class StemLengthCalculator {
                 if (shift > shiftNeeded) shiftNeeded = shift;
             }
         }
-        return new BeamEndpoints(y1 + shiftNeeded, y2 + shiftNeeded);
+        y1 += shiftNeeded;
+        y2 += shiftNeeded;
+
+        double noteX = resolveNoteX(parentNote, stemWidth);
+        return interpolateBeamY(x1, y1, x2, y2, noteX);
+    }
+
+    private static double resolveMultiVoiceInitialBeamY(NoteLayout note) {
+        boolean isUp = isStemUp(note);
+        double stemLength = note.getScoreStyle().getNoteStemMinHeight();
+        return note.getParent().getY() + note.getY() + (isUp ? -stemLength : stemLength);
     }
 
     private static double resolveFinalFactorFromBeamY(NoteLayout parentNote, double beamYAtNoteX, double spacing) {
@@ -250,39 +277,28 @@ public final class StemLengthCalculator {
     }
 
     private static double interpolateBeamY(double x1, double y1, double x2, double y2, double targetX) {
-        if (Math.abs(x2 - x1) < 0.0001) return y1;
-        return y1 + ((y2 - y1) / (x2 - x1)) * (targetX - x1);
-    }
-
-    private static BeamEndpoints clampBeamSlope(double x1, double y1, double x2, double y2, int noteCount, double spacing) {
-        double maxSlopeInSpaces = (noteCount <= 2) ? 0.35 : (noteCount == 3 ? 0.75 : 1.0);
-        double maxPixelDelta = maxSlopeInSpaces * spacing;
-        double currentDelta = y2 - y1;
-
-        if (Math.abs(currentDelta) > maxPixelDelta) {
-            double clampedDelta = Math.copySign(maxPixelDelta, currentDelta);
-            double centerY = (y1 + y2) / 2.0;
-            y1 = centerY - clampedDelta / 2.0;
-            y2 = centerY + clampedDelta / 2.0;
-        }
-        return new BeamEndpoints(y1, y2);
+        double dx = x2 - x1;
+        if (Math.abs(dx) < 0.0001) return y1;
+        return y1 + ((y2 - y1) / dx) * (targetX - x1);
     }
 
     private static int calculateStepsFromMiddle(double noteY, double middleY, double spacing) {
-        return (int) Math.round((middleY - noteY) / (spacing / 2.0));
+        return (int) Math.round((middleY - noteY) * (2.0 / spacing));
     }
 
     private static double resolveStemWidth(NoteLayout note) {
-        return note.getStem() != null ? note.getStem().getWidth() : note.getScoreStyle().getNoteStemWidth();
+        StemLayout stem = note.getStem();
+        return stem != null ? stem.getWidth() : note.getScoreStyle().getNoteStemWidth();
     }
 
     private static boolean isStemUp(NoteLayout note) {
-        return note.getStem() != null && note.getStem().isUp();
+        StemLayout stem = note.getStem();
+        return stem != null && stem.isUp();
     }
 
     private static double resolveNoteX(NoteLayout note, double stemWidth) {
-        return note.getParent().getX() + note.getX() + (isStemUp(note) ? note.getBoxWidth() - stemWidth : 0);
+        StemLayout stem = note.getStem();
+        boolean isUp = stem != null && stem.isUp();
+        return note.getParent().getX() + note.getX() + (isUp ? note.getBoxWidth() - stemWidth : 0.0);
     }
-
-    private record BeamEndpoints(double y1, double y2) {}
 }

@@ -79,10 +79,13 @@ public class SegmentLayout {
         List<ElementLayout> elements = staffElements.get(staffLayout);
         if (elements == null) return;
 
-        List<NoteLayout> notes = elements.stream()
-                .filter(NoteLayout.class::isInstance)
-                .map(NoteLayout.class::cast)
-                .toList();
+        List<NoteLayout> notes = new ArrayList<>();
+        for (int i = 0; i < elements.size(); i++) {
+            ElementLayout el = elements.get(i);
+            if (el instanceof NoteLayout nl) {
+                notes.add(nl);
+            }
+        }
 
         NoteCollisionResolver.resolve(notes);
     }
@@ -96,80 +99,127 @@ public class SegmentLayout {
     }
 
     public List<ElementLayout> getElements() {
-        return staffElements.values().stream()
-                .flatMap(List::stream)
-                .toList();
+        List<ElementLayout> all = new ArrayList<>();
+        for (List<ElementLayout> list : staffElements.values()) {
+            if (list != null) {
+                all.addAll(list);
+            }
+        }
+        return all;
     }
+
     public int getVoiceCountForStaff(int staffId) {
         return parent.getVoiceCountForStaff(staffId);
     }
 
     public boolean hasAnyNoteRestAtStaffByVoice(int staffId, int voice) {
-        return !segment.getNoteRestByStaffAndVoice(staffId, voice).isEmpty();
+        return segment != null && !segment.getNoteRestByStaffAndVoice(staffId, voice).isEmpty();
     }
 
     public SegmentType getType() { return type; }
+
     public double getX() {
-        var segments = parent.getSegments();
-        int i = segments.indexOf(this);
-        if (i <= 0) return 0;
-        SegmentLayout prevSeg = segments.get(i - 1);
-        return prevSeg.getX() + prevSeg.getWidth();
+        List<SegmentLayout> segments = parent.getSegments();
+        if (segments == null) return 0.0;
+
+        double currentX = 0.0;
+        for (int i = 0; i < segments.size(); i++) {
+            SegmentLayout seg = segments.get(i);
+            if (seg == this) {
+                return currentX;
+            }
+            currentX += seg.getWidth();
+        }
+        return 0.0;
     }
+
     public double getY() { return y; }
+
     public double getMarginLeft() {
         if (type != SegmentType.NOTEREST) {
             return 0.0;
         }
 
         double minMargin = style.getSegmentNoteRestLeftMargin();
-        double maxAccidentalSpace = getElements().stream()
-                .filter(NoteLayout.class::isInstance)
-                .map(NoteLayout.class::cast)
-                .map(NoteLayout::getAccidental)
-                .filter(Objects::nonNull)
-                .filter(AccidentalLayout::isVisible)
-                .mapToDouble(acc -> acc.getWidth() + style.getNoteAccSpacing())
-                .max()
-                .orElse(0.0);
+        double maxAccidentalSpace = 0.0;
+        double maxLyricLeftSpace = 0.0;
 
-        double maxLyricLeftSpace = getElements().stream()
-                .filter(NoteLayout.class::isInstance)
-                .map(NoteLayout.class::cast)
-                .mapToDouble(nl -> {
+        for (List<ElementLayout> elements : staffElements.values()) {
+            for (int i = 0; i < elements.size(); i++) {
+                ElementLayout el = elements.get(i);
+                if (el instanceof NoteLayout nl) {
+                    AccidentalLayout acc = nl.getAccidental();
+                    if (acc != null && acc.isVisible()) {
+                        double accSpace = acc.getWidth() + style.getNoteAccSpacing();
+                        if (accSpace > maxAccidentalSpace) {
+                            maxAccidentalSpace = accSpace;
+                        }
+                    }
+
                     double headWidth = nl.getFontWidth();
-                    double maxLyricWidth = nl.getLyrics().stream()
-                            .mapToDouble(LyricLayout::getTotalWidth)
-                            .max()
-                            .orElse(0.0);
-                    double leftOverhang = (maxLyricWidth - headWidth) / 2.0;
-                    return Math.max(0.0, leftOverhang - nl.getXOffset());
-                })
-                .max()
-                .orElse(0.0);
+                    List<LyricLayout> lyrics = nl.getLyrics();
+                    if (!lyrics.isEmpty()) {
+                        double maxLyricWidth = 0.0;
+                        for (int j = 0; j < lyrics.size(); j++) {
+                            double lyricWidth = lyrics.get(j).getTotalWidth();
+                            if (lyricWidth > maxLyricWidth) {
+                                maxLyricWidth = lyricWidth;
+                            }
+                        }
+                        double leftOverhang = (maxLyricWidth - headWidth) / 2.0;
+                        double lyricSpace = Math.max(0.0, leftOverhang - nl.getXOffset());
+                        if (lyricSpace > maxLyricLeftSpace) {
+                            maxLyricLeftSpace = lyricSpace;
+                        }
+                    }
+                }
+            }
+        }
 
         return Math.max(minMargin, Math.max(maxAccidentalSpace, maxLyricLeftSpace));
     }
-    public double getWidth() {
-        List<ElementLayout> allElements = getElements();
-        if (allElements.isEmpty()) return 0;
-        double marginLeft = getMarginLeft();
-        double maxContentWidth = allElements.stream()
-                .mapToDouble(el -> {
-                    if (el instanceof NoteLayout nl) {
-                        double noteExtent = (nl.getX() - marginLeft) + nl.getWidth();
-                        double noteCenterXRel = (nl.getX() - marginLeft) + (nl.getFontWidth() / 2.0);
-                        double maxLyricExtent = nl.getLyrics().stream()
-                                .mapToDouble(lyric -> noteCenterXRel + (lyric.getTotalWidth() / 2.0))
-                                .max()
-                                .orElse(0.0);
 
-                        return Math.max(noteExtent, maxLyricExtent);
+    public double getWidth() {
+        boolean empty = true;
+        for (List<ElementLayout> elements : staffElements.values()) {
+            if (!elements.isEmpty()) {
+                empty = false;
+                break;
+            }
+        }
+        if (empty) return 0.0;
+
+        double marginLeft = getMarginLeft();
+        double maxContentWidth = 0.0;
+
+        for (List<ElementLayout> elements : staffElements.values()) {
+            for (int i = 0; i < elements.size(); i++) {
+                ElementLayout el = elements.get(i);
+                double width;
+                if (el instanceof NoteLayout nl) {
+                    double noteExtent = (nl.getX() - marginLeft) + nl.getWidth();
+                    double noteCenterXRel = (nl.getX() - marginLeft) + (nl.getFontWidth() / 2.0);
+
+                    double maxLyricExtent = 0.0;
+                    List<LyricLayout> lyrics = nl.getLyrics();
+                    if (!lyrics.isEmpty()) {
+                        for (int j = 0; j < lyrics.size(); j++) {
+                            double lyricExtent = noteCenterXRel + (lyrics.get(j).getTotalWidth() / 2.0);
+                            if (lyricExtent > maxLyricExtent) {
+                                maxLyricExtent = lyricExtent;
+                            }
+                        }
                     }
-                    return el.getWidth();
-                })
-                .max()
-                .orElse(0);
+                    width = Math.max(noteExtent, maxLyricExtent);
+                } else {
+                    width = el.getWidth();
+                }
+
+                if (width > maxContentWidth) {
+                    maxContentWidth = width;
+                }
+            }
+        }
 
         var marginRight = switch(type) {
             case CLEF -> style.getSegmentClefRightMargin();
@@ -183,8 +233,18 @@ public class SegmentLayout {
         double f = type == SegmentType.NOTEREST ? calculateNoteRestWidthFactor() : 1.0;
         return marginLeft + maxContentWidth + (marginRight * f) + extraWidth;
     }
+
     public double getHeight() { return height; }
-    public boolean hasDynamicWidth() { return getElements().stream().anyMatch(ElementLayout::hasDynamicWidth); }
+
+    public boolean hasDynamicWidth() {
+        for (List<ElementLayout> elements : staffElements.values()) {
+            for (int i = 0; i < elements.size(); i++) {
+                if (elements.get(i).hasDynamicWidth()) return true;
+            }
+        }
+        return false;
+    }
+
     public MeasureLayout getParent() { return parent; }
     public ScoreStyle getScoreStyle() { return style; }
     public boolean isSystemGenerated() { return systemGenerated; }
@@ -193,6 +253,7 @@ public class SegmentLayout {
     public Segment getSegment() { return segment; }
     public SegmentLayout getNext() { return next; }
     public SegmentLayout getPrev() { return prev; }
+
     public SegmentLayout getNextSameType() {
         SegmentLayout current = this.next;
         while (current != null) {
@@ -215,11 +276,8 @@ public class SegmentLayout {
         return null;
     }
 
-
     public void setX(double x) { this.x = x; }
-    public void setExtraWidth(double extraWidth) {
-        this.extraWidth = extraWidth;
-    }
+    public void setExtraWidth(double extraWidth) { this.extraWidth = extraWidth; }
     public void setType(SegmentType type) { this.type = type; }
     public void setCursor(CursorLayout cursor) { this.cursorLayout = cursor; }
     public void setSystemGenerated(boolean systemGenerated) { this.systemGenerated = systemGenerated; }
@@ -227,22 +285,34 @@ public class SegmentLayout {
     public void setPrev(SegmentLayout prev) { this.prev = prev; }
 
     private double calculateNoteRestWidthFactor() {
-        Optional<NoteType> shortestNoteType = getElements().stream()
-                .map(e -> switch (e) {
-                    case NoteLayout nl -> nl.getNote().getType();
-                    case RestLayout rl -> rl.getRest().getType();
-                    default -> null;
-                })
-                .filter(Objects::nonNull)
-                .min(Comparator.comparingInt(NoteType::getTicks));
+        NoteType shortest = null;
 
-        return shortestNoteType.map(noteType -> switch (noteType) {
+        for (List<ElementLayout> elements : staffElements.values()) {
+            for (int i = 0; i < elements.size(); i++) {
+                ElementLayout e = elements.get(i);
+                NoteType nt = null;
+                if (e instanceof NoteLayout nl && nl.getNote() != null) {
+                    nt = nl.getNote().getType();
+                } else if (e instanceof RestLayout rl && rl.getRest() != null) {
+                    nt = rl.getRest().getType();
+                }
+                if (nt != null) {
+                    if (shortest == null || nt.getTicks() < shortest.getTicks()) {
+                        shortest = nt;
+                    }
+                }
+            }
+        }
+
+        if (shortest == null) return 1.0;
+
+        return switch (shortest) {
             case WHOLE -> 1.0;
             case HALF -> 0.5;
             case QUARTER -> 0.25;
             case EIGHTH -> 0.125;
             case SIXTEENTH -> 0.06;
             case THIRTY_SECOND -> 0.03;
-        }).orElse(1.0);
+        };
     }
 }

@@ -1,6 +1,7 @@
 package org.example.musicscorebuilder.components.views;
 
 import javafx.geometry.VPos;
+import javafx.scene.Parent;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
@@ -9,15 +10,27 @@ import org.example.musicscorebuilder.components.layout.NoteLayout;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
 import org.example.musicscorebuilder.managers.LyricEditorManager;
 
+import java.util.List;
+
 public class LyricView extends ComponentView {
 
     public void draw(GraphicsContext gc, NoteLayout noteLayout, double segmentX, double segmentY, double sp) {
-        if (noteLayout == null || noteLayout.getLyrics().isEmpty()) return;
+        if (noteLayout == null) return;
+
+        List<LyricLayout> lyrics = noteLayout.getLyrics();
+        if (lyrics.isEmpty()) return;
 
         LyricEditorManager editorManager = LyricEditorManager.getInstance();
-        BackgroundView bgView = (gc.getCanvas().getParent() instanceof BackgroundView bg) ? bg : null;
-        ScoreLayout scoreLayout = (bgView != null && bgView.getScoreView() != null)
-                ? bgView.getScoreView().getScoreLayout() : null;
+
+        ScoreLayout scoreLayout = null;
+        Parent p = gc.getCanvas().getParent();
+        while (p != null) {
+            if (p instanceof BackgroundView bg && bg.getScoreView() != null) {
+                scoreLayout = bg.getScoreView().getScoreLayout();
+                break;
+            }
+            p = p.getParent();
+        }
 
         gc.save();
 
@@ -25,10 +38,13 @@ public class LyricView extends ComponentView {
             gc.setTextAlign(TextAlignment.LEFT);
             gc.setTextBaseline(VPos.TOP);
 
-            for (LyricLayout lyricLayout : noteLayout.getLyrics()) {
+            for (LyricLayout lyricLayout : lyrics) {
                 if (editorManager != null && editorManager.isEditingNote(noteLayout, lyricLayout.getVerse())) {
                     continue;
                 }
+
+                lyricLayout.checkAndRefreshIfStale();
+                if (lyricLayout.getFragmentLayouts().isEmpty()) continue;
 
                 double lyricScreenY = segmentY + lyricLayout.getModelY() * sp;
                 double startScreenX = segmentX + lyricLayout.getStartX() * sp;

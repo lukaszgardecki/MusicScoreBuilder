@@ -4,10 +4,14 @@ import org.example.musicscorebuilder.components.layout.NoteLayout;
 import org.example.musicscorebuilder.components.layout.StemLayout;
 import org.example.musicscorebuilder.components.music.NoteType;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
 public final class NoteCollisionResolver {
+
+    private static final Comparator<NoteLayout> DIATONIC_STEP_COMPARATOR =
+            Comparator.comparingInt(NoteLayout::getDiatonicStep);
 
     private NoteCollisionResolver() {}
 
@@ -19,15 +23,22 @@ public final class NoteCollisionResolver {
             return;
         }
 
-        notes.forEach(note -> note.setXOffset(0.0));
-        List<NoteLayout> sortedNotes = notes.stream()
-                .sorted(Comparator.comparingInt(NoteLayout::getDiatonicStep))
-                .toList();
+        int size = notes.size();
 
-        StemLayout stemLayout = sortedNotes.getFirst().getStem();
-        boolean stemIsUp = stemLayout == null || sortedNotes.getFirst().getStem().isUp();
+        List<NoteLayout> sortedNotes = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            NoteLayout note = notes.get(i);
+            note.setXOffset(0.0);
+            sortedNotes.add(note);
+        }
 
-        for (int i = 0; i < sortedNotes.size() - 1; i++) {
+        sortedNotes.sort(DIATONIC_STEP_COMPARATOR);
+
+        NoteLayout firstNote = sortedNotes.getFirst();
+        StemLayout stemLayout = firstNote.getStem();
+        boolean stemIsUp = stemLayout == null || stemLayout.isUp();
+
+        for (int i = 0; i < size - 1; i++) {
             NoteLayout currentNote = sortedNotes.get(i);
             NoteLayout nextNote = sortedNotes.get(i + 1);
 

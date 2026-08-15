@@ -103,7 +103,6 @@ public class LyricEditorManager {
         this.currentScoreLayout = (scoreLayout != null) ? scoreLayout : getScoreLayout();
 
         ModeManager.getInstance().toggleEditLyricsMode();
-        ScoreStateManager.getInstance().notifyScoreChanged();
 
         Platform.runLater(() -> {
             ensureInputFieldAttached();
@@ -209,11 +208,11 @@ public class LyricEditorManager {
 
         inputField.caretPositionProperty().addListener((obs, oldPos, newPos) -> {
             styleHelper.updateActiveStyleForCaret(newPos.intValue());
-            Platform.runLater(this::updateCustomCaretPosition);
+            updateCustomCaretPosition();
         });
 
         inputField.selectionProperty().addListener((obs, oldSel, newSel) ->
-                Platform.runLater(this::updateCustomCaretPosition)
+            updateCustomCaretPosition()
         );
 
         inputField.addEventFilter(KeyEvent.KEY_TYPED, event -> {
@@ -370,7 +369,8 @@ public class LyricEditorManager {
     private void commitCurrentText(SyllableType type, boolean forceTypeChange) {
         if (currentNoteLayout == null || currentNoteLayout.getNote() == null) return;
 
-        String text = inputField.getText().trim();
+        String rawText = inputField.getText();
+        String text = (rawText != null) ? rawText.trim() : "";
         Note note = currentNoteLayout.getNote();
 
         if (!forceTypeChange && type == SyllableType.SINGLE && isPreviousLyricConnected()) {
@@ -378,9 +378,10 @@ public class LyricEditorManager {
         }
 
         boolean isHyphenType = (type == SyllableType.BEGIN || type == SyllableType.MIDDLE);
+        Lyric resultingLyric = null;
 
         if (!text.isEmpty() || isHyphenType) {
-            List<LyricFragment> fragments = styleHelper.exportToFragments(inputField.getText());
+            List<LyricFragment> fragments = styleHelper.exportToFragments(rawText);
             Lyric lyric = note.getLyric(currentVerse);
 
             double activeEditorSize = currentNoteLayout.getScoreStyle().getNoteLyricFontSize();
@@ -400,8 +401,35 @@ public class LyricEditorManager {
                     lyric.setType(type);
                 }
             }
+            resultingLyric = lyric;
         } else {
             note.removeLyric(currentVerse);
+        }
+
+        updateNoteLayoutLyrics(currentNoteLayout, currentVerse, resultingLyric);
+    }
+
+    private void updateNoteLayoutLyrics(NoteLayout noteLayout, int verse, Lyric lyric) {
+        if (noteLayout == null) return;
+        List<LyricLayout> layouts = noteLayout.getLyrics();
+        LyricLayout existing = null;
+        for (LyricLayout l : layouts) {
+            if (l.getVerse() == verse) {
+                existing = l;
+                break;
+            }
+        }
+
+        if (lyric != null) {
+            if (existing == null) {
+                layouts.add(new LyricLayout(lyric, noteLayout));
+            } else {
+                existing.refresh();
+            }
+        } else {
+            if (existing != null) {
+                layouts.remove(existing);
+            }
         }
     }
 
@@ -532,20 +560,23 @@ public class LyricEditorManager {
             if (lyric == null && (commitType == SyllableType.BEGIN || commitType == SyllableType.MIDDLE)) {
                 lyric = new Lyric(new ArrayList<>(), SyllableType.END, currentVerse, null);
                 targetModel.setLyric(currentVerse, lyric);
+                updateNoteLayoutLyrics(targetNoteLayout, currentVerse, lyric);
             }
 
             loadLyricIntoEditor(lyric);
             ScoreStateManager.getInstance().notifyScoreChanged();
 
-            updatePosition();
+            Platform.runLater(() -> {
+                updatePosition();
 
-            inputField.requestFocus();
-            if (!inputField.getText().isEmpty()) {
-                inputField.selectAll();
-            } else {
-                inputField.positionCaret(0);
-            }
-            updateCustomCaretPosition();
+                inputField.requestFocus();
+                if (!inputField.getText().isEmpty()) {
+                    inputField.selectAll();
+                } else {
+                    inputField.positionCaret(0);
+                }
+                updateCustomCaretPosition();
+            });
         } finally {
             Platform.runLater(() -> this.isNavigating = false);
         }

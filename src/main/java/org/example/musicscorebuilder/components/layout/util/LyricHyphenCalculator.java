@@ -17,7 +17,7 @@ public final class LyricHyphenCalculator {
     private LyricHyphenCalculator() {}
 
     public static List<LyricLayout.HyphenLayout> calculateHyphens(LyricLayout lyricLayout, ScoreLayout scoreLayout) {
-        List<LyricLayout.HyphenLayout> hyphens = new ArrayList<>();
+        List<LyricLayout.HyphenLayout> hyphens = new ArrayList<>(2);
         if (lyricLayout == null || lyricLayout.getLyric() == null) return hyphens;
 
         Lyric lyric = lyricLayout.getLyric();
@@ -26,35 +26,74 @@ public final class LyricHyphenCalculator {
 
         int verse = lyricLayout.getVerse();
         SyllableType type = lyric.getType();
-        boolean hasText = lyric.getText() != null && !lyric.getText().trim().isEmpty();
+        boolean hasText = !isNullOrBlank(lyric.getText());
 
         double noteCenterX = lyricLayout.getNoteCenterX();
 
+        NoteLayout prevNote = null;
+        boolean prevNoteFetched = false;
+
+        LayoutHitTester.Point currentAbs = null;
+        LayoutHitTester.Point prevAbs = null;
+        Boolean isPrevConnectedFromPrevSystem = null;
+
         if (type == SyllableType.MIDDLE || type == SyllableType.END) {
-            if (isPreviousLyricConnectedFromPreviousSystem(lyricLayout, scoreLayout)) {
-                double textWidth = lyricLayout.getTotalWidth();
-                double startLeftX = (textWidth > 0) ? (noteCenterX - (textWidth / 2.0)) : noteCenterX;
-                double hyphenX = startLeftX - 6.0;
-                hyphens.add(new LyricLayout.HyphenLayout(hyphenX, lyricLayout.getModelY(), 1.0, lyricLayout.getFontSize()));
+            prevNote = findPreviousNoteLayout(noteLayout);
+            prevNoteFetched = true;
+
+            if (prevNote != null && prevNote.getNote() != null) {
+                Lyric prevLyric = prevNote.getNote().getLyric(verse);
+                if (prevLyric != null) {
+                    SyllableType pType = prevLyric.getType();
+                    if (pType == SyllableType.BEGIN || pType == SyllableType.MIDDLE) {
+                        currentAbs = LayoutHitTester.getLyricAbsolutePosition(scoreLayout, noteLayout, verse);
+                        prevAbs = LayoutHitTester.getLyricAbsolutePosition(scoreLayout, prevNote, verse);
+
+                        boolean connected = !isSameSystem(prevAbs, currentAbs);
+                        isPrevConnectedFromPrevSystem = connected;
+
+                        if (connected) {
+                            double textWidth = lyricLayout.getTotalWidth();
+                            double startLeftX = (textWidth > 0) ? (noteCenterX - (textWidth / 2.0)) : noteCenterX;
+                            double hyphenX = startLeftX - 6.0;
+                            hyphens.add(new LyricLayout.HyphenLayout(hyphenX, lyricLayout.getModelY(), 1.0, lyricLayout.getFontSize()));
+                        }
+                    }
+                }
+            }
+
+            if (isPrevConnectedFromPrevSystem == null) {
+                isPrevConnectedFromPrevSystem = Boolean.FALSE;
             }
         }
 
         boolean isConnected = (type == SyllableType.BEGIN || type == SyllableType.MIDDLE);
         if (!isConnected) return hyphens;
 
-        NoteLayout prevNote = findPreviousNoteLayout(noteLayout);
         boolean isStartOfSystemSegment = false;
 
         if (hasText) {
             isStartOfSystemSegment = true;
-        } else if (prevNote != null && prevNote.getNote() != null) {
-            Lyric prevLyric = prevNote.getNote().getLyric(verse);
-            if (prevLyric != null && (prevLyric.getType() == SyllableType.BEGIN || prevLyric.getType() == SyllableType.MIDDLE)) {
-                LayoutHitTester.Point currentAbs = LayoutHitTester.getLyricAbsolutePosition(scoreLayout, noteLayout, verse);
-                LayoutHitTester.Point prevAbs = LayoutHitTester.getLyricAbsolutePosition(scoreLayout, prevNote, verse);
+        } else {
+            if (!prevNoteFetched) {
+                prevNote = findPreviousNoteLayout(noteLayout);
+                prevNoteFetched = true;
+            }
 
-                if (!isSameSystem(prevAbs, currentAbs)) {
-                    isStartOfSystemSegment = true;
+            if (prevNote != null && prevNote.getNote() != null) {
+                Lyric prevLyric = prevNote.getNote().getLyric(verse);
+                if (prevLyric != null && (prevLyric.getType() == SyllableType.BEGIN || prevLyric.getType() == SyllableType.MIDDLE)) {
+                    if (isPrevConnectedFromPrevSystem != null) {
+                        isStartOfSystemSegment = isPrevConnectedFromPrevSystem;
+                    } else {
+                        if (currentAbs == null) {
+                            currentAbs = LayoutHitTester.getLyricAbsolutePosition(scoreLayout, noteLayout, verse);
+                        }
+                        if (prevAbs == null) {
+                            prevAbs = LayoutHitTester.getLyricAbsolutePosition(scoreLayout, prevNote, verse);
+                        }
+                        isStartOfSystemSegment = !isSameSystem(prevAbs, currentAbs);
+                    }
                 }
             }
         }
@@ -67,7 +106,9 @@ public final class LyricHyphenCalculator {
         NoteLayout current = noteLayout;
         boolean continuesToNextSystem = false;
 
-        LayoutHitTester.Point currentAbs = LayoutHitTester.getLyricAbsolutePosition(scoreLayout, noteLayout, verse);
+        if (currentAbs == null) {
+            currentAbs = LayoutHitTester.getLyricAbsolutePosition(scoreLayout, noteLayout, verse);
+        }
 
         while (true) {
             NoteLayout next = findNextNoteLayout(current);
@@ -88,7 +129,7 @@ public final class LyricHyphenCalculator {
                 chainEndNote = next;
                 current = next;
 
-                if (nextLyric.getText() != null && !nextLyric.getText().trim().isEmpty()) {
+                if (!isNullOrBlank(nextLyric.getText())) {
                     break;
                 }
             } else {
@@ -148,25 +189,6 @@ public final class LyricHyphenCalculator {
         return p2.x() > p1.x() && Math.abs(p2.y() - p1.y()) < 2.0;
     }
 
-    private static boolean isPreviousLyricConnectedFromPreviousSystem(LyricLayout lyricLayout, ScoreLayout scoreLayout) {
-        NoteLayout noteLayout = lyricLayout.getNoteLayout();
-        if (noteLayout == null) return false;
-
-        NoteLayout prevNote = findPreviousNoteLayout(noteLayout);
-        if (prevNote != null && prevNote.getNote() != null) {
-            Lyric prevLyric = prevNote.getNote().getLyric(lyricLayout.getVerse());
-            if (prevLyric != null) {
-                SyllableType type = prevLyric.getType();
-                if (type == SyllableType.BEGIN || type == SyllableType.MIDDLE) {
-                    LayoutHitTester.Point currentAbs = LayoutHitTester.getLyricAbsolutePosition(scoreLayout, noteLayout, lyricLayout.getVerse());
-                    LayoutHitTester.Point prevAbs = LayoutHitTester.getLyricAbsolutePosition(scoreLayout, prevNote, lyricLayout.getVerse());
-                    return !isSameSystem(prevAbs, currentAbs);
-                }
-            }
-        }
-        return false;
-    }
-
     private static NoteLayout findNextNoteLayout(NoteLayout fromNote) {
         if (fromNote == null || fromNote.getNote() == null || fromNote.getSegment() == null) return null;
 
@@ -176,7 +198,10 @@ public final class LyricHyphenCalculator {
         SegmentLayout segmentNode = fromNote.getSegment().getNextSameType();
 
         while (segmentNode != null) {
-            for (ElementLayout element : segmentNode.getElements()) {
+            List<ElementLayout> elements = segmentNode.getElements();
+            int size = elements.size();
+            for (int i = 0; i < size; i++) {
+                ElementLayout element = elements.get(i);
                 if (element instanceof NoteLayout nextNote) {
                     if (nextNote.getNote() != null
                             && nextNote.getNote().getVoice() == targetVoice
@@ -199,7 +224,10 @@ public final class LyricHyphenCalculator {
         SegmentLayout segmentNode = fromNote.getSegment().getPrevSameType();
 
         while (segmentNode != null) {
-            for (ElementLayout element : segmentNode.getElements()) {
+            List<ElementLayout> elements = segmentNode.getElements();
+            int size = elements.size();
+            for (int i = 0; i < size; i++) {
+                ElementLayout element = elements.get(i);
                 if (element instanceof NoteLayout prevNote) {
                     if (prevNote.getNote() != null
                             && prevNote.getNote().getVoice() == targetVoice
@@ -211,5 +239,16 @@ public final class LyricHyphenCalculator {
             segmentNode = segmentNode.getPrevSameType();
         }
         return null;
+    }
+
+    private static boolean isNullOrBlank(String s) {
+        if (s == null) return true;
+        int len = s.length();
+        for (int i = 0; i < len; i++) {
+            if (!Character.isWhitespace(s.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 }

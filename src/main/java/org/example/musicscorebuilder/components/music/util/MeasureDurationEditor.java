@@ -2,7 +2,6 @@ package org.example.musicscorebuilder.components.music.util;
 
 import org.example.musicscorebuilder.components.music.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class MeasureDurationEditor {
@@ -32,8 +31,11 @@ public class MeasureDurationEditor {
     }
 
     private static int getStartTickOfSegment(Measure measure, Segment targetSegment) {
+        List<Segment> segments = measure.getSegments();
         int currentTick = 0;
-        for (Segment seg : measure.getSegments()) {
+
+        for (int i = 0; i < segments.size(); i++) {
+            Segment seg = segments.get(i);
             if (seg == targetSegment) return currentTick;
             if (seg.isNoteRest()) {
                 currentTick += seg.getDuration();
@@ -52,19 +54,27 @@ public class MeasureDurationEditor {
                     ? currentMeasure.getTimeSignature().getTotalTicks()
                     : 1920;
 
-            for (Segment seg : new ArrayList<>(currentMeasure.getSegments())) {
+            List<Segment> segments = currentMeasure.getSegments();
+
+            for (int s = 0; s < segments.size(); s++) {
+                Segment seg = segments.get(s);
                 if (!seg.isNoteRest()) continue;
 
                 int segDur = seg.getDuration();
                 int segStartGlobal = currentMeasureStartTick + currentTickInMeasure;
                 int segEndGlobal = segStartGlobal + segDur;
 
-                List<NoteRestElement> elements = new ArrayList<>(seg.getNoteRestByStaffAndVoice(staffId, voice));
-                for (NoteRestElement el : elements) {
-                    if (el == elementToChange) continue;
+                boolean overlaps = (segStartGlobal < targetEndTick && segEndGlobal > startTick);
 
-                    if (segStartGlobal < targetEndTick && segEndGlobal > startTick) {
-                        seg.removeNoteRest(staffId, el);
+                if (overlaps) {
+                    List<NoteRestElement> elements = seg.getNoteRestByStaffAndVoice(staffId, voice);
+                    if (!elements.isEmpty()) {
+                        for (int i = elements.size() - 1; i >= 0; i--) {
+                            NoteRestElement el = elements.get(i);
+                            if (el != elementToChange) {
+                                seg.removeNoteRest(staffId, el);
+                            }
+                        }
                     }
                 }
 

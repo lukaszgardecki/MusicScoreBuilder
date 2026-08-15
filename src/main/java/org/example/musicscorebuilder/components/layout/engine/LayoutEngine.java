@@ -5,17 +5,20 @@ import org.example.musicscorebuilder.components.layout.util.GroupBeamBuilder;
 import org.example.musicscorebuilder.components.layout.util.SystemJustifier;
 import org.example.musicscorebuilder.components.music.*;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 public class LayoutEngine {
     private final ScoreStyle style;
     private final SystemJustifier systemJustifier;
     private final Map<Measure, MeasureLayout> measureCache = new IdentityHashMap<>();
+
+    private final Map<Note, NoteLayout> noteToLayoutMap = new IdentityHashMap<>();
+    private final List<NoteLayout> tieStartNotes = new ArrayList<>();
 
     public LayoutEngine() {
         this.style = new ScoreStyle();
@@ -24,6 +27,9 @@ public class LayoutEngine {
 
     public ScoreLayout compute(ScoreMode scoreMode) {
         invalidateCacheIfNeeded(scoreMode);
+
+        noteToLayoutMap.clear();
+        tieStartNotes.clear();
 
         ScoreLayout scoreLayout = new ScoreLayout(scoreMode.getScore(), style);
         PageLayout currentPage = createPageLayout(scoreLayout);
@@ -69,9 +75,8 @@ public class LayoutEngine {
     // ========================================================================
 
     private void invalidateCacheIfNeeded(ScoreMode scoreMode) {
-        if (scoreMode.getMeasures().stream().anyMatch(Measure::isDirty)) {
-            measureCache.clear();
-        }
+        measureCache.keySet().removeIf(Measure::isDirty);
+        measureCache.keySet().retainAll(scoreMode.getMeasures());
     }
 
     private MeasureLayout getOrCreateMeasureLayout(Measure measure, SystemLayout currentSystem) {
@@ -86,6 +91,7 @@ public class LayoutEngine {
 
             measureLayout.resetLayoutState();
             measureLayout.setParent(currentSystem);
+            extractNotesToCacheMaps(measureLayout);
             return measureLayout;
         }
 
@@ -93,6 +99,19 @@ public class LayoutEngine {
         measureCache.put(measure, measureLayout);
         measure.setDirty(false);
         return measureLayout;
+    }
+
+    private void extractNotesToCacheMaps(MeasureLayout measureLayout) {
+        for (SegmentLayout segment : measureLayout.getSegments()) {
+            for (ElementLayout element : segment.getElements()) {
+                if (element instanceof NoteLayout noteLayout) {
+                    noteToLayoutMap.put(noteLayout.getNote(), noteLayout);
+                    if (noteLayout.getNote().isTieStart()) {
+                        tieStartNotes.add(noteLayout);
+                    }
+                }
+            }
+        }
     }
 
     // ========================================================================
@@ -296,6 +315,12 @@ public class LayoutEngine {
                     } else if (element instanceof Note note) {
                         NoteLayout noteLayout = new NoteLayout(note, staff, segmentLayout);
                         segmentLayout.addByStaff(staff, noteLayout);
+
+                        noteToLayoutMap.put(note, noteLayout);
+                        if (note.isTieStart()) {
+                            tieStartNotes.add(noteLayout);
+                        }
+
                         if (note.isBeamed()) groupBeamBuilder.add(noteLayout);
                     } else if (element instanceof Rest rest) {
                         RestLayout restLayout = new RestLayout(rest, staff, segmentLayout);
@@ -329,18 +354,22 @@ public class LayoutEngine {
     }
 
     private void linkAllSegments(ScoreLayout scoreLayout) {
-        java.util.List<SegmentLayout> allSegments = new java.util.ArrayList<>();
+        SegmentLayout prev = null;
         for (PageLayout page : scoreLayout.getPages()) {
             for (SystemLayout system : page.getSystems()) {
                 for (MeasureLayout measure : system.getMeasures()) {
-                    allSegments.addAll(measure.getSegments());
+                    for (SegmentLayout current : measure.getSegments()) {
+                        current.setPrev(prev);
+                        if (prev != null) {
+                            prev.setNext(current);
+                        }
+                        prev = current;
+                    }
                 }
             }
         }
-        for (int i = 0; i < allSegments.size(); i++) {
-            SegmentLayout current = allSegments.get(i);
-            current.setPrev(i > 0 ? allSegments.get(i - 1) : null);
-            current.setNext(i < allSegments.size() - 1 ? allSegments.get(i + 1) : null);
+        if (prev != null) {
+            prev.setNext(null);
         }
     }
 
@@ -348,7 +377,7 @@ public class LayoutEngine {
         buildSpanners(
                 scoreLayout,
                 system -> system.getTies().clear(),
-                Note::isTieStart,
+                tieStartNotes,
                 this::findNextNoteInVoice,
                 (system, start, end) -> system.addTie(new TieLayout(system, start, end))
         );
@@ -358,21 +387,6 @@ public class LayoutEngine {
         for (PageLayout page : scoreLayout.getPages()) {
             for (SystemLayout system : page.getSystems()) {
                 system.getSlurs().clear();
-            }
-        }
-
-        Map<Note, NoteLayout> noteToLayoutMap = new HashMap<>();
-        for (PageLayout page : scoreLayout.getPages()) {
-            for (SystemLayout system : page.getSystems()) {
-                for (MeasureLayout measure : system.getMeasures()) {
-                    for (SegmentLayout segment : measure.getSegments()) {
-                        for (ElementLayout element : segment.getElements()) {
-                            if (element instanceof NoteLayout noteLayout) {
-                                noteToLayoutMap.put(noteLayout.getNote(), noteLayout);
-                            }
-                        }
-                    }
-                }
             }
         }
 
@@ -397,7 +411,7 @@ public class LayoutEngine {
     private void buildSpanners(
             ScoreLayout scoreLayout,
             Consumer<SystemLayout> clearAction,
-            Predicate<Note> isStartPredicate,
+            List<NoteLayout> startNotes,
             Function<NoteLayout, NoteLayout> endFinder,
             TriConsumer<SystemLayout, NoteLayout, NoteLayout> addSpannerToSystem
     ) {
@@ -407,28 +421,18 @@ public class LayoutEngine {
             }
         }
 
-        for (PageLayout page : scoreLayout.getPages()) {
-            for (SystemLayout system : page.getSystems()) {
-                for (MeasureLayout measure : system.getMeasures()) {
-                    for (SegmentLayout segment : measure.getSegments()) {
-                        for (ElementLayout element : segment.getElements()) {
-                            if (element instanceof NoteLayout startNote && isStartPredicate.test(startNote.getNote())) {
-                                NoteLayout endNote = endFinder.apply(startNote);
-                                if (endNote == null) continue;
+        for (NoteLayout startNote : startNotes) {
+            NoteLayout endNote = endFinder.apply(startNote);
+            if (endNote == null) continue;
 
-                                SystemLayout startSystem = startNote.getSegment().getParent().getParent();
-                                SystemLayout endSystem = endNote.getSegment().getParent().getParent();
+            SystemLayout startSystem = startNote.getSegment().getParent().getParent();
+            SystemLayout endSystem = endNote.getSegment().getParent().getParent();
 
-                                if (startSystem == endSystem) {
-                                    addSpannerToSystem.accept(startSystem, startNote, endNote);
-                                } else {
-                                    addSpannerToSystem.accept(startSystem, startNote, null);
-                                    addSpannerToSystem.accept(endSystem, null, endNote);
-                                }
-                            }
-                        }
-                    }
-                }
+            if (startSystem == endSystem) {
+                addSpannerToSystem.accept(startSystem, startNote, endNote);
+            } else {
+                addSpannerToSystem.accept(startSystem, startNote, null);
+                addSpannerToSystem.accept(endSystem, null, endNote);
             }
         }
     }

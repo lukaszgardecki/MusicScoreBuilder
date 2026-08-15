@@ -13,52 +13,80 @@ public class LayoutHitTester {
     public record SegmentStaffAndY(SegmentLayout segment, StaffLayout staff, double measureY) {}
 
     public static Selectable findClickedElement(List<PageLayout> pages, double globalX, double globalY) {
-        for (PageLayout page : pages) {
+        if (pages == null || pages.isEmpty()) return null;
+
+        for (int p = 0; p < pages.size(); p++) {
+            PageLayout page = pages.get(p);
             double pageX = globalX - page.getX();
-            double pageY = globalY;
+            double pageY = globalY - page.getY();
+
+            if (pageX < -2.0 || pageX > page.getWidth() + 2.0 || pageY < -2.0 || pageY > page.getHeight() + 2.0) {
+                continue;
+            }
 
             FrameLayout header = page.getHeader();
             if (header != null && header.contains(pageX, pageY)) {
                 return header;
             }
 
-            for (SystemLayout system : page.getSystems()) {
+            List<SystemLayout> systems = page.getSystems();
+            for (int s = 0; s < systems.size(); s++) {
+                SystemLayout system = systems.get(s);
                 double systemX = pageX - system.getX();
                 double systemY = pageY - system.getY();
 
-                if (system.getTies() != null) {
-                    for (TieLayout tie : system.getTies()) {
-                        if (tie.contains(systemX, systemY)) {
-                            return tie;
-                        }
+                double sysMarginY = 5.0;
+                if (systemX < -2.0 || systemX > system.getWidth() + 2.0 ||
+                        systemY < -sysMarginY || systemY > system.getHeight() + sysMarginY) {
+                    continue;
+                }
+
+                List<TieLayout> ties = system.getTies();
+                for (int t = 0; t < ties.size(); t++) {
+                    TieLayout tie = ties.get(t);
+                    if (tie.contains(systemX, systemY)) {
+                        return tie;
                     }
                 }
 
-                if (system.getSlurs() != null) {
-                    for (SlurLayout slur : system.getSlurs()) {
-                        if (slur.contains(systemX, systemY)) {
-                            return slur;
-                        }
+                List<SlurLayout> slurs = system.getSlurs();
+                for (int sl = 0; sl < slurs.size(); sl++) {
+                    SlurLayout slur = slurs.get(sl);
+                    if (slur.contains(systemX, systemY)) {
+                        return slur;
                     }
                 }
 
-                for (MeasureLayout measure : system.getMeasures()) {
+                List<MeasureLayout> measures = system.getMeasures();
+                for (int m = 0; m < measures.size(); m++) {
+                    MeasureLayout measure = measures.get(m);
                     double measureX = systemX - measure.getX();
                     double measureY = systemY - measure.getY();
 
-                    if (measure.getBeamGroups() != null && !measure.getBeamGroups().isEmpty()) {
-                        for (BeamGroupLayout beamGroup : measure.getBeamGroups()) {
+                    if (measureX < -1.0 || measureX > measure.getWidth() + 1.0) {
+                        continue;
+                    }
+
+                    if (!measure.getBeamGroups().isEmpty()) {
+                        List<BeamGroupLayout> beamGroups = measure.getBeamGroups();
+                        for (int bg = 0; bg < beamGroups.size(); bg++) {
+                            BeamGroupLayout beamGroup = beamGroups.get(bg);
                             if (beamGroup.contains(measureX, measureY)) {
                                 return beamGroup;
                             }
                         }
                     }
 
-                    for (SegmentLayout segment : measure.getSegments()) {
+                    List<SegmentLayout> segments = measure.getSegments();
+                    for (int sg = 0; sg < segments.size(); sg++) {
+                        SegmentLayout segment = segments.get(sg);
                         double segmentMusicX = measureX - segment.getX();
                         double segmentMusicY = measureY - segment.getY();
 
-                        for (ElementLayout element : segment.getElements()) {
+                        List<ElementLayout> elements = segment.getElements();
+                        for (int el = 0; el < elements.size(); el++) {
+                            ElementLayout element = elements.get(el);
+
                             if (element instanceof NoteLayout noteLayout) {
                                 if (noteLayout.getBeamSingle() != null && noteLayout.getBeamSingle().contains(segmentMusicX, segmentMusicY)) {
                                     return noteLayout.getBeamSingle();
@@ -68,12 +96,13 @@ public class LayoutHitTester {
                                     return noteLayout.getStem();
                                 }
                                 if (!noteLayout.getDots().isEmpty()) {
-                                    for (DotLayout dot : noteLayout.getDots()) {
-                                        if (dot.contains(segmentMusicX,  segmentMusicY)) return dot;
+                                    List<DotLayout> dots = noteLayout.getDots();
+                                    for (int d = 0; d < dots.size(); d++) {
+                                        if (dots.get(d).contains(segmentMusicX, segmentMusicY)) return dots.get(d);
                                     }
                                 }
                                 if (noteLayout.getAccidental() != null) {
-                                    var acc =  noteLayout.getAccidental();
+                                    var acc = noteLayout.getAccidental();
                                     if (acc.contains(segmentMusicX, segmentMusicY)) return acc;
                                 }
                             }
@@ -96,17 +125,21 @@ public class LayoutHitTester {
     }
 
     public static SegmentStaffAndY findSegmentAndStaffAt(List<PageLayout> pages, double globalX, double globalY) {
+        if (pages == null || pages.isEmpty()) return null;
         SegmentStaffAndY xMatchedFallback = null;
 
-        for (PageLayout page : pages) {
+        for (int p = 0; p < pages.size(); p++) {
+            PageLayout page = pages.get(p);
             double pageX = globalX - page.getX();
-            double pageY = globalY;
+            double pageY = globalY - page.getY();
 
             if (pageX < 0 || pageX > page.getWidth() || pageY < 0 || pageY > page.getHeight()) {
                 continue;
             }
 
-            for (SystemLayout system : page.getSystems()) {
+            List<SystemLayout> systems = page.getSystems();
+            for (int s = 0; s < systems.size(); s++) {
+                SystemLayout system = systems.get(s);
                 double systemX = pageX - system.getX();
                 double systemY = pageY - system.getY();
 
@@ -120,7 +153,9 @@ public class LayoutHitTester {
                     continue;
                 }
 
-                for (MeasureLayout measure : system.getMeasures()) {
+                List<MeasureLayout> measures = system.getMeasures();
+                for (int m = 0; m < measures.size(); m++) {
+                    MeasureLayout measure = measures.get(m);
                     double measureX = systemX - measure.getX();
                     double measureY = systemY - measure.getY();
 
@@ -128,19 +163,10 @@ public class LayoutHitTester {
                         continue;
                     }
 
-                    for (SegmentLayout segment : measure.getSegments()) {
-                        double segX = segment.getX();
-                        double segWidth = segment.getWidth();
-
-                        if (measureX >= segX && measureX <= segX + segWidth) {
-                            if (segment.getType() != SegmentType.NOTEREST) {
-                                return null;
-                            }
-                        }
-                    }
-
                     StaffLayout targetStaff = null;
-                    for (StaffLayout staff : measure.getStaffs()) {
+                    List<StaffLayout> staffs = measure.getStaffs();
+                    for (int st = 0; st < staffs.size(); st++) {
+                        StaffLayout staff = staffs.get(st);
                         double staffY = staff.getY();
                         double spacing = measure.getScoreStyle().getStaffLineSpacing();
                         int ledgersLimit = measure.getScoreStyle().getNoteMaxLedgerLines();
@@ -154,20 +180,20 @@ public class LayoutHitTester {
                         }
                     }
 
-                    for (SegmentLayout segment : measure.getSegments()) {
-                        if (segment.getType() != SegmentType.NOTEREST) {
-                            continue;
-                        }
-
+                    List<SegmentLayout> segments = measure.getSegments();
+                    for (int sg = 0; sg < segments.size(); sg++) {
+                        SegmentLayout segment = segments.get(sg);
                         double segX = segment.getX();
                         double segWidth = segment.getWidth();
 
                         if (measureX >= segX && measureX <= segX + segWidth) {
-                            StaffLayout fallbackStaff = targetStaff != null ? targetStaff : (measure.getStaffs().isEmpty() ? null : measure.getStaffs().get(0));
+                            if (segment.getType() != SegmentType.NOTEREST) {
+                                return null;
+                            }
 
+                            StaffLayout fallbackStaff = targetStaff != null ? targetStaff : (staffs.isEmpty() ? null : staffs.get(0));
                             if (fallbackStaff != null) {
                                 SegmentStaffAndY match = new SegmentStaffAndY(segment, fallbackStaff, measureY);
-
                                 if (targetStaff != null) {
                                     return match;
                                 } else {
@@ -190,7 +216,9 @@ public class LayoutHitTester {
         if (clickedElement instanceof ElementLayout element) {
             if (clickedElement instanceof TimeSigLayout || clickedElement instanceof KeySigLayout) {
                 if (element.getParent() != null && element.getParent().getElements() != null) {
-                    for (ElementLayout child : element.getParent().getElements()) {
+                    List<ElementLayout> children = element.getParent().getElements();
+                    for (int i = 0; i < children.size(); i++) {
+                        ElementLayout child = children.get(i);
                         if (child.getClass() == element.getClass()) {
                             itemsToSelect.add(child);
                         }
@@ -239,7 +267,8 @@ public class LayoutHitTester {
                         SegmentLayout segment = segments.get(i);
                         List<ElementLayout> staffElements = segment.getElementsByStaff(targetStaff);
 
-                        for (ElementLayout element : staffElements) {
+                        for (int e = 0; e < staffElements.size(); e++) {
+                            ElementLayout element = staffElements.get(e);
                             itemsToSelect.add(element);
                             if (element instanceof NoteLayout noteLayout) {
                                 if (noteLayout.getStem() != null) {
@@ -260,7 +289,9 @@ public class LayoutHitTester {
                 }
 
                 if (measure.getBeamGroups() != null) {
-                    for (BeamGroupLayout beamGroup : measure.getBeamGroups()) {
+                    List<BeamGroupLayout> beamGroups = measure.getBeamGroups();
+                    for (int bg = 0; bg < beamGroups.size(); bg++) {
+                        BeamGroupLayout beamGroup = beamGroups.get(bg);
                         if (!beamGroup.isEmpty()) {
                             StaffLayout groupStaff = beamGroup.getFirstNote().getStaff();
                             if (groupStaff == targetStaff) {
@@ -272,7 +303,9 @@ public class LayoutHitTester {
 
                 SystemLayout system = measure.getParent();
                 if (system != null && system.getTies() != null) {
-                    for (TieLayout tie : system.getTies()) {
+                    List<TieLayout> ties = system.getTies();
+                    for (int t = 0; t < ties.size(); t++) {
+                        TieLayout tie = ties.get(t);
                         if (tie.getStartNote() != null && tie.getEndNote() != null) {
                             if (itemsToSelect.contains(tie.getStartNote()) && itemsToSelect.contains(tie.getEndNote())) {
                                 itemsToSelect.add(tie);
@@ -281,7 +314,9 @@ public class LayoutHitTester {
                     }
                 }
                 if (system != null && system.getSlurs() != null) {
-                    for (SlurLayout slur : system.getSlurs()) {
+                    List<SlurLayout> slurs = system.getSlurs();
+                    for (int sl = 0; sl < slurs.size(); sl++) {
+                        SlurLayout slur = slurs.get(sl);
                         if (slur.getStartNote() != null && slur.getEndNote() != null) {
                             if (itemsToSelect.contains(slur.getStartNote()) && itemsToSelect.contains(slur.getEndNote())) {
                                 itemsToSelect.add(slur);
@@ -299,19 +334,28 @@ public class LayoutHitTester {
     public static Selectable findSelectableForElement(List<PageLayout> pages, Segment targetSegment, int staffId, NoteRestElement targetNre) {
         if (pages == null || targetSegment == null || targetNre == null) return null;
 
-        for (PageLayout page : pages) {
-            for (SystemLayout system : page.getSystems()) {
-                for (MeasureLayout measureLayout : system.getMeasures()) {
-                    for (SegmentLayout segLayout : measureLayout.getSegments()) {
+        for (int p = 0; p < pages.size(); p++) {
+            PageLayout page = pages.get(p);
+            List<SystemLayout> systems = page.getSystems();
+            for (int s = 0; s < systems.size(); s++) {
+                List<MeasureLayout> measures = systems.get(s).getMeasures();
+                for (int m = 0; m < measures.size(); m++) {
+                    MeasureLayout measureLayout = measures.get(m);
+                    List<SegmentLayout> segments = measureLayout.getSegments();
+                    for (int sg = 0; sg < segments.size(); sg++) {
+                        SegmentLayout segLayout = segments.get(sg);
                         if (segLayout.getSegment() == targetSegment) {
-                            for (StaffLayout staffLayout : measureLayout.getStaffs()) {
+                            List<StaffLayout> staffs = measureLayout.getStaffs();
+                            for (int st = 0; st < staffs.size(); st++) {
+                                StaffLayout staffLayout = staffs.get(st);
                                 if (staffLayout.getStaffIndex() == staffId) {
                                     List<ElementLayout> elements = segLayout.getElementsByStaff(staffLayout);
                                     if (elements != null) {
-                                        for (ElementLayout el : elements) {
-                                            if (el instanceof NoteLayout nl && nl.getNote() == targetNre) {
+                                        for (int el = 0; el < elements.size(); el++) {
+                                            ElementLayout element = elements.get(el);
+                                            if (element instanceof NoteLayout nl && nl.getNote() == targetNre) {
                                                 return nl;
-                                            } else if (el instanceof RestLayout rl && rl.getRest() == targetNre) {
+                                            } else if (element instanceof RestLayout rl && rl.getRest() == targetNre) {
                                                 return rl;
                                             }
                                         }
@@ -329,19 +373,28 @@ public class LayoutHitTester {
     public static Selectable findSelectableForSegmentAndStaff(List<PageLayout> pages, Segment targetSegment, int staffId, int voice) {
         if (pages == null || targetSegment == null) return null;
 
-        for (PageLayout page : pages) {
-            for (SystemLayout system : page.getSystems()) {
-                for (MeasureLayout measureLayout : system.getMeasures()) {
-                    for (SegmentLayout segLayout : measureLayout.getSegments()) {
+        for (int p = 0; p < pages.size(); p++) {
+            PageLayout page = pages.get(p);
+            List<SystemLayout> systems = page.getSystems();
+            for (int s = 0; s < systems.size(); s++) {
+                List<MeasureLayout> measures = systems.get(s).getMeasures();
+                for (int m = 0; m < measures.size(); m++) {
+                    MeasureLayout measureLayout = measures.get(m);
+                    List<SegmentLayout> segments = measureLayout.getSegments();
+                    for (int sg = 0; sg < segments.size(); sg++) {
+                        SegmentLayout segLayout = segments.get(sg);
                         if (segLayout.getSegment() == targetSegment) {
-                            for (StaffLayout staffLayout : measureLayout.getStaffs()) {
+                            List<StaffLayout> staffs = measureLayout.getStaffs();
+                            for (int st = 0; st < staffs.size(); st++) {
+                                StaffLayout staffLayout = staffs.get(st);
                                 if (staffLayout.getStaffIndex() == staffId) {
                                     List<ElementLayout> elements = segLayout.getElementsByStaff(staffLayout);
                                     if (elements != null && !elements.isEmpty()) {
-                                        for (ElementLayout el : elements) {
-                                            if (el instanceof NoteLayout nl && nl.getNote().getVoice() == voice) {
+                                        for (int el = 0; el < elements.size(); el++) {
+                                            ElementLayout element = elements.get(el);
+                                            if (element instanceof NoteLayout nl && nl.getNote().getVoice() == voice) {
                                                 return nl;
-                                            } else if (el instanceof RestLayout rl && rl.getRest().getVoice() == voice) {
+                                            } else if (element instanceof RestLayout rl && rl.getRest().getVoice() == voice) {
                                                 return rl;
                                             }
                                         }
@@ -363,18 +416,30 @@ public class LayoutHitTester {
         List<PageLayout> pages = scoreLayout.getPages();
         if (pages == null) return null;
 
-        for (PageLayout page : pages) {
+        for (int p = 0; p < pages.size(); p++) {
+            PageLayout page = pages.get(p);
             if (page.getSystems() == null) continue;
-            for (SystemLayout system : page.getSystems()) {
+            List<SystemLayout> systems = page.getSystems();
+            for (int s = 0; s < systems.size(); s++) {
+                SystemLayout system = systems.get(s);
                 if (system.getMeasures() == null) continue;
-                for (MeasureLayout ml : system.getMeasures()) {
+                List<MeasureLayout> measures = system.getMeasures();
+                for (int m = 0; m < measures.size(); m++) {
+                    MeasureLayout ml = measures.get(m);
                     if (ml.getMeasure() == targetMeasure) {
                         StaffLayout targetStaff = null;
-                        if (ml.getStaffs() != null && !ml.getStaffs().isEmpty()) {
-                            targetStaff = ml.getStaffs().stream()
-                                    .filter(s -> s.getStaffIndex() == staffIndex)
-                                    .findFirst()
-                                    .orElse(ml.getStaffs().getFirst());
+                        List<StaffLayout> staffs = ml.getStaffs();
+                        if (staffs != null && !staffs.isEmpty()) {
+                            for (int st = 0; st < staffs.size(); st++) {
+                                StaffLayout sLayout = staffs.get(st);
+                                if (sLayout.getStaffIndex() == staffIndex) {
+                                    targetStaff = sLayout;
+                                    break;
+                                }
+                            }
+                            if (targetStaff == null) {
+                                targetStaff = staffs.getFirst();
+                            }
                         }
 
                         if (targetStaff != null) {
@@ -388,103 +453,81 @@ public class LayoutHitTester {
     }
 
     public record LyricHit(NoteLayout noteLayout, int verse) implements Selectable {
-
-        @Override
-        public boolean isSelected() {
-            return false;
-        }
-
-        @Override
-        public void setSelected(boolean selected) {
-
-        }
-
-        @Override
-        public int getVoice() {
-            return 0;
-        }
-
-        @Override
-        public boolean contains(double x, double y) {
-            return false;
-        }
-
-        @Override
-        public SegmentLayout getSegment() {
-            return null;
-        }
-
-        @Override
-        public StaffLayout getStaff() {
-            return null;
-        }
+        @Override public boolean isSelected() { return false; }
+        @Override public void setSelected(boolean selected) {}
+        @Override public int getVoice() { return 0; }
+        @Override public boolean contains(double x, double y) { return false; }
+        @Override public SegmentLayout getSegment() { return null; }
+        @Override public StaffLayout getStaff() { return null; }
     }
 
     public record PositionedNote(NoteLayout noteLayout, double segmentX, double segmentY) {}
-    public record Point(double x,  double y) {}
+    public record Point(double x, double y) {}
 
-    public static List<PositionedNote> getAllPositionedNotes(List<PageLayout> pages) {
-        List<PositionedNote> result = new ArrayList<>();
-        if (pages == null) return result;
+    public static LyricHit findClickedLyric(List<PageLayout> pages, double x, double y) {
+        if (pages == null) return null;
 
-        for (PageLayout page : pages) {
+        for (int p = 0; p < pages.size(); p++) {
+            PageLayout page = pages.get(p);
             double pageX = page.getX();
-            double pageY = 0;
+            double pageY = page.getY();
 
-            for (SystemLayout system : page.getSystems()) {
+            List<SystemLayout> systems = page.getSystems();
+            for (int s = 0; s < systems.size(); s++) {
+                SystemLayout system = systems.get(s);
                 double systemX = pageX + system.getX();
                 double systemY = pageY + system.getY();
 
-                for (MeasureLayout measure : system.getMeasures()) {
+                List<MeasureLayout> measures = system.getMeasures();
+                for (int m = 0; m < measures.size(); m++) {
+                    MeasureLayout measure = measures.get(m);
                     double measureX = systemX + measure.getX();
                     double measureY = systemY + measure.getY();
 
-                    for (SegmentLayout segment : measure.getSegments()) {
+                    List<SegmentLayout> segments = measure.getSegments();
+                    for (int sg = 0; sg < segments.size(); sg++) {
+                        SegmentLayout segment = segments.get(sg);
                         double segX = measureX + segment.getX();
                         double segY = measureY + segment.getY();
 
-                        for (ElementLayout element : segment.getElements()) {
-                            if (element instanceof NoteLayout note) {
-                                result.add(new PositionedNote(note, segX, segY));
+                        List<ElementLayout> elements = segment.getElements();
+                        for (int el = 0; el < elements.size(); el++) {
+                            ElementLayout element = elements.get(el);
+                            if (element instanceof NoteLayout noteLayout) {
+                                var note = noteLayout.getNote();
+                                if (note == null || note.getLyrics().isEmpty()) continue;
+
+                                StaffLayout staff = noteLayout.getStaff();
+                                if (staff == null) continue;
+
+                                ScoreStyle style = noteLayout.getScoreStyle();
+                                double fontSizeInSpatium = (style != null) ? style.getNoteLyricFontSize() : 1.3;
+
+                                double absNoteCenterX = segX + (noteLayout.getX() + (noteLayout.getFontWidth() / 2.0));
+                                double absStaffBottomY = segY + (staff.getY() + staff.getHeight());
+
+                                List<Lyric> lyrics = note.getLyrics();
+                                for (int l = 0; l < lyrics.size(); l++) {
+                                    Lyric lyric = lyrics.get(l);
+                                    if (lyric == null || lyric.getText() == null || lyric.getText().isBlank()) continue;
+
+                                    int verse = lyric.getVerse();
+                                    double lyricY = absStaffBottomY + 2.5 + ((verse - 1) * 1.5);
+                                    double textWidth = FontManager.getTextWidth(FontManager.FontType.FREE_SERIF, lyric.getText(), fontSizeInSpatium);
+                                    double textHeight = FontManager.getTextHeight(FontManager.FontType.FREE_SERIF, lyric.getText(), fontSizeInSpatium);
+
+                                    double minX = absNoteCenterX - (textWidth / 2.0);
+                                    double maxX = absNoteCenterX + (textWidth / 2.0);
+                                    double minY = lyricY;
+                                    double maxY = lyricY + textHeight;
+
+                                    if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
+                                        return new LyricHit(noteLayout, verse);
+                                    }
+                                }
                             }
                         }
                     }
-                }
-            }
-        }
-        return result;
-    }
-
-    public static LyricHit findClickedLyric(List<PageLayout> pages, double x, double y) {
-        for (PositionedNote pn : getAllPositionedNotes(pages)) {
-            NoteLayout noteLayout = pn.noteLayout();
-            var note = noteLayout.getNote();
-            if (note == null || note.getLyrics().isEmpty()) continue;
-
-            StaffLayout staff = noteLayout.getStaff();
-            if (staff == null) continue;
-
-            ScoreStyle style = noteLayout.getScoreStyle();
-            double fontSizeInSpatium = (style != null) ? style.getNoteLyricFontSize() : 1.3;
-
-            double absNoteCenterX = pn.segmentX() + (noteLayout.getX() + (noteLayout.getFontWidth() / 2.0));
-            double absStaffBottomY = pn.segmentY() + (staff.getY() + staff.getHeight());
-
-            for (Lyric lyric : note.getLyrics()) {
-                if (lyric == null || lyric.getText() == null || lyric.getText().isBlank()) continue;
-
-                int verse = lyric.getVerse();
-                double lyricY = absStaffBottomY + 2.5 + ((verse - 1) * 1.5);
-                double textWidth = FontManager.getTextWidth(FontManager.FontType.FREE_SERIF, lyric.getText(), fontSizeInSpatium);
-                double textHeight = FontManager.getTextHeight(FontManager.FontType.FREE_SERIF, lyric.getText(), fontSizeInSpatium);
-
-                double minX = absNoteCenterX - (textWidth / 2.0);
-                double maxX = absNoteCenterX + (textWidth / 2.0);
-                double minY = lyricY;
-                double maxY = lyricY + textHeight;
-
-                if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
-                    return new LyricHit(noteLayout, verse);
                 }
             }
         }
@@ -494,18 +537,49 @@ public class LayoutHitTester {
     public static Point getLyricAbsolutePosition(ScoreLayout scoreLayout, NoteLayout targetNote, int verse) {
         if (scoreLayout == null || targetNote == null) return new Point(0, 0);
 
-        for (PositionedNote pn : getAllPositionedNotes(scoreLayout.getPages())) {
-            if (pn.noteLayout() == targetNote) {
+        List<PageLayout> pages = scoreLayout.getPages();
+        if (pages == null) return new Point(0, 0);
 
-                double absX = pn.segmentX() + (targetNote.getX() + (targetNote.getFontWidth() / 2.0));
-                StaffLayout staff = targetNote.getStaff();
+        for (int p = 0; p < pages.size(); p++) {
+            PageLayout page = pages.get(p);
+            double pageX = page.getX();
+            double pageY = page.getY();
 
-                double staffBottomY = (staff != null)
-                        ? pn.segmentY() + staff.getY() + staff.getHeight()
-                        : pn.segmentY() + targetNote.getY();
+            List<SystemLayout> systems = page.getSystems();
+            for (int s = 0; s < systems.size(); s++) {
+                SystemLayout system = systems.get(s);
+                double systemX = pageX + system.getX();
+                double systemY = pageY + system.getY();
 
-                double absY = staffBottomY + 2.5 + ((verse - 1) * 1.5);
-                return new Point(absX, absY);
+                List<MeasureLayout> measures = system.getMeasures();
+                for (int m = 0; m < measures.size(); m++) {
+                    MeasureLayout measure = measures.get(m);
+                    double measureX = systemX + measure.getX();
+                    double measureY = systemY + measure.getY();
+
+                    List<SegmentLayout> segments = measure.getSegments();
+                    for (int sg = 0; sg < segments.size(); sg++) {
+                        SegmentLayout segment = segments.get(sg);
+                        double segX = measureX + segment.getX();
+                        double segY = measureY + segment.getY();
+
+                        List<ElementLayout> elements = segment.getElements();
+                        for (int el = 0; el < elements.size(); el++) {
+                            ElementLayout element = elements.get(el);
+                            if (element == targetNote) {
+                                double absX = segX + (targetNote.getX() + (targetNote.getFontWidth() / 2.0));
+                                StaffLayout staff = targetNote.getStaff();
+
+                                double staffBottomY = (staff != null)
+                                        ? segY + staff.getY() + staff.getHeight()
+                                        : segY + targetNote.getY();
+
+                                double absY = staffBottomY + 2.5 + ((verse - 1) * 1.5);
+                                return new Point(absX, absY);
+                            }
+                        }
+                    }
+                }
             }
         }
         return new Point(0, 0);

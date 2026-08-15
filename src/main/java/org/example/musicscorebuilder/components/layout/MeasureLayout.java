@@ -67,7 +67,8 @@ public class MeasureLayout {
 
     public void resetLayoutState() {
         this.x = 0.0;
-        for (SegmentLayout segment : segments) {
+        for (int i = 0; i < segments.size(); i++) {
+            SegmentLayout segment = segments.get(i);
             segment.setExtraWidth(0.0);
             if (segment.getType() == SegmentType.END_BARLINE) {
                 segment.setType(SegmentType.BARLINE);
@@ -76,7 +77,8 @@ public class MeasureLayout {
     }
 
     public MeasureStaffSelection getElementsRegionAt(double measureX, double measureY) {
-        for (StaffLayout staff : staves) {
+        for (int i = 0; i < staves.size(); i++) {
+            StaffLayout staff = staves.get(i);
             double staffY = staff.getY();
             double staffHeight = staff.getHeight();
 
@@ -95,13 +97,27 @@ public class MeasureLayout {
     public List<BeamGroupLayout> getBeamGroups() { return beams; }
     public double getX() { return x; }
     public double getY() { return y; }
-    public double getWidth() { return segments.stream().mapToDouble(SegmentLayout::getWidth).sum(); }
+
+    public double getWidth() {
+        double totalWidth = 0.0;
+        for (int i = 0; i < segments.size(); i++) {
+            totalWidth += segments.get(i).getWidth();
+        }
+        return totalWidth;
+    }
+
     public double getHeight() {
-        if (staves.isEmpty()) return 0.0;
-        double totalStavesHeight = staves.stream().mapToDouble(StaffLayout::getHeight).sum();
-        double totalSpacing = (staves.size() - 1) * style.getStaffSpacing();
+        int staffCount = staves.size();
+        if (staffCount == 0) return 0.0;
+
+        double totalStavesHeight = 0.0;
+        for (int i = 0; i < staffCount; i++) {
+            totalStavesHeight += staves.get(i).getHeight();
+        }
+        double totalSpacing = (staffCount - 1) * style.getStaffSpacing();
         return totalStavesHeight + totalSpacing;
     }
+
     public int getVoiceCountForStaff(int staffId) {
         return measure.countVoicesByStaff(staffId);
     }

@@ -3,9 +3,11 @@ package org.example.musicscorebuilder.components.layout;
 import org.example.musicscorebuilder.components.music.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class NoteLayout extends ElementLayout {
+    private static final List<LedgerLine> EMPTY_LEDGER_LINES = Collections.emptyList();
     private final Leland fontData;
     private final Note note;
     private final StemLayout stem;
@@ -62,12 +64,10 @@ public class NoteLayout extends ElementLayout {
     public double getFontSize() { return 4 * style.getStaffLineSpacing(); }
     public String getCode() { return fontData.getCode(); }
     public List<DotLayout> getDots() { return dots; }
-    public List<LyricLayout> getLyrics() {
-        refreshLyrics();
-        return lyrics;
-    }
+    public List<LyricLayout> getLyrics() { return lyrics; }
     public LyricLayout getLyric(int verse) {
-        for (LyricLayout lyricLayout : getLyrics()) {
+        for (int i = 0; i < lyrics.size(); i++) {
+            LyricLayout lyricLayout = lyrics.get(i);
             if (lyricLayout.getVerse() == verse) {
                 return lyricLayout;
             }
@@ -82,10 +82,16 @@ public class NoteLayout extends ElementLayout {
     public AccidentalLayout getAccidental() { return accidental; }
 
     public List<LedgerLine> getLedgerLines() {
-        List<LedgerLine> lines = new ArrayList<>();
         double spacing = style.getStaffLineSpacing();
         double topLineY = staff.getY();
         double bottomLineY = staff.getY() + (4 * spacing);
+        double currentY = getY();
+
+        if (currentY >= topLineY - (0.25 * spacing) && currentY <= bottomLineY + (0.25 * spacing)) {
+            return EMPTY_LEDGER_LINES;
+        }
+
+        List<LedgerLine> lines = new ArrayList<>(2);
         double lengthFactor = style.getNoteLedgerLengthFactor();
         double thickness = style.getNoteLedgerLineThickness();
         double boxX = getBoxX();
@@ -94,7 +100,6 @@ public class NoteLayout extends ElementLayout {
         double targetWidth = boxWidth * lengthFactor;
         double startX = centerX - (targetWidth / 2.0);
         double endX = centerX + (targetWidth / 2.0);
-        double currentY = getY();
 
         if (currentY < topLineY - (0.25 * spacing)) {
             double currentLineY = topLineY - spacing;

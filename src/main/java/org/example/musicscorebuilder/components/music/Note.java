@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
@@ -79,7 +79,7 @@ public class Note extends NoteRestElement {
     }
 
     @JsonSetter("lyrics")
-    private void setLyricsFromJson(Collection<Lyric> parsedLyrics) {
+    private void setLyricsFromJson(List<Lyric> parsedLyrics) {
         this.lyrics.clear();
         if (parsedLyrics != null) {
             for (Lyric l : parsedLyrics) {
@@ -92,7 +92,7 @@ public class Note extends NoteRestElement {
         lyrics.remove(verse);
     }
 
-    public Collection<Lyric> getLyrics() {
-        return lyrics.values();
+    public List<Lyric> getLyrics() {
+        return lyrics.values().stream().toList();
     }
 }

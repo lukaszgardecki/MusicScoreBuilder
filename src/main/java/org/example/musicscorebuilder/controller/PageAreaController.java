@@ -1,5 +1,6 @@
 package org.example.musicscorebuilder.controller;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToggleButton;
@@ -10,6 +11,7 @@ import javafx.scene.layout.HBox;
 import org.example.musicscorebuilder.NoteDragHandler;
 import org.example.musicscorebuilder.ShortcutHandler;
 import org.example.musicscorebuilder.components.layout.NoteLayout;
+import org.example.musicscorebuilder.components.layout.PageLayout;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
 import org.example.musicscorebuilder.components.layout.Selectable;
 import org.example.musicscorebuilder.components.layout.edit.CursorLayout;
@@ -40,6 +42,9 @@ public class PageAreaController {
     private final ModeManager modeManager = ModeManager.getInstance();
     private final ScoreNavigator scoreNavigator = ScoreNavigator.getInstance();
     private final ShortcutHandler shortcutHandler = new ShortcutHandler();
+
+    private boolean refreshPending = false;
+    private boolean redrawPending = false;
 
     @FXML
     public void initialize() {
@@ -77,8 +82,9 @@ public class PageAreaController {
 
         List<ScoreMode> modes = score.getModes();
         int activeIndex = stateManager.getCurrentModeIndex();
+        int modeCount = modes.size();
 
-        for (int i = 0; i < modes.size(); i++) {
+        for (int i = 0; i < modeCount; i++) {
             ScoreMode mode = modes.get(i);
             int modeIndex = i;
 
@@ -88,7 +94,7 @@ public class PageAreaController {
 
             if (i == 0) {
                 button.getStyleClass().add("first-segment");
-            } else if (i == modes.size() - 1) {
+            } else if (i == modeCount - 1) {
                 button.getStyleClass().add("last-segment");
             } else {
                 button.getStyleClass().add("middle-segment");
@@ -120,11 +126,17 @@ public class PageAreaController {
     private void initDragHandling() {
         NoteDragHandler dragHandler = new NoteDragHandler(
                 container,
-                event -> LayoutHitTester.findClickedElement(
-                        currentScoreLayout != null ? currentScoreLayout.getPages() : List.of(),
-                        container.toModelX(event.getX()),
-                        container.toModelY(event.getY())
-                ),
+                event -> {
+                    if (currentScoreLayout == null) return null;
+                    List<PageLayout> pages = currentScoreLayout.getPages();
+                    if (pages == null || pages.isEmpty()) return null;
+
+                    return LayoutHitTester.findClickedElement(
+                            pages,
+                            container.toModelX(event.getX()),
+                            container.toModelY(event.getY())
+                    );
+                },
                 () -> this.currentScoreLayout
         );
         container.addEventFilter(MouseEvent.MOUSE_PRESSED, dragHandler::handlePressed);
@@ -140,11 +152,13 @@ public class PageAreaController {
 
             if (modeManager.isInsertMode() || currentScoreLayout == null) return;
 
-            if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2) {
-                double modelX = container.toModelX(event.getX());
-                double modelY = container.toModelY(event.getY());
-                var pages = currentScoreLayout.getPages();
+            List<PageLayout> pages = currentScoreLayout.getPages();
+            if (pages == null || pages.isEmpty()) return;
 
+            double modelX = container.toModelX(event.getX());
+            double modelY = container.toModelY(event.getY());
+
+            if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2) {
                 LayoutHitTester.LyricHit lyricHit = LayoutHitTester.findClickedLyric(pages, modelX, modelY);
                 if (lyricHit != null) {
                     LyricEditorManager.getInstance().startEditing(
@@ -159,10 +173,7 @@ public class PageAreaController {
             }
 
             if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 1) {
-                double modelX = container.toModelX(event.getX());
-                double modelY = container.toModelY(event.getY());
-
-                Selectable clickedElement = LayoutHitTester.findClickedElement(currentScoreLayout.getPages(), modelX, modelY);
+                Selectable clickedElement = LayoutHitTester.findClickedElement(pages, modelX, modelY);
 
                 boolean isAdditive = event.isShortcutDown() || event.isControlDown() || event.isMetaDown();
                 stateManager.setSelected(clickedElement, isAdditive);
@@ -178,9 +189,12 @@ public class PageAreaController {
             if (modeManager.isInsertMode() || currentScoreLayout == null) return;
 
             if (event.getButton() == MouseButton.SECONDARY) {
+                List<PageLayout> pages = currentScoreLayout.getPages();
+                if (pages == null || pages.isEmpty()) return;
+
                 double modelX = container.toModelX(event.getX());
                 double modelY = container.toModelY(event.getY());
-                Selectable clickedElement = LayoutHitTester.findClickedElement(currentScoreLayout.getPages(), modelX, modelY);
+                Selectable clickedElement = LayoutHitTester.findClickedElement(pages, modelX, modelY);
                 handleRightClick(event, clickedElement);
             }
         });
@@ -222,18 +236,34 @@ public class PageAreaController {
     }
 
     private void redraw() {
-        if (currentScoreLayout != null) {
-            container.updateContent(currentScoreLayout);
-        }
+        if (redrawPending) return;
+        redrawPending = true;
+
+        Platform.runLater(() -> {
+            redrawPending = false;
+            if (currentScoreLayout != null) {
+                container.updateContent(currentScoreLayout);
+            }
+        });
     }
 
     private void refreshView() {
-        updateModeSelector();
-        ScoreMode activeScoreMode = stateManager.getCurrentMode();
-        if (activeScoreMode == null) return;
-        this.currentScoreLayout = layoutEngine.compute(activeScoreMode);
-        stateManager.applyPostRefreshAction(this.currentScoreLayout);
-        redraw();
+        if (refreshPending) return;
+        refreshPending = true;
+
+        Platform.runLater(() -> {
+            refreshPending = false;
+            updateModeSelector();
+            ScoreMode activeScoreMode = stateManager.getCurrentMode();
+            if (activeScoreMode == null) return;
+
+            this.currentScoreLayout = layoutEngine.compute(activeScoreMode);
+            stateManager.applyPostRefreshAction(this.currentScoreLayout);
+
+            if (currentScoreLayout != null) {
+                container.updateContent(currentScoreLayout);
+            }
+        });
     }
 
     private void handleRightClick(MouseEvent event, Selectable clickedElement) {
