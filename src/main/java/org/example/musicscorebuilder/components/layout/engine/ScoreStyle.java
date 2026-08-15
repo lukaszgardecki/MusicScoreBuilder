@@ -6,9 +6,9 @@ public class ScoreStyle {
 
     private static final double PAGE_SPACING                                = 4.0;
     private static final double STAFF_SPACING                               = 7.0;
-    private static final double SYSTEM_SPACING                              = 8.0;
+    private static final double SYSTEM_SPACING                              = 7.0;
     private static final double SPATIUM_MM                                  = 1.564;
-    private static final double SYSTEM_MIN_FULLNESS_RATIO                   = 0.5;
+    private static final double SYSTEM_MIN_FULLNESS_RATIO                   = 0.3;
 
     private static final double STAFF_SPACING_SCALE                         = 1.3;
     private static final double STAFF_LINE_SPACING                          = 1.0;
@@ -58,8 +58,8 @@ public class ScoreStyle {
     private static final double SELECTION_FRAME_EXTRA_HEIGHT                = STAFF_LINE_SPACING;
     private static final double SELECTION_FRAME_RADIUS                      = 0.4;
 
-    private static final double SEG_DEF_NOTEREST_L_MARGIN                   = 1.1 + NOTE_ACC_SPACING;
-    private static final double SEG_DEF_NOTEREST_R_MARGIN                   = 4;
+    private static final double SEG_DEF_NOTEREST_L_MARGIN                   = 0.9 + NOTE_ACC_SPACING;
+    private static final double SEG_DEF_NOTEREST_R_MARGIN                   = 2;
     private static final double SEG_DEF_CLEF_R_MARGIN                       = 0.5;
     private static final double SEG_DEF_TIME_SIG_R_MARGIN                   = 1.0;
     private static final double SEG_DEF_KEY_SIG_R_MARGIN                    = 0.7;

@@ -20,7 +20,7 @@ public class FrameLayout implements Selectable {
         this.y = parent.getMarginTop();
         this.contentY = y + marginTop;
         this.width = parent.getEffectiveWidth();
-        this.contentHeight = style.toSp(30);
+        this.contentHeight = style.toSp(20);
         this.height = contentHeight + marginTop + marginBottom;
         this.numberNewFontSize = style.getHeaderDefNumberNewFontSize();
         this.numberOldFontSize = style.getHeaderDefNumberOldFontSize();
