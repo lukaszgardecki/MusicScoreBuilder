@@ -24,8 +24,8 @@ public class ScoreFactory {
     public static Score createEmptySoloTemplate() {
         Score score = createDefaultScore();
         ScoreStyle style = new ScoreStyle();
-        style.setStaffSpacingScale(1.0);
-        attachNewMode(score, ModeType.HARMONY, style);
+        style.setStaffSpacingScale(1.3);
+        attachNewMode(score, ModeType.SOLO, style);
         return score;
     }
 
