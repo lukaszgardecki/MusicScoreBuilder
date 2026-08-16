@@ -231,7 +231,7 @@ public class SongbookActionManager {
             Consumer<File> selectFileCallback,
             Consumer<File> openFileCallback
     ) {
-        Score defaultScore = ScoreFactory.createScoreTemplate();
+        Score defaultScore = ScoreFactory.createEmptySoloTemplate();
         defaultScore.setNumberNew(metadata.numberNew());
         defaultScore.setNumberOld(metadata.numberOld());
         defaultScore.setTitle(metadata.title());

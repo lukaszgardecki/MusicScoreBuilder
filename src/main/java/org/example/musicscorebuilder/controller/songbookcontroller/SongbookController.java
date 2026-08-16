@@ -12,6 +12,7 @@ import org.example.musicscorebuilder.components.dialog.CustomConfirmationDialog;
 import org.example.musicscorebuilder.components.dialog.CustomSelectModeDialog;
 import org.example.musicscorebuilder.components.music.Score;
 import org.example.musicscorebuilder.components.music.ScoreMode;
+import org.example.musicscorebuilder.components.music.util.ScoreFactory;
 import org.example.musicscorebuilder.data.FileService;
 import org.example.musicscorebuilder.data.PreferencesService;
 import org.example.musicscorebuilder.data.StorageService;
@@ -95,17 +96,13 @@ public class SongbookController {
 
     @FXML
     private void handleAddMode() {
-        Score score = storageService.getScore();
-        if (score == null) return;
-
         new CustomSelectModeDialog()
                 .setTitle("Dodaj tryb")
                 .setHeader("Wybierz typ dla nowego trybu partytury:")
                 .setContent("Wybrany typ określi konfigurację oraz zasady wyświetlania dla nowej wersji partytury.")
                 .setConfirmButton("Dodaj", selectedType -> {
-                    ScoreMode newMode = new ScoreMode(score, selectedType);
-                    score.getModes().add(newMode);
-                    int newIndex = score.getModes().size() - 1;
+                    ScoreMode mode = ScoreFactory.createMode(selectedType);
+                    int newIndex = mode.getScore().getModes().size() - 1;
                     stateManager.setCurrentModeIndex(newIndex);
                     stateManager.notifyScoreChanged();
                     refreshModesList();

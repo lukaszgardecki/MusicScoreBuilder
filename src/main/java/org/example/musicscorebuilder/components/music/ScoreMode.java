@@ -51,14 +51,14 @@ public class ScoreMode {
         }
     }
 
-    public ScoreMode(Score score, ModeType type) {
+    public ScoreMode(Score score, ModeType type, ScoreStyle style) {
         this.score = score;
         this.type = type;
         this.braceType = type == ModeType.SOLO ? BraceType.NONE : BraceType.BRACE;
         this.startBarline = type == ModeType.SOLO
                 ? new Barline(BarlineStyle.NONE, Barline.Type.START, null)
                 : new Barline(BarlineStyle.SINGLE, Barline.Type.START, null);
-        this.style = new ScoreStyle();
+        this.style = style;
         addDefaultStaves();
     }
 

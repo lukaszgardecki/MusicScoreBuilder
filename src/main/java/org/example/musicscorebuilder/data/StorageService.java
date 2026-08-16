@@ -49,7 +49,7 @@ public class StorageService {
 
     public Score getScore() {
         if (score == null) {
-            this.score = ScoreFactory.createScoreTemplate();
+            this.score = ScoreFactory.createEmptySoloTemplate();
             this.initialSnapshot = takeSnapshot();
         }
         return score;
