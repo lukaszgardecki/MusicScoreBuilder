@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: #ffffff;"
+            xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.example.musicscorebuilder.palette.PaletteController">
+
+    <VBox spacing="10" style="-fx-padding: 10;">
+        <TitledPane text="Oznaczenia metryczne" expanded="true" styleClass="titled-pane">
+            <GridPane fx:id="timeSignatureGrid" styleClass="palette-grid" snapToPixel="false" />
+        </TitledPane>
+
+        <TitledPane text="Kreski taktowe" expanded="true" styleClass="titled-pane">
+            <GridPane fx:id="barLinesGrid" styleClass="palette-grid" snapToPixel="false" />
+        </TitledPane>
+
+        <TitledPane text="Oznaczenia tonacji" expanded="true" styleClass="titled-pane">
+            <GridPane fx:id="keySignatureGrid" styleClass="palette-grid" snapToPixel="false" />
+        </TitledPane>
+        <TitledPane text="Układ" expanded="true" styleClass="titled-pane">
+            <GridPane fx:id="layoutGrid" styleClass="palette-grid" snapToPixel="false" />
+        </TitledPane>
+    </VBox>
+
+</ScrollPane>

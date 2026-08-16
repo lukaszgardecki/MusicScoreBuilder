@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class LayoutEngine {
-    private final ScoreStyle style;
+    private ScoreStyle style;
     private final SystemJustifier systemJustifier;
     private final Map<Measure, MeasureLayout> measureCache = new IdentityHashMap<>();
 
@@ -18,11 +18,11 @@ public class LayoutEngine {
     private final List<NoteLayout> tieStartNotes = new ArrayList<>();
 
     public LayoutEngine() {
-        this.style = new ScoreStyle();
-        this.systemJustifier = new SystemJustifier(style);
+        this.systemJustifier = new SystemJustifier();
     }
 
     public ScoreLayout compute(ScoreMode scoreMode) {
+        this.style = scoreMode.getStyle();
         invalidateCacheIfNeeded(scoreMode);
 
         noteToLayoutMap.clear();

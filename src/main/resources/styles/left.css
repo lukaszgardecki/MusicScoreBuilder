@@ -117,8 +117,6 @@
     -fx-alignment: center;
 
     -fx-min-width: 0px;
-    -fx-pref-width: Infinity;
-    -fx-max-width: Infinity;
 
     -fx-min-height: 40px;
     -fx-pref-height: 40px;
@@ -143,3 +141,22 @@
 .fraction-text { -fx-font-size: 20px; }
 .single-text { -fx-font-size: 24px; }
 
+
+
+
+
+/* WŁAŚCIWOŚCI */
+.properties-grid {
+    -fx-hgap: 10px;
+    -fx-vgap: 8px;
+}
+
+.properties-label {
+    -fx-alignment: CENTER-LEFT;
+    -fx-text-fill: #333333;
+}
+
+.properties-spinner {
+    -fx-pref-width: 80px;
+    -fx-alignment: CENTER-RIGHT;
+}

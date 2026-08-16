@@ -1,42 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
 
 <TabPane prefWidth="300.0"
          tabClosingPolicy="UNAVAILABLE"
          xmlns="http://javafx.com/javafx/17"
-         xmlns:fx="http://javafx.com/fxml/1"
-         fx:controller="org.example.musicscorebuilder.palette.PaletteController">
+         xmlns:fx="http://javafx.com/fxml/1">
 
     <Tab text="Paleta">
-        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: #ffffff;">
-            <VBox spacing="10" style="-fx-padding: 10;">
-                <TitledPane text="Oznaczenia metryczne" expanded="true" styleClass="titled-pane">
-                    <GridPane fx:id="timeSignatureGrid" styleClass="palette-grid" snapToPixel="false"
-                              maxWidth="-Infinity" maxHeight="-Infinity"/>
-                </TitledPane>
-
-                <TitledPane text="Kreski taktowe" expanded="true" styleClass="titled-pane">
-                    <GridPane fx:id="barLinesGrid" styleClass="palette-grid" snapToPixel="false"
-                              maxWidth="-Infinity" maxHeight="-Infinity"/>
-                </TitledPane>
-
-                <TitledPane text="Oznaczenia tonacji" expanded="true" styleClass="titled-pane">
-                    <GridPane fx:id="keySignatureGrid" styleClass="palette-grid" snapToPixel="false"
-                              maxWidth="-Infinity" maxHeight="-Infinity"/>
-                </TitledPane>
-                <TitledPane text="Układ" expanded="true" styleClass="titled-pane">
-                    <GridPane fx:id="layoutGrid" styleClass="palette-grid" snapToPixel="false"
-                              maxWidth="-Infinity" maxHeight="-Infinity"/>
-                </TitledPane>
-            </VBox>
-        </ScrollPane>
+        <fx:include source="left-palette.fxml"/>
     </Tab>
 
     <Tab text="Właściwości">
-        <VBox spacing="10" style="-fx-padding: 10;">
-            <Label style="-fx-font-size: 14; -fx-font-weight: bold;" text="Właściwości zaznaczenia"/>
-        </VBox>
+        <fx:include source="left-properties.fxml"/>
     </Tab>
+
 </TabPane>

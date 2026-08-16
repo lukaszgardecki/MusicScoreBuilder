@@ -2,7 +2,9 @@ package org.example.musicscorebuilder.components.music;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.music.util.MeasureTimeSignatureAdjuster;
 
 import java.util.ArrayList;
@@ -13,6 +15,9 @@ import java.util.Map;
 public class ScoreMode {
     @JsonIgnore
     private Score score;
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    private ScoreStyle style;
 
     private final ModeType type;
     private final BraceType braceType;
@@ -28,11 +33,13 @@ public class ScoreMode {
             @JsonProperty("startBarline") Barline startBarline,
             @JsonProperty("staves") List<Staff> staves,
             @JsonProperty("measures") List<Measure> measures,
-            @JsonProperty("slurs") List<Slur> slurs
+            @JsonProperty("slurs") List<Slur> slurs,
+            @JsonProperty("style") ScoreStyle style
     ) {
         this.type = type;
         this.braceType = braceType;
         this.startBarline = startBarline;
+        this.style = style != null ? style : new ScoreStyle();
         if (staves != null) this.staves.addAll(staves);
         if (measures != null) {
             this.measures.addAll(measures);
@@ -51,7 +58,16 @@ public class ScoreMode {
         this.startBarline = type == ModeType.SOLO
                 ? new Barline(BarlineStyle.NONE, Barline.Type.START, null)
                 : new Barline(BarlineStyle.SINGLE, Barline.Type.START, null);
+        this.style = new ScoreStyle();
         addDefaultStaves();
+    }
+
+    public ScoreStyle getStyle() {
+        return style;
+    }
+
+    public void setStyle(ScoreStyle style) {
+        this.style = style != null ? style : new ScoreStyle();
     }
 
     public void appendMeasures(int count) {

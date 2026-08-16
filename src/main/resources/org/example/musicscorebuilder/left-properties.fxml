@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: #ffffff;"
+            xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.example.musicscorebuilder.properties.GeneralPropertiesController">
+
+    <VBox spacing="10" style="-fx-padding: 10;">
+        <TitledPane text="Ogólne" expanded="true" styleClass="titled-pane">
+            <GridPane fx:id="generalProperties" styleClass="properties-grid" snapToPixel="false">
+                <columnConstraints>
+                    <ColumnConstraints hgrow="ALWAYS" halignment="LEFT" />
+                    <ColumnConstraints hgrow="NEVER" halignment="RIGHT" />
+                </columnConstraints>
+            </GridPane>
+        </TitledPane>
+    </VBox>
+
+</ScrollPane>

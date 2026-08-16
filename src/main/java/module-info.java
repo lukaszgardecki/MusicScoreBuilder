@@ -24,6 +24,8 @@ module org.example.musicscorebuilder {
 
     exports org.example.musicscorebuilder.palette;
     opens org.example.musicscorebuilder.palette to javafx.fxml, com.fasterxml.jackson.databind;
+    exports org.example.musicscorebuilder.properties;
+    opens org.example.musicscorebuilder.properties to javafx.fxml, com.fasterxml.jackson.databind;
 
     exports org.example.musicscorebuilder.components.layout.util;
     opens org.example.musicscorebuilder.components.layout.util to javafx.fxml;
@@ -34,7 +36,7 @@ module org.example.musicscorebuilder {
     exports org.example.musicscorebuilder.util;
     opens org.example.musicscorebuilder.util to javafx.fxml;
     exports org.example.musicscorebuilder.components.layout.engine;
-    opens org.example.musicscorebuilder.components.layout.engine to javafx.fxml;
+    opens org.example.musicscorebuilder.components.layout.engine to javafx.fxml, com.fasterxml.jackson.databind;
     exports org.example.musicscorebuilder.components.layout.edit;
     opens org.example.musicscorebuilder.components.layout.edit to javafx.fxml;
     exports org.example.musicscorebuilder.controller.util.audio;

@@ -1,7 +1,16 @@
 package org.example.musicscorebuilder.components.layout.engine;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.example.musicscorebuilder.components.layout.Selectable;
 
+@JsonInclude(JsonInclude.Include.NON_DEFAULT)
+@JsonAutoDetect(
+        fieldVisibility = JsonAutoDetect.Visibility.ANY,
+        getterVisibility = JsonAutoDetect.Visibility.NONE,
+        setterVisibility = JsonAutoDetect.Visibility.NONE,
+        isGetterVisibility = JsonAutoDetect.Visibility.NONE
+)
 public class ScoreStyle {
 
     private static final double PAGE_SPACING                                = 4.0;
@@ -10,7 +19,7 @@ public class ScoreStyle {
     private static final double SPATIUM_MM                                  = 1.564;
     private static final double SYSTEM_MIN_FULLNESS_RATIO                   = 0.3;
 
-    private static final double STAFF_SPACING_SCALE                         = 1.3;
+    private static final double STAFF_SPACING_SCALE                         = 1.0;
     private static final double STAFF_LINE_SPACING                          = 1.0;
     private static final double STAFF_LINE_WIDTH                            = 0.11;
 
@@ -187,6 +196,7 @@ public class ScoreStyle {
     public double getSpatiumMm() { return spatiumMm; }
     public double getSystemMinFullnessRatio() { return systemMinFullnessRatio; }
 
+    public double getStaffSpacingScale() { return staffSpacingScale; }
     public double getStaffLineSpacing() { return staffSpacingScale * staffLineSpacing; }
     public double getStaffLineWidth() { return staffSpacingScale * staffLineWidth; }
 
@@ -203,7 +213,7 @@ public class ScoreStyle {
     public double getSegmentKeySigRightMargin() { return staffSpacingScale * segmentKeySigRightMargin; }
     public double getSegmentStartBarlineRightMargin() { return staffSpacingScale * segmentStartBarlineRightMargin; }
     public double getSegmentBarlineRightMargin() { return staffSpacingScale * segmentBarlineRightMargin; }
-    public double getSegmentEndBarlineRightMargin() { return  staffSpacingScale * segmentEndBarlineRightMargin; }
+    public double getSegmentEndBarlineRightMargin() { return staffSpacingScale * segmentEndBarlineRightMargin; }
 
     public double getKeySignatureSignSpace() { return staffSpacingScale * keySignatureSignSpace; }
 
@@ -218,16 +228,16 @@ public class ScoreStyle {
     public double getNoteBeamThickness() { return staffSpacingScale * noteBeamThickness; }
     public double getNoteBeamStubLength() { return staffSpacingScale * noteBeamStubLength; }
     public double getNoteBeamGap() { return staffSpacingScale * noteBeamGap; }
-    public double getNoteDotMargin() { return  staffSpacingScale * noteDotMargin; }
-    public double getNoteDotSpacing() { return  staffSpacingScale * noteDotSpacing; }
-    public double getNoteAccSpacing() { return  staffSpacingScale * noteAccSpacing; }
+    public double getNoteDotMargin() { return staffSpacingScale * noteDotMargin; }
+    public double getNoteDotSpacing() { return staffSpacingScale * noteDotSpacing; }
+    public double getNoteAccSpacing() { return staffSpacingScale * noteAccSpacing; }
     public double getNoteLyricFontSize() { return staffSpacingScale * noteLyricFontSize; }
 
     public double getBowMidThickness() { return staffSpacingScale * bowMidThickness; }
     public double getBowTipRoundingFactor() { return staffSpacingScale * bowTipRoundingFactor; }
     public double getBowMaxDxRatio() { return bowMaxDxRatio; }
     public double getBowHeightFactor() { return staffSpacingScale * bowHeightFactor; }
-    public double getBowYNoteSpace() { return  staffSpacingScale * bowYNoteSpace; }
+    public double getBowYNoteSpace() { return staffSpacingScale * bowYNoteSpace; }
     public double getBowXNoteSpace() { return staffSpacingScale * bowXNoteSpace; }
     public double getBowSystemBreakEndXMargin() { return staffSpacingScale * bowSystemBreakEndXMargin; }
 
@@ -237,7 +247,7 @@ public class ScoreStyle {
 
     public double getEditCursorLineThickness() { return staffSpacingScale * EDIT_CURSOR_LINE_THICKNESS; }
     public double getEditCursorBoxWidth() { return staffSpacingScale * EDIT_CURSOR_BOX_WIDTH; }
-    public double getEditCursorPadding() { return staffSpacingScale * EDIT_CURSOR_PADDING * getStaffLineSpacing(); }
+    public double getEditCursorPadding() { return staffSpacingScale * EDIT_CURSOR_PADDING * staffLineSpacing; }
 
     public double getHeaderDefMarginTop() { return staffSpacingScale * headerDefMarginTop; }
     public double getHeaderDefMarginBottom() { return staffSpacingScale * headerDefMarginBottom; }
@@ -280,13 +290,6 @@ public class ScoreStyle {
         };
     }
 
-    public String getEditInsertColor(Selectable element) {
-        return switch (element.getVoice()) {
-            case 1 -> voice1InsertColor;
-            default -> voice2InsertColor;
-        };
-    }
-
     public String getEditInsertColor(int voice) {
         return switch (voice) {
             case 1 -> voice1InsertColor;
@@ -296,4 +299,7 @@ public class ScoreStyle {
             default -> "#000000";
         };
     }
+
+
+    public void setStaffSpacingScale(double staffSpacingScale) { this.staffSpacingScale = staffSpacingScale; }
 }

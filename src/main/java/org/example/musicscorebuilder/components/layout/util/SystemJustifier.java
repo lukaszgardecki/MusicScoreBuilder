@@ -1,17 +1,13 @@
 package org.example.musicscorebuilder.components.layout.util;
 
-import org.example.musicscorebuilder.components.layout.*;
-import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
+import org.example.musicscorebuilder.components.layout.MeasureLayout;
+import org.example.musicscorebuilder.components.layout.SegmentLayout;
+import org.example.musicscorebuilder.components.layout.SystemLayout;
 import org.example.musicscorebuilder.components.music.SegmentType;
 
 import java.util.List;
 
 public class SystemJustifier {
-    private final ScoreStyle style;
-
-    public SystemJustifier(ScoreStyle style) {
-        this.style = style;
-    }
 
     public void justify(SystemLayout system) {
         List<MeasureLayout> measures = system.getMeasures();
@@ -24,6 +20,7 @@ public class SystemJustifier {
         resetExtraWidths(measures);
 
         double currentSystemWidth = system.getWidth();
+        var style = system.getPageLayout().getParent().getStyle();
         if (currentSystemWidth < targetWidth * style.getSystemMinFullnessRatio()) { return; }
 
         double extraSpace = targetWidth - currentSystemWidth;

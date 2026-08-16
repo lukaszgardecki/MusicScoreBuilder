@@ -60,8 +60,8 @@ public abstract class AbstractPaletteSectionController<T> {
         int columns = getColumnsCount();
         for (int i = 0; i < columns; i++) {
             javafx.scene.layout.ColumnConstraints colConstraints = new javafx.scene.layout.ColumnConstraints();
-            colConstraints.setPercentWidth(100.0 / columns);
-            colConstraints.setHgrow(javafx.scene.layout.Priority.ALWAYS);
+            colConstraints.setPrefWidth(defaultCanvasWidth + 12);
+            colConstraints.setHalignment(javafx.geometry.HPos.CENTER);
             gridPane.getColumnConstraints().add(colConstraints);
         }
 
@@ -69,6 +69,7 @@ public abstract class AbstractPaletteSectionController<T> {
         int index = 0;
         for (T item : items) {
             Button btn = createPaletteButton(item);
+            btn.setMaxWidth(Double.MAX_VALUE);
 
             int col = index % columns;
             int row = index / columns;
