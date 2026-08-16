@@ -82,18 +82,18 @@ public class ScoreStyle {
 
     private static final double HEADER_DEF_MARGIN_TOP                       = 0.0;
     private static final double HEADER_DEF_MARGIN_BOTTOM                    = 4.0;
-    private static final double HEADER_DEF_NUMBER_NEW_FONT_SIZE             = 3.3;
-    private static final double HEADER_DEF_NUMBER_OLD_FONT_SIZE             = 2.5;
-    private static final double HEADER_DEF_TITLE_FONT_SIZE                  = 3.3;
-    private static final double HEADER_DEF_SUBTITLE_FONT_SIZE               = 2.5;
-    private static final double HEADER_DEF_COMPOSER_FONT_SIZE               = 2.0;
-    private static final double HEADER_DEF_NUM_BOX_MIN_WIDTH                = 9.0;
-    private static final double HEADER_DEF_NUM_BOX_MIN_HEIGHT               = 7.0;
+    private static final double HEADER_DEF_NUMBER_NEW_FONT_SIZE             = 4.5;
+    private static final double HEADER_DEF_NUMBER_OLD_FONT_SIZE             = 3.8;
+    private static final double HEADER_DEF_TITLE_FONT_SIZE                  = 4.5;
+    private static final double HEADER_DEF_SUBTITLE_FONT_SIZE               = 3.8;
+    private static final double HEADER_DEF_COMPOSER_FONT_SIZE               = 2.8;
+    private static final double HEADER_DEF_NUM_BOX_MIN_WIDTH                = 11.0;
+    private static final double HEADER_DEF_NUM_BOX_MIN_HEIGHT               = 9.0;
     private static final double HEADER_DEF_NUM_BOX_RADIUS                   = 1.0;
     private static final double HEADER_DEF_NUM_BOX_STROKE_WIDTH             = 0.05;
     private static final double HEADER_DEF_NUM_BOX_SPACING                  = 0.8;
-    private static final double HEADER_DEF_NUM_BOX_PADDING_X                = 0.5;
-    private static final double HEADER_DEF_NUM_BOX_PADDING_Y                = 0.5;
+    private static final double HEADER_DEF_NUM_BOX_PADDING_X                = 1.2;
+    private static final double HEADER_DEF_NUM_BOX_PADDING_Y                = 1.2;
 
     private static final double FOOTER_DEF_PAGE_NUM_FONT_SIZE               = 2.0;
 
