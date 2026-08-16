@@ -107,13 +107,13 @@ public class ToolbarController {
 
     @FXML
     private void addMeasure() {
-        storageService.getScore().addNewMeasure();
+        stateManager.getCurrentMode().appendMeasure();
         stateManager.notifyScoreChanged();
     }
 
     @FXML
     private void removeMeasure() {
-        storageService.getScore().removeLastMeasure();
+        stateManager.getCurrentMode().removeLastMeasure();
         stateManager.notifyScoreChanged();
     }
 

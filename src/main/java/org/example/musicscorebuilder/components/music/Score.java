@@ -33,13 +33,6 @@ public class Score {
     }
 
     public void add(ScoreMode scoreMode) { scoreModes.add(scoreMode); }
-    public void addNewMeasure() {
-        scoreModes.forEach(ScoreMode::appendMeasure);
-    }
-
-    public void removeLastMeasure() {
-        scoreModes.forEach(ScoreMode::removeLastMeasure);
-    }
 
     public String getNumberNew() { return numberNew; }
     public String getNumberOld() { return numberOld; }
