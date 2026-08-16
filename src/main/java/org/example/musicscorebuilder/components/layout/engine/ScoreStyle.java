@@ -249,26 +249,26 @@ public class ScoreStyle {
     public double getEditCursorBoxWidth() { return staffSpacingScale * EDIT_CURSOR_BOX_WIDTH; }
     public double getEditCursorPadding() { return staffSpacingScale * EDIT_CURSOR_PADDING * staffLineSpacing; }
 
-    public double getHeaderDefMarginTop() { return staffSpacingScale * headerDefMarginTop; }
-    public double getHeaderDefMarginBottom() { return staffSpacingScale * headerDefMarginBottom; }
-    public double getHeaderDefNumberNewFontSize() { return staffSpacingScale * headerDefNumberNewFontSize; }
-    public double getHeaderDefNumberOldFontSize() { return staffSpacingScale * headerDefNumberOldFontSize; }
-    public double getHeaderDefTitleFontSize() { return staffSpacingScale * headerDefTitleFontSize; }
-    public double getHeaderDefSubtitleFontSize() { return staffSpacingScale * headerDefSubtitleFontSize; }
-    public double getHeaderDefComposerFontSize() { return staffSpacingScale * headerDefComposerFontSize; }
-    public double getHeaderDefNumBoxMinWidth() { return staffSpacingScale * headerDefNumBoxMinWidth; }
-    public double getHeaderDefNumBoxMinHeight() { return staffSpacingScale * headerDefNumBoxMinHeight; }
-    public double getHeaderDefNumBoxRadius() { return staffSpacingScale * headerDefNumBoxRadius; }
-    public double getHeaderDefNumBoxStrokeWidth() { return staffSpacingScale * headerDefNumBoxStrokeWidth; }
-    public double getHeaderDefNumBoxSpacing() { return staffSpacingScale * headerDefNumBoxSpacing; }
-    public double getHeaderDefNumBoxPaddingX() { return staffSpacingScale * headerDefNumBoxPaddingX; }
-    public double getHeaderDefNumBoxPaddingY() { return staffSpacingScale * headerDefNumBoxPaddingY; }
+    public double getHeaderDefMarginTop() { return headerDefMarginTop; }
+    public double getHeaderDefMarginBottom() { return headerDefMarginBottom; }
+    public double getHeaderDefNumberNewFontSize() { return headerDefNumberNewFontSize; }
+    public double getHeaderDefNumberOldFontSize() { return headerDefNumberOldFontSize; }
+    public double getHeaderDefTitleFontSize() { return headerDefTitleFontSize; }
+    public double getHeaderDefSubtitleFontSize() { return headerDefSubtitleFontSize; }
+    public double getHeaderDefComposerFontSize() { return headerDefComposerFontSize; }
+    public double getHeaderDefNumBoxMinWidth() { return headerDefNumBoxMinWidth; }
+    public double getHeaderDefNumBoxMinHeight() { return headerDefNumBoxMinHeight; }
+    public double getHeaderDefNumBoxRadius() { return headerDefNumBoxRadius; }
+    public double getHeaderDefNumBoxStrokeWidth() { return headerDefNumBoxStrokeWidth; }
+    public double getHeaderDefNumBoxSpacing() { return headerDefNumBoxSpacing; }
+    public double getHeaderDefNumBoxPaddingX() { return headerDefNumBoxPaddingX; }
+    public double getHeaderDefNumBoxPaddingY() { return headerDefNumBoxPaddingY; }
 
-    public double getFooterDefPageNumFontSize() { return staffSpacingScale * footerDefPageNumFontSize; }
+    public double getFooterDefPageNumFontSize() { return footerDefPageNumFontSize; }
 
-    public double getFrameStrokeThickness() { return staffSpacingScale * frameStrokeThickness; }
-    public double getFrameStrokeDashLength() { return staffSpacingScale * frameStrokeDashLength; }
-    public double getFrameStrokeSpaceLength() { return staffSpacingScale * frameStrokeSpaceLength; }
+    public double getFrameStrokeThickness() { return frameStrokeThickness; }
+    public double getFrameStrokeDashLength() { return frameStrokeDashLength; }
+    public double getFrameStrokeSpaceLength() { return frameStrokeSpaceLength; }
     public String getFrameStrokeColor() { return frameStrokeColor; }
 
     public double getTieMaxThickness() { return staffSpacingScale * TIE_MAX_THICKNESS; }
