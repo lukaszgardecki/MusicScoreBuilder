@@ -6,8 +6,10 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.GridPane;
 import org.example.musicscorebuilder.components.layout.Selectable;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
+import org.example.musicscorebuilder.components.music.Frame;
 import org.example.musicscorebuilder.components.music.LayoutAction;
 import org.example.musicscorebuilder.components.music.Measure;
+import org.example.musicscorebuilder.components.music.ScoreMode;
 import org.example.musicscorebuilder.components.views.BreakSystemIconView;
 import org.example.musicscorebuilder.managers.ScoreStateManager;
 
@@ -47,6 +49,12 @@ public class LayoutSectionController extends AbstractPaletteSectionController<La
             if (action == LayoutAction.SYSTEM_BREAK) {
                 boolean newState = !measure.hasSystemBreak();
                 measure.setSystemBreak(newState);
+
+                ScoreStateManager.getInstance().notifyScoreChanged();
+                return true;
+            } else  if (action == LayoutAction.VERTICAL_FRAME) {
+                ScoreMode mode = ScoreStateManager.getInstance().getCurrentMode();
+                mode.addFrame(new Frame(measure.getIndex()));
 
                 ScoreStateManager.getInstance().notifyScoreChanged();
                 return true;

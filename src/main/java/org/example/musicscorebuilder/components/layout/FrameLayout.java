@@ -21,25 +21,14 @@ public class FrameLayout implements Selectable, PageBlockLayout {
         this.style = style;
         this.frameData = frameData;
 
-        this.marginTop = style.getHeaderDefMarginTop();
-        this.marginBottom = style.getHeaderDefMarginBottom();
+        this.marginTop = frameData.getMarginTop() > 0 ? frameData.getMarginTop() : style.getFrameDefMarginTop();
+        this.marginBottom = style.getFrameDefMarginBottom();
         this.x = parent.getMarginLeft();
         this.y = parent.getMarginTop() + parent.getOccupiedHeight();
         this.contentY = y + marginTop;
-
         this.width = frameData.getWidth() > 0 ? frameData.getWidth() : parent.getEffectiveWidth();
-
-        double defaultHeight = style.toSp(20) + marginTop + marginBottom;
-        this.height = frameData.getHeight() > 0 ? frameData.getHeight() : defaultHeight;
-        this.contentHeight = Math.max(0, this.height - marginTop - marginBottom);
-
-        if (frameData.getWidth() <= 0) {
-            frameData.setWidth(this.width);
-        }
-        if (frameData.getHeight() <= 0) {
-            frameData.setHeight(this.height);
-        }
-
+        this.contentHeight = frameData.getHeight() > 0 ? frameData.getHeight() : style.getFrameDefHeight();
+        this.height = this.contentHeight + this.marginTop + this.marginBottom;
         this.numberNewFontSize = style.getHeaderDefNumberNewFontSize();
         this.numberOldFontSize = style.getHeaderDefNumberOldFontSize();
         this.titleFontSize = style.getHeaderDefTitleFontSize();
@@ -110,6 +99,12 @@ public class FrameLayout implements Selectable, PageBlockLayout {
     public void setHeight(double height) {
         this.height = height;
         this.contentHeight = Math.max(0, height - marginTop - marginBottom);
-        this.frameData.setHeight(height);
+        this.frameData.setHeight(contentHeight);
+    }
+
+    public void setContentHeight(double newContentHeight) {
+        this.contentHeight = Math.max(0, newContentHeight);
+        this.height = this.contentHeight + this.marginTop + this.marginBottom;
+        this.frameData.setHeight(this.contentHeight);
     }
 }

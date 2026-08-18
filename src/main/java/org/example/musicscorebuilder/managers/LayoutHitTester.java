@@ -24,9 +24,14 @@ public class LayoutHitTester {
                 continue;
             }
 
-            FrameLayout header = page.getHeader();
-            if (header != null && header.contains(pageX, pageY)) {
-                return header;
+            List<FrameLayout> frames = page.getFrames();
+            if (frames != null) {
+                for (int f = 0; f < frames.size(); f++) {
+                    FrameLayout frame = frames.get(f);
+                    if (frame != null && frame.contains(pageX, pageY)) {
+                        return frame;
+                    }
+                }
             }
 
             List<SystemLayout> systems = page.getSystems();

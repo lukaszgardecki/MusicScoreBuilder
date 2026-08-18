@@ -42,23 +42,8 @@ public class PageLayout {
     }
 
     public ScoreLayout getParent() { return parent; }
+    public FooterLayout getFooter() { return footer; }
     public List<PageBlockLayout> getBlocks() { return blocks; }
-
-    public List<SystemLayout> getSystems() {
-        return blocks.stream()
-                .filter(SystemLayout.class::isInstance)
-                .map(SystemLayout.class::cast)
-                .toList();
-    }
-
-    public FrameLayout getHeader() {
-        return blocks.stream()
-                .filter(FrameLayout.class::isInstance)
-                .map(FrameLayout.class::cast)
-                .findFirst()
-                .orElse(null);
-    }
-
     public double getHeight() { return height; }
     public double getWidth() { return width; }
     public double getEffectiveY() { return marginTop; }
@@ -93,7 +78,19 @@ public class PageLayout {
     public double getX() { return x; }
     public double getY() { return y; }
     public int getNumber() { return number; }
-    public FooterLayout getFooter() { return footer; }
+    public List<SystemLayout> getSystems() {
+        return blocks.stream()
+                .filter(SystemLayout.class::isInstance)
+                .map(SystemLayout.class::cast)
+                .toList();
+    }
+
+    public List<FrameLayout> getFrames() {
+        return blocks.stream()
+                .filter(FrameLayout.class::isInstance)
+                .map(FrameLayout.class::cast)
+                .toList();
+    }
 
     public void setLastSystemSpaceBelow(double spaceBelow) {
         List<SystemLayout> systems = getSystems();

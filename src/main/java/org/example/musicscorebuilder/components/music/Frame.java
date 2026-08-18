@@ -12,38 +12,30 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 )
 public class Frame {
 
-    @JsonProperty("w")
-    private double width;
+    @JsonProperty("w") private double width;
+    @JsonProperty("h") private double height;
+    @JsonProperty("mTop") private double marginTop;
+    @JsonProperty("mIdx") private int measureIndex;
 
-    @JsonProperty("h")
-    private double height;
-
-    @JsonProperty("mIdx")
-    private int measureIndex;
-
-    @JsonProperty("title")
-    private String title;
-
-    @JsonProperty("subtitle")
-    private String subtitle;
-
-    @JsonProperty("composer")
-    private String composer;
-
-    @JsonProperty("numOld")
-    private String numberOld;
-
-    @JsonProperty("numNew")
-    private String numberNew;
+    @JsonProperty("title") private String title;
+    @JsonProperty("subtitle") private String subtitle;
+    @JsonProperty("composer") private String composer;
+    @JsonProperty("numOld") private String numberOld;
+    @JsonProperty("numNew") private String numberNew;
 
     public Frame() {
-        this(0, 0, 0, null, null, null, null, null);
+        this(0, 0, 0, 0, null, null, null, null, null);
+    }
+
+    public Frame(int measureIndex) {
+        this(0, 0, 0, measureIndex, null, null, null, null, null);
     }
 
     @JsonCreator
     public Frame(
             @JsonProperty("w") double width,
             @JsonProperty("h") double height,
+            @JsonProperty("mTop") double  marginTop,
             @JsonProperty("mIdx") int measureIndex,
             @JsonProperty("title") String title,
             @JsonProperty("subtitle") String subtitle,
@@ -53,6 +45,7 @@ public class Frame {
     ) {
         this.width = width;
         this.height = height;
+        this.marginTop = marginTop;
         this.measureIndex = measureIndex;
         this.title = title;
         this.subtitle = subtitle;
@@ -61,43 +54,30 @@ public class Frame {
         this.numberNew = numberNew;
     }
 
-    @JsonProperty("w")
-    public double getWidth() { return width; }
-    @JsonProperty("w")
-    public void setWidth(double width) { this.width = width; }
+    @JsonProperty("w") public double getWidth() { return width; }
+    @JsonProperty("w") public void setWidth(double width) { this.width = width; }
 
-    @JsonProperty("h")
-    public double getHeight() { return height; }
-    @JsonProperty("h")
-    public void setHeight(double height) { this.height = height; }
+    @JsonProperty("mTop") public double getMarginTop() { return marginTop; }
+    @JsonProperty("mTop") public void setMarginTop(double marginTop) { this.marginTop = marginTop; }
 
-    @JsonProperty("mIdx")
-    public int getMeasureIndex() { return measureIndex; }
-    @JsonProperty("mIdx")
-    public void setMeasureIndex(int measureIndex) { this.measureIndex = measureIndex; }
+    @JsonProperty("h") public double getHeight() { return height; }
+    @JsonProperty("h") public void setHeight(double height) { this.height = height; }
 
-    @JsonProperty("title")
-    public String getTitle() { return title; }
-    @JsonProperty("title")
-    public void setTitle(String title) { this.title = title; }
+    @JsonProperty("mIdx") public int getMeasureIndex() { return measureIndex; }
+    @JsonProperty("mIdx") public void setMeasureIndex(int measureIndex) { this.measureIndex = measureIndex; }
 
-    @JsonProperty("subtitle")
-    public String getSubtitle() { return subtitle; }
-    @JsonProperty("subtitle")
-    public void setSubtitle(String subtitle) { this.subtitle = subtitle; }
+    @JsonProperty("title") public String getTitle() { return title; }
+    @JsonProperty("title") public void setTitle(String title) { this.title = title; }
 
-    @JsonProperty("composer")
-    public String getComposer() { return composer; }
-    @JsonProperty("composer")
-    public void setComposer(String composer) { this.composer = composer; }
+    @JsonProperty("subtitle") public String getSubtitle() { return subtitle; }
+    @JsonProperty("subtitle") public void setSubtitle(String subtitle) { this.subtitle = subtitle; }
 
-    @JsonProperty("numOld")
-    public String getNumberOld() { return numberOld; }
-    @JsonProperty("numOld")
-    public void setNumberOld(String numberOld) { this.numberOld = numberOld; }
+    @JsonProperty("composer") public String getComposer() { return composer; }
+    @JsonProperty("composer") public void setComposer(String composer) { this.composer = composer; }
 
-    @JsonProperty("numNew")
-    public String getNumberNew() { return numberNew; }
-    @JsonProperty("numNew")
-    public void setNumberNew(String numberNew) { this.numberNew = numberNew; }
+    @JsonProperty("numOld") public String getNumberOld() { return numberOld; }
+    @JsonProperty("numOld") public void setNumberOld(String numberOld) { this.numberOld = numberOld; }
+
+    @JsonProperty("numNew") public String getNumberNew() { return numberNew; }
+    @JsonProperty("numNew") public void setNumberNew(String numberNew) { this.numberNew = numberNew; }
 }

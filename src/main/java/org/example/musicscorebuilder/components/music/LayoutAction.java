@@ -1,7 +1,8 @@
 package org.example.musicscorebuilder.components.music;
 
 public enum LayoutAction {
-    SYSTEM_BREAK("Podział systemu");
+    SYSTEM_BREAK("Podział systemu"),
+    VERTICAL_FRAME("Wstaw ramkę pionową");
 
     private final String title;
 

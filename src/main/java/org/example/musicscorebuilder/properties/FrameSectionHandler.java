@@ -86,7 +86,7 @@ public class FrameSectionHandler implements PropertySection {
         if (visible) {
             isUpdating = true;
             widthSpinner.getValueFactory().setValue(frameLayout.getWidth());
-            heightSpinner.getValueFactory().setValue(frameLayout.getHeight());
+            heightSpinner.getValueFactory().setValue(frameLayout.getContentHeight());
 
             Frame frameData = frameLayout.getFrameData();
             Score score = storageService.getScore();
@@ -118,7 +118,7 @@ public class FrameSectionHandler implements PropertySection {
     private void onHeightChanged(double newHeight) {
         FrameLayout frame = getSelectedFrame();
         if (frame != null) {
-            frame.setHeight(newHeight);
+            frame.setContentHeight(newHeight);
             stateManager.notifyScoreChanged();
         }
     }

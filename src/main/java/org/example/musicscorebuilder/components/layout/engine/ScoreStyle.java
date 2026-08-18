@@ -80,8 +80,8 @@ public class ScoreStyle {
     private static final double EDIT_CURSOR_BOX_WIDTH                       = 2.0;
     private static final double EDIT_CURSOR_PADDING                         = 0.8;
 
-    private static final double HEADER_DEF_MARGIN_TOP                       = 0.0;
-    private static final double HEADER_DEF_MARGIN_BOTTOM                    = 4.0;
+    private static final double FRAME_DEF_MARGIN_TOP                        = 0.0;
+    private static final double FRAME_DEF_MARGIN_BOTTOM                     = 4.0;
     private static final double HEADER_DEF_NUMBER_NEW_FONT_SIZE             = 4.5;
     private static final double HEADER_DEF_NUMBER_OLD_FONT_SIZE             = 3.8;
     private static final double HEADER_DEF_TITLE_FONT_SIZE                  = 4.5;
@@ -169,8 +169,7 @@ public class ScoreStyle {
     private double selectionFrameExtraHeight = SELECTION_FRAME_EXTRA_HEIGHT;
     private double selectionFrameRadius = SELECTION_FRAME_RADIUS;
 
-    private double headerDefMarginTop = HEADER_DEF_MARGIN_TOP;
-    private double headerDefMarginBottom = HEADER_DEF_MARGIN_BOTTOM;
+    private double frameDefMarginBottom = FRAME_DEF_MARGIN_BOTTOM;
     private double headerDefNumberNewFontSize = HEADER_DEF_NUMBER_NEW_FONT_SIZE;
     private double headerDefNumberOldFontSize = HEADER_DEF_NUMBER_OLD_FONT_SIZE;
     private double headerDefTitleFontSize = HEADER_DEF_TITLE_FONT_SIZE;
@@ -187,6 +186,7 @@ public class ScoreStyle {
     private double footerDefPageNumFontSize = FOOTER_DEF_PAGE_NUM_FONT_SIZE;
 
     private double frameDefHeight = FRAME_DEF_HEIGHT;
+    private double frameDefMarginTop = FRAME_DEF_MARGIN_TOP;
     private double frameStrokeThickness = FRAME_STROKE_THICKNESS;
     private double frameStrokeDashLength = FRAME_STROKE_DASH_LENGTH;
     private double frameStrokeSpaceLength = FRAME_STROKE_SPACE_LENGTH;
@@ -251,8 +251,6 @@ public class ScoreStyle {
     public double getEditCursorBoxWidth() { return staffSpacingScale * EDIT_CURSOR_BOX_WIDTH; }
     public double getEditCursorPadding() { return staffSpacingScale * EDIT_CURSOR_PADDING * staffLineSpacing; }
 
-    public double getHeaderDefMarginTop() { return headerDefMarginTop; }
-    public double getHeaderDefMarginBottom() { return headerDefMarginBottom; }
     public double getHeaderDefNumberNewFontSize() { return headerDefNumberNewFontSize; }
     public double getHeaderDefNumberOldFontSize() { return headerDefNumberOldFontSize; }
     public double getHeaderDefTitleFontSize() { return headerDefTitleFontSize; }
@@ -265,10 +263,11 @@ public class ScoreStyle {
     public double getHeaderDefNumBoxSpacing() { return headerDefNumBoxSpacing; }
     public double getHeaderDefNumBoxPaddingX() { return headerDefNumBoxPaddingX; }
     public double getHeaderDefNumBoxPaddingY() { return headerDefNumBoxPaddingY; }
-
     public double getFooterDefPageNumFontSize() { return footerDefPageNumFontSize; }
 
-    public double getFrameDefHeight() { return staffSpacingScale * frameDefHeight; }
+    public double getFrameDefHeight() { return frameDefHeight; }
+    public double getFrameDefMarginTop() { return frameDefMarginTop; }
+    public double getFrameDefMarginBottom() { return frameDefMarginBottom; }
     public double getFrameStrokeThickness() { return frameStrokeThickness; }
     public double getFrameStrokeDashLength() { return frameStrokeDashLength; }
     public double getFrameStrokeSpaceLength() { return frameStrokeSpaceLength; }

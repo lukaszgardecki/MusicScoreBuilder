@@ -13,7 +13,7 @@ import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HeaderView extends ComponentView {
+public class FrameView extends ComponentView {
 
     private static final Map<String, Color> COLOR_CACHE = new HashMap<>();
     private static final Map<String, Font> FONT_CACHE = new HashMap<>();

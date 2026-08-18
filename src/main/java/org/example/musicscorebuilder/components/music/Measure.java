@@ -182,6 +182,8 @@ public class Measure {
         return keySignature != null ? keySignature.getAlterForStep(step) : 0;
     }
 
+    public int getIndex() { return parentMode.getMeasures().indexOf(this); }
+
     public int getEffectiveAlterBefore(Segment targetSegment, int staffId, PitchStep step, int octave) {
         int activeAlter = getKeySignatureAlterForStep(step);
 
