@@ -67,6 +67,7 @@ public class HeaderView extends ComponentView {
     private void drawNumber(GraphicsContext gc, FrameLayout header, double x, double y, double sp) {
         Text topNode = createNewNumberTextNode(header, sp);
         Text bottomNode = createOldNumberTextNode(header, sp);
+        if (topNode.getText().isBlank() && bottomNode.getText().isBlank()) return;
 
         boolean hasTop = !topNode.getText().isEmpty();
         boolean hasBottom = !bottomNode.getText().isEmpty();
