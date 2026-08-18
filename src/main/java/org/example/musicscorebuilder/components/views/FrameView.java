@@ -40,33 +40,33 @@ public class FrameView extends ComponentView {
         return FONT_CACHE.computeIfAbsent(key, k -> Font.font(family, weight, posture, roundedSize));
     }
 
-    public void draw(GraphicsContext gc, FrameLayout header, double pageX, double pageY, double sp) {
-        ScoreStyle style = header.getScoreStyle();
-        double headerX = pageX + header.getX() * sp;
-        double contentY = pageY + header.getContentY() * sp;
-        double headerWidth = header.getWidth() * sp;
-        double contentHeight = header.getContentHeight() * sp;
+    public void draw(GraphicsContext gc, FrameLayout frame, double pageX, double pageY, double sp) {
+        ScoreStyle style = frame.getScoreStyle();
+        double frameX = pageX + frame.getX() * sp;
+        double contentY = pageY + frame.getContentY() * sp;
+        double frameWidth = frame.getWidth() * sp;
+        double contentHeight = frame.getContentHeight() * sp;
         gc.save();
-        gc.setStroke(getCachedColor(header.isSelected() ? style.getSelectColor(header) : style.getFrameStrokeColor()));
+        gc.setStroke(getCachedColor(frame.isSelected() ? style.getSelectColor(frame) : style.getFrameStrokeColor()));
         gc.setLineWidth(style.getFrameStrokeThickness() * sp);
         gc.setLineDashes(style.getFrameStrokeDashLength() * sp, style.getFrameStrokeSpaceLength() * sp);
-        gc.strokeRect(headerX, contentY, headerWidth, contentHeight);
+        gc.strokeRect(frameX, contentY, frameWidth, contentHeight);
         gc.restore();
 
         gc.save();
-        double centerX = headerX + (headerWidth / 2.0);
-        double rightX = headerX + headerWidth;
+        double centerX = frameX + (frameWidth / 2.0);
+        double rightX = frameX + frameWidth;
 
-        drawNumber(gc, header, headerX, contentY, sp);
-        drawTitle(gc, header, centerX, contentY, sp);
-        drawSubtitle(gc, header, centerX, contentY, sp);
-        drawComposer(gc, header, rightX, contentY, sp);
+        drawNumber(gc, frame, frameX, contentY, sp);
+        drawTitle(gc, frame, centerX, contentY, sp);
+        drawSubtitle(gc, frame, centerX, contentY, sp);
+        drawComposer(gc, frame, rightX, contentY, sp);
         gc.restore();
     }
 
-    private void drawNumber(GraphicsContext gc, FrameLayout header, double x, double y, double sp) {
-        Text topNode = createNewNumberTextNode(header, sp);
-        Text bottomNode = createOldNumberTextNode(header, sp);
+    private void drawNumber(GraphicsContext gc, FrameLayout frame, double x, double y, double sp) {
+        Text topNode = createNewNumberTextNode(frame, sp);
+        Text bottomNode = createOldNumberTextNode(frame, sp);
         if (topNode.getText().isBlank() && bottomNode.getText().isBlank()) return;
 
         boolean hasTop = !topNode.getText().isEmpty();
@@ -78,9 +78,9 @@ public class FrameView extends ComponentView {
         double bottomWidth = hasBottom ? bottomNode.getLayoutBounds().getWidth() : 0;
         double bottomHeight = hasBottom ? bottomNode.getLayoutBounds().getHeight() : 0;
 
-        double spacing = header.getNumBoxSpacing() * sp;
-        double paddingX = header.getNumBoxPaddingX() * sp;
-        double paddingY = header.getNumBoxPaddingY() * sp;
+        double spacing = frame.getNumBoxSpacing() * sp;
+        double paddingX = frame.getNumBoxPaddingX() * sp;
+        double paddingY = frame.getNumBoxPaddingY() * sp;
 
         double contentWidth = Math.max(topWidth, bottomWidth);
         double contentHeight = 0;
@@ -90,10 +90,10 @@ public class FrameView extends ComponentView {
             contentHeight += bottomHeight;
         }
 
-        double rectWidth = Math.max(header.getNumBoxMinWidth() * sp, contentWidth + 2 * paddingX);
-        double rectHeight = Math.max(header.getNumBoxMinHeight() * sp, contentHeight + 2 * paddingY);
+        double rectWidth = Math.max(frame.getNumBoxMinWidth() * sp, contentWidth + 2 * paddingX);
+        double rectHeight = Math.max(frame.getNumBoxMinHeight() * sp, contentHeight + 2 * paddingY);
 
-        drawNumberBox(gc, header, x, y, rectWidth, rectHeight, sp);
+        drawNumberBox(gc, frame, x, y, rectWidth, rectHeight, sp);
 
         double centerX = x + (rectWidth / 2.0);
         double startY = y + (rectHeight - contentHeight) / 2.0;
@@ -109,9 +109,9 @@ public class FrameView extends ComponentView {
         }
     }
 
-    private void drawNumberBox(GraphicsContext gc, FrameLayout header, double x, double y, double width, double height, double sp) {
-        double boxRadius = header.getNumBoxRadius() * sp;
-        double strokeWidth = header.getNumBoxStrokeWidth() * sp;
+    private void drawNumberBox(GraphicsContext gc, FrameLayout frame, double x, double y, double width, double height, double sp) {
+        double boxRadius = frame.getNumBoxRadius() * sp;
+        double strokeWidth = frame.getNumBoxStrokeWidth() * sp;
 
         gc.setFill(BOX_GRADIENT);
         gc.fillRoundRect(x, y, width, height, boxRadius, boxRadius);
@@ -131,50 +131,50 @@ public class FrameView extends ComponentView {
         gc.fillText(node.getText(), centerX, centerY);
     }
 
-    private Text createNewNumberTextNode(FrameLayout header, double sp) {
-        String newNum = header.getNumberNew() != null ? String.valueOf(header.getNumberNew()) : "";
-        Font font = getFont("Times New Roman", FontWeight.BOLD, FontPosture.REGULAR, header.getNumberNewFontSize() * sp);
+    private Text createNewNumberTextNode(FrameLayout frame, double sp) {
+        String newNum = frame.getNumberNew() != null ? String.valueOf(frame.getNumberNew()) : "";
+        Font font = getFont("Times New Roman", FontWeight.BOLD, FontPosture.REGULAR, frame.getNumberNewFontSize() * sp);
         Text textNode = new Text(newNum);
         textNode.setFont(font);
         textNode.setBoundsType(TextBoundsType.VISUAL);
         return textNode;
     }
 
-    private Text createOldNumberTextNode(FrameLayout header, double sp) {
-        String oldNum = header.getNumberOld() != null ? String.valueOf(header.getNumberOld()) : "";
+    private Text createOldNumberTextNode(FrameLayout frame, double sp) {
+        String oldNum = frame.getNumberOld() != null ? String.valueOf(frame.getNumberOld()) : "";
         String formatted = oldNum.isEmpty() ? "" : "[" + oldNum + "]";
-        Font font = getFont("Times New Roman", FontWeight.NORMAL, FontPosture.REGULAR, header.getNumberOldFontSize() * sp);
+        Font font = getFont("Times New Roman", FontWeight.NORMAL, FontPosture.REGULAR, frame.getNumberOldFontSize() * sp);
         Text textNode = new Text(formatted);
         textNode.setFont(font);
         textNode.setBoundsType(TextBoundsType.VISUAL);
         return textNode;
     }
 
-    private void drawTitle(GraphicsContext gc, FrameLayout header, double x, double y, double sp) {
-        String title = header.getTitle() != null ? header.getTitle() : "";
+    private void drawTitle(GraphicsContext gc, FrameLayout frame, double x, double y, double sp) {
+        String title = frame.getTitle() != null ? frame.getTitle() : "";
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.TOP);
-        gc.setFont(getFont("Times New Roman", FontWeight.BOLD, FontPosture.REGULAR, header.getTitleFontSize() * sp));
+        gc.setFont(getFont("Times New Roman", FontWeight.BOLD, FontPosture.REGULAR, frame.getTitleFontSize() * sp));
         gc.setFill(Color.BLACK);
         gc.fillText(title, x, y);
     }
 
-    private void drawSubtitle(GraphicsContext gc, FrameLayout header, double x, double y, double sp) {
-        String subtitle = header.getSubtitle() != null ? header.getSubtitle() : "";
-        double subtitleY = y + (header.getTitleFontSize() + 2.5) * sp;
+    private void drawSubtitle(GraphicsContext gc, FrameLayout frame, double x, double y, double sp) {
+        String subtitle = frame.getSubtitle() != null ? frame.getSubtitle() : "";
+        double subtitleY = y + (frame.getTitleFontSize() + 2.5) * sp;
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.TOP);
-        gc.setFont(getFont("Times New Roman", FontWeight.NORMAL, FontPosture.ITALIC, header.getSubtitleFontSize() * sp));
+        gc.setFont(getFont("Times New Roman", FontWeight.NORMAL, FontPosture.ITALIC, frame.getSubtitleFontSize() * sp));
         gc.setFill(Color.BLACK);
         gc.fillText(subtitle, x, subtitleY);
     }
 
-    private void drawComposer(GraphicsContext gc, FrameLayout header, double x, double y, double sp) {
-        String composer = header.getComposer() != null ? header.getComposer() : "";
-        double composerY = y + (header.getContentHeight() - header.getComposerFontSize()) * sp;
+    private void drawComposer(GraphicsContext gc, FrameLayout frame, double x, double y, double sp) {
+        String composer = frame.getComposer() != null ? frame.getComposer() : "";
+        double composerY = y + (frame.getContentHeight() - frame.getComposerFontSize()) * sp;
         gc.setTextAlign(TextAlignment.RIGHT);
         gc.setTextBaseline(VPos.TOP);
-        gc.setFont(getFont("Times New Roman", FontWeight.NORMAL, FontPosture.REGULAR, header.getComposerFontSize() * sp));
+        gc.setFont(getFont("Times New Roman", FontWeight.NORMAL, FontPosture.REGULAR, frame.getComposerFontSize() * sp));
         gc.setFill(Color.BLACK);
         gc.fillText(composer, x, composerY);
     }

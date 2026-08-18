@@ -231,12 +231,14 @@ public class SongbookActionManager {
             Consumer<File> selectFileCallback,
             Consumer<File> openFileCallback
     ) {
-        Score defaultScore = ScoreFactory.createEmptySoloTemplate();
-        defaultScore.setNumberNew(metadata.numberNew());
-        defaultScore.setNumberOld(metadata.numberOld());
-        defaultScore.setTitle(metadata.title());
-        defaultScore.setSubtitle(metadata.subtitle());
-        defaultScore.setComposer(metadata.composer());
+        Score score = new Score(
+                metadata.numberOld(),
+                metadata.numberNew(),
+                metadata.title(),
+                metadata.subtitle(),
+                metadata.composer()
+        );
+        Score defaultScore = ScoreFactory.createEmptySoloTemplate(score);
 
         File targetFile = fileService.getTargetFile(defaultScore, parentDir);
         if (targetFile.exists()) {

@@ -9,20 +9,15 @@ import org.example.musicscorebuilder.data.StorageService;
 public class ScoreFactory {
     private static final int DEFAULT_MEASURES_COUNT = 32;
 
-    public static ScoreMode createSoloMode() {
-        ScoreStyle style = new ScoreStyle();
-        style.setStaffSpacingScale(1.3);
-        return attachNewMode(getScore(), ModeType.SOLO, style);
-    }
-
-    public static ScoreMode createHarmonyMode() {
-        ScoreStyle style = new ScoreStyle();
-        style.setStaffSpacingScale(1.0);
-        return attachNewMode(getScore(), ModeType.HARMONY, style);
-    }
-
     public static Score createEmptySoloTemplate() {
         Score score = createDefaultScore();
+        ScoreStyle style = new ScoreStyle();
+        style.setStaffSpacingScale(1.3);
+        attachNewMode(score, ModeType.SOLO, style);
+        return score;
+    }
+
+    public static Score createEmptySoloTemplate(Score score) {
         ScoreStyle style = new ScoreStyle();
         style.setStaffSpacingScale(1.3);
         attachNewMode(score, ModeType.SOLO, style);
@@ -50,5 +45,17 @@ public class ScoreFactory {
 
     private static Score createDefaultScore() {
         return new Score("000", "000", "Tytuł", "Podtytuł", "Kompozytor");
+    }
+
+    private static ScoreMode createSoloMode() {
+        ScoreStyle style = new ScoreStyle();
+        style.setStaffSpacingScale(1.3);
+        return attachNewMode(getScore(), ModeType.SOLO, style);
+    }
+
+    private static ScoreMode createHarmonyMode() {
+        ScoreStyle style = new ScoreStyle();
+        style.setStaffSpacingScale(1.0);
+        return attachNewMode(getScore(), ModeType.HARMONY, style);
     }
 }
