@@ -27,6 +27,9 @@ public class FrameSectionHandler implements PropertySection {
     private final GridPane grid;
     private Spinner<Double> widthSpinner;
     private Spinner<Double> heightSpinner;
+    private Spinner<Double> marginTopSpinner;
+    private Spinner<Double> marginBottomSpinner;
+
     private final List<FrameMetaRow> metaRows = new ArrayList<>();
     private boolean isUpdating = false;
     int startRow = 0;
@@ -48,25 +51,45 @@ public class FrameSectionHandler implements PropertySection {
     }
 
     private void setupFrameDimensionControls() {
+        // --- Szerokość ---
         widthSpinner = createSpinner(1.0, 2000.0, getDefaultWidth(), 0.1);
         Button widthResetBtn = createResetButton("Przywróć domyślną szerokość strony");
         widthResetBtn.setOnAction(e -> resetDimension(this::getDefaultWidth, widthSpinner, this::onWidthChanged));
         widthSpinner.valueProperty().addListener((obs, oldV, newV) -> {
             if (newV != null && !isUpdating) onWidthChanged(newV);
         });
-
         HBox widthBox = createLabeledRow("Szerokość:", widthSpinner, widthResetBtn);
         grid.add(widthBox, 0, startRow++, 2, 1);
 
+        // --- Wysokość ---
         heightSpinner = createSpinner(1.0, 2000.0, getDefaultHeight(), 0.1);
         Button heightResetBtn = createResetButton("Przywróć domyślną wysokość ze stylu");
         heightResetBtn.setOnAction(e -> resetDimension(this::getDefaultHeight, heightSpinner, this::onHeightChanged));
         heightSpinner.valueProperty().addListener((obs, oldV, newV) -> {
             if (newV != null && !isUpdating) onHeightChanged(newV);
         });
-
         HBox heightBox = createLabeledRow("Wysokość:", heightSpinner, heightResetBtn);
         grid.add(heightBox, 0, startRow++, 2, 1);
+
+        // --- Margines Górny ---
+        marginTopSpinner = createSpinner(0.0, 1000.0, getDefaultMarginTop(), 0.1);
+        Button marginTopResetBtn = createResetButton("Przywróć domyślny margines górny ze stylu");
+        marginTopResetBtn.setOnAction(e -> resetDimension(this::getDefaultMarginTop, marginTopSpinner, this::onMarginTopChanged));
+        marginTopSpinner.valueProperty().addListener((obs, oldV, newV) -> {
+            if (newV != null && !isUpdating) onMarginTopChanged(newV);
+        });
+        HBox marginTopBox = createLabeledRow("Margines góra:", marginTopSpinner, marginTopResetBtn);
+        grid.add(marginTopBox, 0, startRow++, 2, 1);
+
+        // --- Margines Dolny ---
+        marginBottomSpinner = createSpinner(0.0, 1000.0, getDefaultMarginBottom(), 0.1);
+        Button marginBottomResetBtn = createResetButton("Przywróć domyślny margines dolny ze stylu");
+        marginBottomResetBtn.setOnAction(e -> resetDimension(this::getDefaultMarginBottom, marginBottomSpinner, this::onMarginBottomChanged));
+        marginBottomSpinner.valueProperty().addListener((obs, oldV, newV) -> {
+            if (newV != null && !isUpdating) onMarginBottomChanged(newV);
+        });
+        HBox marginBottomBox = createLabeledRow("Margines dół:", marginBottomSpinner, marginBottomResetBtn);
+        grid.add(marginBottomBox, 0, startRow++, 2, 1);
     }
 
     private void addSpacer() {
@@ -87,6 +110,8 @@ public class FrameSectionHandler implements PropertySection {
             isUpdating = true;
             widthSpinner.getValueFactory().setValue(frameLayout.getWidth());
             heightSpinner.getValueFactory().setValue(frameLayout.getContentHeight());
+            marginTopSpinner.getValueFactory().setValue(frameLayout.getMarginTop());
+            marginBottomSpinner.getValueFactory().setValue(frameLayout.getMarginBottom());
 
             Frame frameData = frameLayout.getFrameData();
             Score score = storageService.getScore();
@@ -123,6 +148,22 @@ public class FrameSectionHandler implements PropertySection {
         }
     }
 
+    private void onMarginTopChanged(double newMargin) {
+        FrameLayout frame = getSelectedFrame();
+        if (frame != null) {
+            frame.setMarginTop(newMargin);
+            stateManager.notifyScoreChanged();
+        }
+    }
+
+    private void onMarginBottomChanged(double newMargin) {
+        FrameLayout frame = getSelectedFrame();
+        if (frame != null) {
+            frame.setMarginBottom(newMargin);
+            stateManager.notifyScoreChanged();
+        }
+    }
+
     private FrameLayout getSelectedFrame() {
         if (stateManager.getSelectedItem() instanceof FrameLayout fl && fl.isSelected()) {
             return fl;
@@ -137,6 +178,14 @@ public class FrameSectionHandler implements PropertySection {
 
     private double getDefaultHeight() {
         return stateManager.getCurrentMode().getStyle().getFrameDefHeight();
+    }
+
+    private double getDefaultMarginTop() {
+        return stateManager.getCurrentMode().getStyle().getFrameDefMarginTop();
+    }
+
+    private double getDefaultMarginBottom() {
+        return stateManager.getCurrentMode().getStyle().getFrameDefMarginBottom();
     }
 
 

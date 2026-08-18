@@ -170,7 +170,13 @@ public class LayoutEngine {
     }
 
     private SystemLayout addNewSystemToPage(PageLayout pageLayout, ScoreMode scoreMode) {
-        pageLayout.setLastSystemSpaceBelow(style.getSystemSpacing());
+        boolean previousIsSystem = !pageLayout.getBlocks().isEmpty()
+                && pageLayout.getBlocks().getLast() instanceof SystemLayout;
+
+        if (previousIsSystem) {
+            pageLayout.setLastSystemSpaceBelow(style.getSystemSpacing());
+        }
+
         var newSystem = new SystemLayout(pageLayout, scoreMode.getBraceType());
         pageLayout.addBlock(newSystem);
         return newSystem;

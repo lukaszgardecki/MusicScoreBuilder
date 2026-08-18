@@ -7,7 +7,7 @@ public class FrameLayout implements Selectable, PageBlockLayout {
     private final Frame frameData;
     private final ScoreStyle style;
     private final PageLayout parent;
-    private final double marginTop, marginBottom;
+    private double marginTop, marginBottom;
     private double x, y;
     private double width, height;
     private double contentY;
@@ -21,14 +21,16 @@ public class FrameLayout implements Selectable, PageBlockLayout {
         this.style = style;
         this.frameData = frameData;
 
-        this.marginTop = frameData.getMarginTop() > 0 ? frameData.getMarginTop() : style.getFrameDefMarginTop();
-        this.marginBottom = style.getFrameDefMarginBottom();
+        this.marginTop = frameData.getMarginTop() != null ? frameData.getMarginTop() : style.getFrameDefMarginTop();
+        this.marginBottom = frameData.getMarginBottom() != null ? frameData.getMarginBottom() : style.getFrameDefMarginBottom();
+        this.width = frameData.getWidth() != null ? frameData.getWidth() : parent.getEffectiveWidth();
+        this.contentHeight = frameData.getHeight() != null ? frameData.getHeight() : style.getFrameDefHeight();
+
         this.x = parent.getMarginLeft();
         this.y = parent.getMarginTop() + parent.getOccupiedHeight();
         this.contentY = y + marginTop;
-        this.width = frameData.getWidth() > 0 ? frameData.getWidth() : parent.getEffectiveWidth();
-        this.contentHeight = frameData.getHeight() > 0 ? frameData.getHeight() : style.getFrameDefHeight();
         this.height = this.contentHeight + this.marginTop + this.marginBottom;
+
         this.numberNewFontSize = style.getHeaderDefNumberNewFontSize();
         this.numberOldFontSize = style.getHeaderDefNumberOldFontSize();
         this.titleFontSize = style.getHeaderDefTitleFontSize();
@@ -71,6 +73,8 @@ public class FrameLayout implements Selectable, PageBlockLayout {
 
     public double getContentY() { return contentY; }
     public double getContentHeight() { return contentHeight; }
+    public double getMarginTop() { return marginTop; }
+    public double getMarginBottom() { return marginBottom; }
     public String getTitle() { return frameData.getTitle() != null ? frameData.getTitle() : ""; }
     public String getSubtitle() { return frameData.getSubtitle() != null ? frameData.getSubtitle() : ""; }
     public String getComposer() { return frameData.getComposer() != null ? frameData.getComposer() : ""; }
@@ -106,5 +110,18 @@ public class FrameLayout implements Selectable, PageBlockLayout {
         this.contentHeight = Math.max(0, newContentHeight);
         this.height = this.contentHeight + this.marginTop + this.marginBottom;
         this.frameData.setHeight(this.contentHeight);
+    }
+
+    public void setMarginTop(double marginTop) {
+        this.marginTop = Math.max(0, marginTop);
+        this.contentY = this.y + this.marginTop;
+        this.height = this.contentHeight + this.marginTop + this.marginBottom;
+        this.frameData.setMarginTop(this.marginTop);
+    }
+
+    public void setMarginBottom(double marginBottom) {
+        this.marginBottom = Math.max(0, marginBottom);
+        this.height = this.contentHeight + this.marginTop + this.marginBottom;
+        this.frameData.setMarginBottom(this.marginBottom);
     }
 }

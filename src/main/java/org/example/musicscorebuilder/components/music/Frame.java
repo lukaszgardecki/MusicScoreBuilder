@@ -12,9 +12,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 )
 public class Frame {
 
-    @JsonProperty("w") private double width;
-    @JsonProperty("h") private double height;
-    @JsonProperty("mTop") private double marginTop;
+    @JsonProperty("w") private Double width;
+    @JsonProperty("h") private Double height;
+    @JsonProperty("mTop") private Double marginTop;
+    @JsonProperty("mBot") private Double marginBottom;
     @JsonProperty("mIdx") private int measureIndex;
 
     @JsonProperty("title") private String title;
@@ -24,18 +25,19 @@ public class Frame {
     @JsonProperty("numNew") private String numberNew;
 
     public Frame() {
-        this(0, 0, 0, 0, null, null, null, null, null);
+        this(null, null, null, null, 0, null, null, null, null, null);
     }
 
     public Frame(int measureIndex) {
-        this(0, 0, 0, measureIndex, null, null, null, null, null);
+        this(null, null, null, null, measureIndex, null, null, null, null, null);
     }
 
     @JsonCreator
     public Frame(
-            @JsonProperty("w") double width,
-            @JsonProperty("h") double height,
-            @JsonProperty("mTop") double  marginTop,
+            @JsonProperty("w") Double width,
+            @JsonProperty("h") Double height,
+            @JsonProperty("mTop") Double marginTop,
+            @JsonProperty("mBot") Double marginBottom,
             @JsonProperty("mIdx") int measureIndex,
             @JsonProperty("title") String title,
             @JsonProperty("subtitle") String subtitle,
@@ -46,6 +48,7 @@ public class Frame {
         this.width = width;
         this.height = height;
         this.marginTop = marginTop;
+        this.marginBottom = marginBottom;
         this.measureIndex = measureIndex;
         this.title = title;
         this.subtitle = subtitle;
@@ -54,14 +57,17 @@ public class Frame {
         this.numberNew = numberNew;
     }
 
-    @JsonProperty("w") public double getWidth() { return width; }
-    @JsonProperty("w") public void setWidth(double width) { this.width = width; }
+    @JsonProperty("w") public Double getWidth() { return width; }
+    @JsonProperty("w") public void setWidth(Double width) { this.width = width; }
 
-    @JsonProperty("mTop") public double getMarginTop() { return marginTop; }
-    @JsonProperty("mTop") public void setMarginTop(double marginTop) { this.marginTop = marginTop; }
+    @JsonProperty("mTop") public Double getMarginTop() { return marginTop; }
+    @JsonProperty("mTop") public void setMarginTop(Double marginTop) { this.marginTop = marginTop; }
 
-    @JsonProperty("h") public double getHeight() { return height; }
-    @JsonProperty("h") public void setHeight(double height) { this.height = height; }
+    @JsonProperty("mBot") public Double getMarginBottom() { return marginBottom; }
+    @JsonProperty("mBot") public void setMarginBottom(Double marginBottom) { this.marginBottom = marginBottom; }
+
+    @JsonProperty("h") public Double getHeight() { return height; }
+    @JsonProperty("h") public void setHeight(Double height) { this.height = height; }
 
     @JsonProperty("mIdx") public int getMeasureIndex() { return measureIndex; }
     @JsonProperty("mIdx") public void setMeasureIndex(int measureIndex) { this.measureIndex = measureIndex; }

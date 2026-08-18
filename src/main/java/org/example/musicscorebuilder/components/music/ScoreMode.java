@@ -302,6 +302,8 @@ public class ScoreMode {
         frame.setComposer(score.getComposer());
         frame.setNumberNew(score.getNumberNew());
         frame.setNumberOld(score.getNumberOld());
+        frame.setMarginTop(style.getFrameDefMarginTop());
+        frame.setMarginBottom(style.getFrameDefMarginBottom());
         this.frames.add(frame);
     }
 }
