@@ -24,19 +24,30 @@ public class FrameSectionHandler implements PropertySection {
     private final StorageService storageService = StorageService.getInstance();
 
     private final TitledPane pane;
+    private final GridPane grid;
     private Spinner<Double> widthSpinner;
     private Spinner<Double> heightSpinner;
     private final List<FrameMetaRow> metaRows = new ArrayList<>();
     private boolean isUpdating = false;
+    int startRow = 0;
 
     public FrameSectionHandler(TitledPane pane, GridPane grid) {
         this.pane = pane;
-        setupDimensionControls(grid);
-        setupMetadataHeaderAndRows(grid);
+        this.grid = grid;
+        setupFrameDimensionControls();
+        addSpacer();
+        setupFrameDataControls();
     }
 
+    private void setupFrameDataControls() {
+        metaRows.add(new FrameMetaRow("Tytuł", Frame::getTitle, Frame::setTitle, Score::getTitle, grid, startRow++));
+        metaRows.add(new FrameMetaRow("Podtytuł", Frame::getSubtitle, Frame::setSubtitle, Score::getSubtitle, grid, startRow++));
+        metaRows.add(new FrameMetaRow("Nowy numer", Frame::getNumberNew, Frame::setNumberNew, Score::getNumberNew, grid, startRow++));
+        metaRows.add(new FrameMetaRow("Stary numer", Frame::getNumberOld, Frame::setNumberOld, Score::getNumberOld, grid, startRow++));
+        metaRows.add(new FrameMetaRow("Kompozytor", Frame::getComposer, Frame::setComposer, Score::getComposer, grid, startRow++));
+    }
 
-    private void setupDimensionControls(GridPane grid) {
+    private void setupFrameDimensionControls() {
         widthSpinner = createSpinner(1.0, 2000.0, getDefaultWidth(), 0.1);
         Button widthResetBtn = createResetButton("Przywróć domyślną szerokość strony");
         widthResetBtn.setOnAction(e -> resetDimension(this::getDefaultWidth, widthSpinner, this::onWidthChanged));
@@ -45,7 +56,7 @@ public class FrameSectionHandler implements PropertySection {
         });
 
         HBox widthBox = createLabeledRow("Szerokość:", widthSpinner, widthResetBtn);
-        grid.add(widthBox, 0, 0, 2, 1);
+        grid.add(widthBox, 0, startRow++, 2, 1);
 
         heightSpinner = createSpinner(1.0, 2000.0, getDefaultHeight(), 0.1);
         Button heightResetBtn = createResetButton("Przywróć domyślną wysokość ze stylu");
@@ -55,21 +66,13 @@ public class FrameSectionHandler implements PropertySection {
         });
 
         HBox heightBox = createLabeledRow("Wysokość:", heightSpinner, heightResetBtn);
-        grid.add(heightBox, 0, 1, 2, 1);
+        grid.add(heightBox, 0, startRow++, 2, 1);
     }
 
-    private void setupMetadataHeaderAndRows(GridPane grid) {
-        Label metaHeaderLabel = new Label("Zawartość ramki");
-        metaHeaderLabel.getStyleClass().add("metadata-title");
-        metaHeaderLabel.setStyle("-fx-padding: 4 0 2 0;");
-        grid.add(metaHeaderLabel, 0, 3, 2, 1);
-
-        int startRow = 4;
-        metaRows.add(new FrameMetaRow("Tytuł", Frame::getTitle, Frame::setTitle, Score::getTitle, grid, startRow++));
-        metaRows.add(new FrameMetaRow("Podtytuł", Frame::getSubtitle, Frame::setSubtitle, Score::getSubtitle, grid, startRow++));
-        metaRows.add(new FrameMetaRow("Nowy numer", Frame::getNumberNew, Frame::setNumberNew, Score::getNumberNew, grid, startRow++));
-        metaRows.add(new FrameMetaRow("Stary numer", Frame::getNumberOld, Frame::setNumberOld, Score::getNumberOld, grid, startRow++));
-        metaRows.add(new FrameMetaRow("Kompozytor", Frame::getComposer, Frame::setComposer, Score::getComposer, grid, startRow++));
+    private void addSpacer() {
+        Region spacer = new Region();
+        spacer.setMinHeight(12.0);
+        grid.add(spacer, 0, startRow++, 2, 1);
     }
 
     @Override
