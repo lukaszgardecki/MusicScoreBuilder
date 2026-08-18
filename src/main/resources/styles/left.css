@@ -63,9 +63,6 @@
     -fx-font-weight: bold;
 }
 
-
-
-
 /* ZAWARTOŚĆ ZAKŁADEK */
 .titled-pane {
     -fx-box-border: transparent;
@@ -105,19 +102,15 @@
 .palette-btn {
     -fx-background-color: #ffffff;
     -fx-background-insets: 0;
-
     -fx-border-color: rgba(208, 208, 208, 0.51);
     -fx-border-width: 1px;
     -fx-border-insets: 0;
-
     -fx-padding: 0;
     -fx-background-radius: 0;
     -fx-border-radius: 0;
     -fx-cursor: hand;
     -fx-alignment: center;
-
     -fx-min-width: 0px;
-
     -fx-min-height: 40px;
     -fx-pref-height: 40px;
     -fx-max-height: 40px;
@@ -140,23 +133,3 @@
 
 .fraction-text { -fx-font-size: 20px; }
 .single-text { -fx-font-size: 24px; }
-
-
-
-
-
-/* WŁAŚCIWOŚCI */
-.properties-grid {
-    -fx-hgap: 10px;
-    -fx-vgap: 8px;
-}
-
-.properties-label {
-    -fx-alignment: CENTER-LEFT;
-    -fx-text-fill: #333333;
-}
-
-.properties-spinner {
-    -fx-pref-width: 80px;
-    -fx-alignment: CENTER-RIGHT;
-}

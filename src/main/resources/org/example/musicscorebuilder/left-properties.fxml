@@ -5,11 +5,20 @@
 <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: #ffffff;"
             xmlns="http://javafx.com/javafx/17"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="org.example.musicscorebuilder.properties.GeneralPropertiesController">
+            fx:controller="org.example.musicscorebuilder.properties.PropertiesPanelController">
 
     <VBox spacing="10" style="-fx-padding: 10;">
-        <TitledPane text="Ogólne" expanded="true" styleClass="titled-pane">
+        <TitledPane fx:id="generalPane" text="Ogólne" expanded="true" styleClass="titled-pane">
             <GridPane fx:id="generalProperties" styleClass="properties-grid" snapToPixel="false">
+                <columnConstraints>
+                    <ColumnConstraints hgrow="ALWAYS" halignment="LEFT" />
+                    <ColumnConstraints hgrow="NEVER" halignment="RIGHT" />
+                </columnConstraints>
+            </GridPane>
+        </TitledPane>
+
+        <TitledPane fx:id="framePane" text="Właściwości ramki" expanded="true" styleClass="titled-pane" visible="false" managed="false">
+            <GridPane fx:id="frameProperties" styleClass="properties-grid" snapToPixel="false">
                 <columnConstraints>
                     <ColumnConstraints hgrow="ALWAYS" halignment="LEFT" />
                     <ColumnConstraints hgrow="NEVER" halignment="RIGHT" />

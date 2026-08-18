@@ -33,9 +33,37 @@ public class LayoutEngine {
         scoreLayout.addPageLayout(currentPage);
         SystemLayout currentSystem = addNewSystemToPage(currentPage, scoreMode);
 
-        for (Measure measure : scoreMode.getMeasures()) {
-            MeasureLayout measureLayout = getOrCreateMeasureLayout(measure, currentSystem);
+        Map<Integer, List<Frame>> framesByMeasureIndex = new HashMap<>();
+        for (Frame frame : scoreMode.getFrames()) {
+            framesByMeasureIndex.computeIfAbsent(frame.getMeasureIndex(), k -> new ArrayList<>()).add(frame);
+        }
 
+        List<Measure> measures = scoreMode.getMeasures();
+        for (int i = 0; i < measures.size(); i++) {
+            Measure measure = measures.get(i);
+
+            if (framesByMeasureIndex.containsKey(i)) {
+                for (Frame frameData : framesByMeasureIndex.get(i)) {
+                    if (!currentSystem.getMeasures().isEmpty()) {
+                        systemJustifier.justify(currentSystem);
+                    } else {
+                        currentPage.getBlocks().remove(currentSystem);
+                    }
+
+                    FrameLayout frameLayout = new FrameLayout(currentPage, style, frameData);
+
+                    if (currentPage.getRemainingHeight() < frameLayout.getHeight()) {
+                        currentPage = createPageLayout(scoreLayout);
+                        scoreLayout.addPageLayout(currentPage);
+                        frameLayout = new FrameLayout(currentPage, style, frameData);
+                    }
+
+                    currentPage.addBlock(frameLayout);
+                    currentSystem = addNewSystemToPage(currentPage, scoreMode);
+                }
+            }
+
+            MeasureLayout measureLayout = getOrCreateMeasureLayout(measure, currentSystem);
             double courtesyPadding = calculateCourtesyPadding(measure, measureLayout);
 
             boolean forcedBreak = false;
@@ -61,7 +89,9 @@ public class LayoutEngine {
             currentSystem.add(measureLayout);
         }
 
-        systemJustifier.justify(currentSystem);
+        if (!currentSystem.getMeasures().isEmpty()) {
+            systemJustifier.justify(currentSystem);
+        }
 
         postProcessLayout(scoreMode, scoreLayout);
         return scoreLayout;
@@ -142,7 +172,7 @@ public class LayoutEngine {
     private SystemLayout addNewSystemToPage(PageLayout pageLayout, ScoreMode scoreMode) {
         pageLayout.setLastSystemSpaceBelow(style.getSystemSpacing());
         var newSystem = new SystemLayout(pageLayout, scoreMode.getBraceType());
-        pageLayout.add(newSystem);
+        pageLayout.addBlock(newSystem);
         return newSystem;
     }
 

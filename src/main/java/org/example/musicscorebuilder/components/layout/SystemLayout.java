@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class SystemLayout {
+public class SystemLayout implements PageBlockLayout {
     private final PageLayout pageLayout;
     private final Optional<BraceLayout> braceLayout;
     private final List<MeasureLayout> measures = new ArrayList<>();
@@ -25,6 +25,19 @@ public class SystemLayout {
         };
     }
 
+    @Override
+    public double getHeight() {
+        if (measures.isEmpty()) return 0.0;
+        double totalPartsHeight = measures.stream()
+                .mapToDouble(MeasureLayout::getHeight)
+                .max().orElse(0.0);
+        return totalPartsHeight + spaceBelow;
+    }
+    @Override public double getWidth() { return measures.stream().mapToDouble(MeasureLayout::getWidth).sum() + getBraceWidth(); }
+    @Override public double getX() { return x; }
+    @Override public double getY() { return y; }
+    @Override public void setY(double y) { this.y = y; }
+
     public void add(MeasureLayout measureLayout) {
         measures.add(measureLayout);
         measureLayout.setParent(this);
@@ -35,18 +48,8 @@ public class SystemLayout {
     public PageLayout getPageLayout() { return pageLayout; }
     public Optional<BraceLayout> getBraceLayout() { return braceLayout; }
     public List<MeasureLayout> getMeasures() { return measures; }
-    public double getHeight() {
-        if (measures.isEmpty()) return 0.0;
-        double totalPartsHeight = measures.stream()
-                .mapToDouble(MeasureLayout::getHeight)
-                .max().orElse(0.0);
-        return totalPartsHeight + spaceBelow;
-    }
-    public double getWidth() { return measures.stream().mapToDouble(MeasureLayout::getWidth).sum() + getBraceWidth(); }
     public double getBraceWidth() { return braceLayout.map(BraceLayout::getWidth).orElse(0.0); }
     public double getSpaceBelow() { return spaceBelow; }
-    public double getX() { return x; }
-    public double getY() { return y; }
     public List<TieLayout> getTies() { return ties; }
     public List<SlurLayout> getSlurs() { return slurs; }
 

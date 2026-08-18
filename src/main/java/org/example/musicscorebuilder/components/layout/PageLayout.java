@@ -5,9 +5,8 @@ import java.util.List;
 
 public class PageLayout {
     private ScoreLayout parent;
-    private final FrameLayout header;
     private final FooterLayout footer;
-    private final List<SystemLayout> systems = new ArrayList<>();
+    private final List<PageBlockLayout> blocks = new ArrayList<>();
     private final double height;
     private final double width;
     private final double effectiveHeight;
@@ -33,22 +32,36 @@ public class PageLayout {
         this.marginRight = style.toSp(page.getMarginRightMm());
         this.x = (width + style.getPageSpacing()) * pageIndex;
         this.number = pageIndex + 1;
-        this.header = number == 1 ? new FrameLayout(this, style) : null;
         this.footer = new FooterLayout(this, style);
     }
 
-    public void add(SystemLayout system) {
-        systems.add(system);
+    public void addBlock(PageBlockLayout block) {
+        double currentY = getEffectiveY() + getOccupiedHeight();
+        block.setY(currentY);
+        blocks.add(block);
     }
 
     public ScoreLayout getParent() { return parent; }
-    public List<SystemLayout> getSystems() { return systems; }
+    public List<PageBlockLayout> getBlocks() { return blocks; }
+
+    public List<SystemLayout> getSystems() {
+        return blocks.stream()
+                .filter(SystemLayout.class::isInstance)
+                .map(SystemLayout.class::cast)
+                .toList();
+    }
+
+    public FrameLayout getHeader() {
+        return blocks.stream()
+                .filter(FrameLayout.class::isInstance)
+                .map(FrameLayout.class::cast)
+                .findFirst()
+                .orElse(null);
+    }
+
     public double getHeight() { return height; }
     public double getWidth() { return width; }
-    public double getEffectiveY() {
-        var headerHeight = header != null ? header.getHeight() : 0;
-        return marginTop + headerHeight;
-    }
+    public double getEffectiveY() { return marginTop; }
     public double getEffectiveWidth() { return effectiveWidth; }
     public double getEffectiveHeight() { return effectiveHeight; }
     public double getMarginTop() { return marginTop; }
@@ -57,24 +70,22 @@ public class PageLayout {
     public double getMarginRight() { return marginRight; }
     public double getRemainingWidth() { return effectiveWidth - getOccupiedWidth(); }
     public double getRemainingHeight() {
-        var headerHeight = header != null ? header.getHeight() : 0;
-        return effectiveHeight - headerHeight - footer.getHeight() - getOccupiedHeight();
+        return effectiveHeight - footer.getHeight() - getOccupiedHeight();
     }
 
     public double getOccupiedWidth() {
         double max = 0.0;
-        for (int i = 0; i < systems.size(); i++) {
-            double w = systems.get(i).getWidth();
+        for (PageBlockLayout block : blocks) {
+            double w = block.getWidth();
             if (w > max) max = w;
         }
         return max;
     }
 
     public double getOccupiedHeight() {
-        if (systems.isEmpty()) return 0.0;
         double sum = 0.0;
-        for (int i = 0; i < systems.size(); i++) {
-            sum += systems.get(i).getHeight();
+        for (PageBlockLayout block : blocks) {
+            sum += block.getHeight();
         }
         return sum;
     }
@@ -82,10 +93,10 @@ public class PageLayout {
     public double getX() { return x; }
     public double getY() { return y; }
     public int getNumber() { return number; }
-    public FrameLayout getHeader() { return header; }
     public FooterLayout getFooter() { return footer; }
 
     public void setLastSystemSpaceBelow(double spaceBelow) {
+        List<SystemLayout> systems = getSystems();
         if (systems.isEmpty()) return;
         systems.getLast().setSpaceBelow(spaceBelow);
     }

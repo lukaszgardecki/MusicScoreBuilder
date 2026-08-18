@@ -49,11 +49,15 @@ public class ScoreStateManager {
             if (!isAdditive) {
                 deselectAll();
             }
+            notifySelectionChanged();
             return;
         }
 
         List<Selectable> itemsToSelect = LayoutHitTester.resolveSelection(item);
-        if (itemsToSelect.isEmpty()) return;
+        if (itemsToSelect.isEmpty()) {
+            notifySelectionChanged();
+            return;
+        }
 
         if (isAdditive) {
             boolean allAlreadySelected = new HashSet<>(selectedItems).containsAll(itemsToSelect);
@@ -71,10 +75,7 @@ public class ScoreStateManager {
             selectAll(itemsToSelect);
         }
 
-        Selectable currentSelected = getSelectedItem();
-        for (SelectionChangeListener listener : selectionChangeListeners) {
-            listener.onSelectionChanged(currentSelected);
-        }
+        notifySelectionChanged();
     }
 
     public void setCurrentModeIndex(int index) {
@@ -116,6 +117,13 @@ public class ScoreStateManager {
     public void notifyScoreChanged() {
         for (ScoreChangeListener l : scoreChangeListeners) {
             l.onScoreChanged();
+        }
+    }
+
+    private void notifySelectionChanged() {
+        Selectable currentSelected = getSelectedItem();
+        for (SelectionChangeListener listener : selectionChangeListeners) {
+            listener.onSelectionChanged(currentSelected);
         }
     }
 

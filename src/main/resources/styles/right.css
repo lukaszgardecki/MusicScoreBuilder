@@ -1,14 +1,3 @@
-/* --- OGÓLNE STYLE PRZYCISKÓW --- */
-.btn {
-    -fx-font-size: 11px;
-    -fx-font-weight: bold;
-    -fx-padding: 7px 10px;
-    -fx-background-radius: 6px;
-    -fx-border-radius: 6px;
-    -fx-cursor: hand;
-    -fx-alignment: center;
-}
-
 /* --- PRZYCISK: NOWY TRYB --- */
 .btn-success {
     -fx-background-color: #ECFDF5;
@@ -118,14 +107,7 @@
     -fx-background-color: #9CA3AF;
 }
 
-/* --- KLASY IKON SVG --- */
-.icon {
-    -fx-min-width: 16px;
-    -fx-min-height: 16px;
-    -fx-max-width: 16px;
-    -fx-max-height: 16px;
-}
-
+/* --- KLASY IKON AKCJI PRAWEGO PANELU --- */
 .icon-folder-add {
     -fx-shape: "M10 4H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2zm3 9h-2v2h-2v-2H7v-2h2V9h2v2h2v2z";
 }
@@ -177,45 +159,4 @@
 .list-cell:filled:selected:hover {
     -fx-background-color: #DBEAFE;
     -fx-text-fill: #1E40AF;
-}
-
-/* --- SEKCJA METADANYCH UTWORU --- */
-.metadata-panel {
-    -fx-background-color: #FAFAFA;
-    -fx-border-color: #E5E7EB;
-    -fx-border-width: 1px;
-    -fx-border-radius: 6px;
-    -fx-background-radius: 6px;
-    -fx-padding: 8px 10px;
-}
-
-.metadata-panel:disabled {
-    -fx-opacity: 0.5;
-}
-
-.metadata-title {
-    -fx-font-size: 11px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #374151;
-}
-
-.field-label {
-    -fx-font-size: 10px;
-    -fx-text-fill: #6B7280;
-    -fx-font-weight: bold;
-}
-
-.metadata-input {
-    -fx-font-size: 11px;
-    -fx-padding: 4px 6px;
-    -fx-background-color: #FFFFFF;
-    -fx-border-color: #D1D5DB;
-    -fx-border-radius: 4px;
-    -fx-background-radius: 4px;
-    -fx-focus-color: transparent;
-    -fx-faint-focus-color: transparent;
-}
-
-.metadata-input:focused {
-    -fx-border-color: #3B82F6;
 }

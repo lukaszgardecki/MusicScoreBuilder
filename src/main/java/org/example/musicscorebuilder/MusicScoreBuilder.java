@@ -21,6 +21,7 @@ public class MusicScoreBuilder extends Application {
                 Objects.requireNonNull(getClass().getResource("/styles/center.css")).toExternalForm(),
                 Objects.requireNonNull(getClass().getResource("/styles/left.css")).toExternalForm(),
                 Objects.requireNonNull(getClass().getResource("/styles/right.css")).toExternalForm(),
+                Objects.requireNonNull(getClass().getResource("/styles/forms.css")).toExternalForm(),
                 Objects.requireNonNull(getClass().getResource("/styles/toolbar.css")).toExternalForm(),
                 Objects.requireNonNull(getClass().getResource("/styles/menubar.css")).toExternalForm(),
                 Objects.requireNonNull(getClass().getResource("/styles/sheet.css")).toExternalForm()

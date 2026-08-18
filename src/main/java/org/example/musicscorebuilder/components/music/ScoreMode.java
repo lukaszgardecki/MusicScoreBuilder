@@ -26,6 +26,9 @@ public class ScoreMode {
     private final List<Measure> measures = new ArrayList<>();
     private final List<Slur> slurs = new ArrayList<>();
 
+    @JsonProperty("frames")
+    private final List<Frame> frames = new ArrayList<>();
+
     @JsonCreator
     public ScoreMode(
             @JsonProperty("type") ModeType type,
@@ -34,6 +37,7 @@ public class ScoreMode {
             @JsonProperty("staves") List<Staff> staves,
             @JsonProperty("measures") List<Measure> measures,
             @JsonProperty("slurs") List<Slur> slurs,
+            @JsonProperty("frames") List<Frame> frames,
             @JsonProperty("style") ScoreStyle style
     ) {
         this.type = type;
@@ -49,6 +53,12 @@ public class ScoreMode {
             this.slurs.addAll(slurs);
             rebindSlurs();
         }
+        if (frames != null) {
+            this.frames.addAll(frames);
+        }
+        if (this.frames.isEmpty()) {
+            this.frames.add(new Frame());
+        }
     }
 
     public ScoreMode(Score score, ModeType type, ScoreStyle style) {
@@ -60,6 +70,7 @@ public class ScoreMode {
                 : new Barline(BarlineStyle.SINGLE, Barline.Type.START, null);
         this.style = style;
         addDefaultStaves();
+        addDefaultHeaderFrame();
     }
 
     public ScoreStyle getStyle() {
@@ -74,6 +85,7 @@ public class ScoreMode {
         for (int i = 0; i < count; i++) appendMeasure();
     }
     public void addSlur(Slur slur) { slurs.add(slur); }
+    public void addFrame(Frame frame) { frames.add(frame); }
 
     public void appendMeasure() {
         Measure measure = new Measure(staves);
@@ -129,6 +141,17 @@ public class ScoreMode {
         updateSlurIds();
         return slurs;
     }
+
+    @JsonProperty("frames")
+    public List<Frame> getFrames() { return frames; }
+
+    public void setFrames(List<Frame> frames) {
+        this.frames.clear();
+        if (frames != null) {
+            this.frames.addAll(frames);
+        }
+    }
+
     private boolean isNotePresentInMeasures(Note note) {
         if (note == null) return false;
         for (Measure m : measures) {
@@ -270,5 +293,15 @@ public class ScoreMode {
                 staves.add(new Staff(1, new Clef(ClefType.F)));
             }
         }
+    }
+
+    private void addDefaultHeaderFrame() {
+        Frame frame = new Frame();
+        frame.setTitle(score.getTitle());
+        frame.setSubtitle(score.getSubtitle());
+        frame.setComposer(score.getComposer());
+        frame.setNumberNew(score.getNumberNew());
+        frame.setNumberOld(score.getNumberOld());
+        this.frames.add(frame);
     }
 }

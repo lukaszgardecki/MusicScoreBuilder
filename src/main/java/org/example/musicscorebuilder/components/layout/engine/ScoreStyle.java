@@ -97,6 +97,7 @@ public class ScoreStyle {
 
     private static final double FOOTER_DEF_PAGE_NUM_FONT_SIZE               = 2.0;
 
+    private static final double FRAME_DEF_HEIGHT                            = 15.0;
     private static final double FRAME_STROKE_THICKNESS                      = 0.15;
     private static final double FRAME_STROKE_DASH_LENGTH                    = 0.4;
     private static final double FRAME_STROKE_SPACE_LENGTH                   = 0.3;
@@ -185,6 +186,7 @@ public class ScoreStyle {
 
     private double footerDefPageNumFontSize = FOOTER_DEF_PAGE_NUM_FONT_SIZE;
 
+    private double frameDefHeight = FRAME_DEF_HEIGHT;
     private double frameStrokeThickness = FRAME_STROKE_THICKNESS;
     private double frameStrokeDashLength = FRAME_STROKE_DASH_LENGTH;
     private double frameStrokeSpaceLength = FRAME_STROKE_SPACE_LENGTH;
@@ -266,6 +268,7 @@ public class ScoreStyle {
 
     public double getFooterDefPageNumFontSize() { return footerDefPageNumFontSize; }
 
+    public double getFrameDefHeight() { return staffSpacingScale * frameDefHeight; }
     public double getFrameStrokeThickness() { return frameStrokeThickness; }
     public double getFrameStrokeDashLength() { return frameStrokeDashLength; }
     public double getFrameStrokeSpaceLength() { return frameStrokeSpaceLength; }
