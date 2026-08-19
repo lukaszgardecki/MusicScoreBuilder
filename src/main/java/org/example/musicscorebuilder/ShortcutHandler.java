@@ -6,6 +6,7 @@ import javafx.scene.input.KeyEvent;
 import org.example.musicscorebuilder.components.layout.NoteLayout;
 import org.example.musicscorebuilder.components.layout.RestLayout;
 import org.example.musicscorebuilder.components.layout.Selectable;
+import org.example.musicscorebuilder.components.layout.TimeSigLayout;
 import org.example.musicscorebuilder.components.music.NoteRestElement;
 import org.example.musicscorebuilder.components.music.NoteType;
 import org.example.musicscorebuilder.managers.LyricEditorManager;
@@ -38,10 +39,11 @@ public class ShortcutHandler {
         switch (event.getCode()) {
             case L                                      -> handleLyric(event);
             case N                                      -> modeManager.toggleInsertMode();
-            case ESCAPE                                 -> handleEscape();
-            case DIGIT0, NUMPAD0, DELETE                -> handleZero();
-            case BACK_SPACE                             -> handleBackspace();
             case T                                      -> handleTie();
+            case ESCAPE                                 -> handleEscape();
+            case DIGIT0, NUMPAD0                        -> handleZero();
+            case DELETE                                 -> handleDelete();
+            case BACK_SPACE                             -> handleBackspace();
             case PERIOD, DECIMAL                        -> handleDot();
             case LEFT                                   -> scoreNavigator.movePrev();
             case RIGHT                                  -> scoreNavigator.moveNext();
@@ -75,6 +77,16 @@ public class ShortcutHandler {
             // Miejsce na obsługę 0 w trybie wprowadzania
         } else {
             scoreStateManager.convertSelectedNoteToRest();
+        }
+    }
+
+    private void handleDelete() {
+        if (modeManager.isInsertMode()) {
+
+        } else {
+            Selectable item = scoreStateManager.getSelectedItem();
+            if (item instanceof NoteLayout) scoreStateManager.convertSelectedNoteToRest();
+            else if (item instanceof TimeSigLayout) scoreStateManager.removeTimeSignature();
         }
     }
 

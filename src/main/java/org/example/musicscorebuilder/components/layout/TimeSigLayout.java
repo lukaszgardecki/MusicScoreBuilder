@@ -4,6 +4,7 @@ import org.example.musicscorebuilder.components.music.Leland;
 import org.example.musicscorebuilder.components.music.TimeSignature;
 
 public class TimeSigLayout extends ElementLayout {
+    private final TimeSignature timeSignature;
     private final DigitSign[][] digitSigns;
     private final double width, height;
     private double y;
@@ -17,6 +18,7 @@ public class TimeSigLayout extends ElementLayout {
 
     public TimeSigLayout(TimeSignature timeSignature, StaffLayout staff, SegmentLayout parent) {
         super(false, parent, staff);
+        this.timeSignature = timeSignature;
         this.height = staff.getHeight();
         this.y = staff.getY();
         this.scale = staff.getLineSpacing();
@@ -30,6 +32,31 @@ public class TimeSigLayout extends ElementLayout {
     @Override public double getWidth() { return this.width; }
     @Override public double getHeight() { return height; }
     @Override public int getVoice() { return 1; }
+
+    @Override
+    public void setX(double newX) {
+        double oldX = getX();
+        super.setX(newX);
+
+        double deltaX = newX - oldX;
+        if (deltaX == 0) return;
+
+        for (int row = 0; row < digitSigns.length; row++) {
+            for (int col = 0; col < digitSigns[row].length; col++) {
+                DigitSign oldSign = digitSigns[row][col];
+                digitSigns[row][col] = new DigitSign(
+                        oldSign.fontData(),
+                        oldSign.x() + deltaX,
+                        oldSign.y(),
+                        scale
+                );
+            }
+        }
+    }
+
+    public TimeSignature getTimeSignature() { return timeSignature; }
+    public double getFontSize() { return height; }
+    public DigitSign[][] getDigitSigns() { return this.digitSigns; }
 
     private DigitSign[][] createDigitSigns(TimeSignature timeSignature, StaffLayout staff) {
         double signOffsetY = 1 * staff.getLineSpacing();
@@ -68,30 +95,6 @@ public class TimeSigLayout extends ElementLayout {
         double topWidth = getRowWidth(this.digitSigns[0]);
         double bottomWidth = getRowWidth(this.digitSigns[1]);
         return Math.max(topWidth, bottomWidth);
-    }
-
-    public double getFontSize() { return height; }
-    public DigitSign[][] getDigitSigns() { return this.digitSigns; }
-
-    @Override
-    public void setX(double newX) {
-        double oldX = getX();
-        super.setX(newX);
-
-        double deltaX = newX - oldX;
-        if (deltaX == 0) return;
-
-        for (int row = 0; row < digitSigns.length; row++) {
-            for (int col = 0; col < digitSigns[row].length; col++) {
-                DigitSign oldSign = digitSigns[row][col];
-                digitSigns[row][col] = new DigitSign(
-                        oldSign.fontData(),
-                        oldSign.x() + deltaX,
-                        oldSign.y(),
-                        scale
-                );
-            }
-        }
     }
 
     private int[] getDigitsMath(int number) {

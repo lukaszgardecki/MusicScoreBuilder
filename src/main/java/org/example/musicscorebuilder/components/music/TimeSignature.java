@@ -1,11 +1,19 @@
 package org.example.musicscorebuilder.components.music;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
 
+@JsonAutoDetect(
+        fieldVisibility = JsonAutoDetect.Visibility.NONE,
+        getterVisibility = JsonAutoDetect.Visibility.NONE,
+        isGetterVisibility = JsonAutoDetect.Visibility.NONE,
+        setterVisibility = JsonAutoDetect.Visibility.NONE
+)
 public class TimeSignature extends Element {
     public enum Type { FRACTIONAL, COMMON, CUT }
 
@@ -24,13 +32,16 @@ public class TimeSignature extends Element {
     @JsonProperty("t")
     private final Type type;
 
+    private boolean visible = true;
+
     @JsonCreator
     public TimeSignature(
             @JsonProperty("nb") Integer nominalBeat,
             @JsonProperty("nbt") Integer nominalBeatType,
             @JsonProperty("ab") Integer actualBeat,
             @JsonProperty("abt") Integer actualBeatType,
-            @JsonProperty("t") Type type
+            @JsonProperty("t") Type type,
+            @JsonProperty("v") Boolean visible
     ) {
         super(null);
         this.nominalBeat = nominalBeat != null ? nominalBeat : 4;
@@ -38,6 +49,7 @@ public class TimeSignature extends Element {
         this.actualBeat = actualBeat != null ? actualBeat : this.nominalBeat;
         this.actualBeatType = actualBeatType != null ? actualBeatType : this.nominalBeatType;
         this.type = type != null ? type : Type.FRACTIONAL;
+        this.visible = visible != null ? visible : true;
     }
 
     public TimeSignature(int nominalBeat, int nominalBeatType, int actualBeat, int actualBeatType, Type type, Measure parent) {
@@ -57,6 +69,12 @@ public class TimeSignature extends Element {
         this(beat, beatType, beat, beatType, type, null);
     }
 
+    @JsonProperty("v")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Boolean getVisibleForJson() {
+        return visible ? null : false;
+    }
+
     public int getNominalBeat() { return nominalBeat; }
     public int getNominalBeatType() { return nominalBeatType; }
 
@@ -67,6 +85,9 @@ public class TimeSignature extends Element {
     public int getBeatType() { return nominalBeatType; }
 
     public Type getType() { return type; }
+
+    public boolean isVisible() { return visible; }
+    public void setVisible(boolean visible) { this.visible = visible; }
 
     @JsonIgnore
     public boolean isCommon() { return type == Type.COMMON; }

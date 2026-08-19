@@ -176,6 +176,14 @@ public class ScoreStateManager {
         }
     }
 
+    public void removeTimeSignature() {
+        Selectable selected = getSelectedItem();
+        if (selected instanceof TimeSigLayout timeSigLayout) {
+            timeSigLayout.getTimeSignature().setVisible(false);
+            notifyScoreChanged();
+        }
+    }
+
     private void handleSingleNoteConversion(NoteLayout noteLayout) {
         Note currentNote = noteLayout.getNote();
         SegmentLayout segLayout = noteLayout.getSegment();

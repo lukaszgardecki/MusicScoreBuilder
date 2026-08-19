@@ -198,8 +198,12 @@ public class LayoutEngine {
 
         boolean keyChange = measure.getKeySignature() != null && nextMeasure.getKeySignature() != null
                 && !measure.getKeySignature().equals(nextMeasure.getKeySignature());
-        boolean timeChange = measure.getTimeSignature() != null && nextMeasure.getTimeSignature() != null
-                && !measure.getTimeSignature().equals(nextMeasure.getTimeSignature());
+
+        TimeSignature currTS = measure.getTimeSignature();
+        TimeSignature nextTS = nextMeasure.getTimeSignature();
+        boolean timeChange = currTS != null && nextTS != null
+                && nextTS.isVisible()
+                && !nextTS.equals(currTS);
 
         if (keyChange || timeChange) {
             Barline rightBarline = measure.getRightBarline();
@@ -224,7 +228,7 @@ public class LayoutEngine {
 
         if (timeChange) {
             SegmentLayout tempCourtesy = new SegmentLayout(SegmentType.TIME_SIG, measureLayout);
-            tempCourtesy.addTimeSignature(nextMeasure.getTimeSignature());
+            tempCourtesy.addTimeSignature(nextTS);
             padding += tempCourtesy.getWidth();
         }
 
@@ -239,8 +243,12 @@ public class LayoutEngine {
 
         boolean keyChange = nextMeasure.getKeySignature() != null && prevMeasure.getKeySignature() != null
                 && !nextMeasure.getKeySignature().equals(prevMeasure.getKeySignature());
-        boolean timeChange = nextMeasure.getTimeSignature() != null && prevMeasure.getTimeSignature() != null
-                && !nextMeasure.getTimeSignature().equals(prevMeasure.getTimeSignature());
+
+        TimeSignature prevTS = prevMeasure.getTimeSignature();
+        TimeSignature nextTS = nextMeasure.getTimeSignature();
+        boolean timeChange = prevTS != null && nextTS != null
+                && nextTS.isVisible()
+                && !nextTS.equals(prevTS);
 
         if (keyChange || timeChange) {
             Barline rightBarline = prevMeasure.getRightBarline();
@@ -279,7 +287,7 @@ public class LayoutEngine {
         var isFirstMeasure = scoreLayout.getPages().size() == 1 && scoreLayout.getPages().getFirst().getSystems().size() == 1;
         Measure measure = measureLayout.getMeasure();
 
-        if (isFirstMeasure) {
+        if (isFirstMeasure && measure.getTimeSignature() != null && measure.getTimeSignature().isVisible()) {
             measureLayout.addSystemTimeSignature(measure.getTimeSignature());
         }
 
@@ -329,11 +337,15 @@ public class LayoutEngine {
             measureLayout.add(segment);
         }
 
-        if (measure.getTimeSignature() != null && prevMeasure.getTimeSignature() != null
-                && !measure.getTimeSignature().equals(prevMeasure.getTimeSignature())) {
-            SegmentLayout segment = new SegmentLayout(SegmentType.TIME_SIG, measureLayout);
-            segment.addTimeSignature(measure.getTimeSignature());
-            measureLayout.add(segment);
+        TimeSignature currentTS = measure.getTimeSignature();
+        TimeSignature prevTS = prevMeasure.getTimeSignature();
+
+        if (currentTS != null && currentTS.isVisible() && prevTS != null) {
+            if (!currentTS.equals(prevTS)) {
+                SegmentLayout segment = new SegmentLayout(SegmentType.TIME_SIG, measureLayout);
+                segment.addTimeSignature(currentTS);
+                measureLayout.add(segment);
+            }
         }
     }
 
