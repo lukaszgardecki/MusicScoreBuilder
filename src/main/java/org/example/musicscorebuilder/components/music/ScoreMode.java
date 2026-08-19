@@ -302,7 +302,7 @@ public class ScoreMode {
         frame.setComposer(score.getComposer());
         frame.setNumberNew(score.getNumberNew());
         frame.setNumberOld(score.getNumberOld());
-        frame.setMarginTop(style.getFrameDefMarginTop());
+        frame.setMarginTop(0.0);
         frame.setMarginBottom(style.getFrameDefMarginBottom());
         this.frames.add(frame);
     }

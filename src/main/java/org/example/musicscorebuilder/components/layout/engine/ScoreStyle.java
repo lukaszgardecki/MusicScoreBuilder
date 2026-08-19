@@ -80,7 +80,7 @@ public class ScoreStyle {
     private static final double EDIT_CURSOR_BOX_WIDTH                       = 2.0;
     private static final double EDIT_CURSOR_PADDING                         = 0.8;
 
-    private static final double FRAME_DEF_MARGIN_TOP                        = 0.0;
+    private static final double FRAME_DEF_MARGIN_TOP                        = 4.0;
     private static final double FRAME_DEF_MARGIN_BOTTOM                     = 4.0;
     private static final double HEADER_DEF_NUMBER_NEW_FONT_SIZE             = 4.5;
     private static final double HEADER_DEF_NUMBER_OLD_FONT_SIZE             = 3.8;
