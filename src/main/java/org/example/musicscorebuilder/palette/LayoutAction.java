@@ -1,4 +1,4 @@
-package org.example.musicscorebuilder.components.music;
+package org.example.musicscorebuilder.palette;
 
 public enum LayoutAction {
     SYSTEM_BREAK("Podział systemu"),

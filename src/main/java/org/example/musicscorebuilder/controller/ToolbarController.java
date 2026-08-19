@@ -399,7 +399,7 @@ public class ToolbarController {
         int newAlter = (oldAlter == targetAlter) ? keyAlter : targetAlter;
 
         pitch.setAlter(newAlter);
-        noteLayout.refreshMeasureAccidentals();
+        noteLayout.refreshMeasure();
 
         TiedNoteService.syncTiedNotesPitch(noteLayout);
         stateManager.notifyScoreChanged();

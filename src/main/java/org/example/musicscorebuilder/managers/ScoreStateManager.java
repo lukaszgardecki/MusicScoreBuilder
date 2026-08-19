@@ -450,7 +450,7 @@ public class ScoreStateManager {
             currentPitch.setAlter(candidate.getAlter());
             currentPitch.setOctave(candidate.getOctave());
 
-            noteLayout.refreshMeasureAccidentals();
+            noteLayout.refreshMeasure();
 
             TiedNoteService.syncTiedNotesPitch(noteLayout);
             notifyScoreChanged();

@@ -33,7 +33,7 @@ public class TiedNoteService {
             Note tiedNote = tiedNoteLayout.getNote();
             if (tiedNote != null) {
                 tiedNote.setPitch(new Pitch(step, alter, octave));
-                tiedNoteLayout.refreshMeasureAccidentals();
+                tiedNoteLayout.refreshMeasure();
             }
         }
     }

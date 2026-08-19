@@ -13,7 +13,7 @@ public class NoteLayout extends NoteRestLayout {
     private final StemLayout stem;
     private NoteLayout nextNoteInVoice;
     private NoteLayout prevNoteInVoice;
-    private final BeamSingleLayout singleBeam;
+    private BeamSingleLayout singleBeam;
     private final List<DotLayout> dots = new ArrayList<>();
     private final List<LyricLayout> lyrics = new ArrayList<>();
     private BeamGroupLayout beamGroup;
@@ -125,7 +125,16 @@ public class NoteLayout extends NoteRestLayout {
     public void setNextNoteInVoice(NoteLayout nextNoteInVoice) { this.nextNoteInVoice = nextNoteInVoice; }
     public void setPrevNoteInVoice(NoteLayout prevNoteInVoice) { this.prevNoteInVoice = prevNoteInVoice; }
     public void setXOffset(double xOffset) { this.xOffset = xOffset; }
-    public void setBeamGroup(BeamGroupLayout beamGroup) { this.beamGroup = beamGroup; }
+    public void setBeamGroup(BeamGroupLayout beamGroup) {
+        this.beamGroup = beamGroup;
+        if (this.beamGroup != null) {
+            this.singleBeam = null;
+        } else if (this.note != null && this.note.getType().hasFlag()) {
+            this.singleBeam = new BeamSingleLayout(this);
+        } else {
+            this.singleBeam = null;
+        }
+    }
 
     public void refresh() {
         Clef clef = staff.getStaff().getDefaultClef();
@@ -149,6 +158,20 @@ public class NoteLayout extends NoteRestLayout {
                     }
                 }
             }
+        }
+    }
+
+    public void refreshMeasure() {
+        if (parent != null && parent.getParent() instanceof MeasureLayout measureLayout) {
+            for (SegmentLayout segLayout : measureLayout.getSegments()) {
+                for (ElementLayout element : segLayout.getElements()) {
+                    if (element instanceof NoteLayout noteLayout) {
+                        noteLayout.refresh();
+                    }
+                }
+            }
+        } else {
+            refresh();
         }
     }
 
@@ -197,22 +220,8 @@ public class NoteLayout extends NoteRestLayout {
             this.note.getPitch().setAlter(effectiveAlter);
         }
 
-        refreshMeasureAccidentals();
+        refreshMeasure();
         parent.resolveCollisions();
-    }
-
-    public void refreshMeasureAccidentals() {
-        if (parent != null && parent.getParent() instanceof MeasureLayout measureLayout) {
-            for (SegmentLayout segLayout : measureLayout.getSegments()) {
-                for (ElementLayout element : segLayout.getElements()) {
-                    if (element instanceof NoteLayout noteLayout) {
-                        noteLayout.refresh();
-                    }
-                }
-            }
-        } else {
-            refresh();
-        }
     }
 
     private double calculateY(Clef clef) {

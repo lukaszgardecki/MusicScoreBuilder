@@ -9,6 +9,10 @@
             fx:controller="org.example.musicscorebuilder.palette.PaletteController">
 
     <VBox spacing="10" style="-fx-padding: 10;">
+        <TitledPane text="Właściwości belki" expanded="true" styleClass="titled-pane">
+            <GridPane fx:id="beamGrid" styleClass="palette-grid" snapToPixel="false" />
+        </TitledPane>
+
         <TitledPane text="Oznaczenia metryczne" expanded="true" styleClass="titled-pane">
             <GridPane fx:id="timeSignatureGrid" styleClass="palette-grid" snapToPixel="false" />
         </TitledPane>
