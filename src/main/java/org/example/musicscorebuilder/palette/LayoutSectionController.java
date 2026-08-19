@@ -11,6 +11,7 @@ import org.example.musicscorebuilder.components.music.LayoutAction;
 import org.example.musicscorebuilder.components.music.Measure;
 import org.example.musicscorebuilder.components.music.ScoreMode;
 import org.example.musicscorebuilder.components.views.BreakSystemIconView;
+import org.example.musicscorebuilder.components.views.InsertVerticalFrameIconView;
 import org.example.musicscorebuilder.managers.ScoreStateManager;
 
 import java.util.Arrays;
@@ -18,6 +19,7 @@ import java.util.List;
 
 public class LayoutSectionController extends AbstractPaletteSectionController<LayoutAction> {
     private final BreakSystemIconView breakSystemIcon = new BreakSystemIconView();
+    private final InsertVerticalFrameIconView insertVerticalFrameIconView = new InsertVerticalFrameIconView();
 
     public LayoutSectionController(GridPane gridPane) {
         super(gridPane);
@@ -73,6 +75,8 @@ public class LayoutSectionController extends AbstractPaletteSectionController<La
 
         if (action == LayoutAction.SYSTEM_BREAK) {
             drawSystemBreakIcon(gc, width, height);
+        } else if (action == LayoutAction.VERTICAL_FRAME) {
+            drawInsertVerticalFrameIcon(gc, width, height);
         }
 
         return canvas;
@@ -80,10 +84,7 @@ public class LayoutSectionController extends AbstractPaletteSectionController<La
 
     private void drawSystemBreakIcon(GraphicsContext gc, double w, double h) {
         ScoreStyle style = new ScoreStyle() {
-            @Override
-            public String getFrameStrokeColor() {
-                return "#000000";
-            }
+            @Override public String getFrameStrokeColor() { return "#000000"; }
         };
 
         double boxSize = Math.min(w, h) * 0.55;
@@ -95,5 +96,12 @@ public class LayoutSectionController extends AbstractPaletteSectionController<La
         double measureY = targetY + boxSize + (1.0 * sp);
 
         breakSystemIcon.draw(gc, measureX, measureY, widthPx, style, sp);
+    }
+
+    private void drawInsertVerticalFrameIcon(GraphicsContext gc, double w, double h) {
+        double boxSize = Math.min(w, h) * 0.5;
+        double rectX = (w - boxSize) / 2.0;
+        double rectY = (h - boxSize) / 2.0;
+        insertVerticalFrameIconView.draw(gc, rectX, rectY, boxSize);
     }
 }
