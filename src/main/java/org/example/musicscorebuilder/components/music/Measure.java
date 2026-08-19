@@ -20,21 +20,12 @@ public class Measure {
     private KeySignature keySignature;
     private Barline rightBarline;
     private boolean systemBreak = false;
-
     private final List<Staff> staves;
     private final List<Segment> segments = new ArrayList<>();
-
-    @JsonIgnore
-    private Measure prev;
-
-    @JsonIgnore
-    private Measure next;
-
-    @JsonIgnore
-    private ScoreMode parentMode;
-
-    @JsonIgnore
-    private boolean dirty = true;
+    @JsonIgnore private Measure prev;
+    @JsonIgnore private Measure next;
+    @JsonIgnore private ScoreMode parentMode;
+    @JsonIgnore private boolean dirty = true;
 
     @JsonCreator
     public Measure(
@@ -122,16 +113,21 @@ public class Measure {
         setDirty(true);
     }
 
+    public int countVoicesByStaff(int staffId) {
+        return segments.stream()
+                .mapToInt(s -> s.getVoiceCountByStaff(staffId))
+                .max()
+                .orElse(0);
+    }
+
     public List<Staff> getStaves() { return staves; }
     public List<Segment> getSegments() { return segments; }
-
     public Barline getRightBarline() {
         if (rightBarline == null) {
             rightBarline = new Barline(BarlineStyle.SINGLE, this);
         }
         return rightBarline;
     }
-
     public TimeSignature getTimeSignature() {
         if (this.timeSignature != null) {
             return this.timeSignature;
@@ -139,7 +135,6 @@ public class Measure {
         if (prev != null) {
             TimeSignature prevTs = prev.getTimeSignature();
             if (prevTs != null) {
-                // Dziedziczymy metrum z poprzednika, ale TYLKO w wartościach nominalnych!
                 return new TimeSignature(
                         prevTs.getNominalBeat(),
                         prevTs.getNominalBeatType(),
@@ -152,38 +147,21 @@ public class Measure {
         }
         return new TimeSignature(4, 4, TimeSignature.Type.FRACTIONAL, this);
     }
-
     public TimeSignature getExplicitTimeSignature() {
         return this.timeSignature;
     }
-
     public KeySignature getKeySignature() { return keySignature; }
-
-    @JsonIgnore
-    public BarlineStyle getBarlineStyle() { return getRightBarline().getStyle(); }
-
-    @JsonIgnore
-    public boolean isDirty() { return dirty; }
-
-    @JsonIgnore
-    public Measure getPrev() { return prev; }
-
-    @JsonIgnore
-    public Measure getNext() { return next; }
-
-    public void setPrev(Measure prev) { this.prev = prev; }
-    public void setNext(Measure next) { this.next = next; }
-
-    @JsonIgnore
-    public ScoreMode getParentMode() { return parentMode; }
+    @JsonIgnore public BarlineStyle getBarlineStyle() { return getRightBarline().getStyle(); }
+    @JsonIgnore public boolean isDirty() { return dirty; }
+    @JsonIgnore public Measure getPrev() { return prev; }
+    @JsonIgnore public Measure getNext() { return next; }
+    @JsonIgnore public ScoreMode getParentMode() { return parentMode; }
     public void setParentMode(ScoreMode parentMode) { this.parentMode = parentMode; }
-
+    public int getIndex() { return parentMode.getMeasures().indexOf(this); }
+    public boolean hasSystemBreak() { return systemBreak; }
     public int getKeySignatureAlterForStep(PitchStep step) {
         return keySignature != null ? keySignature.getAlterForStep(step) : 0;
     }
-
-    public int getIndex() { return parentMode.getMeasures().indexOf(this); }
-
     public int getEffectiveAlterBefore(Segment targetSegment, int staffId, PitchStep step, int octave) {
         int activeAlter = getKeySignatureAlterForStep(step);
 
@@ -212,29 +190,8 @@ public class Measure {
         return activeAlter;
     }
 
-    public boolean hasSystemBreak() {
-        return systemBreak;
-    }
-
-    public int countVoicesByStaff(int staffId) {
-        return segments.stream()
-                .mapToInt(s -> s.getVoiceCountByStaff(staffId))
-                .max()
-                .orElse(0);
-    }
-
-    public int getStartTickOfSegment(Segment target) {
-        int tick = 0;
-        for (Segment seg : getSegments()) {
-            if (seg == target) {
-                return tick;
-            }
-            if (seg.getType() == SegmentType.NOTEREST) {
-                tick += seg.getDuration();
-            }
-        }
-        return -1;
-    }
+    public void setPrev(Measure prev) { this.prev = prev; }
+    public void setNext(Measure next) { this.next = next; }
     public void setDirty(boolean dirty) { this.dirty = dirty; }
     public void setBarlineStyle(BarlineStyle barlineStyle) {
         if (this.rightBarline == null) {

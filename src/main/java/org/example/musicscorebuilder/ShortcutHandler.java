@@ -3,10 +3,7 @@ package org.example.musicscorebuilder;
 import javafx.scene.Scene;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyEvent;
-import org.example.musicscorebuilder.components.layout.NoteLayout;
-import org.example.musicscorebuilder.components.layout.RestLayout;
-import org.example.musicscorebuilder.components.layout.Selectable;
-import org.example.musicscorebuilder.components.layout.TimeSigLayout;
+import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.music.NoteRestElement;
 import org.example.musicscorebuilder.components.music.NoteType;
 import org.example.musicscorebuilder.managers.LyricEditorManager;
@@ -85,8 +82,13 @@ public class ShortcutHandler {
 
         } else {
             Selectable item = scoreStateManager.getSelectedItem();
-            if (item instanceof NoteLayout) scoreStateManager.convertSelectedNoteToRest();
-            else if (item instanceof TimeSigLayout) scoreStateManager.removeTimeSignature();
+
+            switch(item) {
+                case NoteLayout nl -> scoreStateManager.convertSelectedNoteToRest();
+                case MeasureStaffSelection selection -> scoreStateManager.convertSelectedNoteToRest();
+                case TimeSigLayout ts -> scoreStateManager.removeTimeSignature();
+                case null, default -> {}
+            }
         }
     }
 

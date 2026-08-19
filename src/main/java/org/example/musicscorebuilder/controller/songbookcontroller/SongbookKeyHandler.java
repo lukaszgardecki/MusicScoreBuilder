@@ -1,5 +1,6 @@
 package org.example.musicscorebuilder.controller.songbookcontroller;
 
+import javafx.scene.Node;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyCode;
@@ -21,7 +22,10 @@ public class SongbookKeyHandler {
         listView.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
                 newScene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
-                    if (newScene.getFocusOwner() instanceof TextInputControl) return;
+                    Node focusOwner = newScene.getFocusOwner();
+
+                    if (!isDescendantOf(listView, focusOwner)) return;
+                    if (focusOwner instanceof TextInputControl) return;
 
                     int currentIndex = listView.getSelectionModel().getSelectedIndex();
                     int totalItems = listView.getItems().size();
@@ -74,5 +78,13 @@ public class SongbookKeyHandler {
                 });
             }
         });
+    }
+
+    private static boolean isDescendantOf(Node parent, Node child) {
+        while (child != null) {
+            if (child == parent) return true;
+            child = child.getParent();
+        }
+        return false;
     }
 }

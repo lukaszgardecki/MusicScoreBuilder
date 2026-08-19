@@ -143,24 +143,6 @@ public class NoteLayout extends NoteRestLayout {
         refreshLyrics();
     }
 
-    private void refreshLyrics() {
-        lyrics.clear();
-        if (note != null && note.getLyrics() != null) {
-            for (Lyric lyric : note.getLyrics()) {
-                if (lyric != null) {
-                    boolean hasText = lyric.getText() != null && !lyric.getText().trim().isEmpty();
-                    boolean isConnectedType = lyric.getType() == SyllableType.BEGIN
-                            || lyric.getType() == SyllableType.MIDDLE
-                            || lyric.getType() == SyllableType.END;
-
-                    if (hasText || isConnectedType) {
-                        lyrics.add(new LyricLayout(lyric, this));
-                    }
-                }
-            }
-        }
-    }
-
     public void refreshMeasure() {
         if (parent != null && parent.getParent() instanceof MeasureLayout measureLayout) {
             for (SegmentLayout segLayout : measureLayout.getSegments()) {
@@ -222,6 +204,24 @@ public class NoteLayout extends NoteRestLayout {
 
         refreshMeasure();
         parent.resolveCollisions();
+    }
+
+    private void refreshLyrics() {
+        lyrics.clear();
+        if (note != null && note.getLyrics() != null) {
+            for (Lyric lyric : note.getLyrics()) {
+                if (lyric != null) {
+                    boolean hasText = lyric.getText() != null && !lyric.getText().trim().isEmpty();
+                    boolean isConnectedType = lyric.getType() == SyllableType.BEGIN
+                            || lyric.getType() == SyllableType.MIDDLE
+                            || lyric.getType() == SyllableType.END;
+
+                    if (hasText || isConnectedType) {
+                        lyrics.add(new LyricLayout(lyric, this));
+                    }
+                }
+            }
+        }
     }
 
     private double calculateY(Clef clef) {
