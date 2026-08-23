@@ -67,8 +67,8 @@ public class ScoreStyle {
     private static final double SELECTION_FRAME_EXTRA_HEIGHT                = STAFF_LINE_SPACING;
     private static final double SELECTION_FRAME_RADIUS                      = 0.4;
 
-    private static final double SEG_DEF_NOTEREST_L_MARGIN                   = 0.9 + NOTE_ACC_SPACING;
-    private static final double SEG_DEF_NOTEREST_R_MARGIN                   = 2;
+    private static final double SEG_DEF_NOTEREST_L_MARGIN                   = 0.8 + NOTE_ACC_SPACING;
+    private static final double SEG_DEF_NOTEREST_R_MARGIN                   = 0.5;
     private static final double SEG_DEF_CLEF_R_MARGIN                       = 0.5;
     private static final double SEG_DEF_TIME_SIG_R_MARGIN                   = 1.0;
     private static final double SEG_DEF_KEY_SIG_R_MARGIN                    = 0.7;

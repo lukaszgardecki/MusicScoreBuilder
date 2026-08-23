@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class Pitch {
+    private static final int[] BASE_SEMITONES = { 0, 2, 4, 5, 7, 9, 11 };
     private PitchStep step;
     private int alter;
     private int octave;
@@ -23,6 +24,29 @@ public class Pitch {
         this.step = step;
         this.alter = alter;
         this.octave = octave;
+    }
+
+    public void transpose(int diatonicShift, int chromaticShift) {
+        int currentStepIndex = this.step.getValue();
+        int totalSteps = currentStepIndex + diatonicShift;
+
+        int newStepIndex = totalSteps % 7;
+        int octaveShift = totalSteps / 7;
+
+        if (newStepIndex < 0) {
+            newStepIndex += 7;
+            octaveShift -= 1;
+        }
+
+        PitchStep newStep = PitchStep.values()[newStepIndex];
+        int newOctave = this.octave + octaveShift;
+        int currentSemitones = (this.octave * 12) + BASE_SEMITONES[currentStepIndex] + this.alter;
+        int targetSemitones = currentSemitones + chromaticShift;
+        int newBaseSemitones = (newOctave * 12) + BASE_SEMITONES[newStepIndex];
+
+        this.alter = targetSemitones - newBaseSemitones;
+        this.step = newStep;
+        this.octave = newOctave;
     }
 
     public PitchStep getStep() { return step; }

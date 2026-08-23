@@ -17,6 +17,7 @@ import org.example.musicscorebuilder.data.FileService;
 import org.example.musicscorebuilder.data.PreferencesService;
 import org.example.musicscorebuilder.data.StorageService;
 import org.example.musicscorebuilder.managers.ScoreStateManager;
+import org.example.musicscorebuilder.managers.TranspositionManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -142,6 +143,22 @@ public class SongbookController {
                 })
                 .setCancelButton("Anuluj", null)
                 .showAndWait();
+    }
+
+    @FXML
+    private void handleTransposeUp() {
+        ScoreMode mode = stateManager.getCurrentMode();
+        if (mode == null) return;
+        TranspositionManager.getInstance().transposeUp(mode);
+        stateManager.notifyScoreChanged();
+    }
+
+    @FXML
+    private void handleTransposeDown() {
+        ScoreMode mode = stateManager.getCurrentMode();
+        if (mode == null) return;
+        TranspositionManager.getInstance().transposeDown(mode);
+        stateManager.notifyScoreChanged();
     }
 
     @FXML private void handleCopy() { actionManager.handleCopy(getSelectedItem()); }
