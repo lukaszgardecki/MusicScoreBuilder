@@ -5,6 +5,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
@@ -24,6 +25,17 @@ import java.io.IOException;
 import java.util.Optional;
 
 public class SongbookController {
+    @FXML private CheckBox maxDownCheckBox;
+    @FXML private HBox maxDownContainer;
+    @FXML private Label maxDownLabel;
+
+    @FXML private CheckBox maxUpCheckBox;
+    @FXML private HBox maxUpContainer;
+    @FXML private Label maxUpLabel;
+
+    @FXML private Button transposeDownButton;
+    @FXML private Button transposeUpButton;
+
     @FXML private Button openFolderButton;
     @FXML private Label folderPathLabel;
     @FXML private CheckBox compressedOnlyCheckBox;
@@ -64,8 +76,9 @@ public class SongbookController {
         setupKeyBindings();
         setupDeleteButtonState();
         setupModesSection();
-
+        stateManager.addScoreChangeListener(this::updateTransposeUI);
         loadSavedDirectory();
+        updateTransposeUI();
     }
 
     private void refreshModesList() {
@@ -92,6 +105,100 @@ public class SongbookController {
             addModeButton.setDisable(false);
         } finally {
             isUpdatingModesList = false;
+        }
+    }
+
+    @FXML
+    private void handleMaxDownCheckBoxChanged() {
+        Score score = getScore();
+        if (score == null) return;
+
+        if (maxDownCheckBox.isSelected()) {
+            if (score.getMaxTransposeDown() == null) {
+                score.setMaxTransposeDown(0);
+            }
+        } else {
+            score.setMaxTransposeDown(null);
+        }
+        updateTransposeUI();
+    }
+
+    @FXML
+    private void handleMaxUpCheckBoxChanged() {
+        Score score = getScore();
+        if (score == null) return;
+
+        if (maxUpCheckBox.isSelected()) {
+            if (score.getMaxTransposeUp() == null) {
+                score.setMaxTransposeUp(0);
+            }
+        } else {
+            score.setMaxTransposeUp(null);
+        }
+        updateTransposeUI();
+    }
+
+    @FXML
+    private void handleIncrementMaxDown() {
+        Score score = getScore();
+        if (score == null || score.getMaxTransposeDown() == null) return;
+
+        int nextVal = (score.getMaxTransposeDown() + 1) % 13;
+        score.setMaxTransposeDown(nextVal);
+        updateTransposeUI();
+    }
+
+    @FXML
+    private void handleDecrementMaxDown() {
+        Score score = getScore();
+        if (score == null || score.getMaxTransposeDown() == null) return;
+
+        int current = score.getMaxTransposeDown();
+        int prevVal = (current <= 0) ? 12 : current - 1;
+        score.setMaxTransposeDown(prevVal);
+        updateTransposeUI();
+    }
+
+    @FXML
+    private void handleIncrementMaxUp() {
+        Score score = getScore();
+        if (score == null || score.getMaxTransposeUp() == null) return;
+
+        int nextVal = (score.getMaxTransposeUp() + 1) % 13;
+        score.setMaxTransposeUp(nextVal);
+        updateTransposeUI();
+    }
+
+    @FXML
+    private void handleDecrementMaxUp() {
+        Score score = getScore();
+        if (score == null || score.getMaxTransposeUp() == null) return;
+
+        int current = score.getMaxTransposeUp();
+        int prevVal = (current <= 0) ? 12 : current - 1;
+        score.setMaxTransposeUp(prevVal);
+        updateTransposeUI();
+    }
+
+    @FXML
+    private void handleTransposeUp() {
+        ScoreMode mode = stateManager.getCurrentMode();
+        if (mode == null || mode.getScore() == null) return;
+
+        boolean success = TranspositionManager.getInstance().transposeUp(mode);
+        if (success) {
+            stateManager.notifyScoreChanged();
+        }
+    }
+
+    @FXML
+    private void handleTransposeDown() {
+        ScoreMode mode = stateManager.getCurrentMode();
+        if (mode == null || mode.getScore() == null) return;
+
+        boolean success = TranspositionManager.getInstance().transposeDown(mode);
+        if (success) {
+            stateManager.notifyScoreChanged();
         }
     }
 
@@ -143,22 +250,6 @@ public class SongbookController {
                 })
                 .setCancelButton("Anuluj", null)
                 .showAndWait();
-    }
-
-    @FXML
-    private void handleTransposeUp() {
-        ScoreMode mode = stateManager.getCurrentMode();
-        if (mode == null) return;
-        TranspositionManager.getInstance().transposeUp(mode);
-        stateManager.notifyScoreChanged();
-    }
-
-    @FXML
-    private void handleTransposeDown() {
-        ScoreMode mode = stateManager.getCurrentMode();
-        if (mode == null) return;
-        TranspositionManager.getInstance().transposeDown(mode);
-        stateManager.notifyScoreChanged();
     }
 
     @FXML private void handleCopy() { actionManager.handleCopy(getSelectedItem()); }
@@ -273,11 +364,50 @@ public class SongbookController {
                 storageService.loadScoreFile(file);
                 metadataHandler.updatePanel(file);
                 refreshModesList();
+                updateTransposeUI();
             } catch (IOException e) {
                 e.printStackTrace();
                 SongbookDialogHelper.showErrorAlert("Błąd wczytywania", "Nie udało się wczytać pliku: " + e.getMessage());
             }
         });
+    }
+
+    public void updateTransposeUI() {
+        Score score = getScore();
+
+        if (score == null) {
+            maxDownCheckBox.setSelected(false);
+            maxDownCheckBox.setDisable(true);
+            maxDownContainer.setDisable(true);
+            maxDownLabel.setText("—");
+
+            maxUpCheckBox.setSelected(false);
+            maxUpCheckBox.setDisable(true);
+            maxUpContainer.setDisable(true);
+            maxUpLabel.setText("—");
+
+            if (transposeDownButton != null) transposeDownButton.setDisable(true);
+            if (transposeUpButton != null) transposeUpButton.setDisable(true);
+            return;
+        }
+
+        maxDownCheckBox.setDisable(false);
+        maxUpCheckBox.setDisable(false);
+
+        Integer maxDown = score.getMaxTransposeDown();
+        boolean hasMaxDown = maxDown != null;
+        maxDownCheckBox.setSelected(hasMaxDown);
+        maxDownContainer.setDisable(!hasMaxDown);
+        maxDownLabel.setText(hasMaxDown ? maxDown + " półt." : "—");
+
+        Integer maxUp = score.getMaxTransposeUp();
+        boolean hasMaxUp = maxUp != null;
+        maxUpCheckBox.setSelected(hasMaxUp);
+        maxUpContainer.setDisable(!hasMaxUp);
+        maxUpLabel.setText(hasMaxUp ? maxUp + " półt." : "—");
+
+        if (transposeDownButton != null) transposeDownButton.setDisable(!score.canTransposeBy(-1));
+        if (transposeUpButton != null) transposeUpButton.setDisable(!score.canTransposeBy(1));
     }
 
     private void openItem(SongbookItem item) {
@@ -357,5 +487,10 @@ public class SongbookController {
 
     private SongbookItem getSelectedItem() {
         return jsonFilesListView.getSelectionModel().getSelectedItem();
+    }
+
+    private Score getScore() {
+        ScoreMode mode = stateManager.getCurrentMode();
+        return (mode != null) ? mode.getScore() : null;
     }
 }

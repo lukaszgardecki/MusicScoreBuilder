@@ -44,13 +44,57 @@
             <TextField fx:id="composerField" styleClass="metadata-input" />
         </VBox>
 
+        <!-- SEKCJA 2: ZAKRES TRANSPOZYCJI -->
+        <VBox spacing="4" style="-fx-padding: 4 0 0 0;">
+            <Label text="Transpozycja" styleClass="field-label" />
+
+            <GridPane hgap="8" vgap="6">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="50" />
+                    <ColumnConstraints percentWidth="50" />
+                </columnConstraints>
+
+                <VBox spacing="2" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <CheckBox fx:id="maxDownCheckBox"
+                              text="Max w dół"
+                              onAction="#handleMaxDownCheckBoxChanged"
+                              styleClass="field-label" />
+                    <HBox fx:id="maxDownContainer"
+                          alignment="CENTER"
+                          spacing="4"
+                          style="-fx-background-color: -fx-control-inner-background; -fx-background-radius: 4; -fx-padding: 2;">
+                        <Button text="◀" onAction="#handleDecrementMaxDown" styleClass="btn" />
+                        <Label fx:id="maxDownLabel" text="0 półt." alignment="CENTER" maxWidth="Infinity" HBox.hgrow="ALWAYS" />
+                        <Button text="▶" onAction="#handleIncrementMaxDown" styleClass="btn" />
+                    </HBox>
+                </VBox>
+
+                <VBox spacing="2" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                    <CheckBox fx:id="maxUpCheckBox"
+                              text="Max w górę"
+                              onAction="#handleMaxUpCheckBoxChanged"
+                              styleClass="field-label" />
+                    <HBox fx:id="maxUpContainer"
+                          alignment="CENTER"
+                          spacing="4"
+                          style="-fx-background-color: -fx-control-inner-background; -fx-background-radius: 4; -fx-padding: 2;">
+                        <Button text="◀" onAction="#handleDecrementMaxUp" styleClass="btn" />
+                        <Label fx:id="maxUpLabel" text="0 półt." alignment="CENTER" maxWidth="Infinity" HBox.hgrow="ALWAYS" />
+                        <Button text="▶" onAction="#handleIncrementMaxUp" styleClass="btn" />
+                    </HBox>
+                </VBox>
+            </GridPane>
+        </VBox>
+
         <HBox spacing="8" style="-fx-padding: 10 0 0 0;">
-            <Button text="Transponuj w dół"
+            <Button fx:id="transposeDownButton"
+                    text="Transponuj w dół"
                     onAction="#handleTransposeDown"
                     styleClass="btn"
                     maxWidth="Infinity"
                     HBox.hgrow="ALWAYS"/>
-            <Button text="Transponuj w górę"
+            <Button fx:id="transposeUpButton"
+                    text="Transponuj w górę"
                     onAction="#handleTransposeUp"
                     styleClass="btn"
                     maxWidth="Infinity"
@@ -62,7 +106,7 @@
     <Separator />
 
 
-    <!-- SEKCJA 2: TRYBY WIDOKU -->
+    <!-- SEKCJA 3: TRYBY WIDOKU -->
     <VBox spacing="6" styleClass="metadata-panel" style="-fx-padding: 10;">
         <HBox alignment="CENTER_LEFT" spacing="6">
             <Label text="Tryby widoku" styleClass="metadata-title" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
@@ -99,7 +143,7 @@
     <Separator />
 
 
-    <!-- SEKCJA 3: ZARZĄDZANIE ŚPIEWNIKIEM -->
+    <!-- SEKCJA 4: ZARZĄDZANIE ŚPIEWNIKIEM -->
     <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
 
         <Tab text="Śpiewnik">
