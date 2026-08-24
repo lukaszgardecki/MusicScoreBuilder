@@ -11,6 +11,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import org.example.musicscorebuilder.components.dialog.CustomConfirmationDialog;
 import org.example.musicscorebuilder.components.dialog.CustomSelectModeDialog;
+import org.example.musicscorebuilder.components.music.Key;
 import org.example.musicscorebuilder.components.music.Score;
 import org.example.musicscorebuilder.components.music.ScoreMode;
 import org.example.musicscorebuilder.components.music.util.ScoreFactory;
@@ -34,6 +35,7 @@ public class SongbookController {
     @FXML private Label maxUpLabel;
 
     @FXML private Button transposeDownButton;
+    @FXML private Label currentKeyLabel;
     @FXML private Button transposeUpButton;
 
     @FXML private Button openFolderButton;
@@ -373,9 +375,12 @@ public class SongbookController {
     }
 
     public void updateTransposeUI() {
+        ScoreMode mode = stateManager.getCurrentMode();
         Score score = getScore();
 
-        if (score == null) {
+        if (score == null || mode == null) {
+            if (currentKeyLabel != null) currentKeyLabel.setText("—");
+
             maxDownCheckBox.setSelected(false);
             maxDownCheckBox.setDisable(true);
             maxDownContainer.setDisable(true);
@@ -389,6 +394,15 @@ public class SongbookController {
             if (transposeDownButton != null) transposeDownButton.setDisable(true);
             if (transposeUpButton != null) transposeUpButton.setDisable(true);
             return;
+        }
+
+        if (currentKeyLabel != null) {
+            if (!mode.getMeasures().isEmpty() && mode.getMeasures().getFirst().getKeySignature() != null) {
+                int fifths = mode.getMeasures().getFirst().getKeySignature().getFifths();
+                currentKeyLabel.setText(Key.fromFifths(fifths).getDisplayName());
+            } else {
+                currentKeyLabel.setText(Key.C_MAJOR.getDisplayName());
+            }
         }
 
         maxDownCheckBox.setDisable(false);

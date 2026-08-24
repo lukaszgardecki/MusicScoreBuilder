@@ -142,6 +142,10 @@
     -fx-shape: "M19 10.5h-5.5V5h-3v5.5H5v3h5.5V19h3v-5.5H19v-3z";
 }
 
+.icon-minus {
+    -fx-shape: "M5 5h0.01v0.01h-0.01z M19 18.99h0.01v0.01h-0.01z M5 10.5h14v3H5z";
+}
+
 /* --- SEKCJA LISTVIEW --- */
 .list-view {
     -fx-focus-color: transparent;
