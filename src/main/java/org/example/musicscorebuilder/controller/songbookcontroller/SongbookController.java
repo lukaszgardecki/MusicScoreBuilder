@@ -118,6 +118,13 @@ public class SongbookController {
         if (maxDownCheckBox.isSelected()) {
             if (score.getMaxTransposeDown() == null) {
                 score.setMaxTransposeDown(0);
+                ScoreMode mode = stateManager.getCurrentMode();
+                if (mode != null) {
+                    while (!score.canTransposeBy(0)) {
+                        if (!TranspositionManager.getInstance().transposeUp(mode)) break;
+                    }
+                    stateManager.notifyScoreChanged();
+                }
             }
         } else {
             score.setMaxTransposeDown(null);
@@ -133,6 +140,13 @@ public class SongbookController {
         if (maxUpCheckBox.isSelected()) {
             if (score.getMaxTransposeUp() == null) {
                 score.setMaxTransposeUp(0);
+                ScoreMode mode = stateManager.getCurrentMode();
+                if (mode != null) {
+                    while (!score.canTransposeBy(0)) {
+                        if (!TranspositionManager.getInstance().transposeDown(mode)) break;
+                    }
+                    stateManager.notifyScoreChanged();
+                }
             }
         } else {
             score.setMaxTransposeUp(null);
@@ -145,19 +159,29 @@ public class SongbookController {
         Score score = getScore();
         if (score == null || score.getMaxTransposeDown() == null) return;
 
-        int nextVal = (score.getMaxTransposeDown() + 1) % 13;
-        score.setMaxTransposeDown(nextVal);
-        updateTransposeUI();
+        int current = score.getMaxTransposeDown();
+        if (current < 12) {
+            score.setMaxTransposeDown(current + 1);
+            updateTransposeUI();
+        }
     }
 
     @FXML
     private void handleDecrementMaxDown() {
         Score score = getScore();
-        if (score == null || score.getMaxTransposeDown() == null) return;
+        ScoreMode mode = stateManager.getCurrentMode();
+        if (score == null || score.getMaxTransposeDown() == null || mode == null) return;
 
         int current = score.getMaxTransposeDown();
-        int prevVal = (current <= 0) ? 12 : current - 1;
-        score.setMaxTransposeDown(prevVal);
+        if (current > 0) {
+            score.setMaxTransposeDown(current - 1);
+        } else {
+            boolean success = TranspositionManager.getInstance().transposeUp(mode);
+            if (success) {
+                score.setMaxTransposeDown(0);
+                stateManager.notifyScoreChanged();
+            }
+        }
         updateTransposeUI();
     }
 
@@ -166,19 +190,29 @@ public class SongbookController {
         Score score = getScore();
         if (score == null || score.getMaxTransposeUp() == null) return;
 
-        int nextVal = (score.getMaxTransposeUp() + 1) % 13;
-        score.setMaxTransposeUp(nextVal);
-        updateTransposeUI();
+        int current = score.getMaxTransposeUp();
+        if (current < 12) {
+            score.setMaxTransposeUp(current + 1);
+            updateTransposeUI();
+        }
     }
 
     @FXML
     private void handleDecrementMaxUp() {
         Score score = getScore();
-        if (score == null || score.getMaxTransposeUp() == null) return;
+        ScoreMode mode = stateManager.getCurrentMode();
+        if (score == null || score.getMaxTransposeUp() == null || mode == null) return;
 
         int current = score.getMaxTransposeUp();
-        int prevVal = (current <= 0) ? 12 : current - 1;
-        score.setMaxTransposeUp(prevVal);
+        if (current > 0) {
+            score.setMaxTransposeUp(current - 1);
+        } else {
+            boolean success = TranspositionManager.getInstance().transposeDown(mode);
+            if (success) {
+                score.setMaxTransposeUp(0);
+                stateManager.notifyScoreChanged();
+            }
+        }
         updateTransposeUI();
     }
 
