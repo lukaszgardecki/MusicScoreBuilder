@@ -38,7 +38,7 @@ public class TranspositionManager {
         Measure firstMeasure = mode.getMeasures().getFirst();
         int currentFifths = (firstMeasure.getKeySignature() != null) ? firstMeasure.getKeySignature().getFifths() : 0;
 
-        Key currentKey = Key.fromFifths(currentFifths, false);
+        Key currentKey = Key.fromFifths(currentFifths);
         Key targetKey = Key.getNextKeyBySemitone(currentKey, semitoneDelta);
 
         boolean preferDown = semitoneDelta < 0;
