@@ -172,20 +172,28 @@ public class FrameSectionHandler implements PropertySection {
     }
 
     private double getDefaultWidth() {
-        double widthMm = storageService.getScore().getPage().getEffectiveWidthMm();
+        var score = storageService.getScore();
+        if (score == null) return 0;
+        double widthMm = score.getPage().getEffectiveWidthMm();
         return stateManager.getCurrentMode().getStyle().toSp(widthMm);
     }
 
     private double getDefaultHeight() {
-        return stateManager.getCurrentMode().getStyle().getFrameDefHeight();
+        var mode = stateManager.getCurrentMode();
+        if (mode == null) return 0;
+        return mode.getStyle().getFrameDefHeight();
     }
 
     private double getDefaultMarginTop() {
+        var mode = stateManager.getCurrentMode();
+        if (mode == null) return 0;
         return stateManager.getCurrentMode().getStyle().getFrameDefMarginTop();
     }
 
     private double getDefaultMarginBottom() {
-        return stateManager.getCurrentMode().getStyle().getFrameDefMarginBottom();
+        var mode = stateManager.getCurrentMode();
+        if (mode == null) return 0;
+        return mode.getStyle().getFrameDefMarginBottom();
     }
 
 

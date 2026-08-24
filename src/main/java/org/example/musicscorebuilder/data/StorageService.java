@@ -1,7 +1,6 @@
 package org.example.musicscorebuilder.data;
 
 import org.example.musicscorebuilder.components.music.Score;
-import org.example.musicscorebuilder.components.music.util.ScoreFactory;
 import org.example.musicscorebuilder.managers.ScoreStateManager;
 
 import java.io.File;
@@ -47,23 +46,21 @@ public class StorageService {
         }
     }
 
-    public Score getScore() {
-        if (score == null) {
-            this.score = ScoreFactory.createEmptySoloTemplate();
-            this.initialSnapshot = takeSnapshot();
-        }
-        return score;
+    public Score getScore() { return score; }
+    public File getCurrentFile() { return currentFile; }
+    public boolean hasUnsavedChanges() {
+        if (score == null) return false;
+        String currentSnapshot = takeSnapshot();
+        return !initialSnapshot.equals(currentSnapshot);
+    }
+
+    public void setCurrentFile(File currentFile) {
+        this.currentFile = currentFile;
     }
 
     private void setScore(Score score) {
         this.score = score;
         ScoreStateManager.getInstance().notifyScoreChanged();
-    }
-
-    public boolean hasUnsavedChanges() {
-        if (score == null) return false;
-        String currentSnapshot = takeSnapshot();
-        return !initialSnapshot.equals(currentSnapshot);
     }
 
     private String takeSnapshot() {
@@ -74,13 +71,5 @@ public class StorageService {
             e.printStackTrace();
             return "";
         }
-    }
-
-    public File getCurrentFile() {
-        return currentFile;
-    }
-
-    public void setCurrentFile(File currentFile) {
-        this.currentFile = currentFile;
     }
 }
