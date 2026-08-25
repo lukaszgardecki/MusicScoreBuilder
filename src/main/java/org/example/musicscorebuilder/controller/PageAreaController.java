@@ -255,14 +255,17 @@ public class PageAreaController {
             refreshPending = false;
             updateModeSelector();
             ScoreMode activeScoreMode = stateManager.getCurrentMode();
-            if (activeScoreMode == null) return;
+
+            if (activeScoreMode == null) {
+                this.currentScoreLayout = null;
+                container.updateContent(null);
+                return;
+            }
 
             this.currentScoreLayout = layoutEngine.compute(activeScoreMode);
             stateManager.applyPostRefreshAction(this.currentScoreLayout);
 
-            if (currentScoreLayout != null) {
-                container.updateContent(currentScoreLayout);
-            }
+            container.updateContent(this.currentScoreLayout);
         });
     }
 

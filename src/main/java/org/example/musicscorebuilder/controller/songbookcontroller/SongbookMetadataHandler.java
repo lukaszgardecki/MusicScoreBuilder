@@ -45,6 +45,7 @@ public class SongbookMetadataHandler {
         this.onFileRenamedCallback = onFileRenamedCallback;
         setupPlaceholders();
         setupMetadataAutoSave();
+        ScoreStateManager.getInstance().addScoreChangeListener(this::updatePanel);
         clearAndDisable();
     }
 
@@ -70,6 +71,7 @@ public class SongbookMetadataHandler {
     }
 
     public void clearAndDisable() {
+        liveUpdateDebounce.stop();
         isUpdatingFields = true;
         try {
             numberField.clear();
