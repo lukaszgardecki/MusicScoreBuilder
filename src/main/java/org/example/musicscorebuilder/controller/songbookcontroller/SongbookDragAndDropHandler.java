@@ -6,7 +6,7 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.paint.Color;
-import org.example.musicscorebuilder.data.PreferencesService;
+import org.example.musicscorebuilder.data.StorageService;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,12 +15,11 @@ import java.nio.file.Path;
 import java.util.List;
 
 public class SongbookDragAndDropHandler {
-
-    private final SongbookMetadataHandler metadataHandler;
+    private final SongbookExplorerManager songbookExplorerManager = SongbookExplorerManager.getInstance();
+    private final StorageService storageService = StorageService.getInstance();
     private final Runnable refreshDirectoryCallback;
 
-    public SongbookDragAndDropHandler(SongbookMetadataHandler metadataHandler, Runnable refreshDirectoryCallback) {
-        this.metadataHandler = metadataHandler;
+    public SongbookDragAndDropHandler(Runnable refreshDirectoryCallback) {
         this.refreshDirectoryCallback = refreshDirectoryCallback;
     }
 
@@ -123,7 +122,7 @@ public class SongbookDragAndDropHandler {
         if (targetItem.type() == SongbookItem.Type.DIRECTORY) {
             return targetItem.file();
         } else if (targetItem.type() == SongbookItem.Type.PARENT_DIR) {
-            return PreferencesService.getDirectoryFile()
+            return songbookExplorerManager.getCurrentLocation()
                     .map(File::getParentFile)
                     .orElse(null);
         }
@@ -155,8 +154,9 @@ public class SongbookDragAndDropHandler {
         try {
             Files.move(sourceFile.toPath(), destinationFile.toPath());
 
-            if (metadataHandler.getCurrentOpenedFile() != null && metadataHandler.getCurrentOpenedFile().equals(sourceFile)) {
-                metadataHandler.setCurrentOpenedFile(destinationFile);
+            File currentFile = storageService.getCurrentFile();
+            if (currentFile != null && currentFile.equals(sourceFile)) {
+                storageService.setCurrentFile(destinationFile);
             }
 
             refreshDirectoryCallback.run();

@@ -6,10 +6,10 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.MenuBar;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
-import org.example.musicscorebuilder.MusicScoreBuilder;
-import org.example.musicscorebuilder.components.dialog.CustomConfirmationDialog;
+import org.example.musicscorebuilder.components.music.util.ScoreFactory;
 import org.example.musicscorebuilder.data.FileService;
 import org.example.musicscorebuilder.data.StorageService;
+import org.example.musicscorebuilder.managers.ClosingManager;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -18,10 +18,12 @@ public class MenuBarController {
     @FXML MenuBar menuBar;
     private final StorageService storageService = StorageService.getInstance();
     private final FileService fileService = FileService.getInstance();
+    private final ClosingManager closingManager = ClosingManager.getInstance();
 
     @FXML
     private void handleNew(ActionEvent event) {
-        System.out.println("Tworzenie nowego pliku");
+        boolean closed = closingManager.closeScore();
+        if (closed) StorageService.getInstance().setScore(ScoreFactory.createEmptySoloTemplate());
     }
 
     @FXML
@@ -49,7 +51,7 @@ public class MenuBarController {
 
     @FXML
     private void handleClose(ActionEvent event) {
-        System.out.println("Zamykanie pliku");
+        closingManager.closeScore();
     }
 
     @FXML
@@ -97,19 +99,7 @@ public class MenuBarController {
 
     @FXML
     private void handleExit(ActionEvent event) {
-        String scoreName = storageService.getScore().getTitle();
-
-        new CustomConfirmationDialog()
-                .setTitle("MusicScore Builder")
-                .setHeader("Chcesz zapisać zmiany w partyturze „" + scoreName + "” przed zamknięciem?")
-                .setContent("Twoje zmiany zostaną utracone, jeśli ich nie zapiszesz.")
-                .setConfirmButton("Zapisz", () -> {
-                    handleSave(event);
-                    MusicScoreBuilder.closeApp();
-                })
-                .setDenyButton("Nie zapisuj", MusicScoreBuilder::closeApp)
-                .setCancelButton("Anuluj", null)
-                .showAndWait();
+        closingManager.closeApp();
     }
 
     @FXML

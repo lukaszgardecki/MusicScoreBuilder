@@ -1,6 +1,5 @@
 package org.example.musicscorebuilder.controller.songbookcontroller;
 
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -18,6 +17,7 @@ import org.example.musicscorebuilder.components.music.util.ScoreFactory;
 import org.example.musicscorebuilder.data.FileService;
 import org.example.musicscorebuilder.data.PreferencesService;
 import org.example.musicscorebuilder.data.StorageService;
+import org.example.musicscorebuilder.managers.ClosingManager;
 import org.example.musicscorebuilder.managers.ScoreStateManager;
 import org.example.musicscorebuilder.managers.TranspositionManager;
 
@@ -58,6 +58,8 @@ public class SongbookController {
     private final FileService fileService = FileService.getInstance();
     private final StorageService storageService = StorageService.getInstance();
     private final ScoreStateManager stateManager = ScoreStateManager.getInstance();
+    private final ClosingManager closingManager = ClosingManager.getInstance();
+    private final SongbookExplorerManager songbookExplorerManager = SongbookExplorerManager.getInstance();
 
     private final SongbookActionManager actionManager = new SongbookActionManager();
     private final SongbookItemComparator itemComparator = new SongbookItemComparator();
@@ -72,7 +74,7 @@ public class SongbookController {
                 metadataContainer, numberField, oldNumberField, titleField, subtitleField, composerField
         );
         metadataHandler.init(this::refreshDirectoryAndSelect);
-        dragAndDropHandler = new SongbookDragAndDropHandler(metadataHandler, this::refreshDirectory);
+        dragAndDropHandler = new SongbookDragAndDropHandler(this::refreshDirectory);
 
         setupListView();
         setupKeyBindings();
@@ -112,7 +114,7 @@ public class SongbookController {
 
     @FXML
     private void handleMaxDownCheckBoxChanged() {
-        Score score = getScore();
+        Score score = storageService.getScore();
         if (score == null) return;
 
         if (maxDownCheckBox.isSelected()) {
@@ -134,7 +136,7 @@ public class SongbookController {
 
     @FXML
     private void handleMaxUpCheckBoxChanged() {
-        Score score = getScore();
+        Score score = storageService.getScore();
         if (score == null) return;
 
         if (maxUpCheckBox.isSelected()) {
@@ -156,7 +158,7 @@ public class SongbookController {
 
     @FXML
     private void handleIncrementMaxDown() {
-        Score score = getScore();
+        Score score = storageService.getScore();
         if (score == null || score.getMaxTransposeDown() == null) return;
 
         int current = score.getMaxTransposeDown();
@@ -168,7 +170,7 @@ public class SongbookController {
 
     @FXML
     private void handleDecrementMaxDown() {
-        Score score = getScore();
+        Score score = storageService.getScore();
         ScoreMode mode = stateManager.getCurrentMode();
         if (score == null || score.getMaxTransposeDown() == null || mode == null) return;
 
@@ -187,7 +189,7 @@ public class SongbookController {
 
     @FXML
     private void handleIncrementMaxUp() {
-        Score score = getScore();
+        Score score = storageService.getScore();
         if (score == null || score.getMaxTransposeUp() == null) return;
 
         int current = score.getMaxTransposeUp();
@@ -199,7 +201,7 @@ public class SongbookController {
 
     @FXML
     private void handleDecrementMaxUp() {
-        Score score = getScore();
+        Score score = storageService.getScore();
         ScoreMode mode = stateManager.getCurrentMode();
         if (score == null || score.getMaxTransposeUp() == null || mode == null) return;
 
@@ -291,8 +293,18 @@ public class SongbookController {
     @FXML private void handleCopy() { actionManager.handleCopy(getSelectedItem()); }
     @FXML private void handlePaste() { actionManager.handlePaste(this::refreshDirectory, this::selectItemByFile); }
     @FXML private void handleDuplicate() { actionManager.handleDuplicate(getSelectedItem(), this::refreshDirectory, this::selectItemByFile); }
-    @FXML private void handleRename() { actionManager.handleRename(getSelectedItem(), metadataHandler.getCurrentOpenedFile(), this::refreshDirectory, this::selectItemByFile, metadataHandler::setCurrentOpenedFile); }
-    @FXML private void handleDelete() { actionManager.handleDelete(getSelectedItem(), metadataHandler.getCurrentOpenedFile(), this::refreshDirectory, metadataHandler::clearAndDisable); }
+    @FXML private void handleRename() { actionManager.handleRename(getSelectedItem(), storageService.getCurrentFile(), this::refreshDirectory, this::selectItemByFile, storageService::setCurrentFile); }
+    @FXML private void handleDelete() {
+        actionManager.handleDelete(
+                getSelectedItem(),
+                storageService.getCurrentFile(),
+                this::refreshDirectory,
+                () -> {
+                    storageService.setScore(null);
+                    metadataHandler.clearAndDisable();
+                }
+        );
+    }
     @FXML private void handleAddFolder() { actionManager.handleAddFolder(this::refreshDirectory, this::selectItemByFile); }
     @FXML private void handleAddFile() { actionManager.handleAddFile(this::refreshDirectory, this::selectItemByFile, this::loadScoreFileSafely); }
     @FXML private void handleFilterChange() { refreshDirectory(); }
@@ -304,8 +316,10 @@ public class SongbookController {
         PreferencesService.getDirectoryFile().ifPresent(directoryChooser::setInitialDirectory);
 
         Stage stage = (Stage) openFolderButton.getScene().getWindow();
-        Optional.ofNullable(directoryChooser.showDialog(stage))
-                .ifPresent(dir -> confirmUnsavedChanges(() -> navigateToDirectory(dir)));
+        Optional.ofNullable(directoryChooser.showDialog(stage)).ifPresent(dir -> {
+            PreferencesService.saveDirectoryPath(dir.getAbsolutePath());
+            navigateToDirectory(dir);
+        });
     }
 
     private void setupListView() {
@@ -391,26 +405,27 @@ public class SongbookController {
     }
 
     private void loadSavedDirectory() {
-        PreferencesService.getDirectoryFile().ifPresent(this::navigateToDirectory);
+        songbookExplorerManager.getCurrentLocation().ifPresent(this::navigateToDirectory);
     }
 
     private void loadScoreFileSafely(File file) {
-        confirmUnsavedChanges(() -> {
+        boolean closed = closingManager.closeScore();
+        if (closed) {
             try {
                 storageService.loadScoreFile(file);
-                metadataHandler.updatePanel(file);
+                metadataHandler.updatePanel();
                 refreshModesList();
                 updateTransposeUI();
             } catch (IOException e) {
                 e.printStackTrace();
                 SongbookDialogHelper.showErrorAlert("Błąd wczytywania", "Nie udało się wczytać pliku: " + e.getMessage());
             }
-        });
+        }
     }
 
     public void updateTransposeUI() {
         ScoreMode mode = stateManager.getCurrentMode();
-        Score score = getScore();
+        Score score = storageService.getScore();
 
         if (score == null || mode == null) {
             if (currentKeyLabel != null) currentKeyLabel.setText("—");
@@ -461,49 +476,22 @@ public class SongbookController {
     private void openItem(SongbookItem item) {
         if (item == null) return;
         switch (item.type()) {
-            case PARENT_DIR, DIRECTORY -> confirmUnsavedChanges(() -> navigateToDirectory(item.file()));
+            case PARENT_DIR, DIRECTORY -> navigateToDirectory(item.file());
             case FILE -> loadScoreFileSafely(item.file());
         }
     }
 
     private void navigateUp() {
-        PreferencesService.getDirectoryFile().ifPresent(currentDir -> {
+        songbookExplorerManager.getCurrentLocation().ifPresent(currentDir -> {
             File parentDir = currentDir.getParentFile();
             if (parentDir != null && parentDir.exists()) {
-                confirmUnsavedChanges(() -> navigateToDirectory(parentDir));
+                navigateToDirectory(parentDir);
             }
         });
     }
 
-    private void confirmUnsavedChanges(Runnable onProceed) {
-        if (storageService.hasUnsavedChanges()) {
-            String scoreTitle = (storageService.getScore() != null && storageService.getScore().getTitle() != null)
-                    ? storageService.getScore().getTitle()
-                    : "Bez tytułu";
-
-            new CustomConfirmationDialog()
-                    .setTitle("MusicScore Builder")
-                    .setHeader("Chcesz zapisać zmiany w partyturze „" + scoreTitle + "” przed opuszczeniem?")
-                    .setContent("Twoje zmiany zostaną utracone, jeśli ich nie zapiszesz.")
-                    .setConfirmButton("Zapisz", () -> {
-                        try {
-                            storageService.saveCurrentScoreFile();
-                            onProceed.run();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            SongbookDialogHelper.showErrorAlert("Błąd zapisu", "Nie udało się zapisać partytury: " + e.getMessage());
-                        }
-                    })
-                    .setDenyButton("Nie zapisuj", onProceed)
-                    .setCancelButton("Anuluj", null)
-                    .showAndWait();
-        } else {
-            onProceed.run();
-        }
-    }
-
     private void refreshDirectory() {
-        PreferencesService.getDirectoryFile().ifPresent(this::loadJsonFiles);
+        songbookExplorerManager.getCurrentLocation().ifPresent(this::loadJsonFiles);
     }
 
     private void refreshDirectoryAndSelect(File fileToSelect) {
@@ -513,20 +501,24 @@ public class SongbookController {
 
     private void navigateToDirectory(File dir) {
         folderPathLabel.setText(dir.getAbsolutePath());
-        PreferencesService.saveDirectoryPath(dir.getAbsolutePath());
+        songbookExplorerManager.setCurrentLocation(dir.getAbsoluteFile());
         loadJsonFiles(dir);
     }
 
     private void loadJsonFiles(File folder) {
+        File currentFile = storageService.getCurrentFile();
+
         jsonFilesList.clear();
         jsonFilesList.addAll(fileService.getDirectoryContent(folder, compressedOnlyCheckBox.isSelected()));
         jsonFilesList.sort(itemComparator);
 
-        if (!jsonFilesList.isEmpty()) jsonFilesListView.getSelectionModel().select(0);
-        Platform.runLater(() -> jsonFilesListView.requestFocus());
+        if (currentFile != null) {
+            selectItemByFile(currentFile);
+        }
     }
 
     private void selectItemByFile(File file) {
+        if (file == null) return;
         jsonFilesList.stream()
                 .filter(item -> item.file() != null && item.file().equals(file))
                 .findFirst()
@@ -535,10 +527,5 @@ public class SongbookController {
 
     private SongbookItem getSelectedItem() {
         return jsonFilesListView.getSelectionModel().getSelectedItem();
-    }
-
-    private Score getScore() {
-        ScoreMode mode = stateManager.getCurrentMode();
-        return (mode != null) ? mode.getScore() : null;
     }
 }

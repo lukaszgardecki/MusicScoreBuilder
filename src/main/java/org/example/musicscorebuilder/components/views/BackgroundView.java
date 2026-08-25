@@ -52,6 +52,12 @@ public class BackgroundView extends Pane {
     }
 
     public void updateContent(ScoreLayout newLayout) {
+        if (newLayout == null) {
+            getChildren().clear();
+            scoreView = null;
+            return;
+        }
+
         if (scoreView == null) {
             scoreView = new ScoreView(newLayout);
             getChildren().add(scoreView);

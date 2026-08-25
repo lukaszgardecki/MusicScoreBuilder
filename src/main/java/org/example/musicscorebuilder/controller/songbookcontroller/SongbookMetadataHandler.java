@@ -26,7 +26,6 @@ public class SongbookMetadataHandler {
     private final FileService fileService = FileService.getInstance();
     private final PauseTransition liveUpdateDebounce = new PauseTransition(Duration.millis(200));
 
-    private File currentOpenedFile;
     private boolean isUpdatingFields = false;
     private Consumer<File> onFileRenamedCallback;
 
@@ -49,18 +48,9 @@ public class SongbookMetadataHandler {
         clearAndDisable();
     }
 
-    public File getCurrentOpenedFile() {
-        return currentOpenedFile;
-    }
-
-    public void setCurrentOpenedFile(File file) {
-        this.currentOpenedFile = file;
-    }
-
-    public void updatePanel(File file) {
-        this.currentOpenedFile = file;
+    public void updatePanel() {
         Score activeScore = storageService.getScore();
-        if (activeScore != null && currentOpenedFile != null) {
+        if (activeScore != null) {
             isUpdatingFields = true;
             try {
                 numberField.setText(activeScore.getNumberNew() != null ? activeScore.getNumberNew() : "");
@@ -82,7 +72,6 @@ public class SongbookMetadataHandler {
     public void clearAndDisable() {
         isUpdatingFields = true;
         try {
-            currentOpenedFile = null;
             numberField.clear();
             oldNumberField.clear();
             titleField.clear();
@@ -114,7 +103,7 @@ public class SongbookMetadataHandler {
 
     private void setupMetadataAutoSave() {
         liveUpdateDebounce.setOnFinished(e -> {
-            if (isUpdatingFields || currentOpenedFile == null) return;
+            if (isUpdatingFields) return;
             Score activeScore = storageService.getScore();
             if (activeScore != null) {
                 applyFieldsToScore(activeScore);
@@ -123,7 +112,7 @@ public class SongbookMetadataHandler {
         });
 
         ChangeListener<String> liveUpdateListener = (obs, oldVal, newVal) -> {
-            if (isUpdatingFields || currentOpenedFile == null) return;
+            if (isUpdatingFields) return;
             liveUpdateDebounce.playFromStart();
         };
 
@@ -134,7 +123,7 @@ public class SongbookMetadataHandler {
         composerField.textProperty().addListener(liveUpdateListener);
 
         ChangeListener<Boolean> focusChangeListener = (obs, wasFocused, isFocused) -> {
-            if (!isFocused && !isUpdatingFields && currentOpenedFile != null) {
+            if (!isFocused && !isUpdatingFields) {
                 saveMetadataChanges();
             }
         };
@@ -161,6 +150,7 @@ public class SongbookMetadataHandler {
     }
 
     private void saveMetadataChanges() {
+        File currentOpenedFile = storageService.getCurrentFile();
         if (currentOpenedFile == null || isUpdatingFields) return;
 
         liveUpdateDebounce.stop();
@@ -185,7 +175,7 @@ public class SongbookMetadataHandler {
             }
 
             storageService.saveScoreFile(activeScore, parentDir);
-            this.currentOpenedFile = targetFile;
+            storageService.setCurrentFile(targetFile);
 
             ScoreStateManager.getInstance().notifyScoreChanged();
 

@@ -3,7 +3,6 @@ package org.example.musicscorebuilder.controller.songbookcontroller;
 import org.example.musicscorebuilder.components.music.Score;
 import org.example.musicscorebuilder.components.music.util.ScoreFactory;
 import org.example.musicscorebuilder.data.FileService;
-import org.example.musicscorebuilder.data.PreferencesService;
 import org.example.musicscorebuilder.data.StorageService;
 
 import java.io.File;
@@ -14,6 +13,7 @@ import java.util.function.Consumer;
 public class SongbookActionManager {
     private final FileService fileService = FileService.getInstance();
     private final StorageService storageService = StorageService.getInstance();
+    private final SongbookExplorerManager songbookExplorerManager = SongbookExplorerManager.getInstance();
     private File copiedFile = null;
 
     public File getCopiedFile() {
@@ -38,7 +38,7 @@ public class SongbookActionManager {
             return;
         }
 
-        Optional<File> currentDirOpt = PreferencesService.getDirectoryFile();
+        Optional<File> currentDirOpt = songbookExplorerManager.getCurrentLocation();
         if (currentDirOpt.isEmpty()) {
             SongbookDialogHelper.showErrorAlert("Błąd zapisu", "Najpierw wybierz folder śpiewnika!");
             return;
@@ -156,6 +156,7 @@ public class SongbookActionManager {
                 () -> {
                     if (fileService.deleteRecursively(fileToDelete)) {
                         if (fileToDelete.equals(currentOpenedFile)) {
+                            StorageService.getInstance().setScore(null);
                             clearMetadataCallback.run();
                         }
                         refreshCallback.run();
@@ -167,7 +168,7 @@ public class SongbookActionManager {
     }
 
     public void handleAddFolder(Runnable refreshCallback, Consumer<File> selectFileCallback) {
-        Optional<File> parentDirOpt = PreferencesService.getDirectoryFile();
+        Optional<File> parentDirOpt = songbookExplorerManager.getCurrentLocation();
         if (parentDirOpt.isEmpty()) {
             SongbookDialogHelper.showErrorAlert("Brak folderu", "Najpierw wybierz folder śpiewnika!");
             return;
@@ -209,7 +210,7 @@ public class SongbookActionManager {
     }
 
     public void handleAddFile(Runnable refreshCallback, Consumer<File> selectFileCallback, Consumer<File> openFileCallback) {
-        Optional<File> parentDirOpt = PreferencesService.getDirectoryFile();
+        Optional<File> parentDirOpt = songbookExplorerManager.getCurrentLocation();
         if (parentDirOpt.isEmpty()) {
             SongbookDialogHelper.showErrorAlert("Brak folderu", "Najpierw wybierz folder śpiewnika!");
             return;

@@ -24,18 +24,18 @@ public class StorageService {
 
     public void loadScoreFile(File file) throws IOException {
         var loadedScore = fileService.loadScore(file);
-        this.currentFile = file;
+        setCurrentFile(file);
         setScore(loadedScore);
         this.initialSnapshot = takeSnapshot();
     }
 
     public void saveCurrentScoreFile() throws IOException {
         Score currentScore = getScore();
-        File destDir = (currentFile != null && currentFile.getParentFile() != null)
-                ? currentFile.getParentFile()
-                : PreferencesService.getDirectoryFile().orElseThrow(IOException::new);
+        if (currentScore == null || currentFile == null || currentFile.getParentFile() == null) {
+            throw new IOException("Błąd zapisywania pliku.");
+        }
 
-        fileService.saveToFile(currentScore, destDir);
+        fileService.saveToFile(currentScore, currentFile.getParentFile());
         this.initialSnapshot = takeSnapshot();
     }
 
@@ -54,13 +54,17 @@ public class StorageService {
         return !initialSnapshot.equals(currentSnapshot);
     }
 
-    public void setCurrentFile(File currentFile) {
-        this.currentFile = currentFile;
+    public void setScore(Score score) {
+        this.score = score;
+        if (score == null) {
+            this.currentFile = null;
+            this.initialSnapshot = "";
+        }
+        ScoreStateManager.getInstance().notifyScoreChanged();
     }
 
-    private void setScore(Score score) {
-        this.score = score;
-        ScoreStateManager.getInstance().notifyScoreChanged();
+    public void setCurrentFile(File currentFile) {
+        this.currentFile = currentFile;
     }
 
     private String takeSnapshot() {
