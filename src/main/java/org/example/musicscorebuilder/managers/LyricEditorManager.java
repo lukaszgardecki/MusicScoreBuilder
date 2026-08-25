@@ -20,7 +20,7 @@ import javafx.scene.text.TextFlow;
 import javafx.util.Duration;
 import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
-import org.example.musicscorebuilder.components.layout.util.LyricStyleHelper;
+import org.example.musicscorebuilder.components.views.util.LyricStyleHelper;
 import org.example.musicscorebuilder.components.music.Lyric;
 import org.example.musicscorebuilder.components.music.LyricFragment;
 import org.example.musicscorebuilder.components.music.Note;

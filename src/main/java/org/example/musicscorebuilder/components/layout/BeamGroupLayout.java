@@ -1,6 +1,5 @@
 package org.example.musicscorebuilder.components.layout;
 
-import javafx.scene.shape.Polygon;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 
 import java.util.ArrayList;
@@ -76,14 +75,12 @@ public class BeamGroupLayout implements Selectable {
                 double startY = interpolateY(baseStartX, baseStartY, baseEndX, baseEndY, startX) + levelOffsetY;
                 double endY = interpolateY(baseStartX, baseStartY, baseEndX, baseEndY, endX) + levelOffsetY;
 
-                Polygon poly = new Polygon(
-                        startX, startY - halfBeamThickness,
-                        endX, endY - halfBeamThickness,
-                        endX, endY + halfBeamThickness,
-                        startX, startY + halfBeamThickness
-                );
-
-                if (poly.contains(measureX, measureY)) return true;
+                if (measureX >= startX && measureX <= endX) {
+                    double centerY = interpolateY(startX, startY, endX, endY, measureX);
+                    if (measureY >= (centerY - halfBeamThickness) && measureY <= (centerY + halfBeamThickness)) {
+                        return true;
+                    }
+                }
             }
         }
 

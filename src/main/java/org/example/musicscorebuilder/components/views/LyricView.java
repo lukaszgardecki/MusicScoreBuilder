@@ -8,6 +8,7 @@ import javafx.scene.text.TextAlignment;
 import org.example.musicscorebuilder.components.layout.LyricLayout;
 import org.example.musicscorebuilder.components.layout.NoteLayout;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
+import org.example.musicscorebuilder.components.views.util.LyricFontUtils;
 import org.example.musicscorebuilder.managers.LyricEditorManager;
 
 import java.util.List;
@@ -52,7 +53,7 @@ public class LyricView extends ComponentView {
                 for (LyricLayout.FragmentLayout frag : lyricLayout.getFragmentLayouts()) {
                     double fragX = startScreenX + frag.relativeX() * sp;
 
-                    gc.setFont(frag.getFont(sp));
+                    gc.setFont(LyricFontUtils.getFont(frag, sp));
                     gc.setFill(Color.BLACK);
                     gc.fillText(frag.fragment().getText(), fragX, lyricScreenY);
 
@@ -68,7 +69,7 @@ public class LyricView extends ComponentView {
                     gc.save();
                     gc.translate(segmentX + hyphen.modelX() * sp, segmentY + hyphen.modelY() * sp);
                     gc.scale(hyphen.scaleX(), 1.0);
-                    gc.setFont(hyphen.getFont(sp));
+                    gc.setFont(LyricFontUtils.getFont(hyphen, sp));
                     gc.setTextAlign(TextAlignment.CENTER);
                     gc.fillText("–", 0, 0);
                     gc.restore();

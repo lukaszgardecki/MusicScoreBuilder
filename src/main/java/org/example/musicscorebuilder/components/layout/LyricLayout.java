@@ -1,35 +1,34 @@
 package org.example.musicscorebuilder.components.layout;
 
-import javafx.scene.text.Font;
-import javafx.scene.text.FontPosture;
-import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
 import org.example.musicscorebuilder.components.music.Lyric;
 import org.example.musicscorebuilder.components.music.LyricFragment;
 import org.example.musicscorebuilder.components.music.SyllableType;
-import org.example.musicscorebuilder.managers.FontManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class LyricLayout {
 
     private static final List<HyphenLayout> EMPTY_HYPHENS = Collections.emptyList();
-    private static final Map<String, Font> FONT_CACHE = new HashMap<>();
 
-    public static Font getFont(FontWeight weight, FontPosture posture, double size) {
-        double rounded = Math.round(size * 10.0) / 10.0;
-        String key = weight + "_" + posture + "_" + rounded;
-        return FONT_CACHE.computeIfAbsent(key, k -> {
-            Font baseFont = FontManager.getFreeSerifFont(rounded);
-            if (weight == FontWeight.BOLD || posture == FontPosture.ITALIC) {
-                return Font.font(baseFont.getFamily(), weight, posture, rounded);
-            }
-            return baseFont;
-        });
+    @FunctionalInterface
+    public interface TextMeasurer {
+        TextBounds measure(String text, double fontSize, boolean bold, boolean italic);
+
+        record TextBounds(double width, double height) {}
+    }
+
+    private static TextMeasurer defaultMeasurer = (text, fontSize, bold, italic) -> {
+        double width = (text != null) ? text.length() * fontSize * 0.55 : 0.0;
+        double height = fontSize * 1.2;
+        return new TextMeasurer.TextBounds(width, height);
+    };
+
+    public static void setDefaultMeasurer(TextMeasurer measurer) {
+        if (measurer != null) {
+            defaultMeasurer = measurer;
+        }
     }
 
     public record FragmentLayout(
@@ -37,25 +36,17 @@ public class LyricLayout {
             double width,
             double relativeX,
             double underlineRelativeY,
-            FontWeight weight,
-            FontPosture posture,
+            boolean bold,
+            boolean italic,
             double fontSizeSp
-    ) {
-        public Font getFont(double sp) {
-            return LyricLayout.getFont(weight, posture, fontSizeSp * sp);
-        }
-    }
+    ) {}
 
     public record HyphenLayout(
             double modelX,
             double modelY,
             double scaleX,
             double fontSizeSp
-    ) {
-        public Font getFont(double sp) {
-            return LyricLayout.getFont(FontWeight.NORMAL, FontPosture.REGULAR, fontSizeSp * sp);
-        }
-    }
+    ) {}
 
     private record NotePos(SystemLayout system, double absX, NoteLayout noteLayout) {}
 
@@ -63,13 +54,19 @@ public class LyricLayout {
     private final NoteLayout noteLayout;
     private final int verse;
     private final List<FragmentLayout> fragmentLayouts = new ArrayList<>();
+    private TextMeasurer textMeasurer;
     private double totalWidth = 0.0;
     private int lastKnownHash = -1;
 
     public LyricLayout(Lyric lyric, NoteLayout noteLayout) {
+        this(lyric, noteLayout, defaultMeasurer);
+    }
+
+    public LyricLayout(Lyric lyric, NoteLayout noteLayout, TextMeasurer measurer) {
         this.lyric = lyric;
         this.noteLayout = noteLayout;
         this.verse = (lyric != null) ? lyric.getVerse() : 1;
+        this.textMeasurer = (measurer != null) ? measurer : defaultMeasurer;
         refresh();
     }
 
@@ -174,23 +171,21 @@ public class LyricLayout {
         for (LyricFragment frag : fragments) {
             if (frag == null || frag.getText() == null || frag.getText().isEmpty()) continue;
 
-            FontWeight weight = frag.isBold() ? FontWeight.BOLD : FontWeight.NORMAL;
-            FontPosture posture = frag.isItalic() ? FontPosture.ITALIC : FontPosture.REGULAR;
-            Font font = getFont(weight, posture, fontSizeSp);
+            boolean bold = frag.isBold();
+            boolean italic = frag.isItalic();
 
-            Text measureText = new Text(frag.getText());
-            measureText.setFont(font);
+            TextMeasurer.TextBounds bounds = textMeasurer.measure(frag.getText(), fontSizeSp, bold, italic);
 
-            double fragWidthModel = measureText.getLayoutBounds().getWidth();
-            double underlineRelYModel = measureText.getLayoutBounds().getHeight() * 0.8;
+            double fragWidthModel = bounds.width();
+            double underlineRelYModel = bounds.height() * 0.8;
 
             fragmentLayouts.add(new FragmentLayout(
                     frag,
                     fragWidthModel,
                     currentRelX,
                     underlineRelYModel,
-                    weight,
-                    posture,
+                    bold,
+                    italic,
                     fontSizeSp
             ));
 
@@ -212,7 +207,6 @@ public class LyricLayout {
 
         double fontSize = getFontSize();
 
-        // 1. Myślnik PO sylabie (dla BEGIN i MIDDLE)
         if (type == SyllableType.BEGIN || type == SyllableType.MIDDLE) {
             NotePos nextPos = createNotePos(noteLayout.getNextNoteInVoice());
 
@@ -238,7 +232,7 @@ public class LyricLayout {
                     }
 
                     double distance = endAbsX - startAbsX;
-                    double margin = fontSize * 0.15; // Bezpieczny odstęp od tekstu z obu stron
+                    double margin = fontSize * 0.15;
                     double availableSpace = distance - (2 * margin);
 
                     if (availableSpace > 0) {
@@ -250,19 +244,16 @@ public class LyricLayout {
                         result.add(new HyphenLayout(hyphenModelX, getModelY(), scaleX, fontSize));
                     }
                 } else {
-                    // Koniec obecnego systemu (złamanie linii)
                     double hyphenModelX = getStartX() + getTotalWidth() + (fontSize * 0.25);
                     result.add(new HyphenLayout(hyphenModelX, getModelY(), 0.8, fontSize));
                 }
             }
         }
 
-        // 2. Myślnik PRZED sylabą na nowej linii (dla MIDDLE i END)
         if (type == SyllableType.MIDDLE || type == SyllableType.END) {
             NotePos prevPos = createNotePos(noteLayout.getPrevNoteInVoice());
 
             if (prevPos != null && currentPos.system() != prevPos.system()) {
-                // Początek nowego systemu (złamanie linii)
                 double hyphenModelX = getStartX() - (fontSize * 0.35);
                 result.add(new HyphenLayout(hyphenModelX, getModelY(), 0.8, fontSize));
             }

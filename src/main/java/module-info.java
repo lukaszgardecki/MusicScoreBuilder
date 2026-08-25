@@ -47,4 +47,6 @@ module org.example.musicscorebuilder {
     opens org.example.musicscorebuilder.controller.util to javafx.fxml;
     exports org.example.musicscorebuilder.controller.songbookcontroller;
     opens org.example.musicscorebuilder.controller.songbookcontroller to javafx.fxml;
+    exports org.example.musicscorebuilder.components.views.util;
+    opens org.example.musicscorebuilder.components.views.util to javafx.fxml;
 }

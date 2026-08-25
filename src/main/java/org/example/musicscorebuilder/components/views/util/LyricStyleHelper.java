@@ -1,4 +1,4 @@
-package org.example.musicscorebuilder.components.layout.util;
+package org.example.musicscorebuilder.components.views.util;
 
 import javafx.scene.control.IndexRange;
 import javafx.scene.paint.Color;
