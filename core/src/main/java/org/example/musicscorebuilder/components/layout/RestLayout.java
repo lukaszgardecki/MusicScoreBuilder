@@ -6,6 +6,7 @@ import org.example.musicscorebuilder.components.music.Rest;
 import org.example.musicscorebuilder.components.music.SegmentType;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class RestLayout extends NoteRestLayout {
     private final Leland fontData;
@@ -30,10 +31,10 @@ public class RestLayout extends NoteRestLayout {
         if (rest.getType() == NoteType.WHOLE && isOnlyElementInVoice(measureLayout)) {
             List<SegmentLayout> noteRestSegments = measureLayout.getSegments().stream()
                     .filter(seg -> seg.getType() == SegmentType.NOTEREST)
-                    .toList();
+                    .collect(Collectors.toList());
 
             if (!noteRestSegments.isEmpty()) {
-                SegmentLayout firstNoteRestSeg = noteRestSegments.getFirst();
+                SegmentLayout firstNoteRestSeg = noteRestSegments.get(0);
                 double totalNoteRestWidth = noteRestSegments.stream()
                         .mapToDouble(SegmentLayout::getWidth)
                         .sum();
@@ -102,7 +103,7 @@ public class RestLayout extends NoteRestLayout {
                 .map(ElementLayout::getVoice)
                 .distinct()
                 .sorted()
-                .toList();
+                .collect(Collectors.toList());
 
         int totalVoices = activeVoices.size();
         if (totalVoices <= 1) return baseOffset;

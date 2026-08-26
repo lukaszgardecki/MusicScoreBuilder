@@ -45,7 +45,8 @@ public class NoteLayout extends NoteRestLayout {
     @Override public double getWidth() {
         var headWidth = getFontWidth();
         var flagWidth = getBeamSingle() == null ? 0 : getStem().isUp() ? getBeamSingle().getFontWidth() : 0;
-        double dotsExtent = dots.isEmpty() ? 0 : (dots.getLast().getX() + dots.getLast().getWidth());
+
+        double dotsExtent = dots.isEmpty() ? 0 : (dots.get(dots.size() - 1).getX() + dots.get(dots.size() - 1).getWidth());
         return Math.max(headWidth + flagWidth, dotsExtent);
     }
     @Override public double getHeight() { return style.getStaffLineSpacing(); }

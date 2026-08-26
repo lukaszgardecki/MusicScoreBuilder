@@ -68,7 +68,7 @@ public class LayoutEngine {
 
             boolean forcedBreak = false;
             if (!currentSystem.getMeasures().isEmpty()) {
-                Measure previousMeasure = currentSystem.getMeasures().getLast().getMeasure();
+                Measure previousMeasure = currentSystem.getMeasures().get(currentSystem.getMeasures().size() - 1).getMeasure();
                 forcedBreak = previousMeasure.hasSystemBreak();
             }
 
@@ -112,7 +112,7 @@ public class LayoutEngine {
             measureLayout.remove1stMeasureAttributes();
 
             var segments = measureLayout.getSegments();
-            if (!segments.isEmpty() && segments.getLast().getSegment().getType() != SegmentType.BARLINE) {
+            if (!segments.isEmpty() && segments.get(segments.size() - 1).getSegment().getType() != SegmentType.BARLINE) {
                 addEndBarline(measure, measureLayout);
             }
 
@@ -171,7 +171,7 @@ public class LayoutEngine {
 
     private SystemLayout addNewSystemToPage(PageLayout pageLayout, ScoreMode scoreMode) {
         boolean previousIsSystem = !pageLayout.getBlocks().isEmpty()
-                && pageLayout.getBlocks().getLast() instanceof SystemLayout;
+                && pageLayout.getBlocks().get(pageLayout.getBlocks().size() - 1) instanceof SystemLayout;
 
         if (previousIsSystem) {
             pageLayout.setLastSystemSpaceBelow(style.getSystemSpacing());
@@ -208,7 +208,7 @@ public class LayoutEngine {
         if (keyChange || timeChange) {
             Barline rightBarline = measure.getRightBarline();
             if (rightBarline != null && rightBarline.getStyle() == BarlineStyle.SINGLE) {
-                SegmentLayout currentBarlineSeg = measureLayout.getSegments().getLast();
+                SegmentLayout currentBarlineSeg = measureLayout.getSegments().get(measureLayout.getSegments().size() - 1);
 
                 Barline doubleBarline = new Barline(BarlineStyle.DOUBLE_LIGHT, measure);
                 SegmentLayout tempDoubleBarlineSeg = new SegmentLayout(new Segment(SegmentType.BARLINE, measure), measureLayout);
@@ -238,7 +238,7 @@ public class LayoutEngine {
     private void addCourtesyAttributesToLastMeasure(SystemLayout system, Measure nextMeasure) {
         if (system.getMeasures().isEmpty()) return;
 
-        MeasureLayout lastMeasureLayout = system.getMeasures().getLast();
+        MeasureLayout lastMeasureLayout = system.getMeasures().get(system.getMeasures().size() - 1);
         Measure prevMeasure = lastMeasureLayout.getMeasure();
 
         boolean keyChange = nextMeasure.getKeySignature() != null && prevMeasure.getKeySignature() != null
@@ -253,7 +253,7 @@ public class LayoutEngine {
         if (keyChange || timeChange) {
             Barline rightBarline = prevMeasure.getRightBarline();
             if (rightBarline != null && rightBarline.getStyle() == BarlineStyle.SINGLE) {
-                lastMeasureLayout.getSegments().removeLast();
+                lastMeasureLayout.getSegments().remove(lastMeasureLayout.getSegments().size() - 1);
 
                 Segment doubleBarlineSegment = new Segment(SegmentType.BARLINE, prevMeasure);
                 SegmentLayout doubleBarlineSegLayout = new SegmentLayout(doubleBarlineSegment, lastMeasureLayout);
@@ -284,7 +284,7 @@ public class LayoutEngine {
     }
 
     private void add1stMeasureAttributes(ScoreMode scoreMode, MeasureLayout measureLayout, ScoreLayout scoreLayout) {
-        var isFirstMeasure = scoreLayout.getPages().size() == 1 && scoreLayout.getPages().getFirst().getSystems().size() == 1;
+        var isFirstMeasure = scoreLayout.getPages().size() == 1 && scoreLayout.getPages().get(0).getSystems().size() == 1;
         Measure measure = measureLayout.getMeasure();
 
         if (isFirstMeasure && measure.getTimeSignature() != null && measure.getTimeSignature().isVisible()) {

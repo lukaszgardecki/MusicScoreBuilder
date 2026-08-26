@@ -2,6 +2,7 @@ package org.example.musicscorebuilder.components.layout;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class PageLayout {
     private ScoreLayout parent;
@@ -82,19 +83,19 @@ public class PageLayout {
         return blocks.stream()
                 .filter(SystemLayout.class::isInstance)
                 .map(SystemLayout.class::cast)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public List<FrameLayout> getFrames() {
         return blocks.stream()
                 .filter(FrameLayout.class::isInstance)
                 .map(FrameLayout.class::cast)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public void setLastSystemSpaceBelow(double spaceBelow) {
         List<SystemLayout> systems = getSystems();
         if (systems.isEmpty()) return;
-        systems.getLast().setSpaceBelow(spaceBelow);
+        systems.get(systems.size() - 1).setSpaceBelow(spaceBelow);
     }
 }

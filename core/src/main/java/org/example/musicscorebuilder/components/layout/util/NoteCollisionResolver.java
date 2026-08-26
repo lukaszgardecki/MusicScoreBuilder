@@ -18,7 +18,7 @@ public final class NoteCollisionResolver {
     public static void resolve(List<NoteLayout> notes) {
         if (notes == null || notes.size() <= 1) {
             if (notes != null && !notes.isEmpty()) {
-                notes.getFirst().setXOffset(0.0);
+                notes.get(0).setXOffset(0.0);
             }
             return;
         }
@@ -34,7 +34,7 @@ public final class NoteCollisionResolver {
 
         sortedNotes.sort(DIATONIC_STEP_COMPARATOR);
 
-        NoteLayout firstNote = sortedNotes.getFirst();
+        NoteLayout firstNote = sortedNotes.get(0);
         StemLayout stemLayout = firstNote.getStem();
         boolean stemIsUp = stemLayout == null || stemLayout.isUp();
 

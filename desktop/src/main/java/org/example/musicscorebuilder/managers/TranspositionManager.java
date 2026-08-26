@@ -35,7 +35,7 @@ public class TranspositionManager {
             return false;
         }
 
-        Measure firstMeasure = mode.getMeasures().getFirst();
+        Measure firstMeasure = mode.getMeasures().get(0);
         int currentFifths = (firstMeasure.getKeySignature() != null) ? firstMeasure.getKeySignature().getFifths() : 0;
 
         Key currentKey = Key.fromFifths(currentFifths);

@@ -62,7 +62,7 @@ public class MeasureTimeSignatureAdjuster {
                 if (parent == null) break;
 
                 parent.appendMeasure();
-                Measure lastM = parent.getMeasures().getLast();
+                Measure lastM = parent.getMeasures().get(parent.getMeasures().size() - 1);
 
                 lastM.setTimeSignature(new TimeSignature(
                         masterTimeSig.getBeat(),
@@ -136,8 +136,8 @@ public class MeasureTimeSignatureAdjuster {
 
     private static void trimTrailingRests(Map<Integer, List<NoteData>> streams) {
         for (List<NoteData> stream : streams.values()) {
-            while (!stream.isEmpty() && stream.getLast().isRest) {
-                stream.removeLast();
+            while (!stream.isEmpty() && stream.get(stream.size() - 1).isRest) {
+                stream.remove(stream.size() - 1);
             }
         }
     }
@@ -191,7 +191,7 @@ public class MeasureTimeSignatureAdjuster {
                     break;
                 }
 
-                NoteData nd = stream.getFirst();
+                NoteData nd = stream.get(0);
                 int remainingSpace = targetTicks - currentTicks;
                 int fitTicks = Math.min(nd.durationTicks, remainingSpace);
 
@@ -202,7 +202,7 @@ public class MeasureTimeSignatureAdjuster {
                     if (fitTicks < nd.durationTicks) {
                         nd.durationTicks -= fitTicks;
                     } else {
-                        stream.removeFirst();
+                        stream.remove(0);
                     }
                 } else {
                     boolean splitNeeded = fitTicks < nd.durationTicks;
@@ -214,7 +214,7 @@ public class MeasureTimeSignatureAdjuster {
                         nd.durationTicks -= fitTicks;
                         nd.tieStop = true;
                     } else {
-                        stream.removeFirst();
+                        stream.remove(0);
                     }
 
                     placedList.add(new PlacedElement(activeNd, currentTicks, fitTicks, staffIdx, voice, false));
@@ -373,7 +373,7 @@ public class MeasureTimeSignatureAdjuster {
         if (group.isEmpty()) return;
 
         if (group.size() == 1) {
-            group.getFirst().setBeam(BeamType.NONE);
+            group.get(0).setBeam(BeamType.NONE);
         } else {
             for (int i = 0; i < group.size(); i++) {
                 if (i == 0) {

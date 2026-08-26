@@ -1,133 +1,84 @@
 package org.example.musicscorebuilder.managers;
 
 import javafx.scene.text.Font;
-import org.example.musicscorebuilder.components.layout.TextMeasurer;
 
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
 import java.io.InputStream;
 import java.util.EnumMap;
 import java.util.Map;
-import java.util.Objects;
 
-public class FontManager implements TextMeasurer {
-    private static final String LELAND_PATH = "/fonts/Leland.otf";
-    private static final String FREE_SERIF_PATH = "/fonts/FreeSerif.ttf";
-    private static final String FREE_SERIF_BOLD_PATH = "/fonts/FreeSerifBold.ttf";
-    private static final String FREE_SERIF_ITALIC_PATH = "/fonts/FreeSerifItalic.ttf";
-    private static final String FREE_SERIF_BOLD_ITALIC_PATH = "/fonts/FreeSerifBoldItalic.ttf";
-
-    private static Font lelandFont;
-    private static Font freeSerifFont;
-
-    public static void loadFonts() {
-        if (lelandFont == null) lelandFont = loadFontTo(LELAND_PATH);
-        if (freeSerifFont == null) freeSerifFont = loadFontTo(FREE_SERIF_PATH);
-
-        loadFontTo(FREE_SERIF_BOLD_PATH);
-        loadFontTo(FREE_SERIF_ITALIC_PATH);
-        loadFontTo(FREE_SERIF_BOLD_ITALIC_PATH);
-    }
-
-    public static Font getLelandFont(double size) {
-        if (lelandFont == null) loadFonts();
-        return new Font(lelandFont.getName(), size);
-    }
-
-    public static Font getFreeSerifFont(double size) {
-        if (freeSerifFont == null) loadFonts();
-        return new Font(freeSerifFont.getName(), size);
-    }
-
+public class FontManager extends AbstractFontManager {
     private static final Map<FontType, Font> fxFonts = new EnumMap<>(FontType.class);
     private static final Map<FontType, java.awt.Font> awtFonts = new EnumMap<>(FontType.class);
     private static final FontRenderContext FRC = new FontRenderContext(null, true, true);
+    private static final FontManager INSTANCE = new FontManager();
 
-    public static void loadFont(FontType type) {
-        if (fxFonts.containsKey(type)) return;
+    public static FontManager getInstance() {
+        return INSTANCE;
+    }
 
-        try {
-            String path = Objects.requireNonNull(FontManager.class.getResource(type.getResourcePath())).toExternalForm();
-            Font fxFont = Font.loadFont(path, 14.0);
-            if (fxFont != null) {
-                fxFonts.put(type, fxFont);
-            }
-        } catch (Exception e) {
-            System.err.println("BŁĄD: Nie udało się załadować JavaFX Font: " + type);
+    public static void loadFonts() {
+        for (FontType type : FontType.values()) {
+            INSTANCE.ensureLoaded(type);
         }
+    }
+
+    public static Font getLelandFont(double size) {
+        INSTANCE.ensureLoaded(FontType.LELAND);
+        Font font = fxFonts.get(FontType.LELAND);
+        return font != null ? new Font(font.getName(), size) : new Font(size);
+    }
+
+    public static Font getFreeSerifFont(double size) {
+        INSTANCE.ensureLoaded(FontType.FREE_SERIF);
+        Font font = fxFonts.get(FontType.FREE_SERIF);
+        return font != null ? new Font(font.getName(), size) : new Font(size);
+    }
+
+    @Override
+    protected void loadNativeFont(FontType type) {
+        try {
+            var resource = FontManager.class.getResource(type.getResourcePath());
+            if (resource != null) {
+                Font fxFont = Font.loadFont(resource.toExternalForm(), 14.0);
+                if (fxFont != null) fxFonts.put(type, fxFont);
+            }
+        } catch (Exception ignored) {}
 
         try (InputStream is = FontManager.class.getResourceAsStream(type.getResourcePath())) {
             if (is != null) {
                 java.awt.Font awtFont = java.awt.Font.createFont(java.awt.Font.TRUETYPE_FONT, is);
                 awtFonts.put(type, awtFont);
             }
-        } catch (Exception e) {
-            System.err.println("BŁĄD: Nie udało się załadować AWT Font: " + type);
-        }
-
-        if (type == FontType.FREE_SERIF) {
-            loadFontTo(FREE_SERIF_BOLD_PATH);
-            loadFontTo(FREE_SERIF_ITALIC_PATH);
-            loadFontTo(FREE_SERIF_BOLD_ITALIC_PATH);
-        }
+        } catch (Exception ignored) {}
     }
 
     @Override
-    public double getTextWidth(FontType type, String text, double fontSizeInSpatium, boolean bold, boolean italic) {
-        if (text == null || text.isEmpty()) return 0.0;
-        if (!awtFonts.containsKey(type)) {
-            loadFont(type);
-        }
-
-        java.awt.Font awtFont = awtFonts.get(type);
-        if (awtFont == null) return 0.0;
-
-        int style = java.awt.Font.PLAIN;
-        if (bold && italic) style = java.awt.Font.BOLD | java.awt.Font.ITALIC;
-        else if (bold) style = java.awt.Font.BOLD;
-        else if (italic) style = java.awt.Font.ITALIC;
-
-        java.awt.Font derived = awtFont.deriveFont(style, (float) fontSizeInSpatium);
+    protected double computeWidth(FontType type, String text, double fontSize, FontStyle style) {
+        java.awt.Font derived = getDerivedAwtFont(type, fontSize, style);
+        if (derived == null) return 0.0;
         Rectangle2D bounds = derived.getStringBounds(text, FRC);
         return bounds.getWidth();
     }
 
     @Override
-    public double getTextHeight(FontType type, String text, double fontSizeInSpatium, boolean bold, boolean italic) {
-        if (text == null || text.isEmpty()) return 0.0;
-        if (!awtFonts.containsKey(type)) {
-            loadFont(type);
-        }
-
-        java.awt.Font awtFont = awtFonts.get(type);
-        if (awtFont == null) return 0.0;
-
-        int style = java.awt.Font.PLAIN;
-        if (bold && italic) style = java.awt.Font.BOLD | java.awt.Font.ITALIC;
-        else if (bold) style = java.awt.Font.BOLD;
-        else if (italic) style = java.awt.Font.ITALIC;
-
-        java.awt.Font derived = awtFont.deriveFont(style, (float) fontSizeInSpatium);
+    protected double computeHeight(FontType type, String text, double fontSize, FontStyle style) {
+        java.awt.Font derived = getDerivedAwtFont(type, fontSize, style);
+        if (derived == null) return 0.0;
         Rectangle2D bounds = derived.getStringBounds(text, FRC);
         return bounds.getHeight();
     }
 
-    private static Font loadFontTo(String path) {
-        try {
-            var resource = FontManager.class.getResource(path);
-            if (resource == null) {
-                System.err.println("BŁĄD: Nie znaleziono pliku czcionki w resources: " + path);
-                return null;
-            }
-            String fontPath = resource.toExternalForm();
-            Font font = Font.loadFont(fontPath, 14.0);
-            if (font == null) {
-                System.err.println("BŁĄD: Nie udało się załadować czcionki " + path + "!");
-            }
-            return font;
-        } catch (Exception e) {
-            System.err.println("BŁĄD: Wyjątek podczas ładowania czcionki " + path + ": " + e.getMessage());
-            return null;
-        }
+    private java.awt.Font getDerivedAwtFont(FontType type, double fontSize, FontStyle style) {
+        java.awt.Font awtFont = awtFonts.get(type);
+        if (awtFont == null) return null;
+
+        int awtStyle = java.awt.Font.PLAIN;
+        if (style == FontStyle.BOLD_ITALIC) awtStyle = java.awt.Font.BOLD | java.awt.Font.ITALIC;
+        else if (style == FontStyle.BOLD) awtStyle = java.awt.Font.BOLD;
+        else if (style == FontStyle.ITALIC) awtStyle = java.awt.Font.ITALIC;
+
+        return awtFont.deriveFont(awtStyle, (float) fontSize);
     }
 }

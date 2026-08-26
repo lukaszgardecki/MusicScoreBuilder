@@ -12,6 +12,7 @@ import org.example.musicscorebuilder.managers.ScoreStateManager;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class BeamSectionController extends AbstractPaletteSectionController<BeamAction> {
     private final BeamSectionRenderer renderer = new BeamSectionRenderer();
@@ -27,7 +28,7 @@ public class BeamSectionController extends AbstractPaletteSectionController<Beam
 
     @Override
     protected List<BeamAction> getItems() {
-        return Arrays.stream(BeamAction.values()).toList();
+        return Arrays.stream(BeamAction.values()).collect(Collectors.toList());
     }
 
     @Override

@@ -11,7 +11,7 @@ public class BeamGroupLayout implements Selectable {
 
     @Override public boolean isSelected() { return selected; }
     @Override public void setSelected(boolean selected) { this.selected = selected; }
-    @Override public int getVoice() { return notes.isEmpty() ? 1 : notes.getFirst().getVoice(); }
+    @Override public int getVoice() { return notes.isEmpty() ? 1 : notes.get(0).getVoice(); }
     @Override
     public boolean contains(double measureX, double measureY) {
         if (notes.isEmpty()) return false;
@@ -51,8 +51,8 @@ public class BeamGroupLayout implements Selectable {
             for (List<NoteLayout> subGroup : subGroups) {
                 if (subGroup.isEmpty()) continue;
 
-                NoteLayout subFirst = subGroup.getFirst();
-                NoteLayout subLast = subGroup.getLast();
+                NoteLayout subFirst = subGroup.get(0);
+                NoteLayout subLast = subGroup.get(subGroup.size() - 1);
 
                 double subFirstStemX = (stemIsUp) ? subFirst.getBoxWidth() - subFirst.getStem().getWidth() : 0;
                 double startX = subFirst.getParent().getX() + subFirst.getX() + subFirstStemX;
@@ -86,8 +86,8 @@ public class BeamGroupLayout implements Selectable {
 
         return false;
     }
-    @Override public SegmentLayout getSegment() { return notes.getFirst().getSegment(); }
-    @Override public StaffLayout getStaff() { return notes.isEmpty() ? null : notes.getFirst().getStaff(); }
+    @Override public SegmentLayout getSegment() { return notes.get(0).getSegment(); }
+    @Override public StaffLayout getStaff() { return notes.isEmpty() ? null : notes.get(0).getStaff(); }
 
     public void addNote(NoteLayout note) { notes.add(note); }
 
@@ -103,12 +103,12 @@ public class BeamGroupLayout implements Selectable {
 
     public NoteLayout getFirstNote() {
         if (notes.isEmpty()) return null;
-        return notes.getFirst();
+        return notes.get(0);
     }
 
     public NoteLayout getLastNote() {
         if (notes.isEmpty()) return null;
-        return notes.getLast();
+        return notes.get(notes.size() - 1);
     }
 
     public int size() { return notes.size(); }

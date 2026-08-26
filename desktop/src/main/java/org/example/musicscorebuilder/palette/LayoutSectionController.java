@@ -15,6 +15,7 @@ import org.example.musicscorebuilder.managers.ScoreStateManager;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class LayoutSectionController extends AbstractPaletteSectionController<LayoutAction> {
     private final BreakSystemIconView breakSystemIcon = new BreakSystemIconView();
@@ -31,7 +32,7 @@ public class LayoutSectionController extends AbstractPaletteSectionController<La
 
     @Override
     protected List<LayoutAction> getItems() {
-        return Arrays.stream(LayoutAction.values()).toList();
+        return Arrays.stream(LayoutAction.values()).collect(Collectors.toList());
     }
 
     @Override

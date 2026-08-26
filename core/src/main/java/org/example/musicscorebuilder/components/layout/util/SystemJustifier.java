@@ -56,7 +56,7 @@ public class SystemJustifier {
         List<MeasureLayout> measures = system.getMeasures();
         if (measures.isEmpty()) return;
 
-        MeasureLayout lastMeasure = measures.getLast();
+        MeasureLayout lastMeasure = measures.get(measures.size() - 1);
         List<SegmentLayout> segments = lastMeasure.getSegments();
         if (segments.isEmpty()) return;
 

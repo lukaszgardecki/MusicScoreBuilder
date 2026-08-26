@@ -83,7 +83,7 @@ public class TieLayout implements Selectable {
     public double getStartX() {
         if (startNote == null) {
             if (system != null && !system.getMeasures().isEmpty()) {
-                MeasureLayout firstMeasure = system.getMeasures().getFirst();
+                MeasureLayout firstMeasure = system.getMeasures().get(0);
                 double measureX = firstMeasure.getX();
 
                 double segmentX = firstMeasure.getSegments().stream()

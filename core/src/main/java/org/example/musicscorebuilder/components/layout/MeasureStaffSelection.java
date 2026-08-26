@@ -33,7 +33,7 @@ public class MeasureStaffSelection implements Selectable {
 
         return xMatches && yMatches;
     }
-    @Override public SegmentLayout getSegment() { return measure.getSegments().getFirst(); }
+    @Override public SegmentLayout getSegment() { return measure.getSegments().get(0); }
     @Override public StaffLayout getStaff() { return staff; }
 
     public MeasureLayout getMeasure() { return measure; }

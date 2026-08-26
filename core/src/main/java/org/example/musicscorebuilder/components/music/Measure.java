@@ -11,6 +11,7 @@ import org.example.musicscorebuilder.data.MeasureSerializer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @JsonSerialize(using = MeasureSerializer.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -62,7 +63,7 @@ public class Measure {
 
         List<Segment> noteRestSegments = segments.stream()
                 .filter(Segment::isNoteRest)
-                .toList();
+                .collect(Collectors.toList());
 
         if (noteRestSegments.isEmpty()) return;
         int defaultDur = totalTicks / noteRestSegments.size();
@@ -105,7 +106,7 @@ public class Measure {
             segments.add(newSegment);
         }
 
-        Segment firstSegment = segments.getFirst();
+        Segment firstSegment = segments.get(0);
         Rest wholeRest = new Rest(1, NoteType.WHOLE, this);
         firstSegment.addElement(staffId, wholeRest);
 

@@ -92,7 +92,7 @@ public class ScoreMode {
         measure.setParentMode(this);
 
         if (!measures.isEmpty()) {
-            Measure lastMeasure = measures.getLast();
+            Measure lastMeasure = measures.get(measures.size() - 1);
             lastMeasure.setNext(measure);
             measure.setPrev(lastMeasure);
 
@@ -119,12 +119,12 @@ public class ScoreMode {
 
     public void removeLastMeasure() {
         if (measures.isEmpty()) return;
-        Measure removed = measures.removeLast();
+        Measure removed = measures.remove(measures.size() - 1);
         removed.setPrev(null);
         removed.setParentMode(null);
 
         if (measures.isEmpty()) return;
-        Measure last = measures.getLast();
+        Measure last = measures.get(measures.size() - 1);
         last.setNext(null);
         last.setBarlineStyle(BarlineStyle.FINAL);
     }

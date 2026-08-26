@@ -38,27 +38,27 @@ public class MeasureLayout {
         SegmentLayout seg = new SegmentLayout(SegmentType.CLEF, this);
         seg.addClef();
         seg.setSystemGenerated(true);
-        segments.addFirst(seg);
+        segments.add(0, seg);
     }
     public void addSystemStartBarline(Barline barline) {
         SegmentLayout seg = new SegmentLayout(SegmentType.START_BARLINE, this);
         seg.addStartBarline(barline);
         seg.setSystemGenerated(true);
-        segments.addFirst(seg);
+        segments.add(0, seg);
     }
 
     public void addSystemKeySignature(KeySignature keySignature) {
         SegmentLayout seg = new SegmentLayout(SegmentType.KEY_SIG, this);
         seg.addKeySignature(keySignature);
         seg.setSystemGenerated(true);
-        segments.addFirst(seg);
+        segments.add(0, seg);
     }
 
     public void addSystemTimeSignature(TimeSignature timeSignature) {
         SegmentLayout seg = new SegmentLayout(SegmentType.TIME_SIG, this);
         seg.addTimeSignature(timeSignature);
         seg.setSystemGenerated(true);
-        segments.addFirst(seg);
+        segments.add(0, seg);
     }
 
     public void remove1stMeasureAttributes() {
@@ -86,7 +86,7 @@ public class MeasureLayout {
                 return new MeasureStaffSelection(this, staff);
             }
         }
-        return staves.isEmpty() ? null : new MeasureStaffSelection(this, staves.getFirst());
+        return staves.isEmpty() ? null : new MeasureStaffSelection(this, staves.get(0));
     }
 
     public ScoreStyle getScoreStyle() { return style; }

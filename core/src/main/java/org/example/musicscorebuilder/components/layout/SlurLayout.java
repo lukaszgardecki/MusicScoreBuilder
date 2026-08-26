@@ -107,7 +107,7 @@ public class SlurLayout implements Selectable {
             if (system != null) {
                 List<MeasureLayout> measures = system.getMeasures();
                 if (!measures.isEmpty()) {
-                    MeasureLayout firstMeasure = measures.getFirst();
+                    MeasureLayout firstMeasure = measures.get(0);
                     double measureX = firstMeasure.getX();
 
                     double segmentX = 0.0;

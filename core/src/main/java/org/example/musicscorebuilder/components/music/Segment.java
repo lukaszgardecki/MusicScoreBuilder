@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Segment {
     @JsonIgnore
@@ -51,7 +52,7 @@ public class Segment {
                         if (oldElement instanceof Note oldNote) return oldNote.getType() != newNote.getType();
                         return false;
                     })
-                    .toList();
+                    .collect(Collectors.toList());
             for (NoteRestElement elementToRemove : toRemove) {
                 removeNoteRest(staffId, elementToRemove);
             }
@@ -109,7 +110,7 @@ public class Segment {
         return getElementsByStaff(staffId).stream()
                 .filter(e -> e instanceof NoteRestElement nre && nre.getVoice() == voice)
                 .map(NoteRestElement.class::cast)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @JsonIgnore

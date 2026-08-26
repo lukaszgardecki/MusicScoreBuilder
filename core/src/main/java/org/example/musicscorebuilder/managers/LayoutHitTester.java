@@ -403,7 +403,7 @@ public class LayoutHitTester {
                                                 return rl;
                                             }
                                         }
-                                        return elements.getFirst();
+                                        return elements.get(0);
                                     }
                                 }
                             }
@@ -443,7 +443,7 @@ public class LayoutHitTester {
                                 }
                             }
                             if (targetStaff == null) {
-                                targetStaff = staffs.getFirst();
+                                targetStaff = staffs.get(0);
                             }
                         }
 

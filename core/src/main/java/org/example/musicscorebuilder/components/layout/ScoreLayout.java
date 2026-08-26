@@ -27,17 +27,17 @@ public class ScoreLayout {
 
     public Selectable findFirstNoteElement() {
         if (pages.isEmpty()) return null;
-        var page = pages.getFirst();
+        var page = pages.get(0);
         if (page.getSystems().isEmpty()) return null;
-        var system = page.getSystems().getFirst();
+        var system = page.getSystems().get(0);
         if (system.getMeasures().isEmpty()) return null;
-        var measure = system.getMeasures().getFirst();
+        var measure = system.getMeasures().get(0);
 
         for (SegmentLayout segment : measure.getSegments()) {
             if (segment.getType() == SegmentType.NOTEREST) {
                 List<ElementLayout> elements = segment.getElements();
                 if (!elements.isEmpty()) {
-                    return elements.getFirst();
+                    return elements.get(0);
                 }
             }
         }

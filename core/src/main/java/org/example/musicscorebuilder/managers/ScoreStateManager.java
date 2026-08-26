@@ -8,6 +8,7 @@ import org.example.musicscorebuilder.data.StorageService;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class ScoreStateManager {
     private static ScoreStateManager instance;
@@ -30,7 +31,7 @@ public class ScoreStateManager {
         Score score = StorageService.getInstance().getScore();
         if (score == null || score.getModes().isEmpty()) return null;
         if (currentModeIndex < 0 || currentModeIndex >= score.getModes().size()) {
-            return score.getModes().getFirst();
+            return score.getModes().get(0);
         }
         return score.getModes().get(currentModeIndex);
     }
@@ -95,7 +96,7 @@ public class ScoreStateManager {
     }
 
     public Selectable getSelectedItem() {
-        return selectedItems.isEmpty() ? null : selectedItems.getFirst();
+        return selectedItems.isEmpty() ? null : selectedItems.get(0);
     }
 
     public Optional<Selectable> getFirstSelectedNoteRest() {
@@ -232,11 +233,11 @@ public class ScoreStateManager {
 
         postRefreshAction = layout -> {
             if (measure.getSegments() != null && !measure.getSegments().isEmpty()) {
-                Segment firstSegment = measure.getSegments().getFirst();
+                Segment firstSegment = measure.getSegments().get(0);
                 var staffElements = firstSegment.getElementsByStaff(staffId);
 
                 if (staffElements != null && !staffElements.isEmpty()) {
-                    if (staffElements.getFirst() instanceof NoteRestElement nre) {
+                    if (staffElements.get(0) instanceof NoteRestElement nre) {
                         Selectable newLayout = LayoutHitTester.findSelectableForElement(
                                 layout.getPages(), firstSegment, staffId, nre
                         );
@@ -381,7 +382,7 @@ public class ScoreStateManager {
         List<NoteLayout> selectedNotes = selectedItems.stream()
                 .filter(NoteLayout.class::isInstance)
                 .map(NoteLayout.class::cast)
-                .toList();
+                .collect(Collectors.toList());
 
         Note startNote = null;
         Note endNote = null;
