@@ -11,12 +11,24 @@ public class PreferencesService {
     private static final Preferences prefs = Preferences.userNodeForPackage(SongbookController.class);
 
     public static void saveDirectoryPath(String path) {
-        prefs.put(PREF_FOLDER_KEY, path);
+        if (path != null && !path.isBlank()) {
+            File absoluteFile = new File(path).getAbsoluteFile();
+            prefs.put(PREF_FOLDER_KEY, absoluteFile.getAbsolutePath());
+        }
     }
 
     public static Optional<File> getDirectoryFile() {
         String savedPath = prefs.get(PREF_FOLDER_KEY, null);
-        if (savedPath != null) return Optional.of(new File(savedPath));
+        if (savedPath == null || savedPath.isBlank()) {
+            return Optional.empty();
+        }
+
+        File folder = new File(savedPath).getAbsoluteFile();
+
+        if (folder.exists() && folder.isDirectory()) {
+            return Optional.of(folder);
+        }
+
         return Optional.empty();
     }
 }
