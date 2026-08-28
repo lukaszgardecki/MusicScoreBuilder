@@ -1,13 +1,16 @@
 package org.example.musicscorebuilder.components.music;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class Score {
+    private final String id;
     private String numberNew, numberOld, title, subtitle, composer;
     private Page page = new Page(PageFormat.A4_V, 10, 10, 10, 10);
 
@@ -26,12 +29,23 @@ public class Score {
 
     @JsonCreator
     public Score(
+            @JsonProperty("id") String id,
             @JsonProperty("numberNew") String newNum,
             @JsonProperty("numberOld") String oldNum,
             @JsonProperty("title") String title,
             @JsonProperty("subtitle") String subtitle,
             @JsonProperty("composer") String composer
     ) {
+        this.id = id;
+        this.numberNew = newNum != null ? newNum : "";
+        this.numberOld = oldNum != null ? oldNum : "";
+        this.title = title != null ? title : "";
+        this.subtitle = subtitle != null ? subtitle : "";
+        this.composer = composer != null ? composer : "";
+    }
+
+    public Score(String newNum, String oldNum, String title, String subtitle, String composer) {
+        this.id = UUID.randomUUID().toString();
         this.numberNew = newNum != null ? newNum : "";
         this.numberOld = oldNum != null ? oldNum : "";
         this.title = title != null ? title : "";
@@ -50,6 +64,7 @@ public class Score {
         }
     }
 
+    public String getId() { return id; }
     public String getNumberNew() { return numberNew; }
     public String getNumberOld() { return numberOld; }
     public String getTitle() { return title; }
@@ -70,6 +85,13 @@ public class Score {
 
     @JsonProperty("modes")
     public List<ScoreMode> getModes() { return scoreModes; }
+    @JsonIgnore
+    public int getKeyFifths() {
+        var mode = scoreModes.get(0);
+        if (mode == null) return 0;
+        Measure firstMeasure = mode.getMeasures().get(0);
+        return (firstMeasure.getKeySignature() != null) ? firstMeasure.getKeySignature().getFifths() : 0;
+    }
 
     public void setTitle(String title) { this.title = title; }
     public void setSubtitle(String subtitle) { this.subtitle = subtitle; }

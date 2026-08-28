@@ -2,8 +2,6 @@ package org.example.musicscorebuilder.managers;
 
 import org.example.musicscorebuilder.components.music.*;
 
-import java.util.List;
-
 public class TranspositionManager {
     private static TranspositionManager instance;
 
@@ -16,69 +14,57 @@ public class TranspositionManager {
         return instance;
     }
 
-    public boolean transposeUp(ScoreMode mode) {
-        return transposeRelative(mode, 1);
+    public boolean transposeUp(Score score) {
+        return transposeRelative(score, 1);
     }
 
-    public boolean transposeDown(ScoreMode mode) {
-        return transposeRelative(mode, -1);
+    public boolean transposeDown(Score score) {
+        return transposeRelative(score, -1);
     }
 
-    private boolean transposeRelative(ScoreMode mode, int semitoneDelta) {
-        if (mode == null || mode.getScore() == null || mode.getMeasures().isEmpty()) {
-            return false;
-        }
+    private boolean transposeRelative(Score score, int semitoneDelta) {
+        if (!score.canTransposeBy(semitoneDelta)) return false;
 
-        Score score = mode.getScore();
-
-        if (!score.canTransposeBy(semitoneDelta)) {
-            return false;
-        }
-
-        Measure firstMeasure = mode.getMeasures().get(0);
-        int currentFifths = (firstMeasure.getKeySignature() != null) ? firstMeasure.getKeySignature().getFifths() : 0;
-
-        Key currentKey = Key.fromFifths(currentFifths);
+        Key currentKey = Key.fromFifths(score.getKeyFifths());
         Key targetKey = Key.getNextKeyBySemitone(currentKey, semitoneDelta);
 
         boolean preferDown = semitoneDelta < 0;
-
-        List<ScoreMode> modes = score.getModes();
-        if (modes != null && !modes.isEmpty()) {
-            for (ScoreMode m : modes) {
-                transposeToKeyInternal(m, currentKey, targetKey, preferDown);
-            }
-        } else {
-            transposeToKeyInternal(mode, currentKey, targetKey, preferDown);
-        }
-
+        score.getModes().forEach(m -> transposeToKeyInternal(m, currentKey, targetKey, preferDown));
         score.applyTranspositionDelta(semitoneDelta);
         return true;
     }
 
-    public boolean transposeToKey(ScoreMode mode, Key currentKey, Key targetKey) {
-        return transposeToKey(mode, currentKey, targetKey, false);
-    }
+    public boolean transposeToNearestKey(Score score, int targetFifths) {
+        if (score == null) return false;
 
-    public boolean transposeToKey(ScoreMode mode, Key currentKey, Key targetKey, boolean preferDown) {
-        if (mode == null || mode.getScore() == null || currentKey == targetKey) return false;
+        Key currentKey = Key.fromFifths(score.getKeyFifths());
+        Key targetKey = Key.fromFifths(targetFifths);
 
-        Score score = mode.getScore();
+        if (currentKey == targetKey) return true;
 
         int[] BASE_SEMITONES = {0, 2, 4, 5, 7, 9, 11};
         int currentSemitones = BASE_SEMITONES[currentKey.getRootStep().getValue()] + currentKey.getRootAlter();
         int targetSemitones = BASE_SEMITONES[targetKey.getRootStep().getValue()] + targetKey.getRootAlter();
+
         int semitoneDelta = targetSemitones - currentSemitones;
 
-        if (preferDown && semitoneDelta > 0) semitoneDelta -= 12;
-        if (!preferDown && semitoneDelta < 0) semitoneDelta += 12;
+        while (semitoneDelta > 6) semitoneDelta -= 12;
+        while (semitoneDelta < -6) semitoneDelta += 12;
 
         if (!score.canTransposeBy(semitoneDelta)) {
-            return false;
+            if (semitoneDelta <= 0 && score.canTransposeBy(semitoneDelta + 12)) {
+                semitoneDelta += 12;
+            } else if (semitoneDelta >= 0 && score.canTransposeBy(semitoneDelta - 12)) {
+                semitoneDelta -= 12;
+            } else {
+                return false;
+            }
         }
 
-        transposeToKeyInternal(mode, currentKey, targetKey, preferDown);
-        score.applyTranspositionDelta(semitoneDelta);
+        boolean preferDown = semitoneDelta < 0;
+        final int finalDelta = semitoneDelta;
+        score.getModes().forEach(m -> transposeToKeyInternal(m, currentKey, targetKey, preferDown));
+        score.applyTranspositionDelta(finalDelta);
         return true;
     }
 

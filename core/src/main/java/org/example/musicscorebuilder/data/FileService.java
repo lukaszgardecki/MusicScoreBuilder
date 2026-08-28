@@ -35,6 +35,10 @@ public class FileService {
         } else throw new IOException("Plik nie istnieje.");
     }
 
+    public Score loadScore(InputStream inputStream) throws IOException {
+        return jsonFileService.loadFromJson(inputStream);
+    }
+
     public String serializeToString(Score score) {
         if (score == null) return "";
         return jsonFileService.toJsonString(score);

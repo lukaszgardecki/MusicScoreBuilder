@@ -47,6 +47,12 @@ public class JsonFileService {
         return score;
     }
 
+    public Score loadFromJson(InputStream inputStream) throws IOException {
+        Score score = mapper.readValue(inputStream, Score.class);
+        hydrate(score);
+        return score;
+    }
+
     public Score loadFromCompressedJson(File file) throws IOException {
         Score score;
         try (GZIPInputStream gzipIn = new GZIPInputStream(new FileInputStream(file))) {
