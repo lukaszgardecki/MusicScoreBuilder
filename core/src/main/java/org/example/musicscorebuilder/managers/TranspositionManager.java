@@ -34,38 +34,76 @@ public class TranspositionManager {
         return true;
     }
 
-    public boolean transposeToNearestKey(Score score, int targetFifths) {
-        if (score == null) return false;
+    public boolean transposeToKeyTransposition(Score score, KeyTransposition targetKey) {
+        if (score == null || targetKey == null) return false;
+
+        int sUp = 0;
+        while (score.canTransposeBy(sUp + 1)) {
+            sUp++;
+        }
+
+        int semitoneDelta = sUp - targetKey.maxUp();
+        if (semitoneDelta == 0) return true;
 
         Key currentKey = Key.fromFifths(score.getKeyFifths());
-        Key targetKey = Key.fromFifths(targetFifths);
+        Key desiredKey = Key.fromFifths(targetKey.fifths());
 
-        if (currentKey == targetKey) return true;
+        int chromaticShift = semitoneDelta;
+        int diatonicShift = desiredKey.getRootStep().getValue() - currentKey.getRootStep().getValue();
 
-        int[] BASE_SEMITONES = {0, 2, 4, 5, 7, 9, 11};
-        int currentSemitones = BASE_SEMITONES[currentKey.getRootStep().getValue()] + currentKey.getRootAlter();
-        int targetSemitones = BASE_SEMITONES[targetKey.getRootStep().getValue()] + targetKey.getRootAlter();
+        if (chromaticShift < 0) {
+            while (diatonicShift > 0) diatonicShift -= 7;
+            if (diatonicShift == 0 && chromaticShift <= -12) diatonicShift -= 7;
+        } else if (chromaticShift > 0) {
+            while (diatonicShift < 0) diatonicShift += 7;
+            if (diatonicShift == 0 && chromaticShift >= 12) diatonicShift += 7;
+        }
 
-        int semitoneDelta = targetSemitones - currentSemitones;
+        final int finalDiatonic = diatonicShift;
+        final int finalChromatic = chromaticShift;
+        score.getModes().forEach(mode -> applyTransposition(mode, finalDiatonic, finalChromatic, targetKey.fifths()));
+        score.applyTranspositionDelta(semitoneDelta);
 
-        while (semitoneDelta > 6) semitoneDelta -= 12;
-        while (semitoneDelta < -6) semitoneDelta += 12;
+        return true;
+    }
 
-        if (!score.canTransposeBy(semitoneDelta)) {
-            if (semitoneDelta <= 0 && score.canTransposeBy(semitoneDelta + 12)) {
-                semitoneDelta += 12;
-            } else if (semitoneDelta >= 0 && score.canTransposeBy(semitoneDelta - 12)) {
-                semitoneDelta -= 12;
-            } else {
-                return false;
+    public KeyTransposition getTransposedFifths(KeyTransposition key, boolean isUp) {
+        if (key == null) return new KeyTransposition(0, 0, 0);
+
+        Key targetKey = Key.fromFifths(key.fifths());
+        int maxUp = key.maxUp();
+        int maxDown = key.maxDown();
+
+        int newMaxUp = maxUp;
+        int newMaxDown = maxDown;
+
+        if (isUp) {
+            if (maxUp > 0) {
+                targetKey = Key.getNextKeyBySemitone(targetKey, 1);
+                newMaxUp = maxUp - 1;
+                newMaxDown = maxDown + 1;
+            } else if (maxDown > 0) {
+                for (int i = 0; i < maxDown; i++) {
+                    targetKey = Key.getNextKeyBySemitone(targetKey, -1);
+                }
+                newMaxUp = maxUp + maxDown;
+                newMaxDown = 0;
+            }
+        } else {
+            if (maxDown > 0) {
+                targetKey = Key.getNextKeyBySemitone(targetKey, -1);
+                newMaxUp = maxUp + 1;
+                newMaxDown = maxDown - 1;
+            } else if (maxUp > 0) {
+                for (int i = 0; i < maxUp; i++) {
+                    targetKey = Key.getNextKeyBySemitone(targetKey, 1);
+                }
+                newMaxUp = 0;
+                newMaxDown = maxUp + maxDown;
             }
         }
 
-        boolean preferDown = semitoneDelta < 0;
-        final int finalDelta = semitoneDelta;
-        score.getModes().forEach(m -> transposeToKeyInternal(m, currentKey, targetKey, preferDown));
-        score.applyTranspositionDelta(finalDelta);
-        return true;
+        return new KeyTransposition(targetKey.getFifths(), newMaxUp, newMaxDown);
     }
 
     private void transposeToKeyInternal(ScoreMode mode, Key currentKey, Key targetKey, boolean preferDown) {
@@ -121,4 +159,6 @@ public class TranspositionManager {
         while (fifths < -7) fifths += 12;
         return fifths;
     }
+
+    public record KeyTransposition(int fifths, int maxUp, int maxDown) {}
 }
