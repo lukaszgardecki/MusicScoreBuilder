@@ -193,10 +193,6 @@
     -fx-padding: 8px 10px;
 }
 
-.metadata-panel:disabled {
-    -fx-opacity: 0.5;
-}
-
 .metadata-title {
     -fx-font-size: 11px;
     -fx-font-weight: bold;

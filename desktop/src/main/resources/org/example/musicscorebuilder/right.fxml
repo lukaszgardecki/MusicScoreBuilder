@@ -2,252 +2,306 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<VBox prefWidth="300.0"
-      spacing="0"
+
+<GridPane prefWidth="300.0"
       xmlns="http://javafx.com/javafx/17"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="org.example.musicscorebuilder.controller.songbookcontroller.SongbookController">
 
-    <!-- SEKCJA 1: INFORMACJE O UTWORZE -->
-    <VBox fx:id="metadataContainer" spacing="6" styleClass="metadata-panel" style="-fx-padding: 10;">
-        <Label text="Informacje o utworze" styleClass="metadata-title" />
+    <rowConstraints>
+        <RowConstraints percentHeight="50" vgrow="ALWAYS" />
+        <RowConstraints percentHeight="50" vgrow="ALWAYS" />
+    </rowConstraints>
+    <columnConstraints>
+        <ColumnConstraints percentWidth="100" hgrow="ALWAYS" />
+    </columnConstraints>
 
-        <VBox spacing="2">
-            <Label text="Tytuł" styleClass="field-label" />
-            <TextField fx:id="titleField" styleClass="metadata-input" />
-        </VBox>
-
-        <VBox spacing="2">
-            <Label text="Podtytuł" styleClass="field-label" />
-            <TextField fx:id="subtitleField" styleClass="metadata-input" />
-        </VBox>
-
-        <GridPane hgap="8" vgap="6">
-            <columnConstraints>
-                <ColumnConstraints percentWidth="50" />
-                <ColumnConstraints percentWidth="50" />
-            </columnConstraints>
-
-            <VBox spacing="2" GridPane.columnIndex="0" GridPane.rowIndex="0">
-                <Label text="Nowy numer" styleClass="field-label" />
-                <TextField fx:id="numberField" styleClass="metadata-input" />
-            </VBox>
-
-            <VBox spacing="2" GridPane.columnIndex="1" GridPane.rowIndex="0">
-                <Label text="Stary numer" styleClass="field-label" />
-                <TextField fx:id="oldNumberField" styleClass="metadata-input" />
-            </VBox>
-        </GridPane>
-
-        <VBox spacing="2">
-            <Label text="Kompozytor" styleClass="field-label" />
-            <TextField fx:id="composerField" styleClass="metadata-input" />
-        </VBox>
-
-        <!-- SEKCJA 2: TONACJA DOMYŚLNA I ZAKRES TRANSPOZYCJI -->
-        <VBox spacing="4" style="-fx-padding: 4 0 0 0;">
-            <Label text="Tonacja domyślna" styleClass="field-label" />
-
-            <HBox alignment="CENTER" spacing="4" style="-fx-padding: 0 0 4 0;">
-                <Button fx:id="transposeDownButton"
-                        text="◀"
-                        onAction="#handleTransposeDown"
-                        focusTraversable="false"
-                        styleClass="btn" />
-                <Label fx:id="currentKeyLabel"
-                       text="C-dur / a-moll"
-                       alignment="CENTER"
-                       maxWidth="Infinity"
-                       HBox.hgrow="ALWAYS"
-                       style="-fx-background-color: -fx-control-inner-background; -fx-background-radius: 4; -fx-padding: 4 6; -fx-font-weight: bold;" />
-                <Button fx:id="transposeUpButton"
-                        text="▶"
-                        onAction="#handleTransposeUp"
-                        focusTraversable="false"
-                        styleClass="btn" />
-            </HBox>
-
-            <Label text="Transpozycja" styleClass="field-label" />
-
-            <VBox spacing="6">
-                <HBox alignment="CENTER_LEFT" spacing="8">
-                    <CheckBox fx:id="maxUpCheckBox"
-                              text="Max w górę"
-                              onAction="#handleMaxUpCheckBoxChanged"
-                              focusTraversable="false"
-                              styleClass="field-label"
-                              HBox.hgrow="NEVER" />
-
-                    <Region HBox.hgrow="ALWAYS" />
-
-                    <HBox fx:id="maxUpContainer"
-                          alignment="CENTER"
-                          spacing="4"
-                          style="-fx-background-color: -fx-control-inner-background; -fx-background-radius: 4; -fx-padding: 2 4;">
-                        <Label fx:id="maxUpLabel" text="0 półt." alignment="CENTER" prefWidth="55.0" />
-                        <Button onAction="#handleDecrementMaxUp"
-                                focusTraversable="false"
-                                styleClass="btn, btn-danger"
-                                style="-fx-padding: 4px 6px;">
-                            <graphic>
-                                <Region styleClass="icon, icon-minus" />
-                            </graphic>
-                        </Button>
-                        <Button onAction="#handleIncrementMaxUp"
-                                focusTraversable="false"
-                                styleClass="btn, btn-success"
-                                style="-fx-padding: 4px 6px;">
-                            <graphic>
-                                <Region styleClass="icon, icon-plus" />
-                            </graphic>
-                        </Button>
-                    </HBox>
-                </HBox>
-
-                <HBox alignment="CENTER_LEFT" spacing="8">
-                    <CheckBox fx:id="maxDownCheckBox"
-                              text="Max w dół"
-                              onAction="#handleMaxDownCheckBoxChanged"
-                              focusTraversable="false"
-                              styleClass="field-label"
-                              HBox.hgrow="NEVER" />
-
-                    <Region HBox.hgrow="ALWAYS" />
-
-                    <HBox fx:id="maxDownContainer"
-                          alignment="CENTER"
-                          spacing="4"
-                          style="-fx-background-color: -fx-control-inner-background; -fx-background-radius: 4; -fx-padding: 2 4;">
-                        <Label fx:id="maxDownLabel" text="0 półt." alignment="CENTER" prefWidth="55.0" />
-                        <Button onAction="#handleDecrementMaxDown"
-                                focusTraversable="false"
-                                styleClass="btn, btn-danger"
-                                style="-fx-padding: 4px 6px;">
-                            <graphic>
-                                <Region styleClass="icon, icon-minus" />
-                            </graphic>
-                        </Button>
-                        <Button onAction="#handleIncrementMaxDown"
-                                focusTraversable="false"
-                                styleClass="btn, btn-success"
-                                style="-fx-padding: 4px 6px;">
-                            <graphic>
-                                <Region styleClass="icon, icon-plus" />
-                            </graphic>
-                        </Button>
-                    </HBox>
-                </HBox>
-            </VBox>
-        </VBox>
-    </VBox>
-
-
-    <Separator />
-
-
-    <!-- SEKCJA 3: TRYBY WIDOKU -->
-    <VBox spacing="6" styleClass="metadata-panel" style="-fx-padding: 10;">
-        <HBox alignment="CENTER_LEFT" spacing="6">
-            <Label text="Tryby widoku" styleClass="metadata-title" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
-
-            <Button fx:id="addModeButton"
-                    onAction="#handleAddMode"
-                    styleClass="btn, btn-success"
-                    style="-fx-padding: 4px 6px;">
-                <tooltip>
-                    <Tooltip text="Dodaj tryb" />
-                </tooltip>
-                <graphic>
-                    <Region styleClass="icon, icon-plus" />
-                </graphic>
-            </Button>
-
-            <Button fx:id="deleteModeButton"
-                    onAction="#handleDeleteMode"
-                    styleClass="btn, btn-danger"
-                    style="-fx-padding: 4px 6px;">
-                <tooltip>
-                    <Tooltip text="Usuń tryb" />
-                </tooltip>
-                <graphic>
-                    <Region styleClass="icon, icon-trash" />
-                </graphic>
-            </Button>
+    <!-- ================================================= -->
+    <!-- SEKCJA 1: UTWÓR                                   -->
+    <!-- ================================================= -->
+    <VBox GridPane.rowIndex="0" minHeight="0" spacing="6" style="-fx-padding: 6 0">
+        <HBox alignment="CENTER_LEFT"
+              style="-fx-background-color: #e0e0e0; -fx-padding: 6 10; -fx-border-color: #cccccc; -fx-border-width: 1 0 1 0;">
+            <Label text="UTWÓR" style="-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #444444;" />
         </HBox>
 
-        <ListView fx:id="modesListView" prefHeight="90.0" maxHeight="120.0" />
+        <ScrollPane fitToWidth="true"
+                    VBox.vgrow="ALWAYS"
+                    style="-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;">
+            <VBox fx:id="metadataContainer" spacing="6" styleClass="metadata-panel">
+                <TitledPane text="Informacje o utworze" expanded="false" styleClass="titled-pane">
+                    <VBox>
+                        <VBox spacing="2">
+                            <Label text="Tytuł" styleClass="field-label" />
+                            <TextField fx:id="titleField" styleClass="metadata-input" />
+                        </VBox>
+
+                        <VBox spacing="2">
+                            <Label text="Podtytuł" styleClass="field-label" />
+                            <TextField fx:id="subtitleField" styleClass="metadata-input" />
+                        </VBox>
+
+                        <GridPane hgap="8" vgap="6">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="50" />
+                                <ColumnConstraints percentWidth="50" />
+                            </columnConstraints>
+
+                            <VBox spacing="2" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                <Label text="Nowy numer" styleClass="field-label" />
+                                <TextField fx:id="numberField" styleClass="metadata-input" />
+                            </VBox>
+
+                            <VBox spacing="2" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                <Label text="Stary numer" styleClass="field-label" />
+                                <TextField fx:id="oldNumberField" styleClass="metadata-input" />
+                            </VBox>
+                        </GridPane>
+
+                        <VBox spacing="2">
+                            <Label text="Kompozytor" styleClass="field-label" />
+                            <TextField fx:id="composerField" styleClass="metadata-input" />
+                        </VBox>
+                    </VBox>
+                </TitledPane>
+
+                <TitledPane text="Transpozycja" expanded="false" styleClass="titled-pane">
+                    <VBox spacing="4" style="-fx-padding: 4 0 0 0;">
+                        <Label text="Tonacja domyślna" styleClass="field-label" />
+
+                        <HBox alignment="CENTER" spacing="4" style="-fx-padding: 0 0 4 0;">
+                            <Button fx:id="transposeDownButton"
+                                    text="◀"
+                                    onAction="#handleTransposeDown"
+                                    focusTraversable="false"
+                                    styleClass="btn" />
+                            <Label fx:id="currentKeyLabel"
+                                   text="C-dur / a-moll"
+                                   alignment="CENTER"
+                                   maxWidth="Infinity"
+                                   HBox.hgrow="ALWAYS"
+                                   style="-fx-background-color: -fx-control-inner-background; -fx-background-radius: 4; -fx-padding: 4 6; -fx-font-weight: bold;" />
+                            <Button fx:id="transposeUpButton"
+                                    text="▶"
+                                    onAction="#handleTransposeUp"
+                                    focusTraversable="false"
+                                    styleClass="btn" />
+                        </HBox>
+
+                        <Label text="Transpozycja" styleClass="field-label" />
+
+                        <VBox spacing="6">
+                            <HBox alignment="CENTER_LEFT" spacing="8">
+                                <CheckBox fx:id="maxUpCheckBox"
+                                          text="Max w górę"
+                                          onAction="#handleMaxUpCheckBoxChanged"
+                                          focusTraversable="false"
+                                          styleClass="field-label"
+                                          HBox.hgrow="NEVER" />
+
+                                <Region HBox.hgrow="ALWAYS" />
+
+                                <HBox fx:id="maxUpContainer"
+                                      alignment="CENTER"
+                                      spacing="4"
+                                      style="-fx-background-color: -fx-control-inner-background; -fx-background-radius: 4; -fx-padding: 2 4;">
+                                    <Label fx:id="maxUpLabel" text="0 półt." alignment="CENTER" prefWidth="55.0" />
+                                    <Button onAction="#handleDecrementMaxUp"
+                                            focusTraversable="false"
+                                            styleClass="btn, btn-danger"
+                                            style="-fx-padding: 4px 6px;">
+                                        <graphic>
+                                            <Region styleClass="icon, icon-minus" />
+                                        </graphic>
+                                    </Button>
+                                    <Button onAction="#handleIncrementMaxUp"
+                                            focusTraversable="false"
+                                            styleClass="btn, btn-success"
+                                            style="-fx-padding: 4px 6px;">
+                                        <graphic>
+                                            <Region styleClass="icon, icon-plus" />
+                                        </graphic>
+                                    </Button>
+                                </HBox>
+                            </HBox>
+
+                            <HBox alignment="CENTER_LEFT" spacing="8">
+                                <CheckBox fx:id="maxDownCheckBox"
+                                          text="Max w dół"
+                                          onAction="#handleMaxDownCheckBoxChanged"
+                                          focusTraversable="false"
+                                          styleClass="field-label"
+                                          HBox.hgrow="NEVER" />
+
+                                <Region HBox.hgrow="ALWAYS" />
+
+                                <HBox fx:id="maxDownContainer"
+                                      alignment="CENTER"
+                                      spacing="4"
+                                      style="-fx-background-color: -fx-control-inner-background; -fx-background-radius: 4; -fx-padding: 2 4;">
+                                    <Label fx:id="maxDownLabel" text="0 półt." alignment="CENTER" prefWidth="55.0" />
+                                    <Button onAction="#handleDecrementMaxDown"
+                                            focusTraversable="false"
+                                            styleClass="btn, btn-danger"
+                                            style="-fx-padding: 4px 6px;">
+                                        <graphic>
+                                            <Region styleClass="icon, icon-minus" />
+                                        </graphic>
+                                    </Button>
+                                    <Button onAction="#handleIncrementMaxDown"
+                                            focusTraversable="false"
+                                            styleClass="btn, btn-success"
+                                            style="-fx-padding: 4px 6px;">
+                                        <graphic>
+                                            <Region styleClass="icon, icon-plus" />
+                                        </graphic>
+                                    </Button>
+                                </HBox>
+                            </HBox>
+                        </VBox>
+                    </VBox>
+                </TitledPane>
+
+                <TitledPane text="Tryb widoku" expanded="false" styleClass="titled-pane">
+                    <VBox>
+                        <HBox alignment="CENTER_LEFT" spacing="6">
+                            <Label text="Tryby widoku" styleClass="metadata-title" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+
+                            <Button fx:id="addModeButton"
+                                    onAction="#handleAddMode"
+                                    styleClass="btn, btn-success"
+                                    style="-fx-padding: 4px 6px;">
+                                <tooltip>
+                                    <Tooltip text="Dodaj tryb" />
+                                </tooltip>
+                                <graphic>
+                                    <Region styleClass="icon, icon-plus" />
+                                </graphic>
+                            </Button>
+
+                            <Button fx:id="deleteModeButton"
+                                    onAction="#handleDeleteMode"
+                                    styleClass="btn, btn-danger"
+                                    style="-fx-padding: 4px 6px;">
+                                <tooltip>
+                                    <Tooltip text="Usuń tryb" />
+                                </tooltip>
+                                <graphic>
+                                    <Region styleClass="icon, icon-trash" />
+                                </graphic>
+                            </Button>
+                        </HBox>
+
+                        <ListView fx:id="modesListView" prefHeight="90.0" maxHeight="120.0" />
+                    </VBox>
+
+                </TitledPane>
+
+                <TitledPane text="Słowa i zwrotki" expanded="false" styleClass="titled-pane">
+                    <VBox spacing="4">
+                        <HBox alignment="CENTER_LEFT" spacing="6">
+                            <Label text="Zwrotki / Teksty" styleClass="metadata-title" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+
+                            <Button fx:id="addVerseButton"
+                                    styleClass="btn, btn-success"
+                                    style="-fx-padding: 4px 6px;">
+                                <tooltip>
+                                    <Tooltip text="Dodaj zwrotkę" />
+                                </tooltip>
+                                <graphic>
+                                    <Region styleClass="icon, icon-plus" />
+                                </graphic>
+                            </Button>
+
+                            <Button fx:id="deleteVerseButton"
+                                    styleClass="btn, btn-danger"
+                                    style="-fx-padding: 4px 6px;">
+                                <tooltip>
+                                    <Tooltip text="Usuń zwrotkę" />
+                                </tooltip>
+                                <graphic>
+                                    <Region styleClass="icon, icon-trash" />
+                                </graphic>
+                            </Button>
+                        </HBox>
+
+                        <ListView fx:id="versesListView" prefHeight="80.0" maxHeight="100.0" />
+                    </VBox>
+                </TitledPane>
+            </VBox>
+        </ScrollPane>
     </VBox>
 
+    <!-- ================================================= -->
+    <!-- SEKCJA 2: ŚPIEWNIK                                -->
+    <!-- ================================================= -->
+    <VBox GridPane.rowIndex="1" minHeight="0">
+        <HBox alignment="CENTER_LEFT"
+              style="-fx-background-color: #e0e0e0; -fx-padding: 6 10; -fx-border-color: #cccccc; -fx-border-width: 1 0 1 0;">
+            <Label text="ŚPIEWNIK" style="-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #444444;" />
+        </HBox>
 
-    <Separator />
+        <VBox spacing="10" style="-fx-padding: 10;">
 
+            <Button fx:id="openFolderButton"
+                    text="Otwórz folder"
+                    onAction="#handleOpenFolder"
+                    styleClass="btn"
+                    maxWidth="Infinity"/>
 
-    <!-- SEKCJA 4: ZARZĄDZANIE ŚPIEWNIKIEM -->
-    <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+            <Label fx:id="folderPathLabel"
+                   text="Nie wybrano folderu"
+                   style="-fx-font-size: 11px; -fx-text-fill: #666666;"
+                   wrapText="true"/>
 
-        <Tab text="Śpiewnik">
-            <VBox spacing="10" style="-fx-padding: 10;">
+            <Separator />
 
-                <Button fx:id="openFolderButton"
-                        text="Otwórz folder"
-                        onAction="#handleOpenFolder"
-                        styleClass="btn"
-                        maxWidth="Infinity"/>
+            <HBox spacing="8">
+                <Button onAction="#handleAddFolder"
+                        styleClass="btn, btn-folder"
+                        maxWidth="Infinity"
+                        HBox.hgrow="ALWAYS">
+                    <tooltip>
+                        <Tooltip text="Nowy folder" />
+                    </tooltip>
+                    <graphic>
+                        <Region styleClass="icon, icon-folder-add" />
+                    </graphic>
+                </Button>
+                <Button onAction="#handleAddFile"
+                        styleClass="btn, btn-file"
+                        maxWidth="Infinity"
+                        HBox.hgrow="ALWAYS">
+                    <tooltip>
+                        <Tooltip text="Nowy plik" />
+                    </tooltip>
+                    <graphic>
+                        <Region styleClass="icon, icon-file-add" />
+                    </graphic>
+                </Button>
+                <Button fx:id="deleteButton"
+                        onAction="#handleDelete"
+                        styleClass="btn, btn-danger"
+                        maxWidth="Infinity"
+                        HBox.hgrow="ALWAYS">
+                    <tooltip>
+                        <Tooltip text="Usuń element" />
+                    </tooltip>
+                    <graphic>
+                        <Region styleClass="icon, icon-trash" />
+                    </graphic>
+                </Button>
+            </HBox>
 
-                <Label fx:id="folderPathLabel"
-                       text="Nie wybrano folderu"
-                       style="-fx-font-size: 11px; -fx-text-fill: #666666;"
-                       wrapText="true"/>
+            <Separator />
 
-                <Separator />
+            <CheckBox fx:id="compressedOnlyCheckBox"
+                      text="Pokaż skompresowane"
+                      onAction="#handleFilterChange" />
+            <Label text="Pliki śpiewnika:" style="-fx-font-weight: bold;" />
 
-                <HBox spacing="8">
-                    <Button onAction="#handleAddFolder"
-                            styleClass="btn, btn-folder"
-                            maxWidth="Infinity"
-                            HBox.hgrow="ALWAYS">
-                        <tooltip>
-                            <Tooltip text="Nowy folder" />
-                        </tooltip>
-                        <graphic>
-                            <Region styleClass="icon, icon-folder-add" />
-                        </graphic>
-                    </Button>
-                    <Button onAction="#handleAddFile"
-                            styleClass="btn, btn-file"
-                            maxWidth="Infinity"
-                            HBox.hgrow="ALWAYS">
-                        <tooltip>
-                            <Tooltip text="Nowy plik" />
-                        </tooltip>
-                        <graphic>
-                            <Region styleClass="icon, icon-file-add" />
-                        </graphic>
-                    </Button>
-                    <Button fx:id="deleteButton"
-                            onAction="#handleDelete"
-                            styleClass="btn, btn-danger"
-                            maxWidth="Infinity"
-                            HBox.hgrow="ALWAYS">
-                        <tooltip>
-                            <Tooltip text="Usuń element" />
-                        </tooltip>
-                        <graphic>
-                            <Region styleClass="icon, icon-trash" />
-                        </graphic>
-                    </Button>
-                </HBox>
+            <ListView fx:id="jsonFilesListView" VBox.vgrow="ALWAYS" />
 
-                <Separator />
-
-                <CheckBox fx:id="compressedOnlyCheckBox"
-                          text="Pokaż skompresowane"
-                          onAction="#handleFilterChange" />
-                <Label text="Pliki śpiewnika:" style="-fx-font-weight: bold;" />
-
-                <ListView fx:id="jsonFilesListView" VBox.vgrow="ALWAYS" />
-
-            </VBox>
-        </Tab>
-    </TabPane>
-</VBox>
+        </VBox>
+    </VBox>
+</GridPane>
