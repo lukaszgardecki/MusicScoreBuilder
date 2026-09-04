@@ -134,7 +134,8 @@ public class ShortcutHandler {
             Selectable selected = scoreStateManager.getSelectedItem();
 
             if (selected instanceof NoteLayout noteLayout) {
-                LyricEditorManager.getInstance().startEditing(noteLayout, 1);
+                int nextVerse = noteLayout.getLyrics().size() + 1;
+                LyricEditorManager.getInstance().startEditing(noteLayout, nextVerse);
             }
         }
     }
