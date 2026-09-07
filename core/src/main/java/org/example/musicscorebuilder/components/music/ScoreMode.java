@@ -7,10 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.music.util.MeasureTimeSignatureAdjuster;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ScoreMode {
     @JsonIgnore
@@ -28,6 +25,9 @@ public class ScoreMode {
 
     @JsonProperty("frames")
     private final List<Frame> frames = new ArrayList<>();
+
+    @JsonIgnore
+    private final Map<Integer, Verse> verses = new TreeMap<>();
 
     @JsonCreator
     public ScoreMode(
@@ -59,6 +59,8 @@ public class ScoreMode {
         if (this.frames.isEmpty()) {
             this.frames.add(new Frame());
         }
+
+        rebuildVersesIndex();
     }
 
     public ScoreMode(Score score, ModeType type, ScoreStyle style) {
@@ -150,6 +152,53 @@ public class ScoreMode {
         if (frames != null) {
             this.frames.addAll(frames);
         }
+    }
+
+    @JsonIgnore
+    public Map<Integer, Verse> getVerses() {
+        return verses;
+    }
+
+    public Verse getOrCreateVerse(int verseNumber) {
+        return verses.computeIfAbsent(verseNumber, Verse::new);
+    }
+
+    public void removeVerse(int verseNumber) {
+        verses.remove(verseNumber);
+        for (Note note : getAllNotes()) {
+            note.removeLyric(verseNumber);
+        }
+    }
+
+    public void rebuildVersesIndex() {
+        verses.clear();
+        for (Note note : getAllNotes()) {
+            if (note.getLyrics() != null) {
+                note.getLyrics().forEach(lyric -> {
+                    getOrCreateVerse(lyric.getVerse()).addSyllable(note, lyric);
+                });
+            }
+        }
+    }
+
+    @JsonIgnore
+    public List<Note> getAllNotes() {
+        List<Note> notes = new ArrayList<>();
+        for (Measure m : measures) {
+            if (m.getSegments() == null) continue;
+            for (Segment seg : m.getSegments()) {
+                if (seg.getStaffElements() == null) continue;
+                for (List<Element> elements : seg.getStaffElements().values()) {
+                    if (elements == null) continue;
+                    for (Element el : elements) {
+                        if (el instanceof Note note) {
+                            notes.add(note);
+                        }
+                    }
+                }
+            }
+        }
+        return notes;
     }
 
     private boolean isNotePresentInMeasures(Note note) {

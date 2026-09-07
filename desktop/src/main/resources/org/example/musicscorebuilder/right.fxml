@@ -203,6 +203,7 @@
                             <Label text="Zwrotki / Teksty" styleClass="metadata-title" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
 
                             <Button fx:id="addVerseButton"
+                                    onAction="#handleAddVerse"
                                     styleClass="btn, btn-success"
                                     style="-fx-padding: 4px 6px;">
                                 <tooltip>
@@ -214,6 +215,7 @@
                             </Button>
 
                             <Button fx:id="deleteVerseButton"
+                                    onAction="#handleDeleteVerse"
                                     styleClass="btn, btn-danger"
                                     style="-fx-padding: 4px 6px;">
                                 <tooltip>
@@ -225,7 +227,7 @@
                             </Button>
                         </HBox>
 
-                        <ListView fx:id="versesListView" prefHeight="80.0" maxHeight="100.0" />
+                        <ListView fx:id="versesListView" prefHeight="250.0" maxHeight="Infinity" VBox.vgrow="ALWAYS" />
                     </VBox>
                 </TitledPane>
             </VBox>

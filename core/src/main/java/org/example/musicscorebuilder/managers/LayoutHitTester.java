@@ -471,6 +471,8 @@ public class LayoutHitTester {
 
     public static LyricHit findClickedLyric(List<PageLayout> pages, double x, double y) {
         if (pages == null) return null;
+        Integer selectedVerse = ScoreStateManager.getInstance().getSelectedVerseNumber();
+        int activeVerse = (selectedVerse != null) ? selectedVerse : 1;
 
         for (int p = 0; p < pages.size(); p++) {
             PageLayout page = pages.get(p);
@@ -516,8 +518,9 @@ public class LayoutHitTester {
                                     Lyric lyric = lyrics.get(l);
                                     if (lyric == null || lyric.getText() == null || lyric.getText().isBlank()) continue;
 
-                                    int verse = lyric.getVerse();
-                                    double lyricY = absStaffBottomY + 2.5 + ((verse - 1) * 1.5);
+                                    if (lyric.getVerse() != activeVerse) continue;
+
+                                    double lyricY = absStaffBottomY + 2.5;
                                     TextMeasurer measurer = TextMeasurerService.getInstance();
                                     double textWidth = (measurer != null) ? measurer.getTextWidth(FontType.FREE_SERIF, lyric.getText(), fontSizeInSpatium) : 0.0;
                                     double textHeight = (measurer != null) ? measurer.getTextHeight(FontType.FREE_SERIF, lyric.getText(), fontSizeInSpatium) : 0.0;
@@ -528,7 +531,7 @@ public class LayoutHitTester {
                                     double maxY = lyricY + textHeight;
 
                                     if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
-                                        return new LyricHit(noteLayout, verse);
+                                        return new LyricHit(noteLayout, activeVerse);
                                     }
                                 }
                             }
@@ -580,7 +583,7 @@ public class LayoutHitTester {
                                         ? segY + staff.getY() + staff.getHeight()
                                         : segY + targetNote.getY();
 
-                                double absY = staffBottomY + 2.5 + ((verse - 1) * 1.5);
+                                double absY = staffBottomY + 2.5;
                                 return new Point(absX, absY);
                             }
                         }

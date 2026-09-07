@@ -116,7 +116,7 @@ public class LyricLayout {
         StaffLayout staff = noteLayout.getStaff();
         if (staff == null) return 0.0;
         double staffBottomY = staff.getY() + staff.getHeight();
-        return staffBottomY + 2.5 + ((getVerse() - 1) * 1.5);
+        return staffBottomY + 2.5;
     }
 
     public double getNoteCenterX() {

@@ -10,6 +10,7 @@ import org.example.musicscorebuilder.components.layout.NoteLayout;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
 import org.example.musicscorebuilder.components.views.util.LyricFontUtils;
 import org.example.musicscorebuilder.managers.LyricEditorManager;
+import org.example.musicscorebuilder.managers.ScoreStateManager;
 
 import java.util.List;
 
@@ -22,6 +23,10 @@ public class LyricView extends ComponentView {
         if (lyrics.isEmpty()) return;
 
         LyricEditorManager editorManager = LyricEditorManager.getInstance();
+        Integer selectedVerse = ScoreStateManager.getInstance().getSelectedVerseNumber();
+
+        boolean isEditing = editorManager != null && editorManager.isEditing();
+        int activeVerse = isEditing ? editorManager.getCurrentVerse() : (selectedVerse != null ? selectedVerse : -1);
 
         ScoreLayout scoreLayout = null;
         Parent p = gc.getCanvas().getParent();
@@ -40,7 +45,15 @@ public class LyricView extends ComponentView {
             gc.setTextBaseline(VPos.TOP);
 
             for (LyricLayout lyricLayout : lyrics) {
-                if (editorManager != null && editorManager.isEditingNote(noteLayout, lyricLayout.getVerse())) {
+                if (isEditing) {
+                    if (lyricLayout.getVerse() != activeVerse) {
+                        continue;
+                    }
+                }
+                else if (selectedVerse != null && lyricLayout.getVerse() != selectedVerse) {
+                    continue;
+                }
+                if (isEditing && editorManager.isEditingNote(noteLayout, lyricLayout.getVerse())) {
                     continue;
                 }
 

@@ -24,6 +24,8 @@ import org.example.musicscorebuilder.managers.TranspositionManager;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class SongbookController {
@@ -38,6 +40,10 @@ public class SongbookController {
     @FXML private Button transposeDownButton;
     @FXML private Label currentKeyLabel;
     @FXML private Button transposeUpButton;
+
+    @FXML private Button addVerseButton;
+    @FXML private Button deleteVerseButton;
+    @FXML private ListView<String> versesListView;
 
     @FXML private Button openFolderButton;
     @FXML private Label folderPathLabel;
@@ -68,6 +74,7 @@ public class SongbookController {
     private SongbookDragAndDropHandler dragAndDropHandler;
 
     private boolean isUpdatingModesList = false;
+    private boolean isUpdatingVersesList = false;
 
     @FXML
     public void initialize() {
@@ -81,6 +88,8 @@ public class SongbookController {
         setupKeyBindings();
         setupDeleteButtonState();
         setupModesSection();
+        setupVersesSection();
+
         stateManager.addScoreChangeListener(this::updateTransposeUI);
         loadSavedDirectory();
         updateTransposeUI();
@@ -284,6 +293,44 @@ public class SongbookController {
                 .showAndWait();
     }
 
+    @FXML
+    private void handleAddVerse() {
+        ScoreMode mode = stateManager.getCurrentMode();
+        if (mode == null) return;
+        int newVerseNumber = mode.getVerses().keySet().stream()
+                .max(Integer::compareTo)
+                .orElse(0) + 1;
+
+        mode.getOrCreateVerse(newVerseNumber);
+        stateManager.notifyScoreChanged();
+        versesListView.getSelectionModel().select(versesListView.getItems().size() - 1);
+    }
+
+    @FXML
+    private void handleDeleteVerse() {
+        ScoreMode mode = stateManager.getCurrentMode();
+        if (mode == null) return;
+
+        int selectedIndex = versesListView.getSelectionModel().getSelectedIndex();
+        if (selectedIndex < 0) return;
+
+        List<Integer> verseNumbers = new ArrayList<>(mode.getVerses().keySet());
+        if (selectedIndex >= verseNumbers.size()) return;
+
+        int verseToRemove = verseNumbers.get(selectedIndex);
+
+        new CustomConfirmationDialog()
+                .setTitle("Usuwanie zwrotki")
+                .setHeader("Czy na pewno chcesz usunąć Zwrotkę " + verseToRemove + "?")
+                .setContent("Operacja ta usunie przypisane do niej słowa ze wszystkich nut w tym trybie.")
+                .setConfirmButton("Usuń", () -> {
+                    mode.removeVerse(verseToRemove);
+                    stateManager.notifyScoreChanged();
+                })
+                .setCancelButton("Anuluj", null)
+                .showAndWait();
+    }
+
     @FXML private void handleCopy() { actionManager.handleCopy(getSelectedItem()); }
     @FXML private void handlePaste() { actionManager.handlePaste(this::refreshDirectory, this::selectItemByFile); }
     @FXML private void handleDuplicate() { actionManager.handleDuplicate(getSelectedItem(), this::refreshDirectory, this::selectItemByFile); }
@@ -396,6 +443,79 @@ public class SongbookController {
         stateManager.addScoreChangeListener(this::refreshModesList);
 
         refreshModesList();
+    }
+
+    private void setupVersesSection() {
+        versesListView.setCellFactory(param -> new ListCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item);
+            }
+        });
+
+        versesListView.getSelectionModel().selectedIndexProperty().addListener((obs, oldIdx, newIdx) -> {
+            if (isUpdatingVersesList) return;
+
+            ScoreMode mode = stateManager.getCurrentMode();
+            if (mode == null || newIdx == null || newIdx.intValue() < 0) return;
+
+            List<Integer> verseNumbers = new ArrayList<>(mode.getVerses().keySet());
+            if (newIdx.intValue() < verseNumbers.size()) {
+                int selectedVerse = verseNumbers.get(newIdx.intValue());
+                stateManager.setSelectedVerseNumber(selectedVerse);
+            }
+        });
+
+        stateManager.addScoreChangeListener(this::refreshVersesList);
+        refreshVersesList();
+    }
+
+    private void refreshVersesList() {
+        isUpdatingVersesList = true;
+        try {
+            ScoreMode mode = stateManager.getCurrentMode();
+
+            if (mode == null || mode.getVerses() == null || mode.getVerses().isEmpty()) {
+                versesListView.getItems().clear();
+                if (addVerseButton != null) addVerseButton.setDisable(mode == null);
+                if (deleteVerseButton != null) deleteVerseButton.setDisable(true);
+                return;
+            }
+
+            List<String> newPreviews = mode.getVerses().values().stream()
+                    .map(verse -> verse.getPreviewText(12))
+                    .toList();
+
+            ObservableList<String> currentItems = versesListView.getItems();
+
+            if (currentItems.size() == newPreviews.size()) {
+                boolean hasChanges = false;
+                for (int i = 0; i < newPreviews.size(); i++) {
+                    if (!newPreviews.get(i).equals(currentItems.get(i))) {
+                        currentItems.set(i, newPreviews.get(i));
+                        hasChanges = true;
+                    }
+                }
+                if (hasChanges) {
+                    versesListView.refresh();
+                }
+            } else {
+                int selectedIndex = versesListView.getSelectionModel().getSelectedIndex();
+                versesListView.setItems(FXCollections.observableArrayList(newPreviews));
+
+                if (selectedIndex >= 0 && selectedIndex < newPreviews.size()) {
+                    versesListView.getSelectionModel().select(selectedIndex);
+                } else if (!newPreviews.isEmpty()) {
+                    versesListView.getSelectionModel().select(0);
+                }
+            }
+
+            if (addVerseButton != null) addVerseButton.setDisable(false);
+            if (deleteVerseButton != null) deleteVerseButton.setDisable(newPreviews.isEmpty());
+        } finally {
+            isUpdatingVersesList = false;
+        }
     }
 
     private void loadSavedDirectory() {

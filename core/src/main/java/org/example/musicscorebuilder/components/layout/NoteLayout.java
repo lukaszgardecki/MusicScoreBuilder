@@ -1,6 +1,7 @@
 package org.example.musicscorebuilder.components.layout;
 
 import org.example.musicscorebuilder.components.music.*;
+import org.example.musicscorebuilder.managers.ScoreStateManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -210,16 +211,17 @@ public class NoteLayout extends NoteRestLayout {
     private void refreshLyrics() {
         lyrics.clear();
         if (note != null && note.getLyrics() != null) {
-            for (Lyric lyric : note.getLyrics()) {
-                if (lyric != null) {
-                    boolean hasText = lyric.getText() != null && !lyric.getText().trim().isEmpty();
-                    boolean isConnectedType = lyric.getType() == SyllableType.BEGIN
-                            || lyric.getType() == SyllableType.MIDDLE
-                            || lyric.getType() == SyllableType.END;
+            int activeVerse = ScoreStateManager.getInstance().getSelectedVerseNumber();
+            Lyric lyric = note.getLyric(activeVerse);
 
-                    if (hasText || isConnectedType) {
-                        lyrics.add(new LyricLayout(lyric, this));
-                    }
+            if (lyric != null) {
+                boolean hasText = lyric.getText() != null && !lyric.getText().trim().isEmpty();
+                boolean isConnectedType = lyric.getType() == SyllableType.BEGIN
+                        || lyric.getType() == SyllableType.MIDDLE
+                        || lyric.getType() == SyllableType.END;
+
+                if (hasText || isConnectedType) {
+                    lyrics.add(new LyricLayout(lyric, this));
                 }
             }
         }

@@ -15,6 +15,7 @@ public class ScoreStateManager {
     private final List<ScoreChangeListener> scoreChangeListeners = new ArrayList<>();
     private final List<Selectable> selectedItems = new ArrayList<>();
     private int currentModeIndex = 0;
+    private Integer currentVerseNumber = 1;
     private final List<SelectionChangeListener> selectionChangeListeners = new ArrayList<>();
     private Consumer<ScoreLayout> postRefreshAction;
 
@@ -38,6 +39,10 @@ public class ScoreStateManager {
 
     public int getCurrentModeIndex() {
         return currentModeIndex;
+    }
+
+    public Integer getSelectedVerseNumber() {
+        return currentVerseNumber;
     }
 
     public void setSelected(Selectable item) {
@@ -80,7 +85,23 @@ public class ScoreStateManager {
 
     public void setCurrentModeIndex(int index) {
         this.currentModeIndex = index;
+        this.currentVerseNumber = 1;
         notifyScoreChanged();
+    }
+
+    public void setSelectedVerseNumber(Integer verseNumber) {
+        if (this.currentVerseNumber == null || !this.currentVerseNumber.equals(verseNumber)) {
+            this.currentVerseNumber = verseNumber;
+
+            ScoreMode mode = getCurrentMode();
+            if (mode != null && mode.getMeasures() != null) {
+                for (Measure measure : mode.getMeasures()) {
+                    measure.setDirty(true);
+                }
+            }
+
+            notifyScoreChanged();
+        }
     }
 
     public void setPostRefreshAction(Consumer<ScoreLayout> action) {

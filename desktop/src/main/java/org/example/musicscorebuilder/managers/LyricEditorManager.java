@@ -20,11 +20,8 @@ import javafx.scene.text.TextFlow;
 import javafx.util.Duration;
 import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
+import org.example.musicscorebuilder.components.music.*;
 import org.example.musicscorebuilder.components.views.util.LyricStyleHelper;
-import org.example.musicscorebuilder.components.music.Lyric;
-import org.example.musicscorebuilder.components.music.LyricFragment;
-import org.example.musicscorebuilder.components.music.Note;
-import org.example.musicscorebuilder.components.music.SyllableType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -71,6 +68,14 @@ public class LyricEditorManager {
             instance = new LyricEditorManager();
         }
         return instance;
+    }
+
+    public boolean isEditing() {
+        return isEditing;
+    }
+
+    public int getCurrentVerse() {
+        return currentVerse;
     }
 
     public void init(Pane containerPane, CoordinateTransformer transformer) {
@@ -130,7 +135,7 @@ public class LyricEditorManager {
             }
 
             updateCustomCaretPosition();
-
+            ScoreStateManager.getInstance().notifyScoreChanged();
             Platform.runLater(() -> this.justStartedEditing = false);
         });
     }
@@ -175,16 +180,16 @@ public class LyricEditorManager {
         inputField.setAlignment(Pos.CENTER);
         inputField.setStyle(
                 "-fx-padding: 0; " +
-                "-fx-background-insets: 0; " +
-                "-fx-background-radius: 0; " +
-                "-fx-border-radius: 0; " +
-                "-fx-background-color: transparent; " +
-                "-fx-border-color: #2196F3; " +
-                "-fx-border-width: 1.5px; " +
-                "-fx-text-fill: transparent; " +
-                "-fx-caret-color: transparent; " +
-                "-fx-highlight-fill: #3390ff66; " +
-                "-fx-highlight-text-fill: transparent;"
+                        "-fx-background-insets: 0; " +
+                        "-fx-background-radius: 0; " +
+                        "-fx-border-radius: 0; " +
+                        "-fx-background-color: transparent; " +
+                        "-fx-border-color: #2196F3; " +
+                        "-fx-border-width: 1.5px; " +
+                        "-fx-text-fill: transparent; " +
+                        "-fx-caret-color: transparent; " +
+                        "-fx-highlight-fill: #3390ff66; " +
+                        "-fx-highlight-text-fill: transparent;"
         );
 
         editorContainer.getChildren().addAll(textDisplay, inputField, customCaret);
@@ -221,7 +226,7 @@ public class LyricEditorManager {
         });
 
         inputField.selectionProperty().addListener((obs, oldSel, newSel) ->
-            updateCustomCaretPosition()
+                updateCustomCaretPosition()
         );
 
         inputField.addEventFilter(KeyEvent.KEY_TYPED, event -> {
@@ -392,12 +397,6 @@ public class LyricEditorManager {
         if (!text.isEmpty() || isConnectedType) {
             List<LyricFragment> fragments = styleHelper.exportToFragments(rawText);
 
-            // KLUCZOWA POPRAWKA: Pusta lista fragmentów uniemożliwiała utworzenie LyricLayout.
-            // Dla typów połączonych (np. END) musimy zachować przynajmniej pusty fragment, aby utworzyć layout do rysowania myślnika.
-            if (fragments.isEmpty() && isConnectedType) {
-                fragments.add(new LyricFragment());
-            }
-
             Lyric lyric = note.getLyric(currentVerse);
 
             double activeEditorSize = currentNoteLayout.getScoreStyle().getNoteLyricFontSize();
@@ -420,6 +419,18 @@ public class LyricEditorManager {
             resultingLyric = lyric;
         } else {
             note.removeLyric(currentVerse);
+        }
+
+        ScoreMode currentMode = ScoreStateManager.getInstance().getCurrentMode();
+        if (currentMode != null && currentMode.getVerses() != null) {
+            Verse verseObj = currentMode.getVerses().get(currentVerse);
+            if (verseObj != null) {
+                if (resultingLyric != null) {
+                    verseObj.addSyllable(note, resultingLyric);
+                } else {
+                    verseObj.removeSyllable(note);
+                }
+            }
         }
 
         updateNoteLayoutLyrics(currentNoteLayout, currentVerse, resultingLyric);
@@ -470,7 +481,6 @@ public class LyricEditorManager {
         if (!isEditing) return;
         commitCurrentText(SyllableType.SINGLE, false);
         hideEditor();
-        ScoreStateManager.getInstance().notifyScoreChanged();
     }
 
     private void hideEditor() {
@@ -486,6 +496,7 @@ public class LyricEditorManager {
 
         if (wasEditing) {
             ModeManager.getInstance().toggleEditLyricsMode();
+            ScoreStateManager.getInstance().notifyScoreChanged();
         }
     }
 

@@ -91,6 +91,7 @@ public class Note extends NoteRestElement {
 
     public void removeLyric(int verse) {
         lyrics.remove(verse);
+        parent.setDirty(true);
     }
 
     public List<Lyric> getLyrics() {

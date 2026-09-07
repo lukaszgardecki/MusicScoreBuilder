@@ -55,12 +55,14 @@ public class StorageService {
     }
 
     public void setScore(Score score) {
+        ScoreStateManager stateManager = ScoreStateManager.getInstance();
         this.score = score;
+        stateManager.setSelectedVerseNumber(1);
         if (score == null) {
             this.currentFile = null;
             this.initialSnapshot = "";
         }
-        ScoreStateManager.getInstance().notifyScoreChanged();
+        stateManager.notifyScoreChanged();
     }
 
     public void setCurrentFile(File currentFile) {
