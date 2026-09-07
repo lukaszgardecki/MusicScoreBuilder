@@ -8,7 +8,7 @@
         xmlns:fx="http://javafx.com/fxml"
         fx:controller="org.example.musicscorebuilder.controller.MenuBarController">
 
-    <Menu text="_Plik">
+    <Menu text="Plik">
         <MenuItem text="_Nowy..." accelerator="Ctrl+N" onAction="#handleNew">
             <graphic>
                 <SVGPath content="M6 2h8l4 4v14H6V2zm8 1.5V7h3.5L14 3.5z" styleClass="menu-icon"/>
@@ -68,11 +68,11 @@
         <MenuItem text="Zakończ" accelerator="Ctrl+Q" onAction="#handleExit"/>
     </Menu>
 
-    <Menu text="_Edytuj">
+    <Menu text="Edytuj">
         <MenuItem text="_Cofnij" accelerator="Ctrl+Z" onAction="#handleUndo"/>
         <MenuItem text="Po_wtórz" accelerator="Ctrl+Shift+Z" onAction="#handleRedo"/>
     </Menu>
 
-    <Menu text="_Widok"/>
-    <Menu text="P_omoc"/>
+    <Menu text="Widok"/>
+    <Menu text="Pomoc"/>
 </MenuBar>
