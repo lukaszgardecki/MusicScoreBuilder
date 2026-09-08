@@ -80,7 +80,7 @@
                                    alignment="CENTER"
                                    maxWidth="Infinity"
                                    HBox.hgrow="ALWAYS"
-                                   style="-fx-background-color: -fx-control-inner-background; -fx-background-radius: 4; -fx-padding: 4 6; -fx-font-weight: bold;" />
+                                   style="-fx-background-color: -fx-control-inner-background; -fx-text-fill: -fx-text-inner-color; -fx-background-radius: 4; -fx-padding: 4 6; -fx-font-weight: bold;" />
                             <Button fx:id="transposeUpButton"
                                     text="▶"
                                     onAction="#handleTransposeUp"
