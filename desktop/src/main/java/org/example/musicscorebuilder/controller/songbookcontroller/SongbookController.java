@@ -324,7 +324,16 @@ public class SongbookController {
                 .setHeader("Czy na pewno chcesz usunąć Zwrotkę " + verseToRemove + "?")
                 .setContent("Operacja ta usunie przypisane do niej słowa ze wszystkich nut w tym trybie.")
                 .setConfirmButton("Usuń", () -> {
+                    verseNumbers.remove(selectedIndex);
+                    Integer targetVerse = null;
+
+                    if (!verseNumbers.isEmpty()) {
+                        int newIndex = Math.min(selectedIndex, verseNumbers.size() - 1);
+                        targetVerse = verseNumbers.get(newIndex);
+                    }
+
                     mode.removeVerse(verseToRemove);
+                    stateManager.setSelectedVerseNumber(targetVerse);
                     stateManager.notifyScoreChanged();
                 })
                 .setCancelButton("Anuluj", null)
@@ -504,10 +513,9 @@ public class SongbookController {
                 int selectedIndex = versesListView.getSelectionModel().getSelectedIndex();
                 versesListView.setItems(FXCollections.observableArrayList(newPreviews));
 
-                if (selectedIndex >= 0 && selectedIndex < newPreviews.size()) {
-                    versesListView.getSelectionModel().select(selectedIndex);
-                } else if (!newPreviews.isEmpty()) {
-                    versesListView.getSelectionModel().select(0);
+                if (!newPreviews.isEmpty()) {
+                    int targetIndex = Math.max(0, Math.min(selectedIndex, newPreviews.size() - 1));
+                    versesListView.getSelectionModel().select(targetIndex);
                 }
             }
 
