@@ -1,7 +1,7 @@
 package org.example.musicscorebuilder.components.music;
 
 public enum ModeType {
-    SOLO("Głos solowy"),
+    SOLO("Melodia"),
     HARMONY("Harmonizacja"),
     TEXT("Tekst");
 
