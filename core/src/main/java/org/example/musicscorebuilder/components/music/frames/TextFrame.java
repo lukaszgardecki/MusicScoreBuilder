@@ -1,13 +1,19 @@
 package org.example.musicscorebuilder.components.music.frames;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @JsonTypeName("text")
 public class TextFrame extends Frame {
 
-    @JsonProperty("text") private String text;
+    @JsonProperty("verses")
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    private List<TextFrameVerse> verses = new ArrayList<>();
 
     public TextFrame() {
         super();
@@ -17,11 +23,6 @@ public class TextFrame extends Frame {
         super(measureIndex);
     }
 
-    public TextFrame(int measureIndex, String text) {
-        super(measureIndex);
-        this.text = text;
-    }
-
     @JsonCreator
     public TextFrame(
             @JsonProperty("w") Double width,
@@ -29,15 +30,22 @@ public class TextFrame extends Frame {
             @JsonProperty("mTop") Double marginTop,
             @JsonProperty("mBot") Double marginBottom,
             @JsonProperty("mIdx") int measureIndex,
-            @JsonProperty("text") String text
+            @JsonProperty("verses") List<TextFrameVerse> verses
     ) {
         super(width, height, marginTop, marginBottom, measureIndex);
-        this.text = text;
+        this.verses = verses != null ? verses : new ArrayList<>();
     }
 
     @Override
     public boolean isBeforeMeasure() { return false; }
 
-    @JsonProperty("text") public String getText() { return text; }
-    @JsonProperty("text") public void setText(String text) { this.text = text; }
+    @JsonProperty("verses")
+    public List<TextFrameVerse> getVerses() { return verses; }
+
+    @JsonProperty("verses")
+    public void setVerses(List<TextFrameVerse> verses) { this.verses = verses; }
+
+    public void addVerse(TextFrameVerse verse) {
+        this.verses.add(verse);
+    }
 }

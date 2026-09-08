@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.music.frames.Frame;
 import org.example.musicscorebuilder.components.music.frames.HeaderFrame;
+import org.example.musicscorebuilder.components.music.frames.TextFrame;
 import org.example.musicscorebuilder.components.music.util.MeasureTimeSignatureAdjuster;
 
 import java.util.*;
@@ -197,6 +198,12 @@ public class ScoreMode {
         for (Note note : getAllNotes()) {
             note.removeLyric(verseNumber);
         }
+    }
+
+    public void populateTextFrameFromVerse(TextFrame textFrame, int verseNumber) {
+        Verse verse = verses.get(verseNumber);
+        if (verse == null) return;
+        textFrame.addVerse(verse.toTextFrameVerse());
     }
 
     public void rebuildVersesIndex() {

@@ -58,7 +58,12 @@ public class LayoutSectionController extends AbstractPaletteSectionController<La
                 yield true;
             }
             case LYRICS_CONTAINER -> {
-                mode.addFrame(new TextFrame(measure.getIndex()));
+                TextFrame textFrame = new TextFrame(measure.getIndex());
+                for (Integer verseNum : mode.getVerses().keySet()) {
+                    mode.populateTextFrameFromVerse(textFrame, verseNum);
+                }
+
+                mode.addFrame(textFrame);
                 yield true;
             }
             default -> false;

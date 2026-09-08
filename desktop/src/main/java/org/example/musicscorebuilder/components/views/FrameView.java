@@ -11,6 +11,9 @@ import org.example.musicscorebuilder.components.frames.FrameLayout;
 import org.example.musicscorebuilder.components.frames.HeaderFrameLayout;
 import org.example.musicscorebuilder.components.frames.TextFrameLayout;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
+import org.example.musicscorebuilder.components.music.LyricFragment;
+import org.example.musicscorebuilder.components.music.frames.TextFrameVerse;
+import org.example.musicscorebuilder.components.music.frames.TextLine;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -55,10 +58,6 @@ public class FrameView extends ComponentView {
         gc.strokeRect(frameX, contentY, frameWidth, contentHeight);
         gc.restore();
 
-        if (frame instanceof HeaderFrameLayout headerFrame) {
-            drawHeaderFrame(gc, headerFrame, frameX, contentY, frameWidth, sp);
-        }
-
         switch (frame) {
             case HeaderFrameLayout headerFrame -> drawHeaderFrame(gc, headerFrame, frameX, contentY, frameWidth, sp);
             case TextFrameLayout textFrame -> drawTextFrame(gc, textFrame, frameX, contentY, sp);
@@ -79,7 +78,67 @@ public class FrameView extends ComponentView {
     }
 
     private void drawTextFrame(GraphicsContext gc, TextFrameLayout frame, double frameX, double contentY, double sp) {
+        if (frame == null || frame.getVerses() == null || frame.getVerses().isEmpty()) return;
 
+        gc.save();
+        gc.setTextAlign(TextAlignment.LEFT);
+        gc.setTextBaseline(VPos.TOP);
+
+        double currentY = contentY;
+        double defaultFontSizeSp = 1.8;
+        String fontFamily = "Times New Roman";
+
+        for (TextFrameVerse verse : frame.getVerses()) {
+            if (verse.getLines() == null) continue;
+
+            for (TextLine line : verse.getLines()) {
+                if (line.getFragments() == null) continue;
+
+                double currentX = frameX;
+
+                double lineFontSizeSp = line.getFontSize() != null ? line.getFontSize() : defaultFontSizeSp;
+                double baseFontSize = lineFontSizeSp * sp;
+                double lineHeight = baseFontSize * 1.3;
+
+                for (LyricFragment fragment : line.getFragments()) {
+                    String text = fragment.getText();
+                    if (text == null || text.isEmpty()) continue;
+
+                    FontWeight weight = fragment.isBold() ? FontWeight.BOLD : FontWeight.NORMAL;
+                    FontPosture posture = fragment.isItalic() ? FontPosture.ITALIC : FontPosture.REGULAR;
+
+                    Font font = getFont(fontFamily, weight, posture, baseFontSize);
+                    gc.setFont(font);
+                    gc.setFill(Color.BLACK);
+                    gc.fillText(text, currentX, currentY);
+
+                    double textWidth = computeTextWidth(text, font);
+
+                    if (fragment.isUnderline()) {
+                        gc.setStroke(Color.BLACK);
+                        gc.setLineWidth(1.0 * sp);
+                        double lineY = currentY + baseFontSize * 0.95;
+                        gc.strokeLine(currentX, lineY, currentX + textWidth, lineY);
+                    }
+
+                    currentX += textWidth;
+                }
+
+                currentY += lineHeight;
+            }
+
+            // Odstęp między zwrotkami w sp
+            currentY += 1.0 * sp;
+        }
+
+        gc.restore();
+    }
+
+    private double computeTextWidth(String text, Font font) {
+        if (text == null || text.isEmpty()) return 0;
+        Text textNode = new Text(text);
+        textNode.setFont(font);
+        return textNode.getLayoutBounds().getWidth();
     }
 
     private void drawNumber(GraphicsContext gc, HeaderFrameLayout frame, double x, double y, double sp) {
