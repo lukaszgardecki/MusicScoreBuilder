@@ -104,8 +104,8 @@
                                 <HBox fx:id="maxUpContainer"
                                       alignment="CENTER"
                                       spacing="4"
-                                      style="-fx-background-color: -fx-control-inner-background; -fx-background-radius: 4; -fx-padding: 2 4;">
-                                    <Label fx:id="maxUpLabel" text="0 półt." alignment="CENTER" prefWidth="55.0" />
+                                      style="-fx-background-color: -fx-control-inner-background; -fx-text-fill: -fx-text-inner-color; -fx-background-radius: 4; -fx-padding: 2 4;">
+                                    <Label fx:id="maxUpLabel" text="0 półt." alignment="CENTER" prefWidth="55.0" style="-fx-text-fill: -fx-text-inner-color;"/>
                                     <Button onAction="#handleDecrementMaxUp"
                                             focusTraversable="false"
                                             styleClass="btn, btn-danger"
@@ -139,7 +139,7 @@
                                       alignment="CENTER"
                                       spacing="4"
                                       style="-fx-background-color: -fx-control-inner-background; -fx-background-radius: 4; -fx-padding: 2 4;">
-                                    <Label fx:id="maxDownLabel" text="0 półt." alignment="CENTER" prefWidth="55.0" />
+                                    <Label fx:id="maxDownLabel" text="0 półt." alignment="CENTER" prefWidth="55.0" style="-fx-text-fill: -fx-text-inner-color;"/>
                                     <Button onAction="#handleDecrementMaxDown"
                                             focusTraversable="false"
                                             styleClass="btn, btn-danger"
