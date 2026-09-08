@@ -119,6 +119,36 @@ public class ScoreMode {
         measures.add(measure);
     }
 
+    public Measure removeMeasure(int index) {
+        if (index < 0 || index >= measures.size()) return null;
+
+        Measure removed = measures.remove(index);
+        removed.setParentMode(null);
+        removed.setPrev(null);
+        removed.setNext(null);
+
+        updateMeasureLinks();
+
+        if (!measures.isEmpty()) {
+            measures.get(measures.size() - 1).setBarlineStyle(BarlineStyle.FINAL);
+        }
+
+        validateAndCleanSlurs();
+        rebuildVersesIndex();
+
+        return removed;
+    }
+
+    public boolean removeMeasure(Measure measure) {
+        if (measure == null) return false;
+        int index = measures.indexOf(measure);
+        if (index != -1) {
+            removeMeasure(index);
+            return true;
+        }
+        return false;
+    }
+
     public void removeLastMeasure() {
         if (measures.isEmpty()) return;
         Measure removed = measures.remove(measures.size() - 1);

@@ -4,8 +4,10 @@ import javafx.scene.Scene;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyEvent;
 import org.example.musicscorebuilder.components.layout.*;
+import org.example.musicscorebuilder.components.music.Measure;
 import org.example.musicscorebuilder.components.music.NoteRestElement;
 import org.example.musicscorebuilder.components.music.NoteType;
+import org.example.musicscorebuilder.components.music.ScoreMode;
 import org.example.musicscorebuilder.managers.LyricEditorManager;
 import org.example.musicscorebuilder.managers.ModeManager;
 import org.example.musicscorebuilder.managers.ScoreNavigator;
@@ -39,7 +41,7 @@ public class ShortcutHandler {
             case T                                      -> handleTie();
             case ESCAPE                                 -> handleEscape();
             case DIGIT0, NUMPAD0                        -> handleZero();
-            case DELETE                                 -> handleDelete();
+            case DELETE                                 -> handleDelete(event);
             case BACK_SPACE                             -> handleBackspace();
             case PERIOD, DECIMAL                        -> handleDot();
             case LEFT                                   -> scoreNavigator.movePrev();
@@ -77,17 +79,28 @@ public class ShortcutHandler {
         }
     }
 
-    private void handleDelete() {
+    private void handleDelete(KeyEvent event) {
         if (modeManager.isInsertMode()) {
 
         } else {
             Selectable item = scoreStateManager.getSelectedItem();
 
-            switch(item) {
-                case NoteLayout nl -> scoreStateManager.convertSelectedNoteToRest();
-                case MeasureStaffSelection selection -> scoreStateManager.convertSelectedNoteToRest();
-                case TimeSigLayout ts -> scoreStateManager.removeTimeSignature();
-                case null, default -> {}
+            if (event.isShortcutDown()) {
+                if (item instanceof MeasureStaffSelection selection) {
+                    Measure measure = selection.getMeasure().getMeasure();
+                    ScoreMode mode = measure.getParentMode();
+                    if (mode != null && mode.removeMeasure(measure)) {
+                        scoreStateManager.clearSelection();
+                        scoreStateManager.notifyScoreChanged();
+                    }
+                }
+            } else {
+                switch(item) {
+                    case NoteLayout nl -> scoreStateManager.convertSelectedNoteToRest();
+                    case MeasureStaffSelection selection -> scoreStateManager.convertSelectedNoteToRest();
+                    case TimeSigLayout ts -> scoreStateManager.removeTimeSignature();
+                    case null, default -> {}
+                }
             }
         }
     }
