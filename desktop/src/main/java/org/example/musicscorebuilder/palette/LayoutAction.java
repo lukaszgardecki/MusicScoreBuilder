@@ -2,7 +2,8 @@ package org.example.musicscorebuilder.palette;
 
 public enum LayoutAction {
     SYSTEM_BREAK("Podział systemu"),
-    VERTICAL_FRAME("Wstaw ramkę pionową");
+    VERTICAL_FRAME("Wstaw ramkę pionową"),
+    LYRICS_CONTAINER("Wstaw tekst zwrotek");
 
     private final String title;
 

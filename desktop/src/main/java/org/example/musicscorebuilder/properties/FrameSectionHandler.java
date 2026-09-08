@@ -6,8 +6,9 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-import org.example.musicscorebuilder.components.layout.FrameLayout;
-import org.example.musicscorebuilder.components.music.Frame;
+import org.example.musicscorebuilder.components.frames.FrameLayout;
+import org.example.musicscorebuilder.components.frames.HeaderFrameLayout;
+import org.example.musicscorebuilder.components.music.frames.HeaderFrame;
 import org.example.musicscorebuilder.components.music.Score;
 import org.example.musicscorebuilder.data.StorageService;
 import org.example.musicscorebuilder.managers.ScoreStateManager;
@@ -32,22 +33,22 @@ public class FrameSectionHandler implements PropertySection {
 
     private final List<FrameMetaRow> metaRows = new ArrayList<>();
     private boolean isUpdating = false;
-    int startRow = 0;
+    private int startRow = 0;
 
     public FrameSectionHandler(TitledPane pane, GridPane grid) {
         this.pane = pane;
         this.grid = grid;
         setupFrameDimensionControls();
         addSpacer();
-        setupFrameDataControls();
+        setupHeaderFrameDataControls();
     }
 
-    private void setupFrameDataControls() {
-        metaRows.add(new FrameMetaRow("Tytuł", Frame::getTitle, Frame::setTitle, Score::getTitle, grid, startRow++));
-        metaRows.add(new FrameMetaRow("Podtytuł", Frame::getSubtitle, Frame::setSubtitle, Score::getSubtitle, grid, startRow++));
-        metaRows.add(new FrameMetaRow("Nowy numer", Frame::getNumberNew, Frame::setNumberNew, Score::getNumberNew, grid, startRow++));
-        metaRows.add(new FrameMetaRow("Stary numer", Frame::getNumberOld, Frame::setNumberOld, Score::getNumberOld, grid, startRow++));
-        metaRows.add(new FrameMetaRow("Kompozytor", Frame::getComposer, Frame::setComposer, Score::getComposer, grid, startRow++));
+    private void setupHeaderFrameDataControls() {
+        metaRows.add(new FrameMetaRow("Tytuł", HeaderFrame::getTitle, HeaderFrame::setTitle, Score::getTitle, grid, startRow++));
+        metaRows.add(new FrameMetaRow("Podtytuł", HeaderFrame::getSubtitle, HeaderFrame::setSubtitle, Score::getSubtitle, grid, startRow++));
+        metaRows.add(new FrameMetaRow("Nowy numer", HeaderFrame::getNumberNew, HeaderFrame::setNumberNew, Score::getNumberNew, grid, startRow++));
+        metaRows.add(new FrameMetaRow("Stary numer", HeaderFrame::getNumberOld, HeaderFrame::setNumberOld, Score::getNumberOld, grid, startRow++));
+        metaRows.add(new FrameMetaRow("Kompozytor", HeaderFrame::getComposer, HeaderFrame::setComposer, Score::getComposer, grid, startRow++));
     }
 
     private void setupFrameDimensionControls() {
@@ -113,11 +114,15 @@ public class FrameSectionHandler implements PropertySection {
             marginTopSpinner.getValueFactory().setValue(frameLayout.getMarginTop());
             marginBottomSpinner.getValueFactory().setValue(frameLayout.getMarginBottom());
 
-            Frame frameData = frameLayout.getFrameData();
             Score score = storageService.getScore();
+            HeaderFrameLayout headerLayout = getSelectedHeaderFrame();
 
+            boolean isHeader = (headerLayout != null);
             for (FrameMetaRow row : metaRows) {
-                row.refresh(frameData, score);
+                row.setVisible(isHeader);
+                if (isHeader) {
+                    row.refresh(headerLayout.getHeaderFrameData(), score);
+                }
             }
             isUpdating = false;
         }
@@ -167,6 +172,13 @@ public class FrameSectionHandler implements PropertySection {
     private FrameLayout getSelectedFrame() {
         if (stateManager.getSelectedItem() instanceof FrameLayout fl && fl.isSelected()) {
             return fl;
+        }
+        return null;
+    }
+
+    private HeaderFrameLayout getSelectedHeaderFrame() {
+        if (getSelectedFrame() instanceof HeaderFrameLayout hfl) {
+            return hfl;
         }
         return null;
     }
@@ -232,18 +244,19 @@ public class FrameSectionHandler implements PropertySection {
 
 
     private class FrameMetaRow {
+        private final HBox rowBox;
         private final CheckBox checkBox;
         private final Label label;
         private final TextField textField;
         private final Button resetButton;
 
-        private final Function<Frame, String> frameGetter;
-        private final BiConsumer<Frame, String> frameSetter;
+        private final Function<HeaderFrame, String> frameGetter;
+        private final BiConsumer<HeaderFrame, String> frameSetter;
         private final Function<Score, String> scoreGetter;
 
         public FrameMetaRow(String labelText,
-                            Function<Frame, String> frameGetter,
-                            BiConsumer<Frame, String> frameSetter,
+                            Function<HeaderFrame, String> frameGetter,
+                            BiConsumer<HeaderFrame, String> frameSetter,
                             Function<Score, String> scoreGetter,
                             GridPane grid,
                             int rowIndex) {
@@ -264,7 +277,7 @@ public class FrameSectionHandler implements PropertySection {
 
             resetButton = createResetButton("Przywróć wartość ze śpiewnika");
 
-            HBox rowBox = new HBox(6, checkBox, label, textField, resetButton);
+            rowBox = new HBox(6, checkBox, label, textField, resetButton);
             rowBox.setAlignment(Pos.CENTER_LEFT);
 
             grid.add(rowBox, 0, rowIndex, 2, 1);
@@ -275,8 +288,10 @@ public class FrameSectionHandler implements PropertySection {
         private void registerListeners() {
             checkBox.selectedProperty().addListener((obs, oldV, newV) -> {
                 if (isUpdating) return;
-                FrameLayout frameLayout = getSelectedFrame();
-                if (frameLayout == null) return;
+                HeaderFrameLayout headerLayout = getSelectedHeaderFrame();
+                if (headerLayout == null) return;
+
+                HeaderFrame headerFrame = headerLayout.getHeaderFrameData();
 
                 boolean active = Boolean.TRUE.equals(newV);
                 textField.setDisable(!active);
@@ -288,39 +303,48 @@ public class FrameSectionHandler implements PropertySection {
                     if (textField.getText() == null || textField.getText().isEmpty()) {
                         textField.setText(defaultVal != null ? defaultVal : "");
                     }
-                    frameSetter.accept(frameLayout.getFrameData(), textField.getText());
+                    frameSetter.accept(headerFrame, textField.getText());
                 } else {
                     textField.setText("");
-                    frameSetter.accept(frameLayout.getFrameData(), null);
+                    frameSetter.accept(headerFrame, null);
                 }
                 stateManager.notifyScoreChanged();
             });
 
             textField.textProperty().addListener((obs, oldV, newV) -> {
                 if (isUpdating || !checkBox.isSelected()) return;
-                FrameLayout frameLayout = getSelectedFrame();
-                if (frameLayout != null) {
-                    frameSetter.accept(frameLayout.getFrameData(), newV);
+                HeaderFrameLayout headerLayout = getSelectedHeaderFrame();
+                if (headerLayout != null) {
+                    frameSetter.accept(headerLayout.getHeaderFrameData(), newV);
                     stateManager.notifyScoreChanged();
                 }
             });
 
             resetButton.setOnAction(e -> {
-                FrameLayout frameLayout = getSelectedFrame();
-                if (frameLayout == null) return;
+                HeaderFrameLayout headerLayout = getSelectedHeaderFrame();
+                if (headerLayout == null) return;
+
+                HeaderFrame headerFrame = headerLayout.getHeaderFrameData();
 
                 Score score = storageService.getScore();
                 String defaultVal = (score != null) ? scoreGetter.apply(score) : "";
                 String valToSet = (defaultVal != null) ? defaultVal : "";
 
                 textField.setText(valToSet);
-                frameSetter.accept(frameLayout.getFrameData(), valToSet);
+                frameSetter.accept(headerFrame, valToSet);
                 stateManager.notifyScoreChanged();
             });
         }
 
-        public void refresh(Frame frameData, Score score) {
-            String value = frameGetter.apply(frameData);
+        public void setVisible(boolean visible) {
+            rowBox.setVisible(visible);
+            rowBox.setManaged(visible);
+        }
+
+        public void refresh(HeaderFrame headerFrame, Score score) {
+            if (headerFrame == null) return;
+
+            String value = frameGetter.apply(headerFrame);
             boolean hasValue = (value != null);
 
             checkBox.setSelected(hasValue);

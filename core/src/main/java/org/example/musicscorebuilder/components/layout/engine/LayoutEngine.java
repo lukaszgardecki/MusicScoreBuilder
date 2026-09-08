@@ -1,13 +1,20 @@
 package org.example.musicscorebuilder.components.layout.engine;
 
+import org.example.musicscorebuilder.components.frames.FrameLayout;
+import org.example.musicscorebuilder.components.frames.HeaderFrameLayout;
+import org.example.musicscorebuilder.components.frames.TextFrameLayout;
 import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.layout.util.GroupBeamBuilder;
 import org.example.musicscorebuilder.components.layout.util.SystemJustifier;
 import org.example.musicscorebuilder.components.music.*;
+import org.example.musicscorebuilder.components.music.frames.Frame;
+import org.example.musicscorebuilder.components.music.frames.HeaderFrame;
+import org.example.musicscorebuilder.components.music.frames.TextFrame;
 
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class LayoutEngine {
     private ScoreStyle style;
@@ -41,26 +48,21 @@ public class LayoutEngine {
         List<Measure> measures = scoreMode.getMeasures();
         for (int i = 0; i < measures.size(); i++) {
             Measure measure = measures.get(i);
+            List<Frame> frames = framesByMeasureIndex.get(i);
 
-            if (framesByMeasureIndex.containsKey(i)) {
-                for (Frame frameData : framesByMeasureIndex.get(i)) {
-                    if (!currentSystem.getMeasures().isEmpty()) {
-                        systemJustifier.justify(currentSystem);
-                    } else {
-                        currentPage.getBlocks().remove(currentSystem);
-                    }
+            List<Frame> beforeFrames = Collections.emptyList();
+            List<Frame> afterFrames = Collections.emptyList();
 
-                    FrameLayout frameLayout = new FrameLayout(currentPage, style, frameData);
+            if (frames != null && !frames.isEmpty()) {
+                Map<Boolean, List<Frame>> partitioned = frames.stream()
+                        .collect(Collectors.partitioningBy(Frame::isBeforeMeasure));
+                beforeFrames = partitioned.get(true);
+                afterFrames = partitioned.get(false);
+            }
 
-                    if (currentPage.getRemainingHeight() < frameLayout.getHeight()) {
-                        currentPage = createPageLayout(scoreLayout);
-                        scoreLayout.addPageLayout(currentPage);
-                        frameLayout = new FrameLayout(currentPage, style, frameData);
-                    }
-
-                    currentPage.addBlock(frameLayout);
-                    currentSystem = addNewSystemToPage(currentPage, scoreMode);
-                }
+            for (Frame frameData : beforeFrames) {
+                currentSystem = insertFrameBlock(frameData, currentSystem, scoreLayout, scoreMode);
+                currentPage = currentSystem.getPageLayout();
             }
 
             MeasureLayout measureLayout = getOrCreateMeasureLayout(measure, currentSystem);
@@ -87,6 +89,11 @@ public class LayoutEngine {
             double startX = currentSystem.getMeasures().isEmpty() ? currentSystem.getBraceWidth() : currentSystem.getWidth();
             measureLayout.setX(startX);
             currentSystem.add(measureLayout);
+
+            for (Frame frameData : afterFrames) {
+                currentSystem = insertFrameBlock(frameData, currentSystem, scoreLayout, scoreMode);
+                currentPage = currentSystem.getPageLayout();
+            }
         }
 
         if (!currentSystem.getMeasures().isEmpty()) {
@@ -184,6 +191,35 @@ public class LayoutEngine {
 
     private PageLayout createPageLayout(ScoreLayout scoreLayout) {
         return new PageLayout(scoreLayout, scoreLayout.getPages().size());
+    }
+
+    private SystemLayout insertFrameBlock(Frame frameData, SystemLayout currentSystem, ScoreLayout scoreLayout, ScoreMode scoreMode) {
+        PageLayout currentPage = currentSystem.getPageLayout();
+
+        if (!currentSystem.getMeasures().isEmpty()) {
+            systemJustifier.justify(currentSystem);
+        } else {
+            currentPage.getBlocks().remove(currentSystem);
+        }
+
+        FrameLayout frameLayout = createFrameLayout(currentPage, style, frameData);
+
+        if (currentPage.getRemainingHeight() < frameLayout.getHeight()) {
+            currentPage = createPageLayout(scoreLayout);
+            scoreLayout.addPageLayout(currentPage);
+            frameLayout = createFrameLayout(currentPage, style, frameData);
+        }
+
+        currentPage.addBlock(frameLayout);
+        return addNewSystemToPage(currentPage, scoreMode);
+    }
+
+    private FrameLayout createFrameLayout(PageLayout parent, ScoreStyle style, Frame frameData) {
+        return switch (frameData) {
+            case HeaderFrame headerFrame -> new HeaderFrameLayout(parent, style, headerFrame);
+            case TextFrame textFrame -> new TextFrameLayout(parent, style, textFrame);
+            default -> throw new IllegalArgumentException("Nieobsługiwany typ ramki: " + frameData.getClass().getName());
+        };
     }
 
     // ========================================================================

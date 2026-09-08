@@ -1,20 +1,19 @@
-package org.example.musicscorebuilder.components.layout;
+package org.example.musicscorebuilder.components.frames;
 
+import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
-import org.example.musicscorebuilder.components.music.Frame;
+import org.example.musicscorebuilder.components.music.frames.Frame;
 
-public class FrameLayout implements Selectable, PageBlockLayout {
-    private final Frame frameData;
-    private final ScoreStyle style;
-    private final PageLayout parent;
-    private double marginTop, marginBottom;
-    private double x, y;
-    private double width, height;
-    private double contentY;
-    private double contentHeight;
-    private final double titleFontSize, subtitleFontSize, composerFontSize, numberNewFontSize, numberOldFontSize;
-    private final double numBoxMinWidth, numBoxMinHeight, numBoxRadius, numBoxStrokeWidth, numBoxSpacing, numBoxPaddingX, numBoxPaddingY;
-    private boolean selected;
+public abstract class FrameLayout implements Selectable, PageBlockLayout {
+    protected final Frame frameData;
+    protected final ScoreStyle style;
+    protected final PageLayout parent;
+    protected double marginTop, marginBottom;
+    protected double x, y;
+    protected double width, height;
+    protected double contentY;
+    protected double contentHeight;
+    protected boolean selected;
 
     public FrameLayout(PageLayout parent, ScoreStyle style, Frame frameData) {
         this.parent = parent;
@@ -30,19 +29,6 @@ public class FrameLayout implements Selectable, PageBlockLayout {
         this.y = parent.getMarginTop() + parent.getOccupiedHeight();
         this.contentY = y + marginTop;
         this.height = this.contentHeight + this.marginTop + this.marginBottom;
-
-        this.numberNewFontSize = style.getHeaderDefNumberNewFontSize();
-        this.numberOldFontSize = style.getHeaderDefNumberOldFontSize();
-        this.titleFontSize = style.getHeaderDefTitleFontSize();
-        this.subtitleFontSize = style.getHeaderDefSubtitleFontSize();
-        this.composerFontSize = style.getHeaderDefComposerFontSize();
-        this.numBoxMinWidth = style.getHeaderDefNumBoxMinWidth();
-        this.numBoxMinHeight = style.getHeaderDefNumBoxMinHeight();
-        this.numBoxRadius = style.getHeaderDefNumBoxRadius();
-        this.numBoxStrokeWidth = style.getHeaderDefNumBoxStrokeWidth();
-        this.numBoxSpacing = style.getHeaderDefNumBoxSpacing();
-        this.numBoxPaddingX = style.getHeaderDefNumBoxPaddingX();
-        this.numBoxPaddingY = style.getHeaderDefNumBoxPaddingY();
     }
 
     @Override public double getWidth() { return width; }
@@ -75,25 +61,9 @@ public class FrameLayout implements Selectable, PageBlockLayout {
     public double getContentHeight() { return contentHeight; }
     public double getMarginTop() { return marginTop; }
     public double getMarginBottom() { return marginBottom; }
-    public String getTitle() { return frameData.getTitle() != null ? frameData.getTitle() : ""; }
-    public String getSubtitle() { return frameData.getSubtitle() != null ? frameData.getSubtitle() : ""; }
-    public String getComposer() { return frameData.getComposer() != null ? frameData.getComposer() : ""; }
-    public String getNumberNew() { return frameData.getNumberNew() != null ? frameData.getNumberNew() : ""; }
-    public String getNumberOld() { return frameData.getNumberOld() != null ? frameData.getNumberOld() : ""; }
-    public double getTitleFontSize() { return titleFontSize; }
-    public double getSubtitleFontSize() { return subtitleFontSize; }
-    public double getComposerFontSize() { return composerFontSize; }
-    public double getNumberNewFontSize() { return numberNewFontSize; }
-    public double getNumberOldFontSize() { return numberOldFontSize; }
-    public double getNumBoxMinWidth() { return numBoxMinWidth; }
-    public double getNumBoxMinHeight() { return numBoxMinHeight; }
-    public double getNumBoxRadius() { return numBoxRadius; }
-    public double getNumBoxStrokeWidth() { return numBoxStrokeWidth; }
-    public double getNumBoxSpacing() { return numBoxSpacing; }
-    public double getNumBoxPaddingX() { return numBoxPaddingX; }
-    public double getNumBoxPaddingY() { return numBoxPaddingY; }
     public ScoreStyle getScoreStyle() { return style; }
     public Frame getFrameData() { return frameData; }
+    public PageLayout getParent() { return parent; }
 
     public void setWidth(double width) {
         this.width = width;

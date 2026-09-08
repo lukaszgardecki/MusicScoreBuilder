@@ -7,7 +7,9 @@ import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 import javafx.scene.text.*;
-import org.example.musicscorebuilder.components.layout.FrameLayout;
+import org.example.musicscorebuilder.components.frames.FrameLayout;
+import org.example.musicscorebuilder.components.frames.HeaderFrameLayout;
+import org.example.musicscorebuilder.components.frames.TextFrameLayout;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 
 import java.util.HashMap;
@@ -53,6 +55,18 @@ public class FrameView extends ComponentView {
         gc.strokeRect(frameX, contentY, frameWidth, contentHeight);
         gc.restore();
 
+        if (frame instanceof HeaderFrameLayout headerFrame) {
+            drawHeaderFrame(gc, headerFrame, frameX, contentY, frameWidth, sp);
+        }
+
+        switch (frame) {
+            case HeaderFrameLayout headerFrame -> drawHeaderFrame(gc, headerFrame, frameX, contentY, frameWidth, sp);
+            case TextFrameLayout textFrame -> drawTextFrame(gc, textFrame, frameX, contentY, sp);
+            default -> throw new IllegalStateException("Unexpected value: " + frame);
+        }
+    }
+
+    private void drawHeaderFrame(GraphicsContext gc, HeaderFrameLayout frame, double frameX, double contentY, double frameWidth, double sp) {
         gc.save();
         double centerX = frameX + (frameWidth / 2.0);
         double rightX = frameX + frameWidth;
@@ -64,7 +78,11 @@ public class FrameView extends ComponentView {
         gc.restore();
     }
 
-    private void drawNumber(GraphicsContext gc, FrameLayout frame, double x, double y, double sp) {
+    private void drawTextFrame(GraphicsContext gc, TextFrameLayout frame, double frameX, double contentY, double sp) {
+
+    }
+
+    private void drawNumber(GraphicsContext gc, HeaderFrameLayout frame, double x, double y, double sp) {
         Text topNode = createNewNumberTextNode(frame, sp);
         Text bottomNode = createOldNumberTextNode(frame, sp);
         if (topNode.getText().isBlank() && bottomNode.getText().isBlank()) return;
@@ -109,7 +127,7 @@ public class FrameView extends ComponentView {
         }
     }
 
-    private void drawNumberBox(GraphicsContext gc, FrameLayout frame, double x, double y, double width, double height, double sp) {
+    private void drawNumberBox(GraphicsContext gc, HeaderFrameLayout frame, double x, double y, double width, double height, double sp) {
         double boxRadius = frame.getNumBoxRadius() * sp;
         double strokeWidth = frame.getNumBoxStrokeWidth() * sp;
 
@@ -131,7 +149,7 @@ public class FrameView extends ComponentView {
         gc.fillText(node.getText(), centerX, centerY);
     }
 
-    private Text createNewNumberTextNode(FrameLayout frame, double sp) {
+    private Text createNewNumberTextNode(HeaderFrameLayout frame, double sp) {
         String newNum = frame.getNumberNew() != null ? String.valueOf(frame.getNumberNew()) : "";
         Font font = getFont("Times New Roman", FontWeight.BOLD, FontPosture.REGULAR, frame.getNumberNewFontSize() * sp);
         Text textNode = new Text(newNum);
@@ -140,7 +158,7 @@ public class FrameView extends ComponentView {
         return textNode;
     }
 
-    private Text createOldNumberTextNode(FrameLayout frame, double sp) {
+    private Text createOldNumberTextNode(HeaderFrameLayout frame, double sp) {
         String oldNum = frame.getNumberOld() != null ? String.valueOf(frame.getNumberOld()) : "";
         String formatted = oldNum.isEmpty() ? "" : "[" + oldNum + "]";
         Font font = getFont("Times New Roman", FontWeight.NORMAL, FontPosture.REGULAR, frame.getNumberOldFontSize() * sp);
@@ -150,7 +168,7 @@ public class FrameView extends ComponentView {
         return textNode;
     }
 
-    private void drawTitle(GraphicsContext gc, FrameLayout frame, double x, double y, double sp) {
+    private void drawTitle(GraphicsContext gc, HeaderFrameLayout frame, double x, double y, double sp) {
         String title = frame.getTitle() != null ? frame.getTitle() : "";
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.TOP);
@@ -159,7 +177,7 @@ public class FrameView extends ComponentView {
         gc.fillText(title, x, y);
     }
 
-    private void drawSubtitle(GraphicsContext gc, FrameLayout frame, double x, double y, double sp) {
+    private void drawSubtitle(GraphicsContext gc, HeaderFrameLayout frame, double x, double y, double sp) {
         String subtitle = frame.getSubtitle() != null ? frame.getSubtitle() : "";
         double subtitleY = y + (frame.getTitleFontSize() + 2.5) * sp;
         gc.setTextAlign(TextAlignment.CENTER);
@@ -169,7 +187,7 @@ public class FrameView extends ComponentView {
         gc.fillText(subtitle, x, subtitleY);
     }
 
-    private void drawComposer(GraphicsContext gc, FrameLayout frame, double x, double y, double sp) {
+    private void drawComposer(GraphicsContext gc, HeaderFrameLayout frame, double x, double y, double sp) {
         String composer = frame.getComposer() != null ? frame.getComposer() : "";
         double composerY = y + (frame.getContentHeight() - frame.getComposerFontSize()) * sp;
         gc.setTextAlign(TextAlignment.RIGHT);

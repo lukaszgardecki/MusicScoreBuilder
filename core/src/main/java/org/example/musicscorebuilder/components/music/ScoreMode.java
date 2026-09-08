@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
+import org.example.musicscorebuilder.components.music.frames.Frame;
+import org.example.musicscorebuilder.components.music.frames.HeaderFrame;
 import org.example.musicscorebuilder.components.music.util.MeasureTimeSignatureAdjuster;
 
 import java.util.*;
@@ -55,9 +57,6 @@ public class ScoreMode {
         }
         if (frames != null) {
             this.frames.addAll(frames);
-        }
-        if (this.frames.isEmpty()) {
-            this.frames.add(new Frame());
         }
 
         rebuildVersesIndex();
@@ -375,7 +374,7 @@ public class ScoreMode {
     }
 
     private void addDefaultHeaderFrame() {
-        Frame frame = new Frame();
+        HeaderFrame frame = new HeaderFrame();
         frame.setTitle(score.getTitle());
         frame.setSubtitle(score.getSubtitle());
         frame.setComposer(score.getComposer());

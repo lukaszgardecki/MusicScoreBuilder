@@ -1,5 +1,6 @@
 package org.example.musicscorebuilder.managers;
 
+import org.example.musicscorebuilder.components.frames.FrameLayout;
 import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.music.*;

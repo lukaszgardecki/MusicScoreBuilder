@@ -4,9 +4,10 @@ import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.GridPane;
+import org.example.musicscorebuilder.components.music.frames.TextFrame;
 import org.example.musicscorebuilder.components.layout.Selectable;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
-import org.example.musicscorebuilder.components.music.Frame;
+import org.example.musicscorebuilder.components.music.frames.HeaderFrame;
 import org.example.musicscorebuilder.components.music.Measure;
 import org.example.musicscorebuilder.components.music.ScoreMode;
 import org.example.musicscorebuilder.components.views.BreakSystemIconView;
@@ -41,31 +42,30 @@ public class LayoutSectionController extends AbstractPaletteSectionController<La
         if (item == null) return false;
 
         Measure measure = null;
-        try {
-            if (item.getSegment() != null && item.getSegment().getParent() != null) {
-                measure = item.getSegment().getParent().getMeasure();
-            }
-        } catch (Exception ignored) {}
-
-        if (measure != null) {
-            switch (action) {
-                case SYSTEM_BREAK -> {
-                    boolean newState = !measure.hasSystemBreak();
-                    measure.setSystemBreak(newState);
-
-                    ScoreStateManager.getInstance().notifyScoreChanged();
-                    return true;
-                }
-                case VERTICAL_FRAME -> {
-                    ScoreMode mode = ScoreStateManager.getInstance().getCurrentMode();
-                    mode.addFrame(new Frame(measure.getIndex()));
-
-                    ScoreStateManager.getInstance().notifyScoreChanged();
-                    return true;
-                }
-            }
+        if (item.getSegment() != null && item.getSegment().getParent() != null) {
+            measure = item.getSegment().getParent().getMeasure();
         }
-        return false;
+        if (measure == null) return false;
+
+        ScoreMode mode = stateManager.getCurrentMode();
+        boolean handled = switch (action) {
+            case SYSTEM_BREAK -> {
+                measure.setSystemBreak(!measure.hasSystemBreak());
+                yield true;
+            }
+            case VERTICAL_FRAME -> {
+                mode.addFrame(new HeaderFrame(measure.getIndex()));
+                yield true;
+            }
+            case LYRICS_CONTAINER -> {
+                mode.addFrame(new TextFrame(measure.getIndex()));
+                yield true;
+            }
+            default -> false;
+        };
+
+        if (handled) stateManager.notifyScoreChanged();
+        return handled;
     }
 
     @Override

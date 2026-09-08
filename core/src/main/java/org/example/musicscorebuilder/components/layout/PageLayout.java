@@ -1,5 +1,7 @@
 package org.example.musicscorebuilder.components.layout;
 
+import org.example.musicscorebuilder.components.frames.FrameLayout;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;

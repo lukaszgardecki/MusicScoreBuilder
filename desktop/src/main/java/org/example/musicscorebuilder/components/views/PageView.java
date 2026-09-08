@@ -2,7 +2,7 @@ package org.example.musicscorebuilder.components.views;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
-import org.example.musicscorebuilder.components.layout.FrameLayout;
+import org.example.musicscorebuilder.components.frames.FrameLayout;
 import org.example.musicscorebuilder.components.layout.PageBlockLayout;
 import org.example.musicscorebuilder.components.layout.PageLayout;
 import org.example.musicscorebuilder.components.layout.SystemLayout;
