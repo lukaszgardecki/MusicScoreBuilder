@@ -10,6 +10,7 @@ import org.example.musicscorebuilder.components.music.*;
 import org.example.musicscorebuilder.components.music.frames.Frame;
 import org.example.musicscorebuilder.components.music.frames.HeaderFrame;
 import org.example.musicscorebuilder.components.music.frames.TextFrame;
+import org.example.musicscorebuilder.components.music.frames.TextFrameVerse;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -23,6 +24,7 @@ public class LayoutEngine {
 
     private final Map<Note, NoteLayout> noteToLayoutMap = new IdentityHashMap<>();
     private final List<NoteLayout> tieStartNotes = new ArrayList<>();
+    private final Map<Note, Integer> noteToSystemMap = new HashMap<>();
 
     public LayoutEngine() {
         this.systemJustifier = new SystemJustifier();
@@ -34,6 +36,7 @@ public class LayoutEngine {
 
         noteToLayoutMap.clear();
         tieStartNotes.clear();
+        noteToSystemMap.clear();
 
         ScoreLayout scoreLayout = new ScoreLayout(scoreMode.getScore(), style);
         PageLayout currentPage = createPageLayout(scoreLayout);
@@ -425,14 +428,51 @@ public class LayoutEngine {
     }
 
     // ========================================================================
-    // POST-PROCESSING (Slurs, Ties, Segments)
+    // POST-PROCESSING (Text Frames, Slurs, Ties, Segments)
     // ========================================================================
 
     private void postProcessLayout(ScoreMode scoreMode, ScoreLayout scoreLayout) {
+        buildNoteToSystemMap(scoreLayout);
+        updateTextFrames(scoreMode);
         linkAllSegments(scoreLayout);
         linkVoiceElements(scoreLayout);
         buildTies(scoreLayout);
         buildSlurs(scoreMode, scoreLayout);
+    }
+
+    private void buildNoteToSystemMap(ScoreLayout scoreLayout) {
+        noteToSystemMap.clear();
+        int systemIndex = 0;
+        for (PageLayout page : scoreLayout.getPages()) {
+            for (SystemLayout system : page.getSystems()) {
+                for (MeasureLayout measure : system.getMeasures()) {
+                    for (SegmentLayout segment : measure.getSegments()) {
+                        for (ElementLayout element : segment.getElements()) {
+                            if (element instanceof NoteLayout noteLayout && noteLayout.getNote() != null) {
+                                noteToSystemMap.put(noteLayout.getNote(), systemIndex);
+                            }
+                        }
+                    }
+                }
+                systemIndex++;
+            }
+        }
+    }
+
+    private void updateTextFrames(ScoreMode scoreMode) {
+        Map<Integer, Verse> versesMap = scoreMode.getVerses();
+        if (versesMap == null || versesMap.isEmpty()) return;
+
+        List<TextFrameVerse> updatedVerses = new ArrayList<>();
+        for (Verse verse : versesMap.values()) {
+            updatedVerses.add(verse.toTextFrameVerse(noteToSystemMap));
+        }
+
+        for (Frame frame : scoreMode.getFrames()) {
+            if (frame instanceof TextFrame textFrame) {
+                textFrame.setVerses(updatedVerses);
+            }
+        }
     }
 
     private void linkAllSegments(ScoreLayout scoreLayout) {

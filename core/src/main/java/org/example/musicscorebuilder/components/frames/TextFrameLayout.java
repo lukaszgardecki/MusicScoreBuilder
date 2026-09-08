@@ -4,55 +4,31 @@ import org.example.musicscorebuilder.components.layout.PageLayout;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.music.frames.TextFrame;
 import org.example.musicscorebuilder.components.music.frames.TextFrameVerse;
-import org.example.musicscorebuilder.components.music.frames.TextLine;
 
 import java.util.List;
 
 public class TextFrameLayout extends FrameLayout {
-
     private final TextFrame textFrame;
+    private final double padding, verseSpacing, versePaddingX, versePaddingY, verseCornerRadius, verseFontSize;
 
     public TextFrameLayout(PageLayout parent, ScoreStyle style, TextFrame frameData) {
         super(parent, style, frameData);
         this.textFrame = frameData;
-
-        if (frameData.getHeight() == null || frameData.getHeight() <= 0) {
-            calculateAutoHeight();
-        }
+        this.marginTop = frameData.getMarginTop() != null ? frameData.getMarginTop() : style.getTextFrameDefMarginTop();
+        this.contentHeight = frameData.getHeight() != null ? frameData.getHeight() : style.getTextFrameDefHeight();
+        this.padding = style.getTextFramePadding();
+        this.verseSpacing = style.getTextFrameVerseSpacing();
+        this.versePaddingX = style.getTextFrameVersePaddingX();
+        this.versePaddingY = style.getTextFrameVersePaddingY();
+        this.verseCornerRadius = style.getTextFrameVerseCornerRadius();
+        this.verseFontSize = style.getTextFrameVerseFontSize();
     }
 
-    public List<TextFrameVerse> getVerses() {
-        return textFrame.getVerses();
-    }
-
-    public TextFrame getTextFrame() {
-        return textFrame;
-    }
-
-    private void calculateAutoHeight() {
-        if (getVerses() == null || getVerses().isEmpty()) {
-            setContentHeight(2.0);
-            return;
-        }
-
-        double defaultFontSizeSp = 1.8;
-        double verseSpacingSp = 1.0;
-        double totalHeight = 0;
-
-        for (TextFrameVerse verse : getVerses()) {
-            if (verse.getLines() != null) {
-                for (TextLine line : verse.getLines()) {
-                    double fontSizeSp = line.getFontSize() != null ? line.getFontSize() : defaultFontSizeSp;
-                    totalHeight += fontSizeSp * 1.3;
-                }
-            }
-            totalHeight += verseSpacingSp;
-        }
-
-        if (totalHeight > 0) {
-            totalHeight -= verseSpacingSp;
-        }
-
-        setContentHeight(Math.max(2.0, totalHeight));
-    }
+    public List<TextFrameVerse> getVerses() { return textFrame.getVerses(); }
+    public double getPadding() { return padding; }
+    public double getVerseSpacing() { return verseSpacing; }
+    public double getVersePaddingX() { return versePaddingX; }
+    public double getVersePaddingY() { return versePaddingY; }
+    public double getVerseCornerRadius() { return verseCornerRadius; }
+    public double getVerseFontSize() { return verseFontSize; }
 }

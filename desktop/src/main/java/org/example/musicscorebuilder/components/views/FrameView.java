@@ -14,6 +14,7 @@ import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.music.LyricFragment;
 import org.example.musicscorebuilder.components.music.frames.TextFrameVerse;
 import org.example.musicscorebuilder.components.music.frames.TextLine;
+import org.example.musicscorebuilder.managers.ScoreStateManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -51,6 +52,7 @@ public class FrameView extends ComponentView {
         double contentY = pageY + frame.getContentY() * sp;
         double frameWidth = frame.getWidth() * sp;
         double contentHeight = frame.getContentHeight() * sp;
+
         gc.save();
         gc.setStroke(getCachedColor(frame.isSelected() ? style.getSelectColor(frame) : style.getFrameStrokeColor()));
         gc.setLineWidth(style.getFrameStrokeThickness() * sp);
@@ -60,9 +62,137 @@ public class FrameView extends ComponentView {
 
         switch (frame) {
             case HeaderFrameLayout headerFrame -> drawHeaderFrame(gc, headerFrame, frameX, contentY, frameWidth, sp);
-            case TextFrameLayout textFrame -> drawTextFrame(gc, textFrame, frameX, contentY, sp);
+            case TextFrameLayout textFrame -> drawTextFrame(gc, textFrame, frameX, contentY, frameWidth, contentHeight, sp);
             default -> throw new IllegalStateException("Unexpected value: " + frame);
         }
+    }
+
+    private void drawTextFrame(GraphicsContext gc, TextFrameLayout frame, double frameX, double contentY, double frameWidth, double contentHeight, double sp) {
+        if (frame == null || frame.getVerses() == null || frame.getVerses().isEmpty()) return;
+
+        gc.save();
+        gc.beginPath();
+        gc.rect(frameX, contentY, frameWidth, contentHeight);
+        gc.clip();
+
+        gc.setTextBaseline(VPos.TOP);
+
+        double defaultFontSizeSp = frame.getVerseFontSize();
+        String fontFamily = "Times New Roman";
+        double padding = frame.getPadding() * sp;
+        double verseSpacing = frame.getVerseSpacing() * sp;
+
+        double textPaddingX = frame.getVersePaddingX() * sp;
+        double textPaddingY = frame.getVersePaddingY() * sp;
+        int selectedVerseNum = ScoreStateManager.getInstance().getSelectedVerseNumber();
+        double scrollY = 0.0;
+
+        try {
+            var method = frame.getClass().getMethod("getScrollY");
+            Object val = method.invoke(frame);
+            if (val instanceof Number num) {
+                scrollY = num.doubleValue() * sp;
+            }
+        } catch (Exception ignored) {}
+
+        double currentY = contentY + padding - scrollY;
+        double totalContentHeight = padding * 2;
+
+        for (TextFrameVerse verse : frame.getVerses()) {
+            if (verse.getLines() == null) continue;
+
+            double verseTextHeight = 0;
+            for (TextLine line : verse.getLines()) {
+                double lineFontSizeSp = line.getFontSize() != null ? line.getFontSize() : defaultFontSizeSp;
+                verseTextHeight += (lineFontSizeSp * sp) * 1.3;
+            }
+
+            double totalVerseHeight = verseTextHeight + (2 * textPaddingY);
+
+
+            if (currentY + totalVerseHeight >= contentY && currentY <= contentY + contentHeight) {
+
+                // --- TŁO TYLKO DLA AKTUALNIE ZAZNACZONEJ ZWROTKI ---
+                if (verse.getNumber() == selectedVerseNum) {
+                    double bgX = frameX + padding;
+                    double bgWidth = frameWidth - (padding * 2);
+                    double cornerRadius = frame.getVerseCornerRadius() * sp;
+
+                    gc.setFill(Color.web("#c8def8"));
+                    gc.fillRoundRect(bgX, currentY, bgWidth, totalVerseHeight, cornerRadius, cornerRadius);
+                }
+                // ---------------------------------------------------
+
+                // Tekst rysowany z przesunięciem pionowym wewnątrz tła
+                double lineY = currentY + textPaddingY;
+
+                for (TextLine line : verse.getLines()) {
+                    if (line.getFragments() == null) continue;
+
+                    // Tekst rysowany z przesunięciem poziomym wewnątrz tła
+                    double currentX = frameX + padding + textPaddingX;
+                    double lineFontSizeSp = line.getFontSize() != null ? line.getFontSize() : defaultFontSizeSp;
+                    double baseFontSize = lineFontSizeSp * sp;
+                    double lineHeight = baseFontSize * 1.3;
+
+                    for (LyricFragment fragment : line.getFragments()) {
+                        String text = fragment.getText();
+                        if (text == null || text.isEmpty()) continue;
+
+                        FontWeight weight = fragment.isBold() ? FontWeight.BOLD : FontWeight.NORMAL;
+                        FontPosture posture = fragment.isItalic() ? FontPosture.ITALIC : FontPosture.REGULAR;
+
+                        Font font = getFont(fontFamily, weight, posture, baseFontSize);
+                        gc.setFont(font);
+                        gc.setFill(Color.BLACK);
+                        gc.fillText(text, currentX, lineY);
+
+                        double textWidth = computeTextWidth(text, font);
+
+                        if (fragment.isUnderline()) {
+                            gc.setStroke(Color.BLACK);
+                            gc.setLineWidth(1.0 * sp);
+                            double lineStrokeY = lineY + baseFontSize * 0.95;
+                            gc.strokeLine(currentX, lineStrokeY, currentX + textWidth, lineStrokeY);
+                        }
+
+                        currentX += textWidth;
+                    }
+
+                    lineY += lineHeight;
+                }
+            }
+
+            // Przesunięcie pozycji rysowania o pełną wysokość bloku oraz odstęp między zwrotkami
+            currentY += totalVerseHeight + verseSpacing;
+            totalContentHeight += totalVerseHeight + verseSpacing;
+        }
+
+        // 3. Rysowanie wskaźnika przewijania (Scrollbar Canvas)
+        if (totalContentHeight > contentHeight) {
+            double scrollbarWidth = 0.3 * sp;
+            double scrollbarX = frameX + frameWidth - scrollbarWidth - (0.1 * sp);
+
+            gc.setFill(Color.rgb(210, 210, 210, 0.5));
+            gc.fillRoundRect(scrollbarX, contentY, scrollbarWidth, contentHeight, scrollbarWidth, scrollbarWidth);
+
+            double visibleRatio = contentHeight / totalContentHeight;
+            double thumbHeight = Math.max(1.2 * sp, contentHeight * visibleRatio);
+            double maxScroll = totalContentHeight - contentHeight;
+            double thumbY = contentY + (scrollY / maxScroll) * (contentHeight - thumbHeight);
+
+            gc.setFill(Color.rgb(100, 100, 100, 0.8));
+            gc.fillRoundRect(scrollbarX, thumbY, scrollbarWidth, thumbHeight, scrollbarWidth, scrollbarWidth);
+        }
+
+        gc.restore();
+    }
+
+    private double computeTextWidth(String text, Font font) {
+        if (text == null || text.isEmpty()) return 0;
+        Text textNode = new Text(text);
+        textNode.setFont(font);
+        return textNode.getLayoutBounds().getWidth();
     }
 
     private void drawHeaderFrame(GraphicsContext gc, HeaderFrameLayout frame, double frameX, double contentY, double frameWidth, double sp) {
@@ -75,70 +205,6 @@ public class FrameView extends ComponentView {
         drawSubtitle(gc, frame, centerX, contentY, sp);
         drawComposer(gc, frame, rightX, contentY, sp);
         gc.restore();
-    }
-
-    private void drawTextFrame(GraphicsContext gc, TextFrameLayout frame, double frameX, double contentY, double sp) {
-        if (frame == null || frame.getVerses() == null || frame.getVerses().isEmpty()) return;
-
-        gc.save();
-        gc.setTextAlign(TextAlignment.LEFT);
-        gc.setTextBaseline(VPos.TOP);
-
-        double currentY = contentY;
-        double defaultFontSizeSp = 1.8;
-        String fontFamily = "Times New Roman";
-
-        for (TextFrameVerse verse : frame.getVerses()) {
-            if (verse.getLines() == null) continue;
-
-            for (TextLine line : verse.getLines()) {
-                if (line.getFragments() == null) continue;
-
-                double currentX = frameX;
-
-                double lineFontSizeSp = line.getFontSize() != null ? line.getFontSize() : defaultFontSizeSp;
-                double baseFontSize = lineFontSizeSp * sp;
-                double lineHeight = baseFontSize * 1.3;
-
-                for (LyricFragment fragment : line.getFragments()) {
-                    String text = fragment.getText();
-                    if (text == null || text.isEmpty()) continue;
-
-                    FontWeight weight = fragment.isBold() ? FontWeight.BOLD : FontWeight.NORMAL;
-                    FontPosture posture = fragment.isItalic() ? FontPosture.ITALIC : FontPosture.REGULAR;
-
-                    Font font = getFont(fontFamily, weight, posture, baseFontSize);
-                    gc.setFont(font);
-                    gc.setFill(Color.BLACK);
-                    gc.fillText(text, currentX, currentY);
-
-                    double textWidth = computeTextWidth(text, font);
-
-                    if (fragment.isUnderline()) {
-                        gc.setStroke(Color.BLACK);
-                        gc.setLineWidth(1.0 * sp);
-                        double lineY = currentY + baseFontSize * 0.95;
-                        gc.strokeLine(currentX, lineY, currentX + textWidth, lineY);
-                    }
-
-                    currentX += textWidth;
-                }
-
-                currentY += lineHeight;
-            }
-
-            // Odstęp między zwrotkami w sp
-            currentY += 1.0 * sp;
-        }
-
-        gc.restore();
-    }
-
-    private double computeTextWidth(String text, Font font) {
-        if (text == null || text.isEmpty()) return 0;
-        Text textNode = new Text(text);
-        textNode.setFont(font);
-        return textNode.getLayoutBounds().getWidth();
     }
 
     private void drawNumber(GraphicsContext gc, HeaderFrameLayout frame, double x, double y, double sp) {

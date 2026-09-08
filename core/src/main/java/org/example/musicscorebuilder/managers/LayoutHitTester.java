@@ -1,9 +1,12 @@
 package org.example.musicscorebuilder.managers;
 
 import org.example.musicscorebuilder.components.frames.FrameLayout;
+import org.example.musicscorebuilder.components.frames.TextFrameLayout;
 import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.music.*;
+import org.example.musicscorebuilder.components.music.frames.TextFrameVerse;
+import org.example.musicscorebuilder.components.music.frames.TextLine;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -636,5 +639,54 @@ public class LayoutHitTester {
         if (nl == null) return new Point(0, 0);
 
         return getLyricAbsolutePosition(scoreLayout, nl, verse);
+    }
+
+    public static int findClickedVerseNumber(TextFrameLayout textFrame, double modelY, List<PageLayout> pages) {
+        if (textFrame == null || textFrame.getVerses() == null || textFrame.getVerses().isEmpty()) {
+            return -1;
+        }
+
+        double pageY = 0.0;
+        for (PageLayout page : pages) {
+            if (page.getFrames() != null && page.getFrames().contains(textFrame)) {
+                pageY = page.getY();
+                break;
+            }
+        }
+
+        double contentY = pageY + textFrame.getContentY();
+        double padding = textFrame.getPadding();
+        double verseSpacing = textFrame.getVerseSpacing();
+        double textPaddingY = textFrame.getVersePaddingY();
+        double defaultFontSize = textFrame.getVerseFontSize();
+
+        double scrollY = 0.0;
+        try {
+            var method = textFrame.getClass().getMethod("getScrollY");
+            Object val = method.invoke(textFrame);
+            if (val instanceof Number num) scrollY = num.doubleValue();
+        } catch (Exception ignored) {}
+
+        double currentY = contentY + padding - scrollY;
+
+        for (TextFrameVerse verse : textFrame.getVerses()) {
+            if (verse.getLines() == null) continue;
+
+            double verseTextHeight = 0;
+            for (TextLine line : verse.getLines()) {
+                double lineFontSize = line.getFontSize() != null ? line.getFontSize() : defaultFontSize;
+                verseTextHeight += lineFontSize * 1.3;
+            }
+
+            double totalVerseHeight = verseTextHeight + (2 * textPaddingY);
+
+            if (modelY >= currentY && modelY <= currentY + totalVerseHeight) {
+                return verse.getNumber();
+            }
+
+            currentY += totalVerseHeight + verseSpacing;
+        }
+
+        return -1;
     }
 }

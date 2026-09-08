@@ -16,7 +16,6 @@ public class Verse {
         this.number = number;
     }
 
-
     public int getNumber() { return number; }
     public Map<Note, Lyric> getSyllables() { return syllables; }
 
@@ -67,14 +66,44 @@ public class Verse {
     }
 
     public TextFrameVerse toTextFrameVerse() {
+        return toTextFrameVerse(null);
+    }
+
+    public TextFrameVerse toTextFrameVerse(Map<Note, Integer> noteToSystemMap) {
         List<TextLine> lines = new ArrayList<>();
         TextLine currentLine = new TextLine();
+        Integer activeSystemIndex = null;
+        Double lastFontSize = null;
 
-        for (Lyric lyric : syllables.values()) {
+        for (Map.Entry<Note, Lyric> entry : syllables.entrySet()) {
+            Note note = entry.getKey();
+            Lyric lyric = entry.getValue();
             if (lyric == null || lyric.getFragments() == null) continue;
 
-            if (currentLine.getFontSize() == null && lyric.getFontSize() != null) {
-                currentLine.setFontSize(lyric.getFontSize());
+            if (lyric.getFontSize() != null) {
+                lastFontSize = lyric.getFontSize();
+            }
+
+            Integer noteSystemIndex = (noteToSystemMap != null) ? noteToSystemMap.get(note) : null;
+
+            // ZMIANA SYSTEMU = NOWA LINIA TEKSTU
+            if (noteSystemIndex != null && activeSystemIndex != null && !noteSystemIndex.equals(activeSystemIndex)) {
+                if (!currentLine.getFragments().isEmpty()) {
+                    lines.add(currentLine);
+                    currentLine = new TextLine();
+
+                    if (lastFontSize != null) {
+                        currentLine.setFontSize(lastFontSize);
+                    }
+                }
+            }
+
+            if (noteSystemIndex != null) {
+                activeSystemIndex = noteSystemIndex;
+            }
+
+            if (currentLine.getFontSize() == null && lastFontSize != null) {
+                currentLine.setFontSize(lastFontSize);
             }
 
             for (LyricFragment fragment : lyric.getFragments()) {

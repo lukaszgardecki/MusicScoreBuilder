@@ -80,8 +80,23 @@ public class ScoreStyle {
     private static final double EDIT_CURSOR_BOX_WIDTH                       = 2.0;
     private static final double EDIT_CURSOR_PADDING                         = 0.8;
 
+    private static final double FRAME_DEF_HEIGHT                            = 15.0;
     private static final double FRAME_DEF_MARGIN_TOP                        = 4.0;
     private static final double FRAME_DEF_MARGIN_BOTTOM                     = 4.0;
+    private static final double FRAME_STROKE_THICKNESS                      = 0.15;
+    private static final double FRAME_STROKE_DASH_LENGTH                    = 0.4;
+    private static final double FRAME_STROKE_SPACE_LENGTH                   = 0.3;
+    private static final String FRAME_STROKE_COLOR                          = "#a0a0a4";
+
+    private static final double TEXT_FRAME_DEF_HEIGHT                       = 80.0;
+    private static final double TEXT_FRAME_DEF_MARGIN_TOP                   = 10.0;
+    private static final double TEXT_FRAME_PADDING                          = 0;
+    private static final double TEXT_FRAME_VERSE_SPACING                    = 1.2;
+    private static final double TEXT_FRAME_VERSE_PADDING_X                  = 0.8;
+    private static final double TEXT_FRAME_VERSE_PADDING_Y                  = 0.8;
+    private static final double TEXT_FRAME_VERSE_CORNER_RADIUS              = 2.0;
+    private static final double TEXT_FRAME_VERSE_FONT_SIZE                  = 1.8;
+
     private static final double HEADER_DEF_NUMBER_NEW_FONT_SIZE             = 4.5;
     private static final double HEADER_DEF_NUMBER_OLD_FONT_SIZE             = 3.8;
     private static final double HEADER_DEF_TITLE_FONT_SIZE                  = 4.5;
@@ -96,12 +111,6 @@ public class ScoreStyle {
     private static final double HEADER_DEF_NUM_BOX_PADDING_Y                = 1.2;
 
     private static final double FOOTER_DEF_PAGE_NUM_FONT_SIZE               = 2.0;
-
-    private static final double FRAME_DEF_HEIGHT                            = 15.0;
-    private static final double FRAME_STROKE_THICKNESS                      = 0.15;
-    private static final double FRAME_STROKE_DASH_LENGTH                    = 0.4;
-    private static final double FRAME_STROKE_SPACE_LENGTH                   = 0.3;
-    private static final String FRAME_STROKE_COLOR                          = "#a0a0a4";
 
     private static final double TIE_MAX_THICKNESS                           = 0.2;
     private static final double SLUR_MAX_THICKNESS                          = 0.3;
@@ -169,7 +178,23 @@ public class ScoreStyle {
     private double selectionFrameExtraHeight = SELECTION_FRAME_EXTRA_HEIGHT;
     private double selectionFrameRadius = SELECTION_FRAME_RADIUS;
 
+    private double frameDefHeight = FRAME_DEF_HEIGHT;
+    private double frameDefMarginTop = FRAME_DEF_MARGIN_TOP;
     private double frameDefMarginBottom = FRAME_DEF_MARGIN_BOTTOM;
+    private double frameStrokeThickness = FRAME_STROKE_THICKNESS;
+    private double frameStrokeDashLength = FRAME_STROKE_DASH_LENGTH;
+    private double frameStrokeSpaceLength = FRAME_STROKE_SPACE_LENGTH;
+    private String frameStrokeColor = FRAME_STROKE_COLOR;
+
+    private double textFrameDefHeight = TEXT_FRAME_DEF_HEIGHT;
+    private double textFrameDefMarginTop = TEXT_FRAME_DEF_MARGIN_TOP;
+    private double textFramePadding = TEXT_FRAME_PADDING;
+    private double textFrameVerseSpacing = TEXT_FRAME_VERSE_SPACING;
+    private double textFrameVersePaddingX = TEXT_FRAME_VERSE_PADDING_X;
+    private double textFrameVersePaddingY = TEXT_FRAME_VERSE_PADDING_Y;
+    private double textFrameVerseCornerRadius = TEXT_FRAME_VERSE_CORNER_RADIUS;
+    private double textFrameVerseFontSize = TEXT_FRAME_VERSE_FONT_SIZE;
+
     private double headerDefNumberNewFontSize = HEADER_DEF_NUMBER_NEW_FONT_SIZE;
     private double headerDefNumberOldFontSize = HEADER_DEF_NUMBER_OLD_FONT_SIZE;
     private double headerDefTitleFontSize = HEADER_DEF_TITLE_FONT_SIZE;
@@ -184,13 +209,6 @@ public class ScoreStyle {
     private double headerDefNumBoxPaddingY = HEADER_DEF_NUM_BOX_PADDING_Y;
 
     private double footerDefPageNumFontSize = FOOTER_DEF_PAGE_NUM_FONT_SIZE;
-
-    private double frameDefHeight = FRAME_DEF_HEIGHT;
-    private double frameDefMarginTop = FRAME_DEF_MARGIN_TOP;
-    private double frameStrokeThickness = FRAME_STROKE_THICKNESS;
-    private double frameStrokeDashLength = FRAME_STROKE_DASH_LENGTH;
-    private double frameStrokeSpaceLength = FRAME_STROKE_SPACE_LENGTH;
-    private String frameStrokeColor = FRAME_STROKE_COLOR;
 
     public double getPageSpacing() { return staffSpacingScale * pageSpacing; }
     public double getStaffSpacing() { return staffSpacingScale * staffSpacing; }
@@ -272,6 +290,15 @@ public class ScoreStyle {
     public double getFrameStrokeDashLength() { return frameStrokeDashLength; }
     public double getFrameStrokeSpaceLength() { return frameStrokeSpaceLength; }
     public String getFrameStrokeColor() { return frameStrokeColor; }
+
+    public double getTextFrameDefHeight() { return textFrameDefHeight; }
+    public double getTextFrameDefMarginTop() { return textFrameDefMarginTop; }
+    public double getTextFramePadding() { return textFramePadding; }
+    public double getTextFrameVerseSpacing() { return textFrameVerseSpacing; }
+    public double getTextFrameVersePaddingX() { return textFrameVersePaddingX; }
+    public double getTextFrameVersePaddingY() { return textFrameVersePaddingY; }
+    public double getTextFrameVerseCornerRadius() { return textFrameVerseCornerRadius; }
+    public double getTextFrameVerseFontSize() { return textFrameVerseFontSize; }
 
     public double getTieMaxThickness() { return staffSpacingScale * TIE_MAX_THICKNESS; }
     public double getSlurMaxThickness() { return staffSpacingScale * SLUR_MAX_THICKNESS; }
