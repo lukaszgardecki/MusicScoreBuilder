@@ -593,4 +593,47 @@ public class LayoutHitTester {
         }
         return new Point(0, 0);
     }
+
+    public static List<NoteLayout> getAllNoteLayouts(ScoreLayout scoreLayout) {
+        if (scoreLayout == null || scoreLayout.getPages() == null) return Collections.emptyList();
+        List<NoteLayout> list = new ArrayList<>();
+        for (PageLayout page : scoreLayout.getPages()) {
+            if (page.getSystems() == null) continue;
+            for (SystemLayout sys : page.getSystems()) {
+                if (sys.getMeasures() == null) continue;
+                for (MeasureLayout m : sys.getMeasures()) {
+                    if (m.getSegments() == null) continue;
+                    for (SegmentLayout seg : m.getSegments()) {
+                        if (seg.getElements() == null) continue;
+                        for (ElementLayout el : seg.getElements()) {
+                            if (el instanceof NoteLayout nl && nl.getNote() != null) {
+                                list.add(nl);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return list;
+    }
+
+    public static NoteLayout findNoteLayout(ScoreLayout scoreLayout, Note targetNote) {
+        if (scoreLayout == null || targetNote == null) return null;
+        List<NoteLayout> allNotes = getAllNoteLayouts(scoreLayout);
+        for (NoteLayout nl : allNotes) {
+            if (nl.getNote() == targetNote) {
+                return nl;
+            }
+        }
+        return null;
+    }
+
+    public static Point getLyricAbsolutePosition(ScoreLayout scoreLayout, Note targetNote, int verse) {
+        if (scoreLayout == null || targetNote == null) return new Point(0, 0);
+
+        NoteLayout nl = findNoteLayout(scoreLayout, targetNote);
+        if (nl == null) return new Point(0, 0);
+
+        return getLyricAbsolutePosition(scoreLayout, nl, verse);
+    }
 }

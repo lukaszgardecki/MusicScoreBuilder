@@ -348,15 +348,20 @@ public class LyricEditorManager {
     }
 
     public void updatePosition() {
-        if (!isEditing || currentNoteLayout == null) return;
+        if (!isEditing || currentNoteLayout == null || currentNoteLayout.getNote() == null) return;
 
         ScoreLayout layout = getScoreLayout();
         if (layout == null) return;
 
+        NoteLayout fresh = LayoutHitTester.findNoteLayout(layout, currentNoteLayout.getNote());
+        if (fresh != null) {
+            this.currentNoteLayout = fresh;
+        }
+
         ensureInputFieldAttached();
         rebuildTextFlow();
 
-        LayoutHitTester.Point modelPos = LayoutHitTester.getLyricAbsolutePosition(layout, currentNoteLayout, currentVerse);
+        LayoutHitTester.Point modelPos = LayoutHitTester.getLyricAbsolutePosition(layout, currentNoteLayout.getNote(), currentVerse);
         double viewX = modelToViewX(modelPos.x());
         double viewY = modelToViewY(modelPos.y());
 
@@ -378,6 +383,10 @@ public class LyricEditorManager {
 
         editorContainer.resizeRelocate(finalX, viewY, fieldWidth, fieldHeight);
         updateCustomCaretPosition();
+    }
+
+    private List<NoteLayout> getScoreNoteLayouts() {
+        return LayoutHitTester.getAllNoteLayouts(getScoreLayout());
     }
 
     private void commitCurrentText(SyllableType type, boolean forceTypeChange) {
@@ -632,30 +641,6 @@ public class LyricEditorManager {
 
     private void commitAndPrevious() {
         navigateTo(findPreviousNoteLayout(currentNoteLayout), SyllableType.SINGLE, false);
-    }
-
-    private List<NoteLayout> getScoreNoteLayouts() {
-        ScoreLayout score = getScoreLayout();
-        if (score == null) return Collections.emptyList();
-
-        List<NoteLayout> list = new ArrayList<>();
-        for (PageLayout page : score.getPages()) {
-            if (page.getSystems() == null) continue;
-            for (SystemLayout sys : page.getSystems()) {
-                if (sys.getMeasures() == null) continue;
-                for (MeasureLayout m : sys.getMeasures()) {
-                    if (m.getSegments() == null) continue;
-                    for (SegmentLayout seg : m.getSegments()) {
-                        for (ElementLayout el : seg.getElements()) {
-                            if (el instanceof NoteLayout nl && nl.getNote() != null) {
-                                list.add(nl);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return list;
     }
 
     private NoteLayout findNextNoteLayout(NoteLayout current) {
