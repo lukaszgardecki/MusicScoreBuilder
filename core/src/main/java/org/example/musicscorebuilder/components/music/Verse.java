@@ -11,6 +11,7 @@ import java.util.Map;
 public class Verse {
     private final int number;
     private final Map<Note, Lyric> syllables = new LinkedHashMap<>();
+    private boolean customLineBreaks = false;
 
     public Verse(int number) {
         this.number = number;
@@ -19,13 +20,11 @@ public class Verse {
     public int getNumber() { return number; }
     public Map<Note, Lyric> getSyllables() { return syllables; }
 
-    public void addSyllable(Note note, Lyric lyric) {
-        syllables.put(note, lyric);
-    }
+    public boolean isCustomLineBreaks() { return customLineBreaks; }
+    public void setCustomLineBreaks(boolean customLineBreaks) { this.customLineBreaks = customLineBreaks; }
 
-    public void removeSyllable(Note note) {
-        syllables.remove(note);
-    }
+    public void addSyllable(Note note, Lyric lyric) { syllables.put(note, lyric); }
+    public void removeSyllable(Note note) { syllables.remove(note); }
 
     public String getPreviewText(int limit) {
         if (syllables.isEmpty()) {
@@ -65,15 +64,12 @@ public class Verse {
         return resultText;
     }
 
-    public TextFrameVerse toTextFrameVerse() {
-        return toTextFrameVerse(null);
-    }
-
     public TextFrameVerse toTextFrameVerse(Map<Note, Integer> noteToSystemMap) {
         List<TextLine> lines = new ArrayList<>();
         TextLine currentLine = new TextLine();
         Integer activeSystemIndex = null;
         Double lastFontSize = null;
+        boolean previousLyricBreak = false;
 
         for (Map.Entry<Note, Lyric> entry : syllables.entrySet()) {
             Note note = entry.getKey();
@@ -86,8 +82,16 @@ public class Verse {
 
             Integer noteSystemIndex = (noteToSystemMap != null) ? noteToSystemMap.get(note) : null;
 
-            // ZMIANA SYSTEMU = NOWA LINIA TEKSTU
-            if (noteSystemIndex != null && activeSystemIndex != null && !noteSystemIndex.equals(activeSystemIndex)) {
+            // Jeśli customLineBreaks == false -> łamiemy wg systemów
+            boolean isSystemChanged = !customLineBreaks
+                    && noteSystemIndex != null
+                    && activeSystemIndex != null
+                    && !noteSystemIndex.equals(activeSystemIndex);
+
+            // Jeśli customLineBreaks == true -> łamiemy TYLKO po ręcznym Enterze
+            boolean isManualBreak = customLineBreaks && previousLyricBreak;
+
+            if (isSystemChanged || isManualBreak) {
                 if (!currentLine.getFragments().isEmpty()) {
                     lines.add(currentLine);
                     currentLine = new TextLine();
@@ -123,6 +127,8 @@ public class Verse {
 
                 currentLine.addFragment(new LyricFragment(" ", bold, italic, underline));
             }
+
+            previousLyricBreak = lyric.isLineBreakAfter();
         }
 
         if (!currentLine.getFragments().isEmpty()) {
@@ -130,5 +136,9 @@ public class Verse {
         }
 
         return new TextFrameVerse(this.number, lines);
+    }
+
+    public TextFrameVerse toTextFrameVerse() {
+        return toTextFrameVerse(null);
     }
 }

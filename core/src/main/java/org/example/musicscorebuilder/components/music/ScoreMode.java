@@ -8,6 +8,8 @@ import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.music.frames.Frame;
 import org.example.musicscorebuilder.components.music.frames.HeaderFrame;
 import org.example.musicscorebuilder.components.music.frames.TextFrame;
+import org.example.musicscorebuilder.components.music.frames.TextFrameVerse;
+import org.example.musicscorebuilder.components.music.frames.VerseTextMapper;
 import org.example.musicscorebuilder.components.music.util.MeasureTimeSignatureAdjuster;
 
 import java.util.*;
@@ -211,7 +213,11 @@ public class ScoreMode {
         for (Note note : getAllNotes()) {
             if (note.getLyrics() != null) {
                 note.getLyrics().forEach(lyric -> {
-                    getOrCreateVerse(lyric.getVerse()).addSyllable(note, lyric);
+                    Verse verse = getOrCreateVerse(lyric.getVerse());
+                    verse.addSyllable(note, lyric);
+                    if (lyric.isLineBreakAfter()) {
+                        verse.setCustomLineBreaks(true);
+                    }
                 });
             }
         }

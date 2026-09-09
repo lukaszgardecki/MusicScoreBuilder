@@ -20,6 +20,10 @@ public class Lyric {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Double fontSize = null;
 
+    @JsonProperty("break")
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    private boolean lineBreakAfter = false;
+
     public Lyric() {
         this.fragments = new ArrayList<>();
     }
@@ -29,18 +33,25 @@ public class Lyric {
             @JsonProperty("fragments") List<LyricFragment> fragments,
             @JsonProperty("type") SyllableType type,
             @JsonProperty("verse") Integer verse,
-            @JsonProperty("fontSize") Double fontSize
+            @JsonProperty("fontSize") Double fontSize,
+            @JsonProperty("break") Boolean lineBreakAfter
     ) {
         this.fragments = fragments != null ? fragments : new ArrayList<>();
         this.type = type != null ? type : SyllableType.SINGLE;
         this.verse = (verse != null && verse > 0) ? verse : 1;
+        this.lineBreakAfter = lineBreakAfter != null && lineBreakAfter;
         setFontSize(fontSize);
     }
 
     public Lyric(List<LyricFragment> fragments, SyllableType type, int verse, Double fontSize) {
+        this(fragments, type, verse, fontSize, false);
+    }
+
+    public Lyric(List<LyricFragment> fragments, SyllableType type, int verse, Double fontSize, boolean lineBreakAfter) {
         this.fragments = fragments != null ? fragments : new ArrayList<>();
         this.type = type != null ? type : SyllableType.SINGLE;
         this.verse = verse > 0 ? verse : 1;
+        this.lineBreakAfter = lineBreakAfter;
         setFontSize(fontSize);
     }
 
@@ -73,4 +84,7 @@ public class Lyric {
             this.fontSize = Math.round(fontSize * 100.0) / 100.0;
         }
     }
+
+    public boolean isLineBreakAfter() { return lineBreakAfter; }
+    public void setLineBreakAfter(boolean lineBreakAfter) { this.lineBreakAfter = lineBreakAfter; }
 }
