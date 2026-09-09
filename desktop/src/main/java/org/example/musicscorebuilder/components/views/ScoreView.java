@@ -117,7 +117,7 @@ public class ScoreView extends Canvas {
         requestDraw();
     }
 
-    private void requestDraw() {
+    void requestDraw() {
         needsRedraw = true;
     }
 

@@ -2,13 +2,24 @@ package org.example.musicscorebuilder.components.views;
 
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
+import org.example.musicscorebuilder.components.frames.TextFrameLayout;
+import org.example.musicscorebuilder.components.layout.PageLayout;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
 import org.example.musicscorebuilder.managers.LyricEditorManager;
 import org.example.musicscorebuilder.managers.ModeManager;
+import org.example.musicscorebuilder.managers.ScoreStateManager;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class BackgroundView extends Pane {
     private final ModeManager modeManager = ModeManager.getInstance();
     private final LyricEditorManager lyricEditorManager = LyricEditorManager.getInstance();
+
+    private final Map<String, TextFrameView> textFrameOverlays = new HashMap<>();
+
     private ScoreView scoreView;
     private double lastX;
     private double lastY;
@@ -47,12 +58,14 @@ public class BackgroundView extends Pane {
             if (scoreView != null) {
                 scoreView.update(scoreView.getScoreLayout());
                 scoreView.setViewportTransform(offsetX, offsetY, zoom);
+                updateTextFrameOverlays();
             }
         });
     }
 
     public void updateContent(ScoreLayout newLayout) {
         if (newLayout == null) {
+            clearOverlays();
             getChildren().clear();
             scoreView = null;
             return;
@@ -64,13 +77,21 @@ public class BackgroundView extends Pane {
 
             scoreView.widthProperty().bind(this.widthProperty());
             scoreView.heightProperty().bind(this.heightProperty());
-            scoreView.widthProperty().addListener((obs, oldVal, newVal) -> centerFirstPage());
-            scoreView.heightProperty().addListener((obs, oldVal, newVal) -> centerFirstPage());
+            scoreView.widthProperty().addListener((obs, oldVal, newVal) -> {
+                centerFirstPage();
+                updateTextFrameOverlays();
+            });
+            scoreView.heightProperty().addListener((obs, oldVal, newVal) -> {
+                centerFirstPage();
+                updateTextFrameOverlays();
+            });
 
             scoreView.setViewportTransform(offsetX, offsetY, zoom);
         } else {
             scoreView.update(newLayout);
         }
+
+        updateTextFrameOverlays();
     }
 
     private void centerFirstPage() {
@@ -92,6 +113,7 @@ public class BackgroundView extends Pane {
         scoreView.setViewportTransform(offsetX, offsetY, zoom);
 
         updateLyricPosition();
+        updateTextFrameOverlays();
     }
 
     private void enableDrag() {
@@ -124,6 +146,7 @@ public class BackgroundView extends Pane {
                 }
 
                 updateLyricPosition();
+                updateTextFrameOverlays();
             }
         });
     }
@@ -155,7 +178,62 @@ public class BackgroundView extends Pane {
             scoreView.setViewportTransform(offsetX, offsetY, zoom);
 
             updateLyricPosition();
+            updateTextFrameOverlays();
         });
+    }
+
+    public void updateTextFrameOverlays() {
+        if (scoreView == null || scoreView.getScoreLayout() == null) {
+            clearOverlays();
+            return;
+        }
+
+        ScoreLayout layout = scoreView.getScoreLayout();
+        double sp = getActualSp();
+        int selectedVerseNum = ScoreStateManager.getInstance().getSelectedVerseNumber();
+
+        Set<String> activeKeys = new HashSet<>();
+
+        for (int pIdx = 0; pIdx < layout.getPages().size(); pIdx++) {
+            PageLayout page = layout.getPages().get(pIdx);
+            if (page.getBlocks() == null) continue;
+
+            for (int bIdx = 0; bIdx < page.getBlocks().size(); bIdx++) {
+                var block = page.getBlocks().get(bIdx);
+                if (block instanceof TextFrameLayout textFrame) {
+                    String frameKey = "p" + pIdx + "_b" + bIdx;
+                    activeKeys.add(frameKey);
+
+                    TextFrameView textFrameView = textFrameOverlays.computeIfAbsent(frameKey, key -> {
+                        TextFrameView view = new TextFrameView(() -> {
+                            if (scoreView != null) scoreView.requestDraw();
+                        });
+                        getChildren().add(view);
+                        return view;
+                    });
+
+                    double screenX = toScreenX(page.getX() + textFrame.getX());
+                    double screenY = toScreenY(page.getY() + textFrame.getContentY());
+                    double frameW = textFrame.getWidth() * sp;
+                    double frameH = textFrame.getContentHeight() * sp;
+
+                    textFrameView.update(textFrame, screenX, screenY, frameW, frameH, sp, selectedVerseNum);
+                }
+            }
+        }
+
+        textFrameOverlays.keySet().removeIf(key -> {
+            if (!activeKeys.contains(key)) {
+                getChildren().remove(textFrameOverlays.get(key));
+                return true;
+            }
+            return false;
+        });
+    }
+
+    private void clearOverlays() {
+        textFrameOverlays.values().forEach(this.getChildren()::remove);
+        textFrameOverlays.clear();
     }
 
     public boolean wasLastMousePressJustClick() { return !wasDragged; }

@@ -92,8 +92,8 @@ public class ScoreStyle {
     private static final double TEXT_FRAME_DEF_MARGIN_TOP                   = 10.0;
     private static final double TEXT_FRAME_PADDING                          = 0;
     private static final double TEXT_FRAME_VERSE_SPACING                    = 1.2;
-    private static final double TEXT_FRAME_VERSE_PADDING_X                  = 0.8;
-    private static final double TEXT_FRAME_VERSE_PADDING_Y                  = 0.8;
+    private static final double TEXT_FRAME_VERSE_PADDING_X                  = 1.5;
+    private static final double TEXT_FRAME_VERSE_PADDING_Y                  = 1.5;
     private static final double TEXT_FRAME_VERSE_CORNER_RADIUS              = 2.0;
     private static final double TEXT_FRAME_VERSE_FONT_SIZE                  = 1.8;
 

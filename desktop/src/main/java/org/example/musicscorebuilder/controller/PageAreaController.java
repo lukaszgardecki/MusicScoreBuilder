@@ -175,13 +175,6 @@ public class PageAreaController {
             if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 1) {
                 Selectable clickedElement = LayoutHitTester.findClickedElement(pages, modelX, modelY);
 
-                if (clickedElement instanceof TextFrameLayout textFrame) {
-                    int selectedVerse = LayoutHitTester.findClickedVerseNumber(textFrame, modelY, pages);
-                    if (selectedVerse != -1) {
-                        stateManager.setSelectedVerseNumber(selectedVerse);
-                    }
-                }
-
                 boolean isAdditive = event.isShortcutDown() || event.isControlDown() || event.isMetaDown();
                 stateManager.setSelected(clickedElement, isAdditive);
 

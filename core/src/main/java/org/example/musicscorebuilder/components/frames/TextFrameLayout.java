@@ -16,6 +16,8 @@ public class TextFrameLayout extends FrameLayout {
         this.textFrame = frameData;
         this.marginTop = frameData.getMarginTop() != null ? frameData.getMarginTop() : style.getTextFrameDefMarginTop();
         this.contentHeight = frameData.getHeight() != null ? frameData.getHeight() : style.getTextFrameDefHeight();
+        this.contentY = this.y + this.marginTop;
+        this.height = this.contentHeight + this.marginTop + this.marginBottom;
         this.padding = style.getTextFramePadding();
         this.verseSpacing = style.getTextFrameVerseSpacing();
         this.versePaddingX = style.getTextFrameVersePaddingX();
