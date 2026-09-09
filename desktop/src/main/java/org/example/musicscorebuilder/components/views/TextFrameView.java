@@ -227,7 +227,7 @@ public class TextFrameView extends ScrollPane {
         if (targetVerse != null) {
             CustomVerseEditDialog dialog = new CustomVerseEditDialog();
             dialog.setTitle("Edycja zwrotki")
-                    .setHeader("Edytuj treść zwrotki " + verseNumber)
+                    .setHeader("Edytuj podział zwrotki " + verseNumber)
                     .setContent("Naciśnij Enter, aby podzielić treść zwrotki na osobne linie.")
                     .setVerseText(VerseTextMapper.toEditorText(frameVerse))
                     .setConfirmButton("Zapisz", (editedText, applyToAll) -> {

@@ -1,12 +1,9 @@
 package org.example.musicscorebuilder.managers;
 
 import org.example.musicscorebuilder.components.frames.FrameLayout;
-import org.example.musicscorebuilder.components.frames.TextFrameLayout;
 import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.music.*;
-import org.example.musicscorebuilder.components.music.frames.TextFrameVerse;
-import org.example.musicscorebuilder.components.music.frames.TextLine;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -101,8 +101,4 @@ public class VerseTextMapper {
                 .replaceAll("[^a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ0-9]", "")
                 .toLowerCase();
     }
-
-    private static String stripSpaces(CharSequence cs) {
-        return cs.toString().replaceAll("\\s+", "");
-    }
 }
