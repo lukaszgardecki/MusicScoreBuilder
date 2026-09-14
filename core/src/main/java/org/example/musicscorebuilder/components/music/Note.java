@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class Note extends NoteRestElement {
@@ -39,6 +39,7 @@ public class Note extends NoteRestElement {
     public BeamType getBeam() { return beam; }
     public boolean isTieStart() { return tieStart; }
     public boolean isTieStop() { return tieStop; }
+    public List<Lyric> getLyrics() { return new ArrayList<>(lyrics.values()); }
     public Lyric getLyric(int verse) { return lyrics.get(verse); }
 
     @JsonIgnore
@@ -94,7 +95,5 @@ public class Note extends NoteRestElement {
         parent.setDirty(true);
     }
 
-    public List<Lyric> getLyrics() {
-        return lyrics.values().stream().collect(Collectors.toList());
-    }
+
 }

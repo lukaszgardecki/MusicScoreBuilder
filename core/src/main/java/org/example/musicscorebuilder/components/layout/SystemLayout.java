@@ -44,6 +44,7 @@ public class SystemLayout implements PageBlockLayout {
     }
     public void addTie(TieLayout tie) { ties.add(tie); }
     public void addSlur(SlurLayout slur) { slurs.add(slur); }
+    public void clearSlurs() { slurs.clear(); }
 
     public PageLayout getPageLayout() { return pageLayout; }
     public Optional<BraceLayout> getBraceLayout() { return braceLayout; }

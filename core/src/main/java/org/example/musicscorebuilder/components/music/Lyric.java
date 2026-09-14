@@ -85,6 +85,10 @@ public class Lyric {
         }
     }
 
+    public boolean isConnected() {
+        var type = getType();
+        return type == SyllableType.BEGIN || type == SyllableType.MIDDLE || type == SyllableType.END;
+    }
     public boolean isLineBreakAfter() { return lineBreakAfter; }
     public void setLineBreakAfter(boolean lineBreakAfter) { this.lineBreakAfter = lineBreakAfter; }
 }

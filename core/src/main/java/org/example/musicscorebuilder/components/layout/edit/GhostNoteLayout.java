@@ -42,7 +42,7 @@ public class GhostNoteLayout extends NoteLayout {
 
         if (pitch.getAlter() != keyAlter) {
             pitch.setAlter(keyAlter);
-            refresh();
+            refreshDotsAndAccidental();
         }
     }
 

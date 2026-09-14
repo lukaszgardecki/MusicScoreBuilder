@@ -479,8 +479,6 @@ public class ScoreStateManager {
             currentPitch.setAlter(candidate.getAlter());
             currentPitch.setOctave(candidate.getOctave());
 
-            noteLayout.refreshMeasure();
-
             TiedNoteService.syncTiedNotesPitch(noteLayout);
             notifyScoreChanged();
         }

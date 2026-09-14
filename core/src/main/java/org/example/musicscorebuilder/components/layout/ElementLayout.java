@@ -29,6 +29,10 @@ public abstract class ElementLayout implements Selectable {
     @Override public StaffLayout getStaff() { return staff; }
 
     public SegmentLayout getParent() { return parent; }
+    public MeasureLayout getMeasureLayout() {
+        if (parent == null) return null;
+        return parent.getParent();
+    }
     public ScoreStyle getScoreStyle() { return style; }
     public boolean hasDynamicWidth() { return hasDynamicWidth; }
 

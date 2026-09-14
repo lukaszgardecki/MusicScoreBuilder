@@ -1,6 +1,9 @@
 package org.example.musicscorebuilder.components.music.util;
 
-import org.example.musicscorebuilder.components.layout.*;
+import org.example.musicscorebuilder.components.layout.ElementLayout;
+import org.example.musicscorebuilder.components.layout.NoteLayout;
+import org.example.musicscorebuilder.components.layout.RestLayout;
+import org.example.musicscorebuilder.components.layout.SegmentLayout;
 import org.example.musicscorebuilder.components.music.Note;
 import org.example.musicscorebuilder.components.music.Pitch;
 import org.example.musicscorebuilder.components.music.PitchStep;
@@ -33,7 +36,6 @@ public class TiedNoteService {
             Note tiedNote = tiedNoteLayout.getNote();
             if (tiedNote != null) {
                 tiedNote.setPitch(new Pitch(step, alter, octave));
-                tiedNoteLayout.refreshMeasure();
             }
         }
     }

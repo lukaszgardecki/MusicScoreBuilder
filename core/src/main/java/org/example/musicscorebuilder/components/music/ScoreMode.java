@@ -8,8 +8,6 @@ import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.music.frames.Frame;
 import org.example.musicscorebuilder.components.music.frames.HeaderFrame;
 import org.example.musicscorebuilder.components.music.frames.TextFrame;
-import org.example.musicscorebuilder.components.music.frames.TextFrameVerse;
-import org.example.musicscorebuilder.components.music.frames.VerseTextMapper;
 import org.example.musicscorebuilder.components.music.util.MeasureTimeSignatureAdjuster;
 
 import java.util.*;

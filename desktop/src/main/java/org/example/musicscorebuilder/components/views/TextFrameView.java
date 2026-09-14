@@ -2,6 +2,7 @@ package org.example.musicscorebuilder.components.views;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Group;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.Region;
@@ -22,6 +23,7 @@ import org.example.musicscorebuilder.components.music.frames.TextLine;
 import org.example.musicscorebuilder.components.music.frames.VerseTextMapper;
 import org.example.musicscorebuilder.managers.ScoreStateManager;
 
+import java.util.Locale;
 import java.util.Objects;
 
 public class TextFrameView extends ScrollPane {
@@ -147,9 +149,9 @@ public class TextFrameView extends ScrollPane {
                 linesBox.getChildren().add(lineFlow);
             }
 
-            Button editBtn = createEditButton();
-            StackPane.setAlignment(editBtn, Pos.TOP_RIGHT);
-            StackPane.setMargin(editBtn, new Insets(4, 4, 0, 0));
+            Button editBtn = createEditButton(sp);
+            StackPane.setAlignment(editBtn, Pos.CENTER_RIGHT);
+            StackPane.setMargin(editBtn, new Insets(0, 2 * sp, 0, 0));
 
             editBtn.setOnAction(e -> {
                 e.consume();
@@ -185,34 +187,41 @@ public class TextFrameView extends ScrollPane {
         return versesBox;
     }
 
-    private Button createEditButton() {
+    private Button createEditButton(double sp) {
         SVGPath icon = new SVGPath();
         icon.setContent("M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z");
         icon.setStyle("-fx-fill: #6b7280;");
 
+        double iconScale = 0.15 * sp;
+        icon.setScaleX(iconScale);
+        icon.setScaleY(iconScale);
+
+        Group iconGroup = new Group(icon);
+
         Button btn = new Button();
-        btn.setGraphic(icon);
+        btn.setGraphic(iconGroup);
         btn.setFocusTraversable(false);
-        btn.setStyle(
-                "-fx-background-color: #e5e7eb; " +
-                        "-fx-background-radius: 4px; " +
-                        "-fx-padding: 3px 5px; " +
-                        "-fx-cursor: hand;"
+
+        double btnSize = 4.0 * sp;
+        btn.setMinSize(btnSize, btnSize);
+        btn.setMaxSize(btnSize, btnSize);
+        btn.setPrefSize(btnSize, btnSize);
+
+        double radius = 0.4 * sp;
+
+        String baseStyle = String.format(Locale.US,
+                "-fx-background-color: #e5e7eb; -fx-background-radius: %.1fpx; -fx-padding: 0; -fx-alignment: center; -fx-cursor: hand;",
+                radius
         );
 
-        btn.setOnMouseEntered(e -> btn.setStyle(
-                "-fx-background-color: #d1d5db; " +
-                        "-fx-background-radius: 4px; " +
-                        "-fx-padding: 3px 5px; " +
-                        "-fx-cursor: hand;"
-        ));
+        String hoverStyle = String.format(Locale.US,
+                "-fx-background-color: #d1d5db; -fx-background-radius: %.1fpx; -fx-padding: 0; -fx-alignment: center; -fx-cursor: hand;",
+                radius
+        );
 
-        btn.setOnMouseExited(e -> btn.setStyle(
-                "-fx-background-color: #e5e7eb; " +
-                        "-fx-background-radius: 4px; " +
-                        "-fx-padding: 3px 5px; " +
-                        "-fx-cursor: hand;"
-        ));
+        btn.setStyle(baseStyle);
+        btn.setOnMouseEntered(e -> btn.setStyle(hoverStyle));
+        btn.setOnMouseExited(e -> btn.setStyle(baseStyle));
 
         return btn;
     }

@@ -1,7 +1,6 @@
 package org.example.musicscorebuilder.components.layout;
 
 import org.example.musicscorebuilder.components.music.*;
-import org.example.musicscorebuilder.managers.ScoreStateManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,14 +32,14 @@ public class NoteLayout extends NoteRestLayout {
         };
         this.stem = note.getType() == NoteType.WHOLE ? null : new StemLayout(this);
         this.singleBeam = !note.isBeamed() && note.getType().hasFlag() ? new BeamSingleLayout(this) : null;
-        refresh();
+        calculateDots();
+        this.accidental = this.note.getPitch() != null ? new AccidentalLayout(this) : null;
     }
 
     @Override public double getX() { return xOffset + parent.getMarginLeft(); }
     @Override
     public double getY() {
-        Clef clef = staff.getStaff().getDefaultClef();
-        return calculateY(clef) + staff.getY();
+        return calculateY() + staff.getY();
     }
     @Override public double getBoxY() { return getY() - (0.5 * style.getStaffLineSpacing()); }
     @Override public double getWidth() {
@@ -137,33 +136,22 @@ public class NoteLayout extends NoteRestLayout {
             this.singleBeam = null;
         }
     }
-
-    public void refresh() {
-        Clef clef = staff.getStaff().getDefaultClef();
-        calculateDots(clef);
-        this.accidental = (this.note != null && this.note.getPitch() != null) ? new AccidentalLayout(this) : null;
-        refreshLyrics();
+    public void setLyrics(List<LyricLayout> newLyrics) {
+        this.lyrics.clear();
+        if (newLyrics != null) {
+            this.lyrics.addAll(newLyrics);
+        }
     }
 
-    public void refreshMeasure() {
-        if (parent != null && parent.getParent() instanceof MeasureLayout measureLayout) {
-            for (SegmentLayout segLayout : measureLayout.getSegments()) {
-                for (ElementLayout element : segLayout.getElements()) {
-                    if (element instanceof NoteLayout noteLayout) {
-                        noteLayout.refresh();
-                    }
-                }
-            }
-        } else {
-            refresh();
-        }
+    protected void refreshDotsAndAccidental() {
+        calculateDots();
+        this.accidental = (this.note != null && this.note.getPitch() != null) ? new AccidentalLayout(this) : null;
     }
 
     public void updatePitchFromY(double newY) {
         if (parent == null) return;
 
-        Clef clef = staff.getStaff().getDefaultClef();
-        ClefType clefType = clef.getType();
+        ClefType clefType = staff.getStaff().getDefaultClef().getType();
         double spacing = style.getStaffLineSpacing();
         double topLineY = staff.getY();
         double bottomLineY = staff.getY() + (4 * spacing);
@@ -193,7 +181,7 @@ public class NoteLayout extends NoteRestLayout {
         PitchStep newStep = PitchStep.values()[stepValue];
 
         Segment segment = parent.getSegment();
-        Measure measure = (segment != null) ? segment.getParent() : null;
+        Measure measure = getMeasureLayout().getMeasure();
 
         int effectiveAlter = measure != null
                 ? measure.getEffectiveAlterBefore(segment, staff.getStaffIndex(), newStep, octave)
@@ -204,42 +192,22 @@ public class NoteLayout extends NoteRestLayout {
             this.note.getPitch().setAlter(effectiveAlter);
         }
 
-        refreshMeasure();
         parent.resolveCollisions();
     }
 
-    private void refreshLyrics() {
-        lyrics.clear();
-        if (note != null && note.getLyrics() != null) {
-            int activeVerse = ScoreStateManager.getInstance().getSelectedVerseNumber();
-            Lyric lyric = note.getLyric(activeVerse);
-
-            if (lyric != null) {
-                boolean hasText = lyric.getText() != null && !lyric.getText().trim().isEmpty();
-                boolean isConnectedType = lyric.getType() == SyllableType.BEGIN
-                        || lyric.getType() == SyllableType.MIDDLE
-                        || lyric.getType() == SyllableType.END;
-
-                if (hasText || isConnectedType) {
-                    lyrics.add(new LyricLayout(lyric, this));
-                }
-            }
-        }
-    }
-
-    private double calculateY(Clef clef) {
-        ClefType clefType = clef.getType();
+    private double calculateY() {
+        ClefType clefType = staff.getStaff().getDefaultClef().getType();
         int stepDifference = note.getPitch().getAbsoluteDiatonicStep() - clefType.getDiatonicStep();
         double referenceY = clefType.getOffsetY() * style.getStaffLineSpacing();
         double halfSpacing = 0.5 * style.getStaffLineSpacing();
         return referenceY - (stepDifference * halfSpacing);
     }
 
-    private void calculateDots(Clef clef) {
+    private void calculateDots() {
         dots.clear();
         if (note.getDots() <= 0) return;
 
-        ClefType clefType = clef.getType();
+        ClefType clefType = staff.getStaff().getDefaultClef().getType();
         int stepDifference = note.getPitch().getAbsoluteDiatonicStep() - clefType.getDiatonicStep();
 
         double spacing = style.getStaffLineSpacing();

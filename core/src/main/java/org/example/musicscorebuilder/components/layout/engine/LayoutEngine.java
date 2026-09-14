@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 public class LayoutEngine {
     private ScoreStyle style;
+    private LayoutContext layoutContext;
     private final SystemJustifier systemJustifier;
     private final Map<Measure, MeasureLayout> measureCache = new IdentityHashMap<>();
 
@@ -30,8 +31,9 @@ public class LayoutEngine {
         this.systemJustifier = new SystemJustifier();
     }
 
-    public ScoreLayout compute(ScoreMode scoreMode) {
+    public ScoreLayout compute(ScoreMode scoreMode, LayoutContext layoutContext) {
         this.style = scoreMode.getStyle();
+        this.layoutContext = layoutContext;
         invalidateCacheIfNeeded(scoreMode);
 
         noteToLayoutMap.clear();
@@ -41,7 +43,8 @@ public class LayoutEngine {
         ScoreLayout scoreLayout = new ScoreLayout(scoreMode.getScore(), style);
         PageLayout currentPage = createPageLayout(scoreLayout);
         scoreLayout.addPageLayout(currentPage);
-        SystemLayout currentSystem = addNewSystemToPage(currentPage, scoreMode);
+        BraceType systemBraceType = scoreMode.getBraceType();
+        SystemLayout currentSystem = addNewSystemToPage(currentPage, systemBraceType);
 
         Map<Integer, List<Frame>> framesByMeasureIndex = new HashMap<>();
         for (Frame frame : scoreMode.getFrames()) {
@@ -64,7 +67,7 @@ public class LayoutEngine {
             }
 
             for (Frame frameData : beforeFrames) {
-                currentSystem = insertFrameBlock(frameData, currentSystem, scoreLayout, scoreMode);
+                currentSystem = insertFrameBlock(frameData, currentSystem, scoreLayout, systemBraceType);
                 currentPage = currentSystem.getPageLayout();
             }
 
@@ -81,12 +84,13 @@ public class LayoutEngine {
 
             if (needsNewSystem) {
                 addCourtesyAttributesToLastMeasure(currentSystem, measure);
-                currentSystem = finalizeSystemAndCreateNext(currentSystem, scoreLayout, scoreMode, measureLayout);
+                currentSystem = finalizeSystemAndCreateNext(currentSystem, scoreLayout, systemBraceType, measureLayout);
                 currentPage = currentSystem.getPageLayout();
             }
 
             if (currentSystem.getMeasures().isEmpty()) {
-                add1stMeasureAttributes(scoreMode, measureLayout, scoreLayout);
+                Barline startBarline = scoreMode.getStartBarline();
+                add1stMeasureAttributes(startBarline, measureLayout, scoreLayout);
             }
 
             double startX = currentSystem.getMeasures().isEmpty() ? currentSystem.getBraceWidth() : currentSystem.getWidth();
@@ -94,7 +98,7 @@ public class LayoutEngine {
             currentSystem.add(measureLayout);
 
             for (Frame frameData : afterFrames) {
-                currentSystem = insertFrameBlock(frameData, currentSystem, scoreLayout, scoreMode);
+                currentSystem = insertFrameBlock(frameData, currentSystem, scoreLayout, systemBraceType);
                 currentPage = currentSystem.getPageLayout();
             }
         }
@@ -161,7 +165,7 @@ public class LayoutEngine {
         return availableSpace >= requiredSpace;
     }
 
-    private SystemLayout finalizeSystemAndCreateNext(SystemLayout currentSystem, ScoreLayout scoreLayout, ScoreMode scoreMode, MeasureLayout nextMeasureLayout) {
+    private SystemLayout finalizeSystemAndCreateNext(SystemLayout currentSystem, ScoreLayout scoreLayout, BraceType systemBraceType, MeasureLayout nextMeasureLayout) {
         systemJustifier.justify(currentSystem);
 
         PageLayout currentPage = currentSystem.getPageLayout();
@@ -172,14 +176,14 @@ public class LayoutEngine {
             scoreLayout.addPageLayout(currentPage);
         }
 
-        SystemLayout newSystem = addNewSystemToPage(currentPage, scoreMode);
+        SystemLayout newSystem = addNewSystemToPage(currentPage, systemBraceType);
         nextMeasureLayout.setX(newSystem.getWidth());
         nextMeasureLayout.setParent(newSystem);
 
         return newSystem;
     }
 
-    private SystemLayout addNewSystemToPage(PageLayout pageLayout, ScoreMode scoreMode) {
+    private SystemLayout addNewSystemToPage(PageLayout pageLayout, BraceType systemBraceType) {
         boolean previousIsSystem = !pageLayout.getBlocks().isEmpty()
                 && pageLayout.getBlocks().get(pageLayout.getBlocks().size() - 1) instanceof SystemLayout;
 
@@ -187,7 +191,7 @@ public class LayoutEngine {
             pageLayout.setLastSystemSpaceBelow(style.getSystemSpacing());
         }
 
-        var newSystem = new SystemLayout(pageLayout, scoreMode.getBraceType());
+        var newSystem = new SystemLayout(pageLayout, systemBraceType);
         pageLayout.addBlock(newSystem);
         return newSystem;
     }
@@ -196,7 +200,7 @@ public class LayoutEngine {
         return new PageLayout(scoreLayout, scoreLayout.getPages().size());
     }
 
-    private SystemLayout insertFrameBlock(Frame frameData, SystemLayout currentSystem, ScoreLayout scoreLayout, ScoreMode scoreMode) {
+    private SystemLayout insertFrameBlock(Frame frameData, SystemLayout currentSystem, ScoreLayout scoreLayout, BraceType systemBraceType) {
         PageLayout currentPage = currentSystem.getPageLayout();
 
         if (!currentSystem.getMeasures().isEmpty()) {
@@ -214,7 +218,7 @@ public class LayoutEngine {
         }
 
         currentPage.addBlock(frameLayout);
-        return addNewSystemToPage(currentPage, scoreMode);
+        return addNewSystemToPage(currentPage, systemBraceType);
     }
 
     private FrameLayout createFrameLayout(PageLayout parent, ScoreStyle style, Frame frameData) {
@@ -322,7 +326,7 @@ public class LayoutEngine {
         }
     }
 
-    private void add1stMeasureAttributes(ScoreMode scoreMode, MeasureLayout measureLayout, ScoreLayout scoreLayout) {
+    private void add1stMeasureAttributes(Barline startBarline, MeasureLayout measureLayout, ScoreLayout scoreLayout) {
         var isFirstMeasure = scoreLayout.getPages().size() == 1 && scoreLayout.getPages().get(0).getSystems().size() == 1;
         Measure measure = measureLayout.getMeasure();
 
@@ -341,8 +345,8 @@ public class LayoutEngine {
         }
 
         measureLayout.addSystemClef();
-        if (scoreMode.getStartBarline() != null) {
-            measureLayout.addSystemStartBarline(scoreMode.getStartBarline());
+        if (startBarline != null) {
+            measureLayout.addSystemStartBarline(startBarline);
         }
     }
 
@@ -398,6 +402,8 @@ public class LayoutEngine {
                         segmentLayout.addByStaff(staff, new BarlineLayout(barline, staff, segmentLayout));
                     } else if (element instanceof Note note) {
                         NoteLayout noteLayout = new NoteLayout(note, staff, segmentLayout);
+                        List<LyricLayout> lyrics = createSingleLyricLine(noteLayout, layoutContext.activeVerse());
+                        noteLayout.setLyrics(lyrics);
                         segmentLayout.addByStaff(staff, noteLayout);
 
                         noteToLayoutMap.put(note, noteLayout);
@@ -432,18 +438,19 @@ public class LayoutEngine {
     // ========================================================================
 
     private void postProcessLayout(ScoreMode scoreMode, ScoreLayout scoreLayout) {
-        buildNoteToSystemMap(scoreLayout);
-        updateTextFrames(scoreMode);
-        linkAllSegments(scoreLayout);
-        linkVoiceElements(scoreLayout);
-        buildTies(scoreLayout);
-        buildSlurs(scoreMode, scoreLayout);
+        List<PageLayout> pages =  scoreLayout.getPages();
+        buildNoteToSystemMap(pages);
+        updateTextFrames(scoreMode.getVerses(), scoreMode.getFrames());
+        linkAllSegments(pages);
+        linkVoiceElements(pages);
+        buildTies(pages);
+        buildSlurs(scoreMode.getSlurs(), pages);
     }
 
-    private void buildNoteToSystemMap(ScoreLayout scoreLayout) {
+    private void buildNoteToSystemMap(List<PageLayout> pages) {
         noteToSystemMap.clear();
         int systemIndex = 0;
-        for (PageLayout page : scoreLayout.getPages()) {
+        for (PageLayout page : pages) {
             for (SystemLayout system : page.getSystems()) {
                 for (MeasureLayout measure : system.getMeasures()) {
                     for (SegmentLayout segment : measure.getSegments()) {
@@ -459,25 +466,24 @@ public class LayoutEngine {
         }
     }
 
-    private void updateTextFrames(ScoreMode scoreMode) {
-        Map<Integer, Verse> versesMap = scoreMode.getVerses();
-        if (versesMap == null || versesMap.isEmpty()) return;
+    private void updateTextFrames(Map<Integer, Verse> verses, List<Frame> frames) {
+        if (verses == null || verses.isEmpty()) return;
 
         List<TextFrameVerse> updatedVerses = new ArrayList<>();
-        for (Verse verse : versesMap.values()) {
+        for (Verse verse : verses.values()) {
             updatedVerses.add(verse.toTextFrameVerse(noteToSystemMap));
         }
 
-        for (Frame frame : scoreMode.getFrames()) {
+        for (Frame frame : frames) {
             if (frame instanceof TextFrame textFrame) {
                 textFrame.setVerses(updatedVerses);
             }
         }
     }
 
-    private void linkAllSegments(ScoreLayout scoreLayout) {
+    private void linkAllSegments(List<PageLayout> pages) {
         SegmentLayout prev = null;
-        for (PageLayout page : scoreLayout.getPages()) {
+        for (PageLayout page : pages) {
             for (SystemLayout system : page.getSystems()) {
                 for (MeasureLayout measure : system.getMeasures()) {
                     for (SegmentLayout current : measure.getSegments()) {
@@ -495,11 +501,11 @@ public class LayoutEngine {
         }
     }
 
-    private void linkVoiceElements(ScoreLayout scoreLayout) {
+    private void linkVoiceElements(List<PageLayout> pages) {
         Map<Long, NoteRestLayout> lastElementMap = new HashMap<>();
         Map<Long, NoteLayout> lastNoteMap = new HashMap<>();
 
-        for (PageLayout page : scoreLayout.getPages()) {
+        for (PageLayout page : pages) {
             for (SystemLayout system : page.getSystems()) {
                 for (MeasureLayout measure : system.getMeasures()) {
                     for (SegmentLayout segment : measure.getSegments()) {
@@ -534,9 +540,9 @@ public class LayoutEngine {
         }
     }
 
-    private void buildTies(ScoreLayout scoreLayout) {
+    private void buildTies(List<PageLayout> pages) {
         buildSpanners(
-                scoreLayout,
+                pages,
                 system -> system.getTies().clear(),
                 tieStartNotes,
                 this::findNextNoteInVoice,
@@ -544,14 +550,14 @@ public class LayoutEngine {
         );
     }
 
-    private void buildSlurs(ScoreMode scoreMode, ScoreLayout scoreLayout) {
-        for (PageLayout page : scoreLayout.getPages()) {
+    private void buildSlurs(List<Slur> slurs, List<PageLayout> pages) {
+        for (PageLayout page : pages) {
             for (SystemLayout system : page.getSystems()) {
-                system.getSlurs().clear();
+                system.clearSlurs();
             }
         }
 
-        for (Slur slur : scoreMode.getSlurs()) {
+        for (Slur slur : slurs) {
             NoteLayout startLayout = noteToLayoutMap.get(slur.getStartNote());
             NoteLayout endLayout = noteToLayoutMap.get(slur.getEndNote());
 
@@ -570,13 +576,13 @@ public class LayoutEngine {
     }
 
     private void buildSpanners(
-            ScoreLayout scoreLayout,
+            List<PageLayout> pages,
             Consumer<SystemLayout> clearAction,
             List<NoteLayout> startNotes,
             Function<NoteLayout, NoteLayout> endFinder,
             TriConsumer<SystemLayout, NoteLayout, NoteLayout> addSpannerToSystem
     ) {
-        for (PageLayout page : scoreLayout.getPages()) {
+        for (PageLayout page : pages) {
             for (SystemLayout system : page.getSystems()) {
                 clearAction.accept(system);
             }
@@ -596,6 +602,36 @@ public class LayoutEngine {
                 addSpannerToSystem.accept(endSystem, null, endNote);
             }
         }
+    }
+
+//    private List<LyricLayout> createSingleLyricLine(Note note, int verseNumber) {
+//        List<Lyric> lyrics = note.getLyrics();
+//        lyrics.clear();
+//
+//        Lyric lyric = note.getLyric(verseNumber);
+//        if (lyric != null) {
+//            boolean hasText = lyric.getText() != null && !lyric.getText().trim().isEmpty();
+//            if (hasText || lyric.isConnected()) {
+//                lyrics.add(new LyricLayout(lyric, note));
+//            }
+//        }
+//    }
+
+    private List<LyricLayout> createSingleLyricLine(NoteLayout noteLayout, int verseNumber) {
+        List<LyricLayout> result = new ArrayList<>();
+        if (noteLayout == null || noteLayout.getNote() == null) return result;
+
+        Note note = noteLayout.getNote();
+        Lyric lyric = note.getLyric(verseNumber);
+
+        if (lyric != null) {
+            boolean hasText = lyric.getText() != null && !lyric.getText().trim().isEmpty();
+            if (hasText || lyric.isConnected()) {
+                result.add(new LyricLayout(lyric, noteLayout));
+            }
+        }
+
+        return result;
     }
 
     private NoteLayout findNextNoteInVoice(NoteLayout startNote) {

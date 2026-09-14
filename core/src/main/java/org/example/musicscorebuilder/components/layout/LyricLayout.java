@@ -70,21 +70,10 @@ public class LyricLayout {
         refresh();
     }
 
-    public Lyric getLyric() {
-        if (noteLayout != null && noteLayout.getNote() != null) {
-            Lyric current = noteLayout.getNote().getLyric(verse);
-            if (current != null) return current;
-        }
-        return lyric;
-    }
-
+    public Lyric getLyric() { return lyric; }
     public NoteLayout getNoteLayout() { return noteLayout; }
     public int getVerse() { return verse; }
-
-    public SyllableType getType() {
-        Lyric l = getLyric();
-        return (l != null) ? l.getType() : SyllableType.SINGLE;
-    }
+    public SyllableType getType() { return lyric.getType(); }
 
     public double getTotalWidth() {
         checkAndRefreshIfStale();
@@ -102,9 +91,8 @@ public class LyricLayout {
     }
 
     public double getFontSize() {
-        Lyric l = getLyric();
-        if (l != null && l.getFontSize() != null && l.getFontSize() > 0.0) {
-            return l.getFontSize();
+        if (lyric != null && lyric.getFontSize() != null && lyric.getFontSize() > 0.0) {
+            return lyric.getFontSize();
         }
         return (noteLayout != null && noteLayout.getScoreStyle() != null)
                 ? noteLayout.getScoreStyle().getNoteLyricFontSize()
@@ -132,15 +120,14 @@ public class LyricLayout {
     }
 
     private int calculateLyricHash() {
-        Lyric l = getLyric();
-        if (l == null) return 0;
+        if (lyric == null) return 0;
         int h = 17;
-        h = 31 * h + l.getVerse();
-        h = 31 * h + (l.getType() != null ? l.getType().hashCode() : 0);
-        if (l.getFontSize() != null) {
-            h = 31 * h + Double.hashCode(l.getFontSize());
+        h = 31 * h + lyric.getVerse();
+        h = 31 * h + (lyric.getType() != null ? lyric.getType().hashCode() : 0);
+        if (lyric.getFontSize() != null) {
+            h = 31 * h + Double.hashCode(lyric.getFontSize());
         }
-        List<LyricFragment> frags = l.getFragments();
+        List<LyricFragment> frags = lyric.getFragments();
         if (frags != null) {
             for (LyricFragment f : frags) {
                 if (f != null && f.getText() != null) {
@@ -157,12 +144,10 @@ public class LyricLayout {
     public void refresh() {
         fragmentLayouts.clear();
         totalWidth = 0.0;
-
-        Lyric currentLyric = getLyric();
         lastKnownHash = calculateLyricHash();
-        if (currentLyric == null) return;
+        if (lyric == null) return;
 
-        List<LyricFragment> fragments = currentLyric.getFragments();
+        List<LyricFragment> fragments = lyric.getFragments();
         if (fragments.isEmpty()) return;
 
         double fontSizeSp = getFontSize();

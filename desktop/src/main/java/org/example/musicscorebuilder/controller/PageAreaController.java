@@ -10,12 +10,12 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import org.example.musicscorebuilder.NoteDragHandler;
 import org.example.musicscorebuilder.ShortcutHandler;
-import org.example.musicscorebuilder.components.frames.TextFrameLayout;
 import org.example.musicscorebuilder.components.layout.NoteLayout;
 import org.example.musicscorebuilder.components.layout.PageLayout;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
 import org.example.musicscorebuilder.components.layout.Selectable;
 import org.example.musicscorebuilder.components.layout.edit.CursorLayout;
+import org.example.musicscorebuilder.components.layout.engine.LayoutContext;
 import org.example.musicscorebuilder.components.layout.engine.LayoutEngine;
 import org.example.musicscorebuilder.components.music.Score;
 import org.example.musicscorebuilder.components.music.ScoreMode;
@@ -262,7 +262,8 @@ public class PageAreaController {
                 return;
             }
 
-            this.currentScoreLayout = layoutEngine.compute(activeScoreMode);
+            int activeVerse = ScoreStateManager.getInstance().getSelectedVerseNumber();
+            this.currentScoreLayout = layoutEngine.compute(activeScoreMode, new LayoutContext(activeVerse));
             stateManager.applyPostRefreshAction(this.currentScoreLayout);
 
             container.updateContent(this.currentScoreLayout);
