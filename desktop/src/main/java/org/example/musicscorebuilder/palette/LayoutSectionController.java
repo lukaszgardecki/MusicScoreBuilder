@@ -4,15 +4,15 @@ import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.GridPane;
-import org.example.musicscorebuilder.components.music.frames.TextFrame;
 import org.example.musicscorebuilder.components.layout.Selectable;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
-import org.example.musicscorebuilder.components.music.frames.HeaderFrame;
 import org.example.musicscorebuilder.components.music.Measure;
 import org.example.musicscorebuilder.components.music.ScoreMode;
+import org.example.musicscorebuilder.components.music.frames.HeaderFrame;
+import org.example.musicscorebuilder.components.music.frames.TextFrame;
 import org.example.musicscorebuilder.components.views.BreakSystemIconView;
 import org.example.musicscorebuilder.components.views.InsertVerticalFrameIconView;
-import org.example.musicscorebuilder.managers.ScoreStateManager;
+import org.example.musicscorebuilder.components.views.LyricsContainerIconView;
 
 import java.util.Arrays;
 import java.util.List;
@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 public class LayoutSectionController extends AbstractPaletteSectionController<LayoutAction> {
     private final BreakSystemIconView breakSystemIcon = new BreakSystemIconView();
     private final InsertVerticalFrameIconView insertVerticalFrameIconView = new InsertVerticalFrameIconView();
+    private final LyricsContainerIconView lyricsContainerIconView = new LyricsContainerIconView();
 
     public LayoutSectionController(GridPane gridPane) {
         super(gridPane);
@@ -85,6 +86,8 @@ public class LayoutSectionController extends AbstractPaletteSectionController<La
             drawSystemBreakIcon(gc, width, height);
         } else if (action == LayoutAction.VERTICAL_FRAME) {
             drawInsertVerticalFrameIcon(gc, width, height);
+        } else if (action == LayoutAction.LYRICS_CONTAINER) {
+            drawLyricsContainerIcon(gc, width, height);
         }
 
         return canvas;
@@ -111,5 +114,21 @@ public class LayoutSectionController extends AbstractPaletteSectionController<La
         double rectX = (w - boxSize) / 2.0;
         double rectY = (h - boxSize) / 2.0;
         insertVerticalFrameIconView.draw(gc, rectX, rectY, boxSize);
+    }
+
+    private void drawLyricsContainerIcon(GraphicsContext gc, double w, double h) {
+        ScoreStyle style = new ScoreStyle() {
+            @Override public String getFrameStrokeColor() { return "#000000"; }
+        };
+
+        double boxSize = Math.min(w, h) * 0.55;
+        double sp = boxSize / 2.5;
+        double targetX = (w - boxSize) / 2.0;
+        double targetY = (h - boxSize) / 2.0;
+        double measureX = targetX;
+        double widthPx = boxSize;
+        double measureY = targetY + boxSize + (1.0 * sp);
+
+        lyricsContainerIconView.draw(gc, measureX, measureY, widthPx, style, sp);
     }
 }
