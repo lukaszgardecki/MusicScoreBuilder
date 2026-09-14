@@ -5,9 +5,7 @@ import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.components.layout.engine.ScoreStyle;
 import org.example.musicscorebuilder.components.music.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class LayoutHitTester {
 
@@ -250,82 +248,104 @@ public class LayoutHitTester {
         } else if (clickedElement instanceof MeasureStaffSelection selection) {
             itemsToSelect.add(selection);
 
-            MeasureLayout measure = selection.getMeasure();
             StaffLayout targetStaff = selection.getStaff();
+            List<MeasureLayout> measures = selection.getAllMeasures();
+            if ((measures == null || measures.isEmpty()) && selection.getMeasure() != null) {
+                measures = List.of(selection.getMeasure());
+            }
 
-            if (measure != null && measure.getSegments() != null && targetStaff != null) {
-                List<SegmentLayout> segments = measure.getSegments();
+            if (measures != null && targetStaff != null) {
+                int targetStaffIndex = targetStaff.getStaffIndex();
+                Set<SystemLayout> systems = new HashSet<>();
 
-                int firstChordRestIdx = -1;
-                int lastChordRestIdx = -1;
-
-                for (int i = 0; i < segments.size(); i++) {
-                    if (segments.get(i).getType() == SegmentType.NOTEREST) {
-                        if (firstChordRestIdx == -1) {
-                            firstChordRestIdx = i;
-                        }
-                        lastChordRestIdx = i;
+                for (MeasureLayout measure : measures) {
+                    if (measure == null) continue;
+                    if (measure.getParent() != null) {
+                        systems.add(measure.getParent());
                     }
-                }
 
-                if (firstChordRestIdx != -1) {
-                    for (int i = firstChordRestIdx; i <= lastChordRestIdx; i++) {
-                        SegmentLayout segment = segments.get(i);
-                        List<ElementLayout> staffElements = segment.getElementsByStaff(targetStaff);
+                    StaffLayout currentStaff = measure.getStaffs() != null ? measure.getStaffs().stream()
+                            .filter(s -> s.getStaffIndex() == targetStaffIndex)
+                            .findFirst()
+                            .orElse(targetStaff) : targetStaff;
 
-                        for (int e = 0; e < staffElements.size(); e++) {
-                            ElementLayout element = staffElements.get(e);
-                            itemsToSelect.add(element);
-                            if (element instanceof NoteLayout noteLayout) {
-                                if (noteLayout.getStem() != null) {
-                                    itemsToSelect.add(noteLayout.getStem());
+                    List<SegmentLayout> segments = measure.getSegments();
+                    if (segments != null) {
+                        int firstChordRestIdx = -1;
+                        int lastChordRestIdx = -1;
+
+                        for (int i = 0; i < segments.size(); i++) {
+                            if (segments.get(i).getType() == SegmentType.NOTEREST) {
+                                if (firstChordRestIdx == -1) {
+                                    firstChordRestIdx = i;
                                 }
-                                if (noteLayout.getBeamSingle() != null) {
-                                    itemsToSelect.add(noteLayout.getBeamSingle());
+                                lastChordRestIdx = i;
+                            }
+                        }
+
+                        if (firstChordRestIdx != -1) {
+                            for (int i = firstChordRestIdx; i <= lastChordRestIdx; i++) {
+                                SegmentLayout segment = segments.get(i);
+                                List<ElementLayout> staffElements = segment.getElementsByStaff(currentStaff);
+
+                                if (staffElements != null) {
+                                    for (int e = 0; e < staffElements.size(); e++) {
+                                        ElementLayout element = staffElements.get(e);
+                                        itemsToSelect.add(element);
+                                        if (element instanceof NoteLayout noteLayout) {
+                                            if (noteLayout.getStem() != null) {
+                                                itemsToSelect.add(noteLayout.getStem());
+                                            }
+                                            if (noteLayout.getBeamSingle() != null) {
+                                                itemsToSelect.add(noteLayout.getBeamSingle());
+                                            }
+                                            if (!noteLayout.getDots().isEmpty()) {
+                                                itemsToSelect.addAll(noteLayout.getDots());
+                                            }
+                                            if (noteLayout.getAccidental() != null) {
+                                                itemsToSelect.add(noteLayout.getAccidental());
+                                            }
+                                        }
+                                    }
                                 }
-                                if (!noteLayout.getDots().isEmpty()) {
-                                    itemsToSelect.addAll(noteLayout.getDots());
-                                }
-                                if (noteLayout.getAccidental() != null) {
-                                    itemsToSelect.add(noteLayout.getAccidental());
+                            }
+                        }
+                    }
+
+                    if (measure.getBeamGroups() != null) {
+                        List<BeamGroupLayout> beamGroups = measure.getBeamGroups();
+                        for (int bg = 0; bg < beamGroups.size(); bg++) {
+                            BeamGroupLayout beamGroup = beamGroups.get(bg);
+                            if (!beamGroup.isEmpty()) {
+                                StaffLayout groupStaff = beamGroup.getFirstNote().getStaff();
+                                if (groupStaff != null && groupStaff.getStaffIndex() == targetStaffIndex) {
+                                    itemsToSelect.add(beamGroup);
                                 }
                             }
                         }
                     }
                 }
 
-                if (measure.getBeamGroups() != null) {
-                    List<BeamGroupLayout> beamGroups = measure.getBeamGroups();
-                    for (int bg = 0; bg < beamGroups.size(); bg++) {
-                        BeamGroupLayout beamGroup = beamGroups.get(bg);
-                        if (!beamGroup.isEmpty()) {
-                            StaffLayout groupStaff = beamGroup.getFirstNote().getStaff();
-                            if (groupStaff == targetStaff) {
-                                itemsToSelect.add(beamGroup);
+                for (SystemLayout system : systems) {
+                    if (system.getTies() != null) {
+                        List<TieLayout> ties = system.getTies();
+                        for (int t = 0; t < ties.size(); t++) {
+                            TieLayout tie = ties.get(t);
+                            if (tie.getStartNote() != null && tie.getEndNote() != null) {
+                                if (itemsToSelect.contains(tie.getStartNote()) && itemsToSelect.contains(tie.getEndNote())) {
+                                    itemsToSelect.add(tie);
+                                }
                             }
                         }
                     }
-                }
-
-                SystemLayout system = measure.getParent();
-                if (system != null && system.getTies() != null) {
-                    List<TieLayout> ties = system.getTies();
-                    for (int t = 0; t < ties.size(); t++) {
-                        TieLayout tie = ties.get(t);
-                        if (tie.getStartNote() != null && tie.getEndNote() != null) {
-                            if (itemsToSelect.contains(tie.getStartNote()) && itemsToSelect.contains(tie.getEndNote())) {
-                                itemsToSelect.add(tie);
-                            }
-                        }
-                    }
-                }
-                if (system != null && system.getSlurs() != null) {
-                    List<SlurLayout> slurs = system.getSlurs();
-                    for (int sl = 0; sl < slurs.size(); sl++) {
-                        SlurLayout slur = slurs.get(sl);
-                        if (slur.getStartNote() != null && slur.getEndNote() != null) {
-                            if (itemsToSelect.contains(slur.getStartNote()) && itemsToSelect.contains(slur.getEndNote())) {
-                                itemsToSelect.add(slur);
+                    if (system.getSlurs() != null) {
+                        List<SlurLayout> slurs = system.getSlurs();
+                        for (int sl = 0; sl < slurs.size(); sl++) {
+                            SlurLayout slur = slurs.get(sl);
+                            if (slur.getStartNote() != null && slur.getEndNote() != null) {
+                                if (itemsToSelect.contains(slur.getStartNote()) && itemsToSelect.contains(slur.getEndNote())) {
+                                    itemsToSelect.add(slur);
+                                }
                             }
                         }
                     }

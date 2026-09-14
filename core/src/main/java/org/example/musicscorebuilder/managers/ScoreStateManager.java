@@ -46,16 +46,43 @@ public class ScoreStateManager {
     }
 
     public void setSelected(Selectable item) {
-        setSelected(item, false);
+        setSelected(item, false, false);
     }
 
     public void setSelected(Selectable item, boolean isAdditive) {
+        setSelected(item, isAdditive, false);
+    }
+
+    public void setSelected(Selectable item, boolean isAdditive, boolean isRange) {
         if (item == null) {
-            if (!isAdditive) {
+            if (!isAdditive && !isRange) {
                 deselectAll();
             }
             notifySelectionChanged();
             return;
+        }
+
+        if (isRange && !selectedItems.isEmpty()) {
+            Selectable prevSelected = getSelectedItem();
+            MeasureStaffSelection prevMss = extractMeasureStaffSelection(prevSelected);
+            MeasureStaffSelection currMss = extractMeasureStaffSelection(item);
+
+            if (prevMss != null && currMss != null
+                    && prevMss.getStaff() != null && currMss.getStaff() != null
+                    && prevMss.getStaff().getStaffIndex() == currMss.getStaff().getStaffIndex()) {
+
+                MeasureLayout startMl = prevMss.getFirstMeasure();
+                MeasureLayout targetMl = currMss.getFirstMeasure();
+
+                if (startMl != null && targetMl != null) {
+                    List<MeasureLayout> range = collectMeasuresInRange(startMl, targetMl);
+                    if (!range.isEmpty()) {
+                        MeasureStaffSelection rangeSelection = new MeasureStaffSelection(range, prevMss.getStaff());
+                        setSelected(rangeSelection, false, false);
+                        return;
+                    }
+                }
+            }
         }
 
         List<Selectable> itemsToSelect = LayoutHitTester.resolveSelection(item);
@@ -81,6 +108,101 @@ public class ScoreStateManager {
         }
 
         notifySelectionChanged();
+    }
+
+    private MeasureStaffSelection extractMeasureStaffSelection(Selectable sel) {
+        if (sel == null) return null;
+        if (sel instanceof MeasureStaffSelection mss) {
+            return mss;
+        }
+
+        MeasureLayout ml = null;
+        StaffLayout sl = null;
+
+        if (sel instanceof ElementLayout el) {
+            sl = el.getStaff();
+            if (el.getSegment() != null) {
+                ml = el.getSegment().getParent();
+            }
+        } else if (sel.getSegment() != null) {
+            if (sel.getSegment().getParent() != null) {
+                ml = sel.getSegment().getParent();
+            }
+            sl = sel.getStaff();
+        }
+
+        if (ml != null && sl != null) {
+            return new MeasureStaffSelection(ml, sl);
+        }
+
+        List<Selectable> resolved = LayoutHitTester.resolveSelection(sel);
+        for (Selectable r : resolved) {
+            if (r instanceof MeasureStaffSelection mss) {
+                return mss;
+            }
+        }
+        return null;
+    }
+
+    private List<MeasureLayout> collectMeasuresInRange(MeasureLayout startMl, MeasureLayout targetMl) {
+        if (startMl == null || targetMl == null) return Collections.emptyList();
+        if (startMl == targetMl) return List.of(startMl);
+
+        Measure startM = startMl.getMeasure();
+        Measure targetM = targetMl.getMeasure();
+
+        MeasureLayout firstMl = startMl;
+        MeasureLayout lastMl = targetMl;
+
+        if (startM != null && targetM != null && startM.getIndex() > targetM.getIndex()) {
+            firstMl = targetMl;
+            lastMl = startMl;
+        }
+
+        if (firstMl.getParent() != null && firstMl.getParent() == lastMl.getParent()) {
+            List<MeasureLayout> sysMeasures = firstMl.getParent().getMeasures();
+            int idx1 = sysMeasures.indexOf(firstMl);
+            int idx2 = sysMeasures.indexOf(lastMl);
+            if (idx1 != -1 && idx2 != -1 && idx1 <= idx2) {
+                return new ArrayList<>(sysMeasures.subList(idx1, idx2 + 1));
+            }
+        }
+
+        List<MeasureLayout> result = new ArrayList<>();
+        Set<MeasureLayout> visited = new HashSet<>();
+
+        MeasureLayout currentMl = firstMl;
+        while (currentMl != null && visited.add(currentMl)) {
+            result.add(currentMl);
+            if (currentMl == lastMl) {
+                return result;
+            }
+
+            MeasureLayout nextMl = null;
+            if (currentMl.getSegments() != null && !currentMl.getSegments().isEmpty()) {
+                SegmentLayout lastSeg = currentMl.getSegments().get(currentMl.getSegments().size() - 1);
+                if (lastSeg.getNext() != null) {
+                    nextMl = lastSeg.getNext().getParent();
+                }
+            }
+
+            if (nextMl == null || nextMl == currentMl) {
+                SystemLayout sys = currentMl.getParent();
+                if (sys != null && sys.getMeasures() != null) {
+                    int idx = sys.getMeasures().indexOf(currentMl);
+                    if (idx != -1 && idx + 1 < sys.getMeasures().size()) {
+                        nextMl = sys.getMeasures().get(idx + 1);
+                    }
+                }
+            }
+
+            currentMl = nextMl;
+        }
+
+        if (!result.contains(firstMl)) result.add(0, firstMl);
+        if (!result.contains(lastMl)) result.add(lastMl);
+
+        return result;
     }
 
     public void setCurrentModeIndex(int index) {
@@ -109,7 +231,7 @@ public class ScoreStateManager {
     }
 
     public void clearSelection() {
-        setSelected(null, false);
+        setSelected(null, false, false);
     }
 
     public List<Selectable> getSelectedItems() {
@@ -123,7 +245,7 @@ public class ScoreStateManager {
     public Optional<Selectable> getFirstSelectedNoteRest() {
         if (selectedItems.isEmpty()) return Optional.empty();
         return selectedItems.stream()
-                .filter(s -> s.getSegment().getType() == SegmentType.NOTEREST)
+                .filter(s -> s.getSegment() != null && s.getSegment().getType() == SegmentType.NOTEREST)
                 .findFirst();
     }
 
@@ -247,13 +369,14 @@ public class ScoreStateManager {
     }
 
     private void handleMeasureStaffConversion(MeasureStaffSelection measureSelection) {
-        Measure measure = measureSelection.getMeasure().getMeasure();
         int staffId = measureSelection.getStaff().getStaffIndex();
-
-        if (measure == null) return;
+        List<MeasureLayout> measuresToConvert = measureSelection.getAllMeasures();
+        if (measuresToConvert.isEmpty()) return;
 
         postRefreshAction = layout -> {
-            if (measure.getSegments() != null && !measure.getSegments().isEmpty()) {
+            MeasureLayout firstMl = measuresToConvert.get(0);
+            Measure measure = firstMl.getMeasure();
+            if (measure != null && measure.getSegments() != null && !measure.getSegments().isEmpty()) {
                 Segment firstSegment = measure.getSegments().get(0);
                 var staffElements = firstSegment.getElementsByStaff(staffId);
 
@@ -266,12 +389,15 @@ public class ScoreStateManager {
                             setSelected(newLayout);
                         }
                     }
-
                 }
             }
         };
 
-        measure.convertStaffToWholeRest(staffId);
+        for (MeasureLayout ml : measuresToConvert) {
+            if (ml.getMeasure() != null) {
+                ml.getMeasure().convertStaffToWholeRest(staffId);
+            }
+        }
         notifyScoreChanged();
     }
 

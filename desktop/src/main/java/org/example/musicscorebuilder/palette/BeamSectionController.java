@@ -4,6 +4,7 @@ import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.GridPane;
+import org.example.musicscorebuilder.components.layout.MeasureLayout;
 import org.example.musicscorebuilder.components.layout.MeasureStaffSelection;
 import org.example.musicscorebuilder.components.layout.NoteLayout;
 import org.example.musicscorebuilder.components.layout.Selectable;
@@ -59,22 +60,27 @@ public class BeamSectionController extends AbstractPaletteSectionController<Beam
             handled = true;
         } else if (item instanceof MeasureStaffSelection selection) {
             if (action == BeamAction.AUTO || action == BeamAction.NONE) {
-                Measure measure = selection.getMeasure().getMeasure();
-                List<Segment> segments = measure.getSegments();
-                for (int i = 0; i < segments.size(); i++) {
-                    Segment segment = segments.get(i);
-                    int staffIndex = selection.getStaff().getStaffIndex();
-                    List<Element> staffElements = segment.getElementsByStaff(staffIndex);
+                int staffIndex = selection.getStaff().getStaffIndex();
 
-                    for (int k = 0; k < staffElements.size(); k++) {
-                        Element el = staffElements.get(k);
-                        if (el instanceof Note nl) {
-                            if (action == BeamAction.AUTO) nl.setBeam(null);
-                            else nl.setBeam(BeamType.NONE);
+                for (MeasureLayout measureLayout : selection.getAllMeasures()) {
+                    Measure measure = measureLayout.getMeasure();
+                    if (measure == null) continue;
+
+                    List<Segment> segments = measure.getSegments();
+                    for (int i = 0; i < segments.size(); i++) {
+                        Segment segment = segments.get(i);
+                        List<Element> staffElements = segment.getElementsByStaff(staffIndex);
+
+                        for (int k = 0; k < staffElements.size(); k++) {
+                            Element el = staffElements.get(k);
+                            if (el instanceof Note nl) {
+                                if (action == BeamAction.AUTO) nl.setBeam(null);
+                                else nl.setBeam(BeamType.NONE);
+                            }
                         }
                     }
+                    measure.setDirty(true);
                 }
-                measure.setDirty(true);
                 handled = true;
             }
         }

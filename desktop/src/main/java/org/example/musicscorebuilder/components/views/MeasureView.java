@@ -1,15 +1,17 @@
 package org.example.musicscorebuilder.components.views;
 
 import javafx.scene.canvas.GraphicsContext;
-import org.example.musicscorebuilder.components.layout.*;
-import org.example.musicscorebuilder.managers.ScoreStateManager;
+import org.example.musicscorebuilder.components.layout.BeamGroupLayout;
+import org.example.musicscorebuilder.components.layout.MeasureLayout;
+import org.example.musicscorebuilder.components.layout.SegmentLayout;
+import org.example.musicscorebuilder.components.layout.StaffLayout;
+
 import java.util.List;
 
 public class MeasureView extends ComponentView {
     private final SegmentView segmentView = new SegmentView();
     private final StaffView staffView = new StaffView();
     private final BeamGroupView beamsView = new BeamGroupView();
-    private final MeasureStaffSelectionView selectionView = new MeasureStaffSelectionView();
     private final EditCursorView editCursorView = new EditCursorView();
     private final BreakSystemIconView breakSystemIcon = new BreakSystemIconView();
 
@@ -38,13 +40,6 @@ public class MeasureView extends ComponentView {
         int beamCount = beamGroups.size();
         for (int i = 0; i < beamCount; i++) {
             beamsView.draw(gc, beamGroups.get(i), measureX, measureY, sp);
-        }
-
-        Selectable selectedItem = ScoreStateManager.getInstance().getSelectedItem();
-        if (selectedItem instanceof MeasureStaffSelection selection) {
-            if (measure.getMeasure() != null && measure.getMeasure().equals(selection.getMeasure().getMeasure())) {
-                selectionView.draw(gc, selection, systemX, systemY, sp);
-            }
         }
 
         if (measure.getMeasure() != null && measure.getMeasure().hasSystemBreak()) {

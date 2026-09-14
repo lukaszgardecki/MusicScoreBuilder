@@ -87,9 +87,17 @@ public class ShortcutHandler {
 
             if (event.isShortcutDown()) {
                 if (item instanceof MeasureStaffSelection selection) {
-                    Measure measure = selection.getMeasure().getMeasure();
-                    ScoreMode mode = measure.getParentMode();
-                    if (mode != null && mode.removeMeasure(measure)) {
+                    boolean removedAny = false;
+                    for (MeasureLayout ml : selection.getAllMeasures()) {
+                        Measure measure = ml.getMeasure();
+                        if (measure != null) {
+                            ScoreMode mode = measure.getParentMode();
+                            if (mode != null && mode.removeMeasure(measure)) {
+                                removedAny = true;
+                            }
+                        }
+                    }
+                    if (removedAny) {
                         scoreStateManager.clearSelection();
                         scoreStateManager.notifyScoreChanged();
                     }

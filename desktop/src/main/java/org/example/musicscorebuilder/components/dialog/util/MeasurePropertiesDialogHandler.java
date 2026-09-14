@@ -2,6 +2,7 @@ package org.example.musicscorebuilder.components.dialog.util;
 
 import javafx.application.Platform;
 import org.example.musicscorebuilder.components.dialog.CustomMeasurePropertiesDialog;
+import org.example.musicscorebuilder.components.layout.MeasureLayout;
 import org.example.musicscorebuilder.components.layout.MeasureStaffSelection;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
 import org.example.musicscorebuilder.components.music.Measure;
@@ -18,10 +19,13 @@ public class MeasurePropertiesDialogHandler {
             MeasureStaffSelection initialSelection,
             Supplier<ScoreLayout> scoreLayoutSupplier
     ) {
-        if (dialog == null || initialSelection == null || initialSelection.getMeasure() == null) return;
+        if (dialog == null || initialSelection == null || initialSelection.getFirstMeasure() == null) return;
+
+        MeasureLayout firstMeasureLayout = initialSelection.getFirstMeasure();
+        if (firstMeasureLayout.getMeasure() == null) return;
 
         final int staffIndex = initialSelection.getStaff() != null ? initialSelection.getStaff().getStaffIndex() : 0;
-        final Measure[] currentMeasureHolder = new Measure[]{ initialSelection.getMeasure().getMeasure() };
+        final Measure[] currentMeasureHolder = new Measure[]{ firstMeasureLayout.getMeasure() };
 
         updateDialogState(dialog, currentMeasureHolder[0]);
 

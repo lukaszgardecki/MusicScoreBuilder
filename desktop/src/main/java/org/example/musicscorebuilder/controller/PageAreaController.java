@@ -149,8 +149,12 @@ public class PageAreaController {
             if (contextMenuController != null && contextMenuController.isShowing()) {
                 contextMenuController.hide();
             }
+        });
 
+        container.setOnMouseClicked(event -> {
             if (modeManager.isInsertMode() || currentScoreLayout == null) return;
+
+            if (!container.wasLastMousePressJustClick()) return;
 
             List<PageLayout> pages = currentScoreLayout.getPages();
             if (pages == null || pages.isEmpty()) return;
@@ -158,42 +162,33 @@ public class PageAreaController {
             double modelX = container.toModelX(event.getX());
             double modelY = container.toModelY(event.getY());
 
-            if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2) {
-                LayoutHitTester.LyricHit lyricHit = LayoutHitTester.findClickedLyric(pages, modelX, modelY);
-                if (lyricHit != null) {
-                    LyricEditorManager.getInstance().startEditing(
-                            lyricHit.noteLayout(),
-                            lyricHit.verse(),
-                            currentScoreLayout,
-                            event.getX()
-                    );
-                    event.consume();
-                    return;
+            if (event.getButton() == MouseButton.PRIMARY) {
+                if (event.getClickCount() == 2) {
+                    LayoutHitTester.LyricHit lyricHit = LayoutHitTester.findClickedLyric(pages, modelX, modelY);
+                    if (lyricHit != null) {
+                        LyricEditorManager.getInstance().startEditing(
+                                lyricHit.noteLayout(),
+                                lyricHit.verse(),
+                                currentScoreLayout,
+                                event.getX()
+                        );
+                        event.consume();
+                        return;
+                    }
+                } else if (event.getClickCount() == 1) {
+                    Selectable clickedElement = LayoutHitTester.findClickedElement(pages, modelX, modelY);
+
+                    boolean isAdditive = event.isShortcutDown() || event.isControlDown() || event.isMetaDown();
+                    boolean isRange = event.isShiftDown();
+
+                    stateManager.setSelected(clickedElement, isAdditive, isRange);
+
+                    if (clickedElement instanceof NoteLayout note && note.getNote() != null) {
+                        PianoPlayer.getInstance().playNote(note.getNote().getPitch());
+                    }
+                    redraw();
                 }
-            }
-
-            if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 1) {
-                Selectable clickedElement = LayoutHitTester.findClickedElement(pages, modelX, modelY);
-
-                boolean isAdditive = event.isShortcutDown() || event.isControlDown() || event.isMetaDown();
-                stateManager.setSelected(clickedElement, isAdditive);
-
-                if (clickedElement instanceof NoteLayout note && note.getNote() != null) {
-                    PianoPlayer.getInstance().playNote(note.getNote().getPitch());
-                }
-                redraw();
-            }
-        });
-
-        container.setOnMouseClicked(event -> {
-            if (modeManager.isInsertMode() || currentScoreLayout == null) return;
-
-            if (event.getButton() == MouseButton.SECONDARY) {
-                List<PageLayout> pages = currentScoreLayout.getPages();
-                if (pages == null || pages.isEmpty()) return;
-
-                double modelX = container.toModelX(event.getX());
-                double modelY = container.toModelY(event.getY());
+            } else if (event.getButton() == MouseButton.SECONDARY) {
                 Selectable clickedElement = LayoutHitTester.findClickedElement(pages, modelX, modelY);
                 handleRightClick(event, clickedElement);
             }
