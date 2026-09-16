@@ -1,16 +1,15 @@
 package org.example.musicscorebuilder.components.views;
 
 import javafx.scene.canvas.GraphicsContext;
-import org.example.musicscorebuilder.components.layout.BeamGroupLayout;
-import org.example.musicscorebuilder.components.layout.MeasureLayout;
-import org.example.musicscorebuilder.components.layout.SegmentLayout;
-import org.example.musicscorebuilder.components.layout.StaffLayout;
+import org.example.musicscorebuilder.components.layout.*;
 
 import java.util.List;
 
 public class MeasureView extends ComponentView {
     private final SegmentView segmentView = new SegmentView();
     private final StaffView staffView = new StaffView();
+    private final VoltaView voltaView = new VoltaView();
+    private final JumpMarkView jumpMarkView = new JumpMarkView();
     private final BeamGroupView beamsView = new BeamGroupView();
     private final EditCursorView editCursorView = new EditCursorView();
     private final BreakSystemIconView breakSystemIcon = new BreakSystemIconView();
@@ -40,6 +39,16 @@ public class MeasureView extends ComponentView {
         int beamCount = beamGroups.size();
         for (int i = 0; i < beamCount; i++) {
             beamsView.draw(gc, beamGroups.get(i), measureX, measureY, sp);
+        }
+
+        if (measure.getVoltaSlice() != null) {
+            voltaView.draw(gc, measure.getVoltaSlice(), measureX, measureY, sp);
+        }
+
+        List<JumpMarkLayout> jumpMarks = measure.getJumpMarks();
+        int jumpMarkCount = jumpMarks.size();
+        for (int i = 0; i < jumpMarkCount; i++) {
+            jumpMarkView.draw(gc, jumpMarks.get(i), measureX, measureY,sp);
         }
 
         if (measure.getMeasure() != null && measure.getMeasure().hasSystemBreak()) {

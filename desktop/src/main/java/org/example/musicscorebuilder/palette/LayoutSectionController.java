@@ -18,6 +18,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.example.musicscorebuilder.palette.LayoutAction.*;
+
 public class LayoutSectionController extends AbstractPaletteSectionController<LayoutAction> {
     private final BreakSystemIconView breakSystemIcon = new BreakSystemIconView();
     private final InsertVerticalFrameIconView insertVerticalFrameIconView = new InsertVerticalFrameIconView();
@@ -34,7 +36,7 @@ public class LayoutSectionController extends AbstractPaletteSectionController<La
 
     @Override
     protected List<LayoutAction> getItems() {
-        return Arrays.stream(LayoutAction.values()).collect(Collectors.toList());
+        return Arrays.stream(values()).collect(Collectors.toList());
     }
 
     @Override
@@ -78,18 +80,14 @@ public class LayoutSectionController extends AbstractPaletteSectionController<La
     protected Node createButtonGraphic(LayoutAction action) {
         Canvas canvas = createBaseCanvas(true, false);
         GraphicsContext gc = canvas.getGraphicsContext2D();
-
         double width = canvas.getWidth();
         double height = canvas.getHeight();
 
-        if (action == LayoutAction.SYSTEM_BREAK) {
-            drawSystemBreakIcon(gc, width, height);
-        } else if (action == LayoutAction.VERTICAL_FRAME) {
-            drawInsertVerticalFrameIcon(gc, width, height);
-        } else if (action == LayoutAction.LYRICS_CONTAINER) {
-            drawLyricsContainerIcon(gc, width, height);
+        switch (action) {
+            case SYSTEM_BREAK -> drawSystemBreakIcon(gc, width, height);
+            case VERTICAL_FRAME -> drawInsertVerticalFrameIcon(gc, width, height);
+            case LYRICS_CONTAINER -> drawLyricsContainerIcon(gc, width, height);
         }
-
         return canvas;
     }
 

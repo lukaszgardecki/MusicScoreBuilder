@@ -6,6 +6,7 @@ import javafx.scene.layout.GridPane;
 public class PaletteController {
     @FXML private GridPane beamGrid;
     @FXML private GridPane timeSignatureGrid;
+    @FXML private GridPane repeatsGrid;
     @FXML private GridPane barLinesGrid;
     @FXML private GridPane keySignatureGrid;
     @FXML private GridPane layoutGrid;
@@ -14,6 +15,7 @@ public class PaletteController {
     public void initialize() {
         new BeamSectionController(beamGrid).build();
         new TimeSignatureSectionController(timeSignatureGrid).build();
+        new RepeatsSectionController(repeatsGrid).build();
         new BarlinesSectionController(barLinesGrid).build();
         new KeySignatureSectionController(keySignatureGrid).build();
         new LayoutSectionController(layoutGrid).build();

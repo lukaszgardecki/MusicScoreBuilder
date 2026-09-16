@@ -47,7 +47,11 @@ public enum Leland {
     REST_QUARTER("\uE4E5", 0.94, 1.605, 0.0, -1.325),
     REST_8TH("\uE4E6", 1.104, 0.814, 0.0, -1.022),
     REST_16TH("\uE4E7", 1.376, 0.815, 0.004, -2.029),
-    REST_32ND("\uE4E8", 1.563, 1.839, 0.0, -2.029);
+    REST_32ND("\uE4E8", 1.563, 1.839, 0.0, -2.029),
+
+    SEGNO("\uE047", 2.616, 3.476, 0.0, 0.0),
+    CODA("\uE048", 2.98, 2.94, 0.0, -0.452),
+    CODA_SQUARE("\uE049", 2.952, 2.94, 0.0, -0.452);
 
     private final String code;
     private final double NEx;

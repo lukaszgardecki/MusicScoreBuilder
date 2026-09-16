@@ -17,6 +17,10 @@
             <GridPane fx:id="timeSignatureGrid" styleClass="palette-grid" snapToPixel="false" />
         </TitledPane>
 
+        <TitledPane text="Repetycje" expanded="true" styleClass="titled-pane">
+            <GridPane fx:id="repeatsGrid" styleClass="palette-grid" snapToPixel="false" />
+        </TitledPane>
+
         <TitledPane text="Kreski taktowe" expanded="true" styleClass="titled-pane">
             <GridPane fx:id="barLinesGrid" styleClass="palette-grid" snapToPixel="false" />
         </TitledPane>

@@ -115,6 +115,8 @@ public class ScoreStyle {
     private static final double TIE_MAX_THICKNESS                           = 0.2;
     private static final double SLUR_MAX_THICKNESS                          = 0.3;
 
+    private static final double JUMP_MARK_FONT_SIZE                         = 2.3;
+
     private double pageSpacing = PAGE_SPACING;
     private double staffSpacing = STAFF_SPACING;
     private double systemSpacing = SYSTEM_SPACING;
@@ -210,6 +212,8 @@ public class ScoreStyle {
 
     private double footerDefPageNumFontSize = FOOTER_DEF_PAGE_NUM_FONT_SIZE;
 
+    private double jumpMarkFontSize = JUMP_MARK_FONT_SIZE;
+
     public double getPageSpacing() { return staffSpacingScale * pageSpacing; }
     public double getStaffSpacing() { return staffSpacingScale * staffSpacing; }
     public double getSystemSpacing() { return staffSpacingScale * systemSpacing; }
@@ -302,6 +306,8 @@ public class ScoreStyle {
 
     public double getTieMaxThickness() { return staffSpacingScale * TIE_MAX_THICKNESS; }
     public double getSlurMaxThickness() { return staffSpacingScale * SLUR_MAX_THICKNESS; }
+
+    public double getJumpMarkFontSize() { return jumpMarkFontSize; }
 
     public double toSp(double valueInMm) {
         if (spatiumMm <= 0) return 0;

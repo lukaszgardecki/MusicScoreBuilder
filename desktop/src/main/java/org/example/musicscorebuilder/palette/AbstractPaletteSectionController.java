@@ -4,7 +4,9 @@ import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import org.example.musicscorebuilder.components.layout.ElementLayout;
 import org.example.musicscorebuilder.components.layout.MeasureLayout;
 import org.example.musicscorebuilder.components.layout.StaffLayout;
@@ -58,9 +60,13 @@ public abstract class AbstractPaletteSectionController<T> {
         gridPane.getColumnConstraints().clear();
 
         int columns = getColumnsCount();
+        double percentageWidth = 100.0 / columns;
+
         for (int i = 0; i < columns; i++) {
-            javafx.scene.layout.ColumnConstraints colConstraints = new javafx.scene.layout.ColumnConstraints();
+            ColumnConstraints colConstraints = new ColumnConstraints();
             colConstraints.setPrefWidth(defaultCanvasWidth + 12);
+            colConstraints.setPercentWidth(percentageWidth);
+            colConstraints.setHgrow(Priority.ALWAYS);
             colConstraints.setHalignment(javafx.geometry.HPos.CENTER);
             gridPane.getColumnConstraints().add(colConstraints);
         }

@@ -1,20 +1,12 @@
 package org.example.musicscorebuilder.components.layout.engine;
 
 import org.example.musicscorebuilder.components.frames.FrameLayout;
-import org.example.musicscorebuilder.components.frames.HeaderFrameLayout;
-import org.example.musicscorebuilder.components.frames.TextFrameLayout;
 import org.example.musicscorebuilder.components.layout.*;
-import org.example.musicscorebuilder.components.layout.util.GroupBeamBuilder;
-import org.example.musicscorebuilder.components.layout.util.SystemJustifier;
+import org.example.musicscorebuilder.components.layout.util.*;
 import org.example.musicscorebuilder.components.music.*;
 import org.example.musicscorebuilder.components.music.frames.Frame;
-import org.example.musicscorebuilder.components.music.frames.HeaderFrame;
-import org.example.musicscorebuilder.components.music.frames.TextFrame;
-import org.example.musicscorebuilder.components.music.frames.TextFrameVerse;
 
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class LayoutEngine {
@@ -23,12 +15,23 @@ public class LayoutEngine {
     private final SystemJustifier systemJustifier;
     private final Map<Measure, MeasureLayout> measureCache = new IdentityHashMap<>();
 
-    private final Map<Note, NoteLayout> noteToLayoutMap = new IdentityHashMap<>();
-    private final List<NoteLayout> tieStartNotes = new ArrayList<>();
-    private final Map<Note, Integer> noteToSystemMap = new HashMap<>();
+    private final TieBuilder tieBuilder;
+    private final SlurBuilder slurBuilder;
+    private final VoltaBuilder voltaBuilder;
+    private final FrameBuilder frameBuilder;
+    private final CourtesyLayoutHandler courtesyLayoutHandler;
+    private final LayoutLinker layoutLinker;
+    private final JumpMarkBuilder jumpMarkBuilder;
 
     public LayoutEngine() {
         this.systemJustifier = new SystemJustifier();
+        this.tieBuilder = new TieBuilder();
+        this.slurBuilder = new SlurBuilder();
+        this.voltaBuilder = new VoltaBuilder(measureCache);
+        this.jumpMarkBuilder = new JumpMarkBuilder(measureCache);
+        this.frameBuilder = new FrameBuilder();
+        this.courtesyLayoutHandler = new CourtesyLayoutHandler();
+        this.layoutLinker = new LayoutLinker();
     }
 
     public ScoreLayout compute(ScoreMode scoreMode, LayoutContext layoutContext) {
@@ -36,9 +39,9 @@ public class LayoutEngine {
         this.layoutContext = layoutContext;
         invalidateCacheIfNeeded(scoreMode);
 
-        noteToLayoutMap.clear();
-        tieStartNotes.clear();
-        noteToSystemMap.clear();
+        slurBuilder.clearCache();
+        tieBuilder.clearCache();
+        frameBuilder.clearCache();
 
         ScoreLayout scoreLayout = new ScoreLayout(scoreMode.getScore(), style);
         PageLayout currentPage = createPageLayout(scoreLayout);
@@ -72,7 +75,7 @@ public class LayoutEngine {
             }
 
             MeasureLayout measureLayout = getOrCreateMeasureLayout(measure, currentSystem);
-            double courtesyPadding = calculateCourtesyPadding(measure, measureLayout);
+            double courtesyPadding = courtesyLayoutHandler.calculateCourtesyPadding(measure, measureLayout);
 
             boolean forcedBreak = false;
             if (!currentSystem.getMeasures().isEmpty()) {
@@ -83,7 +86,7 @@ public class LayoutEngine {
             boolean needsNewSystem = forcedBreak || !canFitMeasureInSystem(currentPage, currentSystem, measureLayout, courtesyPadding);
 
             if (needsNewSystem) {
-                addCourtesyAttributesToLastMeasure(currentSystem, measure);
+                courtesyLayoutHandler.addCourtesyAttributesToLastMeasure(currentSystem, measure);
                 currentSystem = finalizeSystemAndCreateNext(currentSystem, scoreLayout, systemBraceType, measureLayout);
                 currentPage = currentSystem.getPageLayout();
             }
@@ -146,9 +149,9 @@ public class LayoutEngine {
         for (SegmentLayout segment : measureLayout.getSegments()) {
             for (ElementLayout element : segment.getElements()) {
                 if (element instanceof NoteLayout noteLayout) {
-                    noteToLayoutMap.put(noteLayout.getNote(), noteLayout);
+                    slurBuilder.putNote(noteLayout.getNote(), noteLayout);
                     if (noteLayout.getNote().isTieStart()) {
-                        tieStartNotes.add(noteLayout);
+                        tieBuilder.addNoteLayout(noteLayout);
                     }
                 }
             }
@@ -209,122 +212,21 @@ public class LayoutEngine {
             currentPage.getBlocks().remove(currentSystem);
         }
 
-        FrameLayout frameLayout = createFrameLayout(currentPage, style, frameData);
+        FrameLayout frameLayout = frameBuilder.createFrameLayout(currentPage, style, frameData);
 
         if (currentPage.getRemainingHeight() < frameLayout.getHeight()) {
             currentPage = createPageLayout(scoreLayout);
             scoreLayout.addPageLayout(currentPage);
-            frameLayout = createFrameLayout(currentPage, style, frameData);
+            frameLayout = frameBuilder.createFrameLayout(currentPage, style, frameData);
         }
 
         currentPage.addBlock(frameLayout);
         return addNewSystemToPage(currentPage, systemBraceType);
     }
 
-    private FrameLayout createFrameLayout(PageLayout parent, ScoreStyle style, Frame frameData) {
-        return switch (frameData) {
-            case HeaderFrame headerFrame -> new HeaderFrameLayout(parent, style, headerFrame);
-            case TextFrame textFrame -> new TextFrameLayout(parent, style, textFrame);
-            default -> throw new IllegalArgumentException("Nieobsługiwany typ ramki: " + frameData.getClass().getName());
-        };
-    }
-
     // ========================================================================
-    // ATTRIBUTES & COURTESY
+    // ATTRIBUTES
     // ========================================================================
-
-    private double calculateCourtesyPadding(Measure measure, MeasureLayout measureLayout) {
-        Measure nextMeasure = measure.getNext();
-        if (nextMeasure == null) return 0.0;
-
-        double padding = 0.0;
-
-        boolean keyChange = measure.getKeySignature() != null && nextMeasure.getKeySignature() != null
-                && !measure.getKeySignature().equals(nextMeasure.getKeySignature());
-
-        TimeSignature currTS = measure.getTimeSignature();
-        TimeSignature nextTS = nextMeasure.getTimeSignature();
-        boolean timeChange = currTS != null && nextTS != null
-                && nextTS.isVisible()
-                && !nextTS.equals(currTS);
-
-        if (keyChange || timeChange) {
-            Barline rightBarline = measure.getRightBarline();
-            if (rightBarline != null && rightBarline.getStyle() == BarlineStyle.SINGLE) {
-                SegmentLayout currentBarlineSeg = measureLayout.getSegments().get(measureLayout.getSegments().size() - 1);
-
-                Barline doubleBarline = new Barline(BarlineStyle.DOUBLE_LIGHT, measure);
-                SegmentLayout tempDoubleBarlineSeg = new SegmentLayout(new Segment(SegmentType.BARLINE, measure), measureLayout);
-                for (StaffLayout staff : measureLayout.getStaffs()) {
-                    tempDoubleBarlineSeg.addByStaff(staff, new BarlineLayout(doubleBarline, staff, tempDoubleBarlineSeg));
-                }
-
-                padding += (tempDoubleBarlineSeg.getWidth() - currentBarlineSeg.getWidth());
-            }
-        }
-
-        if (keyChange) {
-            SegmentLayout tempCourtesy = new SegmentLayout(SegmentType.KEY_SIG, measureLayout);
-            tempCourtesy.addKeySignature(nextMeasure.getKeySignature());
-            padding += tempCourtesy.getWidth();
-        }
-
-        if (timeChange) {
-            SegmentLayout tempCourtesy = new SegmentLayout(SegmentType.TIME_SIG, measureLayout);
-            tempCourtesy.addTimeSignature(nextTS);
-            padding += tempCourtesy.getWidth();
-        }
-
-        return padding;
-    }
-
-    private void addCourtesyAttributesToLastMeasure(SystemLayout system, Measure nextMeasure) {
-        if (system.getMeasures().isEmpty()) return;
-
-        MeasureLayout lastMeasureLayout = system.getMeasures().get(system.getMeasures().size() - 1);
-        Measure prevMeasure = lastMeasureLayout.getMeasure();
-
-        boolean keyChange = nextMeasure.getKeySignature() != null && prevMeasure.getKeySignature() != null
-                && !nextMeasure.getKeySignature().equals(prevMeasure.getKeySignature());
-
-        TimeSignature prevTS = prevMeasure.getTimeSignature();
-        TimeSignature nextTS = nextMeasure.getTimeSignature();
-        boolean timeChange = prevTS != null && nextTS != null
-                && nextTS.isVisible()
-                && !nextTS.equals(prevTS);
-
-        if (keyChange || timeChange) {
-            Barline rightBarline = prevMeasure.getRightBarline();
-            if (rightBarline != null && rightBarline.getStyle() == BarlineStyle.SINGLE) {
-                lastMeasureLayout.getSegments().remove(lastMeasureLayout.getSegments().size() - 1);
-
-                Segment doubleBarlineSegment = new Segment(SegmentType.BARLINE, prevMeasure);
-                SegmentLayout doubleBarlineSegLayout = new SegmentLayout(doubleBarlineSegment, lastMeasureLayout);
-                doubleBarlineSegLayout.setSystemGenerated(true);
-
-                Barline doubleBarline = new Barline(BarlineStyle.DOUBLE_LIGHT, prevMeasure);
-                for (StaffLayout staff : lastMeasureLayout.getStaffs()) {
-                    doubleBarlineSegLayout.addByStaff(staff, new BarlineLayout(doubleBarline, staff, doubleBarlineSegLayout));
-                }
-
-                lastMeasureLayout.add(doubleBarlineSegLayout);
-            }
-        }
-
-        if (keyChange) {
-            SegmentLayout courtesyKeySig = new SegmentLayout(SegmentType.KEY_SIG, lastMeasureLayout);
-            courtesyKeySig.addKeySignature(nextMeasure.getKeySignature());
-            courtesyKeySig.setSystemGenerated(true);
-            lastMeasureLayout.add(courtesyKeySig);
-        }
-
-        if (timeChange) {
-            SegmentLayout courtesyTimeSig = new SegmentLayout(SegmentType.TIME_SIG, lastMeasureLayout);
-            courtesyTimeSig.addTimeSignature(nextMeasure.getTimeSignature());
-            courtesyTimeSig.setSystemGenerated(true);
-            lastMeasureLayout.add(courtesyTimeSig);
-        }
-    }
 
     private void add1stMeasureAttributes(Barline startBarline, MeasureLayout measureLayout, ScoreLayout scoreLayout) {
         var isFirstMeasure = scoreLayout.getPages().size() == 1 && scoreLayout.getPages().get(0).getSystems().size() == 1;
@@ -406,9 +308,9 @@ public class LayoutEngine {
                         noteLayout.setLyrics(lyrics);
                         segmentLayout.addByStaff(staff, noteLayout);
 
-                        noteToLayoutMap.put(note, noteLayout);
+                        slurBuilder.putNote(note, noteLayout);
                         if (note.isTieStart()) {
-                            tieStartNotes.add(noteLayout);
+                            tieBuilder.addNoteLayout(noteLayout);
                         }
 
                         if (note.isBeamed()) groupBeamBuilder.add(noteLayout);
@@ -438,184 +340,15 @@ public class LayoutEngine {
     // ========================================================================
 
     private void postProcessLayout(ScoreMode scoreMode, ScoreLayout scoreLayout) {
-        List<PageLayout> pages =  scoreLayout.getPages();
-        buildNoteToSystemMap(pages);
-        updateTextFrames(scoreMode.getVerses(), scoreMode.getFrames());
-        linkAllSegments(pages);
-        linkVoiceElements(pages);
-        buildTies(pages);
-        buildSlurs(scoreMode.getSlurs(), pages);
+        List<PageLayout> pages = scoreLayout.getPages();
+        layoutLinker.linkAllSegments(pages);
+        layoutLinker.linkVoiceElements(pages);
+        frameBuilder.updateTextFrames(scoreMode.getVerses(), scoreMode.getFrames(), pages);
+        tieBuilder.buildTies(pages);
+        slurBuilder.buildSlurs(scoreMode.getSlurs(), pages);
+        voltaBuilder.buildVoltas(scoreMode.getVoltas(), scoreLayout);
+        jumpMarkBuilder.buildJumpMarks(scoreMode.getJumpMarks(), scoreLayout);
     }
-
-    private void buildNoteToSystemMap(List<PageLayout> pages) {
-        noteToSystemMap.clear();
-        int systemIndex = 0;
-        for (PageLayout page : pages) {
-            for (SystemLayout system : page.getSystems()) {
-                for (MeasureLayout measure : system.getMeasures()) {
-                    for (SegmentLayout segment : measure.getSegments()) {
-                        for (ElementLayout element : segment.getElements()) {
-                            if (element instanceof NoteLayout noteLayout && noteLayout.getNote() != null) {
-                                noteToSystemMap.put(noteLayout.getNote(), systemIndex);
-                            }
-                        }
-                    }
-                }
-                systemIndex++;
-            }
-        }
-    }
-
-    private void updateTextFrames(Map<Integer, Verse> verses, List<Frame> frames) {
-        if (verses == null || verses.isEmpty()) return;
-
-        List<TextFrameVerse> updatedVerses = new ArrayList<>();
-        for (Verse verse : verses.values()) {
-            updatedVerses.add(verse.toTextFrameVerse(noteToSystemMap));
-        }
-
-        for (Frame frame : frames) {
-            if (frame instanceof TextFrame textFrame) {
-                textFrame.setVerses(updatedVerses);
-            }
-        }
-    }
-
-    private void linkAllSegments(List<PageLayout> pages) {
-        SegmentLayout prev = null;
-        for (PageLayout page : pages) {
-            for (SystemLayout system : page.getSystems()) {
-                for (MeasureLayout measure : system.getMeasures()) {
-                    for (SegmentLayout current : measure.getSegments()) {
-                        current.setPrev(prev);
-                        if (prev != null) {
-                            prev.setNext(current);
-                        }
-                        prev = current;
-                    }
-                }
-            }
-        }
-        if (prev != null) {
-            prev.setNext(null);
-        }
-    }
-
-    private void linkVoiceElements(List<PageLayout> pages) {
-        Map<Long, NoteRestLayout> lastElementMap = new HashMap<>();
-        Map<Long, NoteLayout> lastNoteMap = new HashMap<>();
-
-        for (PageLayout page : pages) {
-            for (SystemLayout system : page.getSystems()) {
-                for (MeasureLayout measure : system.getMeasures()) {
-                    for (SegmentLayout segment : measure.getSegments()) {
-                        for (ElementLayout el : segment.getElements()) {
-
-                            if (el instanceof NoteRestLayout current) {
-                                int staffIdx = (current.getStaff() != null) ? current.getStaff().getStaffIndex() : 0;
-                                int voice = current.getVoice();
-                                long key = (((long) staffIdx) << 32) | (voice & 0xFFFFFFFFL);
-
-                                NoteRestLayout prevElement = lastElementMap.get(key);
-                                if (prevElement != null) {
-                                    prevElement.setNextInVoice(current);
-                                    current.setPrevInVoice(prevElement);
-                                }
-                                lastElementMap.put(key, current);
-
-                                if (current instanceof NoteLayout note) {
-                                    NoteLayout prevNote = lastNoteMap.get(key);
-                                    if (prevNote != null) {
-                                        prevNote.setNextNoteInVoice(note);
-                                        note.setPrevNoteInVoice(prevNote);
-                                    }
-                                    lastNoteMap.put(key, note);
-                                }
-                            }
-
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void buildTies(List<PageLayout> pages) {
-        buildSpanners(
-                pages,
-                system -> system.getTies().clear(),
-                tieStartNotes,
-                this::findNextNoteInVoice,
-                (system, start, end) -> system.addTie(new TieLayout(system, start, end))
-        );
-    }
-
-    private void buildSlurs(List<Slur> slurs, List<PageLayout> pages) {
-        for (PageLayout page : pages) {
-            for (SystemLayout system : page.getSystems()) {
-                system.clearSlurs();
-            }
-        }
-
-        for (Slur slur : slurs) {
-            NoteLayout startLayout = noteToLayoutMap.get(slur.getStartNote());
-            NoteLayout endLayout = noteToLayoutMap.get(slur.getEndNote());
-
-            if (startLayout == null || endLayout == null) continue;
-
-            SystemLayout startSystem = startLayout.getSegment().getParent().getParent();
-            SystemLayout endSystem = endLayout.getSegment().getParent().getParent();
-
-            if (startSystem == endSystem) {
-                startSystem.addSlur(new SlurLayout(startSystem, startLayout, endLayout));
-            } else {
-                startSystem.addSlur(new SlurLayout(startSystem, startLayout, null));
-                endSystem.addSlur(new SlurLayout(endSystem, null, endLayout));
-            }
-        }
-    }
-
-    private void buildSpanners(
-            List<PageLayout> pages,
-            Consumer<SystemLayout> clearAction,
-            List<NoteLayout> startNotes,
-            Function<NoteLayout, NoteLayout> endFinder,
-            TriConsumer<SystemLayout, NoteLayout, NoteLayout> addSpannerToSystem
-    ) {
-        for (PageLayout page : pages) {
-            for (SystemLayout system : page.getSystems()) {
-                clearAction.accept(system);
-            }
-        }
-
-        for (NoteLayout startNote : startNotes) {
-            NoteLayout endNote = endFinder.apply(startNote);
-            if (endNote == null) continue;
-
-            SystemLayout startSystem = startNote.getSegment().getParent().getParent();
-            SystemLayout endSystem = endNote.getSegment().getParent().getParent();
-
-            if (startSystem == endSystem) {
-                addSpannerToSystem.accept(startSystem, startNote, endNote);
-            } else {
-                addSpannerToSystem.accept(startSystem, startNote, null);
-                addSpannerToSystem.accept(endSystem, null, endNote);
-            }
-        }
-    }
-
-//    private List<LyricLayout> createSingleLyricLine(Note note, int verseNumber) {
-//        List<Lyric> lyrics = note.getLyrics();
-//        lyrics.clear();
-//
-//        Lyric lyric = note.getLyric(verseNumber);
-//        if (lyric != null) {
-//            boolean hasText = lyric.getText() != null && !lyric.getText().trim().isEmpty();
-//            if (hasText || lyric.isConnected()) {
-//                lyrics.add(new LyricLayout(lyric, note));
-//            }
-//        }
-//    }
 
     private List<LyricLayout> createSingleLyricLine(NoteLayout noteLayout, int verseNumber) {
         List<LyricLayout> result = new ArrayList<>();
@@ -632,27 +365,5 @@ public class LayoutEngine {
         }
 
         return result;
-    }
-
-    private NoteLayout findNextNoteInVoice(NoteLayout startNote) {
-        SegmentLayout current = startNote.getSegment().getNext();
-        int staffIndex = startNote.getStaff().getStaffIndex();
-        int voice = startNote.getVoice();
-
-        while (current != null) {
-            for (ElementLayout el : current.getElements()) {
-                if (el.getStaff() != null && el.getStaff().getStaffIndex() == staffIndex && el.getVoice() == voice) {
-                    if (el instanceof NoteLayout note) return note;
-                    if (el instanceof RestLayout) return null;
-                }
-            }
-            current = current.getNext();
-        }
-        return null;
-    }
-
-    @FunctionalInterface
-    private interface TriConsumer<System, StartNote, EndNote> {
-        void accept(System system, StartNote startNote, EndNote endNote);
     }
 }

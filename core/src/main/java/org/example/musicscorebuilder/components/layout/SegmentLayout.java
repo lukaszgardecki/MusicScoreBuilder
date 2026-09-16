@@ -135,6 +135,17 @@ public class SegmentLayout {
 
     public double getY() { return y; }
 
+    public double getMarginRight() {
+        return switch(type) {
+            case CLEF -> style.getSegmentClefRightMargin();
+            case START_BARLINE -> style.getSegmentStartBarlineRightMargin();
+            case BARLINE -> style.getSegmentBarlineRightMargin();
+            case END_BARLINE -> style.getSegmentEndBarlineRightMargin();
+            case NOTEREST -> style.getSegmentNoteRestRightMargin();
+            case KEY_SIG -> style.getSegmentKeySigRightMargin();
+            case TIME_SIG -> style.getSegmentTimeSigRightMargin();
+        };
+    }
     public double getMarginLeft() {
         if (type != SegmentType.NOTEREST) {
             return 0.0;
@@ -221,17 +232,8 @@ public class SegmentLayout {
             }
         }
 
-        var marginRight = switch(type) {
-            case CLEF -> style.getSegmentClefRightMargin();
-            case START_BARLINE -> style.getSegmentStartBarlineRightMargin();
-            case BARLINE -> style.getSegmentBarlineRightMargin();
-            case END_BARLINE -> style.getSegmentEndBarlineRightMargin();
-            case NOTEREST -> style.getSegmentNoteRestRightMargin();
-            case KEY_SIG -> style.getSegmentKeySigRightMargin();
-            case TIME_SIG -> style.getSegmentTimeSigRightMargin();
-        };
         double f = type == SegmentType.NOTEREST ? calculateNoteRestWidthFactor() : 1.0;
-        return marginLeft + maxContentWidth + (marginRight * f) + extraWidth;
+        return marginLeft + maxContentWidth + (getMarginRight() * f) + extraWidth;
     }
 
     public double getHeight() { return height; }

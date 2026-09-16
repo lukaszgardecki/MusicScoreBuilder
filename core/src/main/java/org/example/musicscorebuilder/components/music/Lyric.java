@@ -85,6 +85,7 @@ public class Lyric {
         }
     }
 
+    @JsonIgnore
     public boolean isConnected() {
         var type = getType();
         return type == SyllableType.BEGIN || type == SyllableType.MIDDLE || type == SyllableType.END;

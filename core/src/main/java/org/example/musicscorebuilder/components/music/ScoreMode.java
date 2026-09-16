@@ -28,6 +28,10 @@ public class ScoreMode {
 
     @JsonProperty("frames")
     private final List<Frame> frames = new ArrayList<>();
+    @JsonProperty("voltas")
+    private final List<Volta> voltas = new ArrayList<>();
+    @JsonProperty("jumpMarks")
+    private final List<JumpMark> jumpMarks = new ArrayList<>();
 
     @JsonIgnore
     private final Map<Integer, Verse> verses = new TreeMap<>();
@@ -40,6 +44,8 @@ public class ScoreMode {
             @JsonProperty("staves") List<Staff> staves,
             @JsonProperty("measures") List<Measure> measures,
             @JsonProperty("slurs") List<Slur> slurs,
+            @JsonProperty("voltas") List<Volta> voltas,
+            @JsonProperty("jumpMarks") List<JumpMark> jumpMarks,
             @JsonProperty("frames") List<Frame> frames,
             @JsonProperty("style") ScoreStyle style
     ) {
@@ -55,6 +61,14 @@ public class ScoreMode {
         if (slurs != null) {
             this.slurs.addAll(slurs);
             rebindSlurs();
+        }
+        if (voltas != null) {
+            this.voltas.addAll(voltas);
+            rebindVoltas();
+        }
+        if (jumpMarks != null) {
+            this.jumpMarks.addAll(jumpMarks);
+            rebindJumpMarks();
         }
         if (frames != null) {
             this.frames.addAll(frames);
@@ -75,19 +89,14 @@ public class ScoreMode {
         addDefaultHeaderFrame();
     }
 
-    public ScoreStyle getStyle() {
-        return style;
-    }
-
-    public void setStyle(ScoreStyle style) {
-        this.style = style != null ? style : new ScoreStyle();
-    }
+    public void addSlur(Slur slur) { slurs.add(slur); }
+    public void addFrame(Frame frame) { frames.add(frame); }
+    public void addVolta(Volta volta) { voltas.add(volta); }
+    public void addJumpMark(JumpMark jumpMark) { jumpMarks.add(jumpMark); }
 
     public void appendMeasures(int count) {
         for (int i = 0; i < count; i++) appendMeasure();
     }
-    public void addSlur(Slur slur) { slurs.add(slur); }
-    public void addFrame(Frame frame) { frames.add(frame); }
 
     public void appendMeasure() {
         Measure measure = new Measure(staves);
@@ -134,6 +143,8 @@ public class ScoreMode {
         }
 
         validateAndCleanSlurs();
+        validateAndCleanVoltas();
+        validateAndCleanJumpMarks();
         rebuildVersesIndex();
 
         return removed;
@@ -162,7 +173,11 @@ public class ScoreMode {
     }
 
     public void removeSlur(Slur slur) { slurs.remove(slur); }
+    public void removeVolta(Volta volta) { voltas.remove(volta); }
+    public void removeJumpMark(JumpMark jumpMark) { jumpMarks.remove(jumpMark); }
 
+    public ScoreStyle getStyle() { return style; }
+    public void setStyle(ScoreStyle style) { this.style = style != null ? style : new ScoreStyle(); }
     public Score getScore() { return score; }
     public ModeType getType() { return type; }
     public BraceType getBraceType() { return braceType; }
@@ -172,6 +187,14 @@ public class ScoreMode {
     public List<Slur> getSlurs() {
         updateSlurIds();
         return slurs;
+    }
+    public List<Volta> getVoltas() {
+        updateVoltaIndices();
+        return voltas;
+    }
+    public List<JumpMark> getJumpMarks() {
+        updateJumpMarkIndices();
+        return jumpMarks;
     }
 
     @JsonProperty("frames")
@@ -185,9 +208,7 @@ public class ScoreMode {
     }
 
     @JsonIgnore
-    public Map<Integer, Verse> getVerses() {
-        return verses;
-    }
+    public Map<Integer, Verse> getVerses() { return verses; }
 
     public Verse getOrCreateVerse(int verseNumber) {
         return verses.computeIfAbsent(verseNumber, Verse::new);
@@ -276,6 +297,8 @@ public class ScoreMode {
 
         MeasureTimeSignatureAdjuster.adjustFromMeasure(measure);
         validateAndCleanSlurs();
+        validateAndCleanVoltas();
+        validateAndCleanJumpMarks();
     }
 
     public void setNewKeySignatureFromMeasure(int key, Measure measure) {
@@ -288,12 +311,6 @@ public class ScoreMode {
             Measure m = measures.get(i);
             m.setKeySignature(new KeySignature(key, m));
         }
-    }
-
-    private void validateAndCleanSlurs() {
-        if (slurs.isEmpty()) return;
-        slurs.removeIf(slur -> slur.getStartNote() == null || slur.getEndNote() == null ||
-                !isNotePresentInMeasures(slur.getStartNote()) || !isNotePresentInMeasures(slur.getEndNote()));
     }
 
     public void updateMeasureLinks() {
@@ -372,6 +389,90 @@ public class ScoreMode {
         }
 
         slurs.removeIf(slur -> slur.getStartNote() == null || slur.getEndNote() == null);
+    }
+
+    public void updateVoltaIndices() {
+        if (measures.isEmpty()) {
+            voltas.clear();
+            return;
+        }
+
+        voltas.removeIf(v -> v.getStartMeasure() == null || v.getEndMeasure() == null
+                || !measures.contains(v.getStartMeasure())
+                || !measures.contains(v.getEndMeasure()));
+
+        for (Volta v : voltas) {
+            v.setStartMeasureIndex(measures.indexOf(v.getStartMeasure()));
+            v.setEndMeasureIndex(measures.indexOf(v.getEndMeasure()));
+        }
+    }
+
+    public void rebindVoltas() {
+        if (measures.isEmpty()) {
+            voltas.clear();
+            return;
+        }
+
+        for (Volta v : voltas) {
+            int startIdx = v.getStartMeasureIndex();
+            int endIdx = v.getEndMeasureIndex();
+
+            if (startIdx >= 0 && startIdx < measures.size()) {
+                v.setStartMeasure(measures.get(startIdx));
+            }
+            if (endIdx >= 0 && endIdx < measures.size()) {
+                v.setEndMeasure(measures.get(endIdx));
+            }
+        }
+
+        voltas.removeIf(v -> v.getStartMeasure() == null || v.getEndMeasure() == null);
+    }
+
+    public void updateJumpMarkIndices() {
+        if (measures.isEmpty()) {
+            jumpMarks.clear();
+            return;
+        }
+
+        jumpMarks.removeIf(j -> j.getMeasure() == null || !measures.contains(j.getMeasure()));
+
+        for (JumpMark j : jumpMarks) {
+            j.setMeasureIndex(measures.indexOf(j.getMeasure()));
+        }
+    }
+
+    public void rebindJumpMarks() {
+        if (measures.isEmpty()) {
+            jumpMarks.clear();
+            return;
+        }
+
+        for (JumpMark j : jumpMarks) {
+            int idx = j.getMeasureIndex();
+            if (idx >= 0 && idx < measures.size()) {
+                j.setMeasure(measures.get(idx));
+            }
+        }
+
+        jumpMarks.removeIf(j -> j.getMeasure() == null);
+    }
+
+    private void validateAndCleanSlurs() {
+        if (slurs.isEmpty()) return;
+        slurs.removeIf(slur -> slur.getStartNote() == null || slur.getEndNote() == null ||
+                !isNotePresentInMeasures(slur.getStartNote()) || !isNotePresentInMeasures(slur.getEndNote()));
+    }
+
+    private void validateAndCleanVoltas() {
+        if (voltas.isEmpty()) return;
+        voltas.removeIf(v -> v.getStartMeasure() == null || v.getEndMeasure() == null
+                || !measures.contains(v.getStartMeasure())
+                || !measures.contains(v.getEndMeasure()));
+    }
+
+    private void validateAndCleanJumpMarks() {
+        if (jumpMarks.isEmpty()) return;
+        jumpMarks.removeIf(j -> j.getMeasure() == null || !measures.contains(j.getMeasure()));
     }
 
     private void addDefaultStaves() {

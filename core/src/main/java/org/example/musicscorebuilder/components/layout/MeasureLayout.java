@@ -13,6 +13,8 @@ public class MeasureLayout {
     private final List<StaffLayout> staves = new ArrayList<>();
     private final List<SegmentLayout> segments = new ArrayList<>();
     private List<BeamGroupLayout> beams = new ArrayList<>();
+    private VoltaSliceLayout voltaSlice = null;
+    private List<JumpMarkLayout> jumpMarks = new ArrayList<>();
     private double x, y;
 
     public MeasureLayout(Measure measure, SystemLayout parent, ScoreStyle scoreStyle) {
@@ -33,6 +35,7 @@ public class MeasureLayout {
 
     public void add(StaffLayout staffLayout) { staves.add(staffLayout); }
     public void add(SegmentLayout segmentLayout) { segments.add(segmentLayout); }
+    public void add(JumpMarkLayout jumpMarkLayout) { jumpMarks.add(jumpMarkLayout); }
 
     public void addSystemClef() {
         SegmentLayout seg = new SegmentLayout(SegmentType.CLEF, this);
@@ -65,6 +68,8 @@ public class MeasureLayout {
         segments.removeIf(SegmentLayout::isSystemGenerated);
     }
 
+    public void clearJumpMarks() { this.jumpMarks.clear(); }
+
     public void resetLayoutState() {
         this.x = 0.0;
         for (int i = 0; i < segments.size(); i++) {
@@ -95,6 +100,8 @@ public class MeasureLayout {
     public List<SegmentLayout> getSegments() { return segments; }
     public List<StaffLayout> getStaffs() { return staves; }
     public List<BeamGroupLayout> getBeamGroups() { return beams; }
+    public VoltaSliceLayout getVoltaSlice() { return voltaSlice; }
+    public List<JumpMarkLayout> getJumpMarks() { return jumpMarks; }
     public double getX() { return x; }
     public double getY() { return y; }
 
@@ -124,7 +131,6 @@ public class MeasureLayout {
 
     public void setX(double x) { this.x = x; }
     public void setBeamGroups(List<BeamGroupLayout> beamGroups) { this.beams = beamGroups; }
-    public void setParent(SystemLayout parent) {
-        this.parent = parent;
-    }
+    public void setParent(SystemLayout parent) { this.parent = parent; }
+    public void setVoltaSlice(VoltaSliceLayout voltaSlice) { this.voltaSlice = voltaSlice; }
 }
