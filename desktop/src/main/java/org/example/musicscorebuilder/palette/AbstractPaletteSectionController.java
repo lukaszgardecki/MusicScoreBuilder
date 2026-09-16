@@ -21,7 +21,6 @@ import org.example.musicscorebuilder.managers.ScoreStateManager;
 import java.util.List;
 
 public abstract class AbstractPaletteSectionController<T> {
-    protected final double defaultCanvasWidth = 45;
     protected final double defaultCanvasHeight = 35;
     protected final ScoreStateManager stateManager = ScoreStateManager.getInstance();
     protected final GridPane gridPane;
@@ -51,6 +50,14 @@ public abstract class AbstractPaletteSectionController<T> {
     protected abstract Node createButtonGraphic(T item);
     protected abstract boolean applyToSelectedElement(T item);
 
+    protected double getCanvasWidth() {
+        return switch (getColumnsCount()) {
+            case 1 -> 180.0;
+            case 2 -> 90.0;
+            default -> 45.0;
+        };
+    }
+
     public AbstractPaletteSectionController(GridPane gridPane) {
         this.gridPane = gridPane;
     }
@@ -64,7 +71,6 @@ public abstract class AbstractPaletteSectionController<T> {
 
         for (int i = 0; i < columns; i++) {
             ColumnConstraints colConstraints = new ColumnConstraints();
-            colConstraints.setPrefWidth(defaultCanvasWidth + 12);
             colConstraints.setPercentWidth(percentageWidth);
             colConstraints.setHgrow(Priority.ALWAYS);
             colConstraints.setHalignment(javafx.geometry.HPos.CENTER);
@@ -123,8 +129,9 @@ public abstract class AbstractPaletteSectionController<T> {
     }
 
     protected Canvas createBaseCanvas(boolean extraHeight, boolean withStaff) {
+        double canvasWidth = getCanvasWidth();
         double canvasHeight = extraHeight ? defaultCanvasHeight + 10 : defaultCanvasHeight;
-        Canvas canvas = new Canvas(defaultCanvasWidth, canvasHeight);
+        Canvas canvas = new Canvas(canvasWidth, canvasHeight);
         GraphicsContext gc = canvas.getGraphicsContext2D();
         gc.setImageSmoothing(false);
 
@@ -138,7 +145,7 @@ public abstract class AbstractPaletteSectionController<T> {
     }
 
     protected double calculateMeasureX(ElementLayout mockLayout) {
-        return Math.round((defaultCanvasWidth / 2.0) - (mockLayout.getWidth() / 2.0));
+        return Math.round((getCanvasWidth() / 2.0) - (mockLayout.getWidth() / 2.0));
     }
 
     protected double calculateMeasureY(boolean extraHeight) {

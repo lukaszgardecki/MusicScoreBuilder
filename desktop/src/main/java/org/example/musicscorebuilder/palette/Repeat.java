@@ -4,6 +4,7 @@ public enum Repeat {
 
     // Symbole graficzne:
     SEGNO(""),
+    SEGNO_SERPENT_1(""),
     CODA(""),
     CODA_SQUARE(""),
 

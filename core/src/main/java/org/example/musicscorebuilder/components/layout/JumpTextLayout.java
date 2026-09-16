@@ -3,7 +3,6 @@ package org.example.musicscorebuilder.components.layout;
 import org.example.musicscorebuilder.components.music.JumpMark;
 
 public class JumpTextLayout extends JumpMarkLayout {
-    private double width = 6.0;
     private double y;
 
     public JumpTextLayout(JumpMark jumpMark, MeasureLayout parentMeasure, StaffLayout parentStaff, double y) {
@@ -21,7 +20,7 @@ public class JumpTextLayout extends JumpMarkLayout {
     }
 
     @Override public double getY() { return y; }
-    @Override public double getWidth() { return width; }
+    @Override public double getWidth() { return getText().length() * 1.1; }
     @Override public double getHeight() { return getFontSize() + 0.2; }
     @Override public double getBoxY() {return getY() - getHeight();}
 

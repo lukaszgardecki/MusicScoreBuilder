@@ -3,6 +3,7 @@ package org.example.musicscorebuilder.components.music;
 public enum JumpType {
 
     SEGNO("", Position.START_OF_MEASURE, Leland.SEGNO),
+    SEGNO_SERPENT_1("", Position.START_OF_MEASURE, Leland.SEGNO_SERPENT_1),
     CODA("", Position.START_OF_MEASURE, Leland.CODA),
     CODA_SQUARE("", Position.START_OF_MEASURE, Leland.CODA_SQUARE),
 
