@@ -3,7 +3,7 @@ package org.example.musicscorebuilder.components.music;
 public enum JumpType {
 
     SEGNO("", Position.START_OF_MEASURE, Leland.SEGNO),
-    SEGNO_SERPENT_1("", Position.START_OF_MEASURE, Leland.SEGNO_SERPENT_1),
+    SEGNO_SERPENT_1("", Position.START_OF_MEASURE, 0.7, Leland.SEGNO_SERPENT_1),
     CODA("", Position.START_OF_MEASURE, Leland.CODA),
     CODA_SQUARE("", Position.START_OF_MEASURE, Leland.CODA_SQUARE),
 
@@ -18,6 +18,7 @@ public enum JumpType {
 
     private final String defaultText;
     private final Position defaultPosition;
+    private final double heightFactor;
     private final Leland fontData;
 
     public enum Position { START_OF_MEASURE, END_OF_MEASURE }
@@ -26,10 +27,19 @@ public enum JumpType {
         this.defaultText = defaultText;
         this.defaultPosition = defaultPosition;
         this.fontData = fontData;
+        this.heightFactor = 1.0;
+    }
+
+    JumpType(String defaultText, Position defaultPosition, double heightFactor, Leland fontData) {
+        this.defaultText = defaultText;
+        this.defaultPosition = defaultPosition;
+        this.fontData = fontData;
+        this.heightFactor = heightFactor;
     }
 
     public String getDefaultText() { return defaultText; }
     public Position getDefaultPosition() { return defaultPosition; }
+    public double getHeightFactor() { return heightFactor; }
     public Leland getFontData() { return fontData; }
     public boolean isSymbol() { return fontData != null; }
 }

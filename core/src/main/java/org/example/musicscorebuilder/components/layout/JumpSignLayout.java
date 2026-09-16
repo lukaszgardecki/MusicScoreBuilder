@@ -11,7 +11,7 @@ public class JumpSignLayout extends JumpMarkLayout {
     public JumpSignLayout(JumpMark jumpMark, MeasureLayout parentMeasure, StaffLayout parentStaff, double y) {
         super(jumpMark, parentMeasure, parentStaff);
         this.fontData = jumpMark.getType().getFontData();
-        this.height = staff.getHeight();
+        this.height = staff.getHeight() * jumpMark.getType().getHeightFactor();
         this.y = y;
     }
 
