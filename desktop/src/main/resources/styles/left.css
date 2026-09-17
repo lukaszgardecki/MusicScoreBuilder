@@ -133,3 +133,120 @@
 
 .fraction-text { -fx-font-size: 20px; }
 .single-text { -fx-font-size: 24px; }
+
+
+
+
+
+
+.custom-tab-header {
+    -fx-border-color: #e0e0e0;
+    -fx-border-width: 0 0 1px 0;
+    -fx-spacing: 0;
+}
+
+.custom-tab-button {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 2px 0;
+    -fx-padding: 6 0 6 0;
+    -fx-text-fill: #666666;
+    -fx-font-size: 13px;
+    -fx-font-weight: normal;
+    -fx-alignment: CENTER;
+    -fx-cursor: hand;
+}
+
+.custom-tab-button:hover {
+    -fx-text-fill: #333333;
+}
+
+.custom-tab-button:selected {
+    -fx-background-color: transparent;
+    -fx-border-color: #52a2f6;
+    -fx-border-width: 0 0 2px 0;
+    -fx-text-fill: #111111;
+    -fx-font-weight: bold;
+}
+
+
+
+
+
+
+
+/* Kontener i nagłówki sekcji */
+.volta-properties-grid {
+    -fx-hgap: 8px;
+    -fx-vgap: 6px;
+    -fx-padding: 4px 8px;
+}
+
+.section-subtitle-label {
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-text-fill: #222222;
+}
+
+/* Przetoczniki segmentowe (Segment Buttons) */
+.segment-button {
+    -fx-background-color: #dce1e7;
+    -fx-background-radius: 3px;
+    -fx-border-radius: 3px;
+    -fx-padding: 6px 10px;
+    -fx-font-size: 11px;
+    -fx-text-fill: #333333;
+    -fx-cursor: hand;
+}
+
+.segment-button:hover {
+    -fx-background-color: #cfd6e0;
+}
+
+.segment-button:selected {
+    -fx-background-color: #92c1f0;
+    -fx-text-fill: #102a45;
+    -fx-font-weight: bold;
+}
+
+/* Ikona Reset (odświeżenie) */
+.property-reset-icon-btn {
+    -fx-shape: "M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z";
+    -fx-background-color: #555555; /* Kolor samej ikony */
+    -fx-min-width: 16px;
+    -fx-max-width: 16px;
+    -fx-min-height: 16px;
+    -fx-max-height: 16px;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.property-reset-icon-btn:hover {
+    -fx-background-color: #1a73e8; /* Zmiana koloru po najechaniu myszą */
+}
+
+/* Ikona Trzech Kropek (Więcej opcji) */
+.property-more-options-btn {
+    -fx-shape: "M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z";
+    -fx-background-color: #777777; /* Kolor samej ikony */
+    -fx-min-width: 14px;
+    -fx-max-width: 14px;
+    -fx-min-height: 14px;
+    -fx-max-height: 14px;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.property-more-options-btn:hover {
+    -fx-background-color: #333333;
+}
+
+/* Pola tekstowe i spinnery */
+.properties-spinner, .metadata-input {
+    -fx-background-radius: 3px;
+    -fx-border-color: #cccccc;
+    -fx-border-radius: 3px;
+    -fx-background-color: #ffffff;
+}

@@ -1,6 +1,7 @@
 package org.example.musicscorebuilder.components.layout;
 
 import org.example.musicscorebuilder.components.music.JumpMark;
+import org.example.musicscorebuilder.components.music.JumpType;
 
 public class JumpTextLayout extends JumpMarkLayout {
     private double y;
@@ -12,17 +13,23 @@ public class JumpTextLayout extends JumpMarkLayout {
 
     @Override
     public boolean contains(double px, double py) {
-        double minX = getX();
-        double maxX = getX() + getWidth();
+        double sp = style.getStaffLineSpacing();
+        double textX = getX() * sp;
+        double w = getWidth();
+
+        double minX = (getPosition() == JumpType.Position.END_OF_MEASURE) ? textX - w : textX;
+        double maxX = minX + w;
+
         double minY = getBoxY();
         double maxY = minY + getHeight();
+
         return px >= minX && px <= maxX && py >= minY && py <= maxY;
     }
 
     @Override public double getY() { return y; }
-    @Override public double getWidth() { return getText().length() * 1.1; }
-    @Override public double getHeight() { return getFontSize() + 0.2; }
-    @Override public double getBoxY() {return getY() - getHeight();}
+    @Override public double getWidth() { return getText().length() * 0.55 * getFontSize() * style.getStaffLineSpacing(); }
+    @Override public double getHeight() { return getFontSize() * style.getStaffLineSpacing(); }
+    @Override public double getBoxY() { return (getY() - getFontSize()) * style.getStaffLineSpacing(); }
 
     public String getText() {
         return jumpMark.getText() != null && !jumpMark.getText().trim().isEmpty()

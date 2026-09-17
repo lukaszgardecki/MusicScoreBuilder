@@ -6,6 +6,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.StrokeLineCap;
 import javafx.scene.shape.StrokeLineJoin;
 import org.example.musicscorebuilder.components.layout.VoltaSliceLayout;
+import org.example.musicscorebuilder.components.music.Volta;
 import org.example.musicscorebuilder.managers.FontManager;
 
 public class VoltaView extends ComponentView {
@@ -20,6 +21,10 @@ public class VoltaView extends ComponentView {
         gc.save();
 
         setupGraphicsContext(gc, voltaSlice, sp);
+        if (voltaSlice.isSelected()) {
+            selectElement(gc, voltaSlice);
+        }
+
         drawBracket(gc, voltaSlice, startX, endX, voltaY, sp);
         drawText(gc, voltaSlice, startX, voltaY, sp);
 
@@ -29,30 +34,43 @@ public class VoltaView extends ComponentView {
     private void setupGraphicsContext(GraphicsContext gc, VoltaSliceLayout slice, double sp) {
         gc.setStroke(Color.BLACK);
         gc.setFill(Color.BLACK);
-        gc.setLineWidth(slice.getLineWidth() * sp);
-        gc.setLineCap(StrokeLineCap.BUTT);
+
+        double lineWidth = slice.getLineWidth() * sp;
+        gc.setLineWidth(lineWidth);
         gc.setLineJoin(StrokeLineJoin.MITER);
+
+        Volta.LineStyle style = slice.getLineStyle();
+        if (style == Volta.LineStyle.DASHED) {
+            gc.setLineCap(StrokeLineCap.BUTT);
+            double dashLen = slice.getDashLength() * sp;
+            double dashGap = slice.getDashGap() * sp;
+            gc.setLineDashes(dashLen, dashGap);
+        } else if (style == Volta.LineStyle.DOTTED) {
+            gc.setLineCap(StrokeLineCap.BUTT);
+            gc.setLineDashes(lineWidth, lineWidth);
+        } else {
+            gc.setLineCap(StrokeLineCap.BUTT);
+            gc.setLineDashes((double[]) null);
+        }
     }
 
     private void drawBracket(GraphicsContext gc, VoltaSliceLayout slice, double startX, double endX, double voltaY, double sp) {
-        double hookHeight = slice.getHookHeight() * sp;
+        double startHookHeight = slice.getStartHookHeight() * sp;
+        double endHookHeight = slice.getEndHookHeight() * sp;
 
         gc.beginPath();
 
-        // Lewy narożnik i haczyk
         if (slice.isDrawLeftHook()) {
-            gc.moveTo(startX, voltaY + hookHeight);
+            gc.moveTo(startX, voltaY + startHookHeight);
             gc.lineTo(startX, voltaY);
         } else {
             gc.moveTo(startX, voltaY);
         }
 
-        // Poziomy dach klamry
         gc.lineTo(endX, voltaY);
 
-        // Prawy narożnik i haczyk
         if (slice.isDrawRightHook()) {
-            gc.lineTo(endX, voltaY + hookHeight);
+            gc.lineTo(endX, voltaY + endHookHeight);
         }
 
         gc.stroke();
@@ -63,12 +81,18 @@ public class VoltaView extends ComponentView {
         if (text == null || text.isEmpty()) return;
 
         double fontSize = slice.getFontSize() * sp;
-        double hookHeight = slice.getHookHeight() * sp;
-        double textX = startX + (0.35 * sp);
-        double textBaselineY = voltaY + hookHeight;
+        double startHookHeight = slice.getStartHookHeight() * sp;
+        double textX = startX + (slice.getTextXOffset() * sp);
+        double textBaselineY = voltaY + startHookHeight;
 
         gc.setFont(FontManager.getFreeSerifFont(fontSize));
         gc.setTextBaseline(VPos.BASELINE);
         gc.fillText(text, textX, textBaselineY);
+    }
+
+    private void selectElement(GraphicsContext gc, VoltaSliceLayout slice) {
+        Color selectColor = Color.web(slice.getStyle().getSelectColor(slice));
+        gc.setFill(selectColor);
+        gc.setStroke(selectColor);
     }
 }

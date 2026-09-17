@@ -15,12 +15,16 @@ public class PropertiesPanelController {
     @FXML private TitledPane framePane;
     @FXML private GridPane frameProperties;
 
+    @FXML private TitledPane voltaPane;
+    @FXML private GridPane voltaProperties;
+
     private final List<PropertySection> sections = new ArrayList<>();
 
     @FXML
     public void initialize() {
         sections.add(new GeneralSectionHandler(generalPane, generalProperties));
         sections.add(new FrameSectionHandler(framePane, frameProperties));
+        sections.add(new VoltaSectionHandler(voltaPane, voltaProperties));
 
         ScoreStateManager stateManager = ScoreStateManager.getInstance();
         stateManager.addScoreChangeListener(this::refreshAll);

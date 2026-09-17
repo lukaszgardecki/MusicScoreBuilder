@@ -25,6 +25,15 @@
                 </columnConstraints>
             </GridPane>
         </TitledPane>
+
+        <TitledPane fx:id="voltaPane" text="Volta" expanded="true" styleClass="titled-pane" visible="false" managed="false">
+            <GridPane fx:id="voltaProperties" styleClass="properties-grid" snapToPixel="false">
+                <columnConstraints>
+                    <ColumnConstraints hgrow="ALWAYS" halignment="LEFT" />
+                    <ColumnConstraints hgrow="NEVER" halignment="RIGHT" />
+                </columnConstraints>
+            </GridPane>
+        </TitledPane>
     </VBox>
 
 </ScrollPane>

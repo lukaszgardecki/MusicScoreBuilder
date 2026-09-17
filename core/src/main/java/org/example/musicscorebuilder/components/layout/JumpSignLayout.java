@@ -1,6 +1,7 @@
 package org.example.musicscorebuilder.components.layout;
 
 import org.example.musicscorebuilder.components.music.JumpMark;
+import org.example.musicscorebuilder.components.music.JumpType;
 import org.example.musicscorebuilder.components.music.Leland;
 
 public class JumpSignLayout extends JumpMarkLayout {
@@ -17,10 +18,14 @@ public class JumpSignLayout extends JumpMarkLayout {
 
     @Override
     public boolean contains(double px, double py) {
-        double minX = getX();
-        double maxX = getX() + getWidth();
-        double minY = -y - getHeight();
-        double maxY = -y;
+        double minX = (getPosition() == JumpType.Position.END_OF_MEASURE)
+                ? getX() - getWidth()
+                : getX();
+        double maxX = minX + getWidth();
+
+        double minY = getBoxY();
+        double maxY = minY + getHeight();
+
         return px >= minX && px <= maxX && py >= minY && py <= maxY;
     }
 

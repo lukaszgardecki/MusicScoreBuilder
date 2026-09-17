@@ -115,6 +115,14 @@ public class ScoreStyle {
     private static final double TIE_MAX_THICKNESS                           = 0.2;
     private static final double SLUR_MAX_THICKNESS                          = 0.3;
 
+    private static final double VOLTA_FONT_SIZE                             = 2.6;
+    private static final double VOLTA_TEXT_X_OFFSET                         = 0.5;
+    private static final double VOLTA_Y_OFFSET                              = 2.8;
+    private static final double VOLTA_LEFT_HOOK_HEIGHT                      = 2.2;
+    private static final double VOLTA_RIGHT_HOOK_HEIGHT                     = VOLTA_LEFT_HOOK_HEIGHT;
+    private static final double VOLTA_LINE_WIDTH                            = 0.14;
+    private static final double VOLTA_LINE_DASH_LENGTH                      = 1.2;
+    private static final double VOLTA_LINE_DASH_GAP_LENGTH                  = 1.2;
     private static final double JUMP_MARK_FONT_SIZE                         = 2.3;
 
     private double pageSpacing = PAGE_SPACING;
@@ -212,6 +220,14 @@ public class ScoreStyle {
 
     private double footerDefPageNumFontSize = FOOTER_DEF_PAGE_NUM_FONT_SIZE;
 
+    private double voltaFontSize = VOLTA_FONT_SIZE;
+    private double voltaTextXOffset = VOLTA_TEXT_X_OFFSET;
+    private double voltaYOffset = VOLTA_Y_OFFSET;
+    private double voltaLeftHookHeight = VOLTA_LEFT_HOOK_HEIGHT;
+    private double voltaRightHookHeight = VOLTA_RIGHT_HOOK_HEIGHT;
+    private double voltaLineWidth  = VOLTA_LINE_WIDTH;
+    private double voltaLineDashLength = VOLTA_LINE_DASH_LENGTH;
+    private double voltaLineDashGapLength = VOLTA_LINE_DASH_GAP_LENGTH;
     private double jumpMarkFontSize = JUMP_MARK_FONT_SIZE;
 
     public double getPageSpacing() { return staffSpacingScale * pageSpacing; }
@@ -307,6 +323,14 @@ public class ScoreStyle {
     public double getTieMaxThickness() { return staffSpacingScale * TIE_MAX_THICKNESS; }
     public double getSlurMaxThickness() { return staffSpacingScale * SLUR_MAX_THICKNESS; }
 
+    public double getVoltaFontSize() { return voltaFontSize; }
+    public double getVoltaTextXOffset() { return voltaTextXOffset; }
+    public double getVoltaYOffset() { return voltaYOffset; }
+    public double getVoltaLeftHookHeight() { return voltaLeftHookHeight; }
+    public double getVoltaRightHookHeight() { return voltaRightHookHeight; }
+    public double getVoltaLineWidth() { return voltaLineWidth; }
+    public double getVoltaLineDashLength() { return voltaLineDashLength; }
+    public double getVoltaLineDashGapLength() { return voltaLineDashGapLength; }
     public double getJumpMarkFontSize() { return jumpMarkFontSize; }
 
     public double toSp(double valueInMm) {

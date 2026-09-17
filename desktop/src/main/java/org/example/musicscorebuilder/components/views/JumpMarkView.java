@@ -25,6 +25,7 @@ public class JumpMarkView {
 
         gc.save();
         gc.setFill(Color.BLACK);
+        if (signLayout.isSelected()) selectElement(gc, signLayout);
         gc.setFont(FontManager.getLelandFont(fontSize));
         switch (signLayout.getPosition()) {
             case START_OF_MEASURE -> gc.setTextAlign(TextAlignment.LEFT);
@@ -41,6 +42,7 @@ public class JumpMarkView {
 
         gc.save();
         gc.setFill(Color.BLACK);
+        if (textLayout.isSelected()) selectElement(gc, textLayout);
         gc.setFont(FontManager.getFreeSerifFont(fontSize));
         switch (textLayout.getPosition()) {
             case START_OF_MEASURE -> gc.setTextAlign(TextAlignment.LEFT);
@@ -48,5 +50,11 @@ public class JumpMarkView {
         }
         gc.fillText(textLayout.getText(), textX, textY);
         gc.restore();
+    }
+
+    private void selectElement(GraphicsContext gc, JumpMarkLayout element) {
+        Color selectColor = Color.web(element.getScoreStyle().getSelectColor(element));
+        gc.setFill(selectColor);
+        gc.setStroke(selectColor);
     }
 }

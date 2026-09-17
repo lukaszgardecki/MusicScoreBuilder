@@ -67,6 +67,21 @@ public class LayoutHitTester {
                     double measureX = systemX - measure.getX();
                     double measureY = systemY - measure.getY();
 
+                    VoltaSliceLayout volta = measure.getVoltaSlice();
+                    if (volta != null && volta.contains(measureX, measureY)) {
+                        return volta;
+                    }
+
+                    List<JumpMarkLayout> jumpMarks = measure.getJumpMarks();
+                    if (jumpMarks != null) {
+                        for (int j = 0; j < jumpMarks.size(); j++) {
+                            JumpMarkLayout jump = jumpMarks.get(j);
+                            if (jump != null && jump.contains(measureX, measureY)) {
+                                return jump;
+                            }
+                        }
+                    }
+
                     if (measureX < -1.0 || measureX > measure.getWidth() + 1.0) {
                         continue;
                     }
@@ -245,6 +260,25 @@ public class LayoutHitTester {
             itemsToSelect.add(tie);
         } else if (clickedElement instanceof SlurLayout slur) {
             itemsToSelect.add(slur);
+        } else if (clickedElement instanceof VoltaSliceLayout voltaSlice) {
+            itemsToSelect.add(voltaSlice);
+
+            Volta targetVolta = voltaSlice.getVolta();
+            MeasureLayout measure = voltaSlice.getMeasureLayout();
+
+            if (targetVolta != null && measure != null && measure.getParent() != null && measure.getParent().getPageLayout() != null) {
+                ScoreLayout score = measure.getParent().getPageLayout().getParent();
+                if (score != null) {
+                    score.getPages().stream()
+                            .flatMap(p -> p.getSystems().stream())
+                            .flatMap(sys -> sys.getMeasures().stream())
+                            .map(MeasureLayout::getVoltaSlice)
+                            .filter(s -> s != null && s.getVolta() == targetVolta)
+                            .forEach(s -> {
+                                if (!itemsToSelect.contains(s)) itemsToSelect.add(s);
+                            });
+                }
+            }
         } else if (clickedElement instanceof MeasureStaffSelection selection) {
             itemsToSelect.add(selection);
 
@@ -487,7 +521,6 @@ public class LayoutHitTester {
         @Override public StaffLayout getStaff() { return null; }
     }
 
-    public record PositionedNote(NoteLayout noteLayout, double segmentX, double segmentY) {}
     public record Point(double x, double y) {}
 
     public static LyricHit findClickedLyric(List<PageLayout> pages, double x, double y) {
