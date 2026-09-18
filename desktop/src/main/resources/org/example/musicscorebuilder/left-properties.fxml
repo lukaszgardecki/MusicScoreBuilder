@@ -34,6 +34,15 @@
                 </columnConstraints>
             </GridPane>
         </TitledPane>
+
+        <TitledPane fx:id="tempoPane" text="Volta" expanded="true" styleClass="titled-pane" visible="false" managed="false">
+            <GridPane fx:id="tempoProperties" styleClass="properties-grid" snapToPixel="false">
+                <columnConstraints>
+                    <ColumnConstraints hgrow="ALWAYS" halignment="LEFT" />
+                    <ColumnConstraints hgrow="NEVER" halignment="RIGHT" />
+                </columnConstraints>
+            </GridPane>
+        </TitledPane>
     </VBox>
 
 </ScrollPane>
