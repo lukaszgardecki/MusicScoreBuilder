@@ -69,9 +69,8 @@ public class VoltaBuilder {
     private VoltaSliceLayout createVoltaSlice(Volta volta, MeasureLayout ml, Measure startMeasure, Measure endMeasure) {
         boolean isVoltaStart = (ml.getMeasure() == startMeasure);
         boolean isVoltaEnd = (ml.getMeasure() == endMeasure);
-        double startXOffset = MeasureOffsetCalculator.calculateStartXOffset(ml);
-        double endXOffset = MeasureOffsetCalculator.calculateEndXOffset(ml);
-
+        double startXOffset = isVoltaStart ? MeasureOffsetCalculator.calculateStartXOffset(ml) : 0.0;
+        double endXOffset = isVoltaEnd ? MeasureOffsetCalculator.calculateEndXOffset(ml) : ml.getWidth();
         boolean drawLeftHook = isVoltaStart;
         boolean drawRightHook = isVoltaEnd && volta.isClosedEnd();
         String text = isVoltaStart ? volta.getText() : null;

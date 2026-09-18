@@ -25,8 +25,8 @@ public class VoltaSliceLayout implements Selectable {
         this.drawLeftHook = drawLeftHook;
         this.drawRightHook = drawRightHook;
         var halfLineWidth = getLineWidth() * 0.5;
-        this.startXOffset = startXOffset + halfLineWidth;
-        this.endXOffset = endXOffset - halfLineWidth;
+        this.startXOffset = drawLeftHook ? (startXOffset + halfLineWidth) : startXOffset;
+        this.endXOffset = drawRightHook ? (endXOffset - halfLineWidth) : endXOffset;
     }
 
     public VoltaSliceLayout(Volta volta, String text, boolean drawLeftHook, boolean drawRightHook) {
