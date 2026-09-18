@@ -9,6 +9,7 @@ public class PaletteController {
     @FXML private GridPane repeatsGrid;
     @FXML private GridPane barLinesGrid;
     @FXML private GridPane keySignatureGrid;
+    @FXML private GridPane tempoGrid;
     @FXML private GridPane layoutGrid;
 
     @FXML
@@ -18,6 +19,7 @@ public class PaletteController {
         new RepeatsSectionController(repeatsGrid).build();
         new BarlinesSectionController(barLinesGrid).build();
         new KeySignatureSectionController(keySignatureGrid).build();
+        new TempoSectionController(tempoGrid).build();
         new LayoutSectionController(layoutGrid).build();
     }
 }

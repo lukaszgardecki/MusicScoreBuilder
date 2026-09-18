@@ -12,6 +12,7 @@ public class SegmentLayout {
     private SegmentLayout next;
     private SegmentLayout prev;
     private final MeasureLayout parent;
+    private TempoLayout tempoLayout;
     private final Map<StaffLayout, List<ElementLayout>> staffElements = new HashMap<>();
     private SegmentType type;
     private double x, y = 0, height;
@@ -253,6 +254,7 @@ public class SegmentLayout {
     public CursorLayout getCursor() { return cursorLayout; }
     public boolean hasActiveCursor() { return cursorLayout != null; }
     public Segment getSegment() { return segment; }
+    public TempoLayout getTempoLayout() { return tempoLayout; }
     public SegmentLayout getNext() { return next; }
     public SegmentLayout getPrev() { return prev; }
 
@@ -278,7 +280,17 @@ public class SegmentLayout {
         return null;
     }
 
+    public NoteRestLayout getFirstNoteRestLayout() {
+        for (ElementLayout element : getElements()) {
+            if (element instanceof NoteRestLayout noteRest) {
+                return noteRest;
+            }
+        }
+        return null;
+    }
+
     public void setX(double x) { this.x = x; }
+    public void setTempoLayout(TempoLayout tempoLayout) { this.tempoLayout = tempoLayout; }
     public void setExtraWidth(double extraWidth) { this.extraWidth = extraWidth; }
     public void setType(SegmentType type) { this.type = type; }
     public void setCursor(CursorLayout cursor) { this.cursorLayout = cursor; }

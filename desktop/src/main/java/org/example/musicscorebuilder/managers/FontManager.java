@@ -1,6 +1,7 @@
 package org.example.musicscorebuilder.managers;
 
 import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
@@ -34,6 +35,14 @@ public class FontManager extends AbstractFontManager {
         INSTANCE.ensureLoaded(FontType.FREE_SERIF);
         Font font = fxFonts.get(FontType.FREE_SERIF);
         return font != null ? new Font(font.getName(), size) : new Font(size);
+    }
+
+    public static Font getFreeSerifBoldFont(double size) {
+        INSTANCE.ensureLoaded(FontType.FREE_SERIF);
+        Font font = fxFonts.get(FontType.FREE_SERIF);
+        return font != null
+                ? Font.font(font.getName(), FontWeight.BOLD, size)
+                : Font.font("System", FontWeight.BOLD, size);
     }
 
     @Override

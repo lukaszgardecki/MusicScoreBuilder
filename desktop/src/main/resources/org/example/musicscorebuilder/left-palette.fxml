@@ -28,6 +28,11 @@
         <TitledPane text="Oznaczenia tonacji" expanded="true" styleClass="titled-pane">
             <GridPane fx:id="keySignatureGrid" styleClass="palette-grid" snapToPixel="false" />
         </TitledPane>
+
+        <TitledPane text="Oznaczenia tempa" expanded="true" styleClass="titled-pane">
+            <GridPane fx:id="tempoGrid" styleClass="palette-grid" snapToPixel="false" />
+        </TitledPane>
+
         <TitledPane text="Układ" expanded="true" styleClass="titled-pane">
             <GridPane fx:id="layoutGrid" styleClass="palette-grid" snapToPixel="false" />
         </TitledPane>

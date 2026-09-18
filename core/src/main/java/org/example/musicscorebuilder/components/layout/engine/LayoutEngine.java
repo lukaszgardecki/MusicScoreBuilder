@@ -22,6 +22,7 @@ public class LayoutEngine {
     private final CourtesyLayoutHandler courtesyLayoutHandler;
     private final LayoutLinker layoutLinker;
     private final JumpMarkBuilder jumpMarkBuilder;
+    private final TempoBuilder tempoBuilder;
 
     public LayoutEngine() {
         this.systemJustifier = new SystemJustifier();
@@ -29,6 +30,7 @@ public class LayoutEngine {
         this.slurBuilder = new SlurBuilder();
         this.voltaBuilder = new VoltaBuilder(measureCache);
         this.jumpMarkBuilder = new JumpMarkBuilder(measureCache);
+        this.tempoBuilder = new TempoBuilder(measureCache);
         this.frameBuilder = new FrameBuilder();
         this.courtesyLayoutHandler = new CourtesyLayoutHandler();
         this.layoutLinker = new LayoutLinker();
@@ -348,6 +350,7 @@ public class LayoutEngine {
         slurBuilder.buildSlurs(scoreMode.getSlurs(), pages);
         voltaBuilder.buildVoltas(scoreMode.getVoltas(), scoreLayout);
         jumpMarkBuilder.buildJumpMarks(scoreMode.getJumpMarks(), scoreLayout);
+        tempoBuilder.buildTempos(scoreMode.getTempos());
     }
 
     private List<LyricLayout> createSingleLyricLine(NoteLayout noteLayout, int verseNumber) {

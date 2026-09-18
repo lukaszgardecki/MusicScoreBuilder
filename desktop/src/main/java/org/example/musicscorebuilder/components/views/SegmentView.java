@@ -14,6 +14,7 @@ public class SegmentView extends ComponentView {
     private final TimeSigView timeSigView = new TimeSigView();
     private final NoteView noteView = new NoteView();
     private final RestView restView = new RestView();
+    private final TempoView tempoView = new TempoView();
 
     public void draw(GraphicsContext gc, SegmentLayout segment, double measureX, double measureY, double sp) {
         double segmentX = segment.getX() * sp + measureX;
@@ -30,6 +31,10 @@ public class SegmentView extends ComponentView {
                 drawElement(gc, element, segmentX, segmentY, sp);
                 gc.restore();
             }
+        }
+
+        if (segment.getTempoLayout() != null) {
+            tempoView.draw(gc, segment.getTempoLayout(), segmentX, segmentY, sp);
         }
 
         ModeManager modeManager = ModeManager.getInstance();

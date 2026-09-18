@@ -53,7 +53,7 @@ public abstract class AbstractPaletteSectionController<T> {
     protected double getCanvasWidth() {
         return switch (getColumnsCount()) {
             case 1 -> 180.0;
-            case 2 -> 90.0;
+            case 2, 3 -> 90.0;
             default -> 45.0;
         };
     }

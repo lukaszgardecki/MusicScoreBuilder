@@ -32,6 +32,8 @@ public class ScoreMode {
     private final List<Volta> voltas = new ArrayList<>();
     @JsonProperty("jumpMarks")
     private final List<JumpMark> jumpMarks = new ArrayList<>();
+    @JsonProperty("tempos")
+    private final List<Tempo> tempos = new ArrayList<>();
 
     @JsonIgnore
     private final Map<Integer, Verse> verses = new TreeMap<>();
@@ -46,6 +48,7 @@ public class ScoreMode {
             @JsonProperty("slurs") List<Slur> slurs,
             @JsonProperty("voltas") List<Volta> voltas,
             @JsonProperty("jumpMarks") List<JumpMark> jumpMarks,
+            @JsonProperty("tempos") List<Tempo> tempos,
             @JsonProperty("frames") List<Frame> frames,
             @JsonProperty("style") ScoreStyle style
     ) {
@@ -70,6 +73,10 @@ public class ScoreMode {
             this.jumpMarks.addAll(jumpMarks);
             rebindJumpMarks();
         }
+        if (tempos != null) {
+            this.tempos.addAll(tempos);
+            rebindTempos();
+        }
         if (frames != null) {
             this.frames.addAll(frames);
         }
@@ -93,6 +100,7 @@ public class ScoreMode {
     public void addFrame(Frame frame) { frames.add(frame); }
     public void addVolta(Volta volta) { voltas.add(volta); }
     public void addJumpMark(JumpMark jumpMark) { jumpMarks.add(jumpMark); }
+    public void addTempo(Tempo tempo) { tempos.add(tempo); }
 
     public void appendMeasures(int count) {
         for (int i = 0; i < count; i++) appendMeasure();
@@ -145,6 +153,7 @@ public class ScoreMode {
         validateAndCleanSlurs();
         validateAndCleanVoltas();
         validateAndCleanJumpMarks();
+        validateAndCleanTempos();
         rebuildVersesIndex();
 
         return removed;
@@ -175,6 +184,7 @@ public class ScoreMode {
     public void removeSlur(Slur slur) { slurs.remove(slur); }
     public void removeVolta(Volta volta) { voltas.remove(volta); }
     public void removeJumpMark(JumpMark jumpMark) { jumpMarks.remove(jumpMark); }
+    public void removeTempo(Tempo tempo) { tempos.remove(tempo); }
 
     public ScoreStyle getStyle() { return style; }
     public void setStyle(ScoreStyle style) { this.style = style != null ? style : new ScoreStyle(); }
@@ -195,6 +205,11 @@ public class ScoreMode {
     public List<JumpMark> getJumpMarks() {
         updateJumpMarkIndices();
         return jumpMarks;
+    }
+
+    public List<Tempo> getTempos() {
+        updateTempoIndices();
+        return tempos;
     }
 
     @JsonProperty("frames")
@@ -299,6 +314,7 @@ public class ScoreMode {
         validateAndCleanSlurs();
         validateAndCleanVoltas();
         validateAndCleanJumpMarks();
+        validateAndCleanTempos();
     }
 
     public void setNewKeySignatureFromMeasure(int key, Measure measure) {
@@ -457,6 +473,35 @@ public class ScoreMode {
         jumpMarks.removeIf(j -> j.getMeasure() == null);
     }
 
+    public void updateTempoIndices() {
+        if (measures.isEmpty()) {
+            tempos.clear();
+            return;
+        }
+
+        tempos.removeIf(t -> t.getMeasure() == null || !measures.contains(t.getMeasure()));
+
+        for (Tempo t : tempos) {
+            t.setMeasureIndex(measures.indexOf(t.getMeasure()));
+        }
+    }
+
+    public void rebindTempos() {
+        if (measures.isEmpty()) {
+            tempos.clear();
+            return;
+        }
+
+        for (Tempo t : tempos) {
+            int idx = t.getMeasureIndex();
+            if (idx >= 0 && idx < measures.size()) {
+                t.setMeasure(measures.get(idx));
+            }
+        }
+
+        tempos.removeIf(t -> t.getMeasure() == null);
+    }
+
     private void validateAndCleanSlurs() {
         if (slurs.isEmpty()) return;
         slurs.removeIf(slur -> slur.getStartNote() == null || slur.getEndNote() == null ||
@@ -473,6 +518,11 @@ public class ScoreMode {
     private void validateAndCleanJumpMarks() {
         if (jumpMarks.isEmpty()) return;
         jumpMarks.removeIf(j -> j.getMeasure() == null || !measures.contains(j.getMeasure()));
+    }
+
+    private void validateAndCleanTempos() {
+        if (tempos.isEmpty()) return;
+        tempos.removeIf(t -> t.getMeasure() == null || !measures.contains(t.getMeasure()));
     }
 
     private void addDefaultStaves() {

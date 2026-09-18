@@ -123,7 +123,12 @@ public class ScoreStyle {
     private static final double VOLTA_LINE_WIDTH                            = 0.14;
     private static final double VOLTA_LINE_DASH_LENGTH                      = 1.2;
     private static final double VOLTA_LINE_DASH_GAP_LENGTH                  = 1.2;
+
     private static final double JUMP_MARK_FONT_SIZE                         = 2.3;
+
+    private static final double TEMPO_TEXT_FONT_SIZE                        = 2.6;
+    private static final double TEMPO_TEXT_X_OFFSET                         = 0.0;
+    private static final double TEMPO_TEXT_Y_OFFSET                              = 2.8;
 
     private double pageSpacing = PAGE_SPACING;
     private double staffSpacing = STAFF_SPACING;
@@ -228,7 +233,12 @@ public class ScoreStyle {
     private double voltaLineWidth  = VOLTA_LINE_WIDTH;
     private double voltaLineDashLength = VOLTA_LINE_DASH_LENGTH;
     private double voltaLineDashGapLength = VOLTA_LINE_DASH_GAP_LENGTH;
+
     private double jumpMarkFontSize = JUMP_MARK_FONT_SIZE;
+
+    private double tempoTextFontSize = TEMPO_TEXT_FONT_SIZE;
+    private double tempoTextXOffset = TEMPO_TEXT_X_OFFSET;
+    private double tempoTextYOffset = TEMPO_TEXT_Y_OFFSET;
 
     public double getPageSpacing() { return staffSpacingScale * pageSpacing; }
     public double getStaffSpacing() { return staffSpacingScale * staffSpacing; }
@@ -331,7 +341,12 @@ public class ScoreStyle {
     public double getVoltaLineWidth() { return voltaLineWidth; }
     public double getVoltaLineDashLength() { return voltaLineDashLength; }
     public double getVoltaLineDashGapLength() { return voltaLineDashGapLength; }
+
     public double getJumpMarkFontSize() { return jumpMarkFontSize; }
+
+    public double getTempoTextFontSize() { return tempoTextFontSize; }
+    public double getTempoTextXOffset() { return tempoTextXOffset; }
+    public double getTempoTextYOffset() { return tempoTextYOffset; }
 
     public double toSp(double valueInMm) {
         if (spatiumMm <= 0) return 0;

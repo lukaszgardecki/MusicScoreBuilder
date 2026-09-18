@@ -32,60 +32,57 @@ public class RepeatsSectionController extends AbstractPaletteSectionController<R
     @Override
     protected boolean applyToSelectedElement(Repeat item) {
         Selectable selectedLayout = stateManager.getSelectedItem();
-        if (selectedLayout == null) return false;
+        if (!(selectedLayout instanceof MeasureStaffSelection selection)) return false;
 
-        if (selectedLayout instanceof MeasureStaffSelection selection) {
-            ScoreMode mode = stateManager.getCurrentMode();
+        ScoreMode mode = stateManager.getCurrentMode();
+        Measure startMeasure = selection.getFirstMeasure() != null ? selection.getFirstMeasure().getMeasure() : null;
+        Measure endMeasure = selection.getLastMeasure() != null ? selection.getLastMeasure().getMeasure() : null;
 
-            Measure startMeasure = selection.getFirstMeasure() != null ? selection.getFirstMeasure().getMeasure() : null;
-            Measure endMeasure = selection.getLastMeasure() != null ? selection.getLastMeasure().getMeasure() : null;
+        if (startMeasure == null) return false;
 
-            if (startMeasure == null) return false;
+        if (isVolta(item)) {
+            if (endMeasure == null) return false;
 
-            if (isVolta(item)) {
-                if (endMeasure == null) return false;
+            Volta existingVolta = mode.getVoltas().stream()
+                    .filter(v -> v.getStartMeasure().equals(startMeasure))
+                    .findFirst()
+                    .orElse(null);
 
-                Volta existingVolta = mode.getVoltas().stream()
-                        .filter(v -> v.getStartMeasure().equals(startMeasure))
+            if (existingVolta != null) {
+                mode.removeVolta(existingVolta);
+                stateManager.notifyScoreChanged();
+                return true;
+            }
+
+            Volta volta = switch (item) {
+                case VOLTA_1, VOLTA_2_OPENED -> new Volta(startMeasure, endMeasure, item.getText(), false);
+                case VOLTA_2_CLOSED, VOLTA_3_CLOSED -> new Volta(startMeasure, endMeasure, item.getText(), true);
+                default -> null;
+            };
+
+            if (volta != null) {
+                mode.addVolta(volta);
+                stateManager.notifyScoreChanged();
+                return true;
+            }
+        } else {
+            JumpType jumpType = mapToJumpType(item);
+            if (jumpType != null) {
+                JumpMark existingJump = mode.getJumpMarks().stream()
+                        .filter(j -> j.getMeasure().equals(startMeasure) && j.getType() == jumpType)
                         .findFirst()
                         .orElse(null);
 
-                if (existingVolta != null) {
-                    mode.removeVolta(existingVolta);
+                if (existingJump != null) {
+                    mode.removeJumpMark(existingJump);
                     stateManager.notifyScoreChanged();
                     return true;
                 }
 
-                Volta volta = switch (item) {
-                    case VOLTA_1, VOLTA_2_OPENED -> new Volta(startMeasure, endMeasure, item.getText(), false);
-                    case VOLTA_2_CLOSED, VOLTA_3_CLOSED -> new Volta(startMeasure, endMeasure, item.getText(), true);
-                    default -> null;
-                };
-
-                if (volta != null) {
-                    mode.addVolta(volta);
-                    stateManager.notifyScoreChanged();
-                    return true;
-                }
-            } else {
-                JumpType jumpType = mapToJumpType(item);
-                if (jumpType != null) {
-                    JumpMark existingJump = mode.getJumpMarks().stream()
-                            .filter(j -> j.getMeasure().equals(startMeasure) && j.getType() == jumpType)
-                            .findFirst()
-                            .orElse(null);
-
-                    if (existingJump != null) {
-                        mode.removeJumpMark(existingJump);
-                        stateManager.notifyScoreChanged();
-                        return true;
-                    }
-
-                    JumpMark jumpMark = new JumpMark(jumpType, startMeasure);
-                    mode.addJumpMark(jumpMark);
-                    stateManager.notifyScoreChanged();
-                    return true;
-                }
+                JumpMark jumpMark = new JumpMark(jumpType, startMeasure);
+                mode.addJumpMark(jumpMark);
+                stateManager.notifyScoreChanged();
+                return true;
             }
         }
         return false;
