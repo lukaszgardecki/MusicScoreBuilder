@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.example.musicscorebuilder.components.layout.LyricLayout;
+import org.example.musicscorebuilder.components.layout.TempoLayout;
 import org.example.musicscorebuilder.components.views.util.TextMeasurer;
 import org.example.musicscorebuilder.managers.ClosingManager;
 import org.example.musicscorebuilder.managers.FontManager;
@@ -20,7 +21,8 @@ public class MusicScoreBuilder extends Application {
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(MusicScoreBuilder.class.getResource("main-view.fxml"));
         LyricLayout.setDefaultMeasurer(new TextMeasurer());
-        TextMeasurerService.setInstance(new FontManager());
+        TempoLayout.setDefaultMeasurer(FontManager.getInstance());
+        TextMeasurerService.setInstance(FontManager.getInstance());
         FontManager.loadFonts();
         Scene scene = new Scene(fxmlLoader.load());
         scene.getStylesheets().addAll(

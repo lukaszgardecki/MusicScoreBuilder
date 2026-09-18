@@ -102,6 +102,11 @@ public class LayoutHitTester {
                         double segmentMusicX = measureX - segment.getX();
                         double segmentMusicY = measureY - segment.getY();
 
+                        TempoLayout tempo = segment.getTempoLayout();
+                        if (tempo != null && tempo.contains(segmentMusicX, segmentMusicY)) {
+                            return tempo;
+                        }
+
                         List<ElementLayout> elements = segment.getElements();
                         for (int el = 0; el < elements.size(); el++) {
                             ElementLayout element = elements.get(el);
@@ -279,6 +284,8 @@ public class LayoutHitTester {
                             });
                 }
             }
+        } else if (clickedElement instanceof TempoLayout tempo) {
+            itemsToSelect.add(tempo);
         } else if (clickedElement instanceof MeasureStaffSelection selection) {
             itemsToSelect.add(selection);
 

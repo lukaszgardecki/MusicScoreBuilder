@@ -11,6 +11,8 @@ public class Tempo {
     private Double fontSize;
     private Double xOffset;
     private Double yOffset;
+    private Boolean bold;
+    private Boolean italic;
 
     @JsonIgnore
     private Measure measure;
@@ -20,15 +22,27 @@ public class Tempo {
     public Tempo() {}
 
     public Tempo(Measure measure, int segmentIndex, String text) {
-        this.measure = measure;
-        this.segmentIndex = segmentIndex;
-        this.text = text;
+        this(measure, segmentIndex, text, null, null);
     }
 
     public Tempo(int measureIndex, int segmentIndex, String text) {
+        this(measureIndex, segmentIndex, text, null, null);
+    }
+
+    public Tempo(Measure measure, int segmentIndex, String text, Boolean bold, Boolean italic) {
+        this.measure = measure;
+        this.segmentIndex = segmentIndex;
+        this.text = text;
+        this.bold = bold;
+        this.italic = italic;
+    }
+
+    public Tempo(int measureIndex, int segmentIndex, String text, Boolean bold, Boolean italic) {
         this.measureIndex = measureIndex;
         this.segmentIndex = segmentIndex;
         this.text = text;
+        this.bold = bold;
+        this.italic = italic;
     }
 
     @JsonProperty("text")
@@ -46,6 +60,14 @@ public class Tempo {
     @JsonProperty("yOffset")
     public Double getYOffset() { return yOffset; }
     public void setYOffset(Double yOffset) { this.yOffset = yOffset; }
+
+    @JsonProperty("bold")
+    public Boolean getBold() { return bold; }
+    public void setBold(Boolean bold) { this.bold = bold; }
+
+    @JsonProperty("italic")
+    public Boolean getItalic() { return italic; }
+    public void setItalic(Boolean italic) { this.italic = italic; }
 
     @JsonIgnore
     public Measure getMeasure() { return measure; }

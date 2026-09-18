@@ -15,6 +15,8 @@ public class FontManager extends AbstractFontManager {
     private static final FontRenderContext FRC = new FontRenderContext(null, true, true);
     private static final FontManager INSTANCE = new FontManager();
 
+    private FontManager() {}
+
     public static FontManager getInstance() {
         return INSTANCE;
     }

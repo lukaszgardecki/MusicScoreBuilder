@@ -1,10 +1,15 @@
 package org.example.musicscorebuilder.palette;
 
+import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.TextAlignment;
 import org.example.musicscorebuilder.components.layout.NoteRestLayout;
 import org.example.musicscorebuilder.components.layout.Selectable;
 import org.example.musicscorebuilder.components.layout.TempoLayout;
@@ -63,14 +68,19 @@ public class TempoSectionController extends AbstractPaletteSectionController<Tem
                     .orElse(null);
         }
 
+        Boolean customBold = !item.isBold() ? false : null;
+        Boolean customItalic = item.isItalic() ? true : null;
+
         if (existingTempo != null) {
             if (item.getText().trim().equalsIgnoreCase(existingTempo.getText().trim())) {
                 mode.removeTempo(existingTempo);
             } else {
                 existingTempo.setText(item.getText());
+                existingTempo.setBold(customBold);
+                existingTempo.setItalic(customItalic);
             }
         } else {
-            Tempo tempo = new Tempo(targetMeasure, segmentIndex, item.getText());
+            Tempo tempo = new Tempo(targetMeasure, segmentIndex, item.getText(), customBold, customItalic);
             mode.addTempo(tempo);
         }
 
@@ -94,11 +104,16 @@ public class TempoSectionController extends AbstractPaletteSectionController<Tem
         if (item == null || item.getText() == null || item.getText().isEmpty()) return;
 
         gc.save();
-        gc.setFont(FontManager.getFreeSerifBoldFont(13.0));
+
+        Font baseFont = FontManager.getFreeSerifFont(13.0);
+        FontWeight weight = item.isBold() ? FontWeight.BOLD : FontWeight.NORMAL;
+        FontPosture posture = item.isItalic() ? FontPosture.ITALIC : FontPosture.REGULAR;
+
+        gc.setFont(Font.font(baseFont.getName(), weight, posture, 13.0));
         gc.setFill(Color.BLACK);
 
-        gc.setTextAlign(javafx.scene.text.TextAlignment.CENTER);
-        gc.setTextBaseline(javafx.geometry.VPos.CENTER);
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
 
         gc.fillText(item.getText(), w / 2.0, h / 2.0);
         gc.restore();

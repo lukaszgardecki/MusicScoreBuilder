@@ -3,6 +3,9 @@ package org.example.musicscorebuilder.components.views;
 import javafx.geometry.VPos;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
+import javafx.scene.text.FontWeight;
 import org.example.musicscorebuilder.components.layout.TempoLayout;
 import org.example.musicscorebuilder.managers.FontManager;
 
@@ -38,7 +41,11 @@ public class TempoView extends ComponentView {
         String text = tempoLayout.getText();
         double fontSize = tempoLayout.getFontSize() * sp;
 
-        gc.setFont(FontManager.getFreeSerifBoldFont(fontSize));
+        Font baseFont = FontManager.getFreeSerifFont(fontSize);
+        FontWeight weight = tempoLayout.isBold() ? FontWeight.BOLD : FontWeight.NORMAL;
+        FontPosture posture = tempoLayout.isItalic() ? FontPosture.ITALIC : FontPosture.REGULAR;
+
+        gc.setFont(Font.font(baseFont.getName(), weight, posture, fontSize));
         gc.setTextBaseline(VPos.BASELINE);
         gc.fillText(text, textX, textY);
     }
