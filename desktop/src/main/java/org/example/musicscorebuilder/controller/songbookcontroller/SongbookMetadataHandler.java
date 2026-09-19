@@ -12,6 +12,7 @@ import org.example.musicscorebuilder.managers.ScoreStateManager;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public class SongbookMetadataHandler {
@@ -54,11 +55,11 @@ public class SongbookMetadataHandler {
         if (activeScore != null) {
             isUpdatingFields = true;
             try {
-                numberField.setText(activeScore.getNumberNew() != null ? activeScore.getNumberNew() : "");
-                oldNumberField.setText(activeScore.getNumberOld() != null ? activeScore.getNumberOld() : "");
-                titleField.setText(activeScore.getTitle() != null ? activeScore.getTitle() : "");
-                subtitleField.setText(activeScore.getSubtitle() != null ? activeScore.getSubtitle() : "");
-                composerField.setText(activeScore.getComposer() != null ? activeScore.getComposer() : "");
+                setSafeText(numberField, activeScore.getNumberNew());
+                setSafeText(oldNumberField, activeScore.getNumberOld());
+                setSafeText(titleField, activeScore.getTitle());
+                setSafeText(subtitleField, activeScore.getSubtitle());
+                setSafeText(composerField, activeScore.getComposer());
 
                 setFieldsDisabled(false);
                 metadataContainer.setVisible(true);
@@ -68,6 +69,15 @@ public class SongbookMetadataHandler {
         } else {
             clearAndDisable();
         }
+    }
+
+    private void setSafeText(TextField field, String newValue) {
+        if (field == null) return;
+        String textToSet = newValue != null ? newValue : "";
+        if (field.isFocused() || Objects.equals(field.getText(), textToSet)) {
+            return;
+        }
+        field.setText(textToSet);
     }
 
     public void clearAndDisable() {
