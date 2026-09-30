@@ -28,10 +28,25 @@ public class SystemLayout implements PageBlockLayout {
     @Override
     public double getHeight() {
         if (measures.isEmpty()) return 0.0;
-        double totalPartsHeight = measures.stream()
-                .mapToDouble(MeasureLayout::getHeight)
+        return getTopOverflow() + getNominalHeight() + getBottomOverflow();
+    }
+
+    public double getTopOverflow() {
+        return measures.stream()
+                .mapToDouble(MeasureLayout::getTopOverflow)
                 .max().orElse(0.0);
-        return totalPartsHeight + spaceBelow;
+    }
+
+    public double getBottomOverflow() {
+        return measures.stream()
+                .mapToDouble(MeasureLayout::getBottomOverflow)
+                .max().orElse(0.0);
+    }
+
+    public double getNominalHeight() {
+        return measures.stream()
+                .mapToDouble(MeasureLayout::getNominalHeight)
+                .max().orElse(0.0);
     }
     @Override public double getWidth() { return measures.stream().mapToDouble(MeasureLayout::getWidth).sum() + getBraceWidth(); }
     @Override public double getX() { return x; }

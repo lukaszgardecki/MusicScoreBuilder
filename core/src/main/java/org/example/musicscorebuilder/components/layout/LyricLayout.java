@@ -99,7 +99,7 @@ public class LyricLayout {
                 : 12.0;
     }
 
-    public double getModelY() {
+    public double getY() {
         if (noteLayout == null) return 0.0;
         StaffLayout staff = noteLayout.getStaff();
         if (staff == null) return 0.0;
@@ -226,11 +226,11 @@ public class LyricLayout {
 
                         double hyphenAbsX = startAbsX + (distance / 2.0);
                         double hyphenModelX = hyphenAbsX - currentPos.absX();
-                        result.add(new HyphenLayout(hyphenModelX, getModelY(), scaleX, fontSize));
+                        result.add(new HyphenLayout(hyphenModelX, getY(), scaleX, fontSize));
                     }
                 } else {
                     double hyphenModelX = getStartX() + getTotalWidth() + (fontSize * 0.25);
-                    result.add(new HyphenLayout(hyphenModelX, getModelY(), 0.8, fontSize));
+                    result.add(new HyphenLayout(hyphenModelX, getY(), 0.8, fontSize));
                 }
             }
         }
@@ -240,7 +240,7 @@ public class LyricLayout {
 
             if (prevPos != null && currentPos.system() != prevPos.system()) {
                 double hyphenModelX = getStartX() - (fontSize * 0.35);
-                result.add(new HyphenLayout(hyphenModelX, getModelY(), 0.8, fontSize));
+                result.add(new HyphenLayout(hyphenModelX, getY(), 0.8, fontSize));
             }
         }
 

@@ -53,7 +53,7 @@ public final class LyricHyphenCalculator {
                     // Jeśli poprzednia sylaba była w INNYM systemie
                     if (!isSameSystem(prevLyricNote, currentInTree)) {
                         double hyphenX = startLeftX - edgeOffset;
-                        hyphens.add(new LyricLayout.HyphenLayout(hyphenX, lyricLayout.getModelY(), 1.0, fontSizeSp));
+                        hyphens.add(new LyricLayout.HyphenLayout(hyphenX, lyricLayout.getY(), 1.0, fontSizeSp));
                     }
                 }
             }
@@ -69,7 +69,7 @@ public final class LyricHyphenCalculator {
                     // Jeśli kolejna sylaba będzie w INNYM systemie
                     if (!isSameSystem(currentInTree, nextLyricNote)) {
                         double hyphenX = startRightX + edgeOffset;
-                        hyphens.add(new LyricLayout.HyphenLayout(hyphenX, lyricLayout.getModelY(), 1.0, fontSizeSp));
+                        hyphens.add(new LyricLayout.HyphenLayout(hyphenX, lyricLayout.getY(), 1.0, fontSizeSp));
                     } else {
                         // TA SAMA LINIA (Wyliczamy pełen dystans, automatycznie przeskakując przez melizmaty)
                         double n1SystemX = getSystemRelativeX(currentInTree);
@@ -98,17 +98,17 @@ public final class LyricHyphenCalculator {
 
                             if (numHyphens == 1) {
                                 double hyphenX = (startRightX + endLeftX) / 2.0;
-                                hyphens.add(new LyricLayout.HyphenLayout(hyphenX, lyricLayout.getModelY(), 1.0, fontSizeSp));
+                                hyphens.add(new LyricLayout.HyphenLayout(hyphenX, lyricLayout.getY(), 1.0, fontSizeSp));
                             } else {
                                 double step = gap / (numHyphens + 1);
                                 for (int i = 1; i <= numHyphens; i++) {
                                     double hyphenX = startRightX + (i * step);
-                                    hyphens.add(new LyricLayout.HyphenLayout(hyphenX, lyricLayout.getModelY(), 1.0, fontSizeSp));
+                                    hyphens.add(new LyricLayout.HyphenLayout(hyphenX, lyricLayout.getY(), 1.0, fontSizeSp));
                                 }
                             }
                         } else if (gap > 0.3) {
                             double hyphenX = (startRightX + endLeftX) / 2.0;
-                            hyphens.add(new LyricLayout.HyphenLayout(hyphenX, lyricLayout.getModelY(), 1.0, fontSizeSp));
+                            hyphens.add(new LyricLayout.HyphenLayout(hyphenX, lyricLayout.getY(), 1.0, fontSizeSp));
                         }
                     }
                 }

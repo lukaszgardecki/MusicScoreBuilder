@@ -29,7 +29,7 @@ public class SegmentLayout {
         this.style = parent.getScoreStyle();
         this.parent = parent;
         this.type = type;
-        this.height = parent.getHeight() - style.getStaffLineWidth();
+        this.height = parent.getNominalHeight() - style.getStaffLineWidth();
         for (StaffLayout staffLayout : parent.getStaffs()) {
             staffElements.put(staffLayout, new ArrayList<>());
         }

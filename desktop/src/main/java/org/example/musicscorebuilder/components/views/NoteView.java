@@ -7,6 +7,7 @@ import org.example.musicscorebuilder.components.layout.DotLayout;
 import org.example.musicscorebuilder.components.layout.NoteLayout;
 import org.example.musicscorebuilder.components.layout.edit.GhostNoteLayout;
 import org.example.musicscorebuilder.managers.FontManager;
+import org.example.musicscorebuilder.util.Util;
 
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +25,12 @@ public class NoteView extends ComponentView {
     public void draw(GraphicsContext gc, NoteLayout note, double segmentX, double segmentY, double sp) {
         double noteX = segmentX + note.getX() * sp;
         double noteY = segmentY + note.getY() * sp;
+        double noteBoxY = segmentY + note.getBoxY() * sp;
+        double noteWidth = note.getWidth() * sp;
+        double noteHeight = note.getHeight() * sp;
         double fontSize = note.getFontSize() * sp;
+
+//        fillBackground(gc, Util.generateRandomColor(0.4f), noteX, noteBoxY, noteWidth, noteHeight);
 
         List<NoteLayout.LedgerLine> ledgerLines = note.getLedgerLines();
         for (int i = 0; i < ledgerLines.size(); i++) {

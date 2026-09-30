@@ -3,6 +3,7 @@ package org.example.musicscorebuilder.components.views;
 import javafx.scene.canvas.GraphicsContext;
 import org.example.musicscorebuilder.components.layout.*;
 import org.example.musicscorebuilder.managers.ScoreStateManager;
+import org.example.musicscorebuilder.util.Util;
 
 import java.util.List;
 
@@ -14,8 +15,15 @@ public class SystemView extends ComponentView {
     private final BraceView braceView = new BraceView();
 
     public void draw(GraphicsContext gc, SystemLayout system, double pageX, double pageY, double sp) {
-        double systemX = system.getX() * sp + pageX;
-        double systemY = system.getY() * sp + pageY;
+        double systemX = pageX + system.getX() * sp;
+        double systemY = pageY + system.getY() * sp;
+        double boxY = systemY - system.getTopOverflow() * sp;
+        double bottomOverflowY = systemY + system.getNominalHeight() * sp;
+        double bottomOverflowHeight = system.getBottomOverflow() * sp;
+        double widthPx = system.getWidth() * sp;
+        double heightPx = system.getHeight() * sp;
+//        fillBackground(gc, Util.generateRandomColor(0.3f), systemX, boxY, widthPx, heightPx);
+//        fillBackground(gc, Util.generateRandomColor(0.3f), systemX, bottomOverflowY, widthPx, bottomOverflowHeight);
 
         system.getBraceLayout().ifPresent(brace -> braceView.draw(gc, brace, systemX, systemY, sp));
 

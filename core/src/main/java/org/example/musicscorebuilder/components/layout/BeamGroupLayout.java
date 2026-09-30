@@ -31,14 +31,11 @@ public class BeamGroupLayout implements Selectable {
         boolean stemIsUp = first.getStem().isUp();
         int offsetDirection = (stemIsUp) ? 1 : -1;
 
-        double firstStemLocalX = (stemIsUp) ? first.getBoxWidth() - first.getStem().getWidth() : 0;
-        double baseStartX = first.getParent().getX() + first.getX() + firstStemLocalX;
+        double baseStartX = getStemX(first, stemIsUp);
+        double baseEndX = getStemX(last, stemIsUp) + stemWidth;
 
-        double lastStemLocalX = (stemIsUp) ? last.getBoxWidth() - last.getStem().getWidth() : 0;
-        double baseEndX = last.getParent().getX() + last.getX() + lastStemLocalX + stemWidth;
-
-        double baseStartY = first.getParent().getY() + first.getStem().getEndY();
-        double baseEndY = last.getParent().getY() + last.getStem().getEndY();
+        double baseStartY = getStemEndY(first);
+        double baseEndY = getStemEndY(last);
 
         int maxBeams = 0;
         for (NoteLayout nl : notes) {
@@ -54,11 +51,8 @@ public class BeamGroupLayout implements Selectable {
                 NoteLayout subFirst = subGroup.get(0);
                 NoteLayout subLast = subGroup.get(subGroup.size() - 1);
 
-                double subFirstStemX = (stemIsUp) ? subFirst.getBoxWidth() - subFirst.getStem().getWidth() : 0;
-                double startX = subFirst.getParent().getX() + subFirst.getX() + subFirstStemX;
-
-                double subLastStemX = (stemIsUp) ? subLast.getBoxWidth() - subLast.getStem().getWidth() : 0;
-                double endX = subLast.getParent().getX() + subLast.getX() + subLastStemX + stemWidth;
+                double startX = getStemX(subFirst, stemIsUp);
+                double endX = getStemX(subLast, stemIsUp) + stemWidth;
 
                 double levelOffsetY = level * beamStep * offsetDirection;
 
@@ -86,7 +80,92 @@ public class BeamGroupLayout implements Selectable {
 
         return false;
     }
-    @Override public SegmentLayout getSegment() { return notes.get(0).getSegment(); }
+
+    public double getTopYForNote(NoteLayout note) {
+        if (notes.isEmpty() || note == null) return note != null ? note.getBoxY() : 0.0;
+
+        NoteLayout first = getFirstNote();
+        NoteLayout last = getLastNote();
+        if (first == null || last == null || first.getStem() == null || last.getStem() == null) {
+            return note.getBoxY();
+        }
+
+        ScoreStyle style = first.getScoreStyle();
+        double beamThickness = style.getNoteBeamThickness();
+        double halfBeamThickness = 0.5 * beamThickness;
+        double beamGap = style.getNoteBeamGap();
+        double beamStep = beamThickness + beamGap;
+
+        boolean stemIsUp = first.getStem().isUp();
+
+        double baseStartX = getStemX(first, stemIsUp);
+        double baseEndX = getStemX(last, stemIsUp);
+        double baseStartY = getStemEndY(first);
+        double baseEndY = getStemEndY(last);
+
+        double noteStemX = getStemX(note, stemIsUp);
+        double mainBeamY = interpolateY(baseStartX, baseStartY, baseEndX, baseEndY, noteStemX);
+
+        int beamCount = Math.max(1, note.getNote().getType().getBeamCount());
+
+        if (stemIsUp) {
+            return mainBeamY - halfBeamThickness;
+        } else {
+            return mainBeamY - ((beamCount - 1) * beamStep) - halfBeamThickness;
+        }
+    }
+
+    public double getBottomYForNote(NoteLayout note) {
+        if (notes.isEmpty() || note == null) return note != null ? note.getBoxY() + note.getHeight() : 0.0;
+
+        NoteLayout first = getFirstNote();
+        NoteLayout last = getLastNote();
+        if (first == null || last == null || first.getStem() == null || last.getStem() == null) {
+            return note.getBoxY() + note.getHeight();
+        }
+
+        ScoreStyle style = first.getScoreStyle();
+        double beamThickness = style.getNoteBeamThickness();
+        double halfBeamThickness = 0.5 * beamThickness;
+        double beamGap = style.getNoteBeamGap();
+        double beamStep = beamThickness + beamGap;
+
+        boolean stemIsUp = first.getStem().isUp();
+
+        double baseStartX = getStemX(first, stemIsUp);
+        double baseEndX = getStemX(last, stemIsUp);
+        double baseStartY = getStemEndY(first);
+        double baseEndY = getStemEndY(last);
+
+        double noteStemX = getStemX(note, stemIsUp);
+        double mainBeamY = interpolateY(baseStartX, baseStartY, baseEndX, baseEndY, noteStemX);
+
+        int beamCount = Math.max(1, note.getNote().getType().getBeamCount());
+
+        if (stemIsUp) {
+            return mainBeamY + ((beamCount - 1) * beamStep) + halfBeamThickness;
+        } else {
+            return mainBeamY + halfBeamThickness;
+        }
+    }
+
+    public double getTopY() {
+        double minY = Double.MAX_VALUE;
+        for (NoteLayout note : notes) {
+            minY = Math.min(minY, getTopYForNote(note));
+        }
+        return minY == Double.MAX_VALUE ? 0.0 : minY;
+    }
+
+    public double getBottomY() {
+        double maxY = -Double.MAX_VALUE;
+        for (NoteLayout note : notes) {
+            maxY = Math.max(maxY, getBottomYForNote(note));
+        }
+        return maxY == -Double.MAX_VALUE ? 0.0 : maxY;
+    }
+
+    @Override public SegmentLayout getSegment() { return notes.isEmpty() ? null : notes.get(0).getSegment(); }
     @Override public StaffLayout getStaff() { return notes.isEmpty() ? null : notes.get(0).getStaff(); }
 
     public void addNote(NoteLayout note) { notes.add(note); }
@@ -97,9 +176,7 @@ public class BeamGroupLayout implements Selectable {
         }
     }
 
-    public List<NoteLayout> getNotes() {
-        return notes;
-    }
+    public List<NoteLayout> getNotes() { return notes; }
 
     public NoteLayout getFirstNote() {
         if (notes.isEmpty()) return null;
@@ -113,6 +190,17 @@ public class BeamGroupLayout implements Selectable {
 
     public int size() { return notes.size(); }
     public boolean isEmpty() { return notes.isEmpty(); }
+
+    private double getStemX(NoteLayout nl, boolean stemIsUp) {
+        double stemLocalX = (stemIsUp) ? nl.getBoxWidth() - nl.getStem().getWidth() : 0;
+        double parentX = nl.getParent() != null ? nl.getParent().getX() : 0.0;
+        return parentX + nl.getX() + stemLocalX;
+    }
+
+    private double getStemEndY(NoteLayout nl) {
+        double parentY = nl.getParent() != null ? nl.getParent().getY() : 0.0;
+        return parentY + (nl.getStem() != null ? nl.getStem().getEndY() : 0.0);
+    }
 
     private List<List<NoteLayout>> findSubGroupsForLevel(List<NoteLayout> notes, int level) {
         List<List<NoteLayout>> result = new ArrayList<>();

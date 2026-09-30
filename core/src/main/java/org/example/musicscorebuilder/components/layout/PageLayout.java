@@ -96,8 +96,8 @@ public class PageLayout {
     }
 
     public void setLastSystemSpaceBelow(double spaceBelow) {
-        List<SystemLayout> systems = getSystems();
-        if (systems.isEmpty()) return;
-        systems.get(systems.size() - 1).setSpaceBelow(spaceBelow);
+//        List<SystemLayout> systems = getSystems();
+//        if (systems.isEmpty()) return;
+//        systems.get(systems.size() - 1).setSpaceBelow(spaceBelow);
     }
 }

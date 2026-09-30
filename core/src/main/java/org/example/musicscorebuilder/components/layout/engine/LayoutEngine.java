@@ -189,13 +189,6 @@ public class LayoutEngine {
     }
 
     private SystemLayout addNewSystemToPage(PageLayout pageLayout, BraceType systemBraceType) {
-        boolean previousIsSystem = !pageLayout.getBlocks().isEmpty()
-                && pageLayout.getBlocks().get(pageLayout.getBlocks().size() - 1) instanceof SystemLayout;
-
-        if (previousIsSystem) {
-            pageLayout.setLastSystemSpaceBelow(style.getSystemSpacing());
-        }
-
         var newSystem = new SystemLayout(pageLayout, systemBraceType);
         pageLayout.addBlock(newSystem);
         return newSystem;
@@ -346,11 +339,34 @@ public class LayoutEngine {
         layoutLinker.linkAllSegments(pages);
         layoutLinker.linkVoiceElements(pages);
         frameBuilder.updateTextFrames(scoreMode.getVerses(), scoreMode.getFrames(), pages);
+
+        applyVerticalLayout(scoreLayout);
+
         tieBuilder.buildTies(pages);
         slurBuilder.buildSlurs(scoreMode.getSlurs(), pages);
         voltaBuilder.buildVoltas(scoreMode.getVoltas(), scoreLayout);
         jumpMarkBuilder.buildJumpMarks(scoreMode.getJumpMarks(), scoreLayout);
         tempoBuilder.buildTempos(scoreMode.getTempos());
+    }
+
+    private void applyVerticalLayout(ScoreLayout scoreLayout) {
+        for (PageLayout page : scoreLayout.getPages()) {
+            List<PageBlockLayout> blocks = page.getBlocks();
+            if (blocks.isEmpty()) continue;
+
+            double currentY = page.getMarginTop();
+
+            for (PageBlockLayout block : blocks) {
+                if (block instanceof SystemLayout system) {
+                    currentY += system.getTopOverflow();
+                    system.setY(currentY);
+                    currentY += (system.getNominalHeight() + system.getBottomOverflow());
+                } else {
+                    block.setY(currentY);
+                    currentY += block.getHeight();
+                }
+            }
+        }
     }
 
     private List<LyricLayout> createSingleLyricLine(NoteLayout noteLayout, int verseNumber) {

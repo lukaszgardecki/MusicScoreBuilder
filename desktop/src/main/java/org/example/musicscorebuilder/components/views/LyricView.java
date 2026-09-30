@@ -60,7 +60,7 @@ public class LyricView extends ComponentView {
                 lyricLayout.checkAndRefreshIfStale();
                 if (lyricLayout.getFragmentLayouts().isEmpty()) continue;
 
-                double lyricScreenY = segmentY + lyricLayout.getModelY() * sp;
+                double lyricScreenY = segmentY + lyricLayout.getY() * sp;
                 double startScreenX = segmentX + lyricLayout.getStartX() * sp;
 
                 for (LyricLayout.FragmentLayout frag : lyricLayout.getFragmentLayouts()) {

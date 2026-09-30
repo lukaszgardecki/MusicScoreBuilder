@@ -60,6 +60,44 @@ public class NoteLayout extends NoteRestLayout {
         return x >= noteMinX && x <= noteMaxX && y >= noteMinY && y <= noteMaxY;
     }
 
+    public double getMinY() {
+        double minY = getBoxY();
+        if (stem != null) minY = Math.min(minY, Math.min(stem.getStartY(), stem.getEndY()));
+        if (singleBeam != null) minY = Math.min(minY, singleBeam.getBoxY());
+        if (beamGroup != null) minY = Math.min(minY, beamGroup.getTopYForNote(this));
+        if (accidental != null) minY = Math.min(minY, accidental.getY());
+        List<LedgerLine> lines = getLedgerLines();
+        if (!lines.isEmpty()) {
+            for (LedgerLine line : lines) {
+                minY = Math.min(minY, line.y() - (line.thickness() / 2.0));
+            }
+        }
+        return minY;
+    }
+
+    public double getMaxY() {
+        double maxY = getBoxY() + getHeight();
+        if (stem != null) maxY = Math.max(maxY, Math.max(stem.getStartY(), stem.getEndY()));
+        if (singleBeam != null) maxY = Math.max(maxY, singleBeam.getBoxY() + singleBeam.getHeight());
+        if (beamGroup != null) maxY = Math.max(maxY, beamGroup.getBottomYForNote(this));
+        if (accidental != null) maxY = Math.max(maxY, accidental.getY() + accidental.getFontSize());
+
+        List<LedgerLine> lines = getLedgerLines();
+        if (!lines.isEmpty()) {
+            for (LedgerLine line : lines) {
+                maxY = Math.max(maxY, line.y() + (line.thickness() / 2.0));
+            }
+        }
+
+        if (!lyrics.isEmpty()) {
+            for (LyricLayout lyric : lyrics) {
+                maxY = Math.max(maxY, lyric.getY() + lyric.getFontSize());
+            }
+        }
+
+        return maxY;
+    }
+
     public Note getNote() { return note; }
     public NoteLayout getNextNoteInVoice() { return nextNoteInVoice; }
     public NoteLayout getPrevNoteInVoice() { return prevNoteInVoice; }

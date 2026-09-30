@@ -5,6 +5,7 @@ import javafx.scene.paint.Color;
 import org.example.musicscorebuilder.components.layout.edit.GhostNoteLayout;
 import org.example.musicscorebuilder.managers.FontManager;
 import org.example.musicscorebuilder.components.layout.BeamSingleLayout;
+import org.example.musicscorebuilder.util.Util;
 
 public class BeamSingleView extends ComponentView {
 

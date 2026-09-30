@@ -113,7 +113,7 @@ public class MeasureLayout {
         return totalWidth;
     }
 
-    public double getHeight() {
+    public double getNominalHeight() {
         int staffCount = staves.size();
         if (staffCount == 0) return 0.0;
 
@@ -123,6 +123,58 @@ public class MeasureLayout {
         }
         double totalSpacing = (staffCount - 1) * style.getStaffSpacing();
         return totalStavesHeight + totalSpacing;
+    }
+
+    public double getTopOverflow() {
+        double minRelY = 0.0;
+
+        for (SegmentLayout segment : segments) {
+            for (ElementLayout element : segment.getElements()) {
+                double elementTopY = element instanceof NoteLayout n ? n.getMinY() : element.getY();
+                if (elementTopY < minRelY) {
+                    minRelY = elementTopY;
+                }
+            }
+        }
+
+        if (voltaSlice != null && -voltaSlice.getYOffset() < minRelY) {
+            minRelY = -voltaSlice.getYOffset();
+        }
+
+        for (JumpMarkLayout mark : jumpMarks) {
+            if (mark.getBoxY() < minRelY) {
+                minRelY = mark.getBoxY();
+            }
+        }
+
+        return Math.abs(minRelY);
+    }
+
+    public double getBottomOverflow() {
+        double nominalHeight = getNominalHeight();
+        double maxRelY = nominalHeight;
+
+        for (SegmentLayout segment : segments) {
+            for (ElementLayout element : segment.getElements()) {
+                double elementBottomY;
+
+                if (element instanceof NoteLayout n) {
+                    elementBottomY = n.getMaxY();
+                } else {
+                    elementBottomY = element.getY() + element.getHeight();
+                }
+
+                if (elementBottomY > maxRelY) {
+                    maxRelY = elementBottomY;
+                }
+            }
+        }
+
+        return Math.max(0.0, maxRelY - nominalHeight);
+    }
+
+    public double getHeight() {
+        return getTopOverflow() + getNominalHeight() + getBottomOverflow();
     }
 
     public int getVoiceCountForStaff(int staffId) {
