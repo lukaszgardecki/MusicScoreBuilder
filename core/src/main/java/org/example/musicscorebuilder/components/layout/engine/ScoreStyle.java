@@ -15,7 +15,7 @@ public class ScoreStyle {
 
     private static final double PAGE_SPACING                                = 4.0;
     private static final double STAFF_SPACING                               = 7.0;
-    private static final double SYSTEM_SPACING                              = 0.0;
+    private static final double SYSTEM_SPACING                              = 1.0;
     private static final double SPATIUM_MM                                  = 1.564;
     private static final double SYSTEM_MIN_FULLNESS_RATIO                   = 0.3;
 
@@ -89,7 +89,7 @@ public class ScoreStyle {
     private static final String FRAME_STROKE_COLOR                          = "#a0a0a4";
 
     private static final double TEXT_FRAME_DEF_HEIGHT                       = 80.0;
-    private static final double TEXT_FRAME_DEF_MARGIN_TOP                   = 10.0;
+    private static final double TEXT_FRAME_DEF_MARGIN_TOP                   = 5.0;
     private static final double TEXT_FRAME_PADDING                          = 0;
     private static final double TEXT_FRAME_VERSE_SPACING                    = 1.2;
     private static final double TEXT_FRAME_VERSE_PADDING_X                  = 1.5;
@@ -128,7 +128,7 @@ public class ScoreStyle {
 
     private static final double TEMPO_TEXT_FONT_SIZE                        = 2.6;
     private static final double TEMPO_TEXT_X_OFFSET                         = 0.0;
-    private static final double TEMPO_TEXT_Y_OFFSET                              = 2.8;
+    private static final double TEMPO_TEXT_Y_OFFSET                         = 2.8;
 
     private double pageSpacing = PAGE_SPACING;
     private double staffSpacing = STAFF_SPACING;
@@ -242,7 +242,7 @@ public class ScoreStyle {
 
     public double getPageSpacing() { return staffSpacingScale * pageSpacing; }
     public double getStaffSpacing() { return staffSpacingScale * staffSpacing; }
-    public double getSystemSpacing() { return staffSpacingScale * systemSpacing; }
+    public double getSystemSpacing() { return systemSpacing; }
     public double getSpatiumMm() { return spatiumMm; }
     public double getSystemMinFullnessRatio() { return systemMinFullnessRatio; }
 
@@ -376,4 +376,5 @@ public class ScoreStyle {
 
 
     public void setStaffSpacingScale(double staffSpacingScale) { this.staffSpacingScale = staffSpacingScale; }
+    public void setSystemSpacing(double systemSpacing) { this.systemSpacing = systemSpacing; }
 }

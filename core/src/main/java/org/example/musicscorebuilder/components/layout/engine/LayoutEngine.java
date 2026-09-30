@@ -190,6 +190,7 @@ public class LayoutEngine {
 
     private SystemLayout addNewSystemToPage(PageLayout pageLayout, BraceType systemBraceType) {
         var newSystem = new SystemLayout(pageLayout, systemBraceType);
+        newSystem.setSpaceBelow(style.getSystemSpacing());
         pageLayout.addBlock(newSystem);
         return newSystem;
     }
@@ -356,11 +357,16 @@ public class LayoutEngine {
 
             double currentY = page.getMarginTop();
 
-            for (PageBlockLayout block : blocks) {
+            for (int i = 0; i < blocks.size(); i++) {
+                PageBlockLayout block = blocks.get(i);
                 if (block instanceof SystemLayout system) {
+                    boolean nextIsSystem = (i + 1 < blocks.size()) && (blocks.get(i + 1) instanceof SystemLayout);
+                    double spacing = nextIsSystem ? style.getSystemSpacing() : 0.0;
+
+                    system.setSpaceBelow(spacing);
                     currentY += system.getTopOverflow();
                     system.setY(currentY);
-                    currentY += (system.getNominalHeight() + system.getBottomOverflow());
+                    currentY += (system.getNominalHeight() + system.getBottomOverflow() + spacing);
                 } else {
                     block.setY(currentY);
                     currentY += block.getHeight();
