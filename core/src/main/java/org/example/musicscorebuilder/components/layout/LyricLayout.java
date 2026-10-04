@@ -99,12 +99,18 @@ public class LyricLayout {
                 : 12.0;
     }
 
+    public double getRelY() {
+        if (noteLayout == null) return 0.0;
+        StaffLayout staff = noteLayout.getStaff();
+        if (staff == null) return 0.0;
+        return staff.getHeight() + staff.getSystemNoteBodyBottomOverflow();
+    }
+
     public double getY() {
         if (noteLayout == null) return 0.0;
         StaffLayout staff = noteLayout.getStaff();
         if (staff == null) return 0.0;
-        double staffBottomY = staff.getY() + staff.getHeight();
-        return staffBottomY + 2.5;
+        return staff.getY() + getRelY();
     }
 
     public double getNoteCenterX() {

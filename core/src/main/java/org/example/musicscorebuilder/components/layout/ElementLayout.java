@@ -11,7 +11,7 @@ public abstract class ElementLayout implements Selectable {
     private double y = 0.0;
     private boolean selected = false;
 
-    public ElementLayout(boolean hasDynamicWidth, SegmentLayout parent,  StaffLayout staff) {
+    public ElementLayout(boolean hasDynamicWidth, SegmentLayout parent, StaffLayout staff) {
         this.hasDynamicWidth = hasDynamicWidth;
         this.style = parent.getScoreStyle();
         this.parent = parent;
@@ -25,7 +25,7 @@ public abstract class ElementLayout implements Selectable {
         return segmentMusicX >= getX() && segmentMusicX <= (getX() + getWidth()) &&
                 segmentMusicY >= getBoxY() && segmentMusicY <= (getBoxY() + getHeight());
     }
-    @Override public SegmentLayout getSegment() { return  parent; }
+    @Override public SegmentLayout getSegment() { return parent; }
     @Override public StaffLayout getStaff() { return staff; }
 
     public SegmentLayout getParent() { return parent; }

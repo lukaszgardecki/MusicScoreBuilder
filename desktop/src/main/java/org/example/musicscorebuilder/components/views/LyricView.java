@@ -66,7 +66,10 @@ public class LyricView extends ComponentView {
                 for (LyricLayout.FragmentLayout frag : lyricLayout.getFragmentLayouts()) {
                     double fragX = startScreenX + frag.relativeX() * sp;
 
-                    gc.setFont(LyricFontUtils.getFont(frag, sp));
+                    var font = LyricFontUtils.getFont(frag, sp);
+                    gc.setFont(font);
+//                    gc.setFill(Color.color(0.9, 0.9, 0.9, 0.6));
+//                    gc.fillRect(fragX, lyricScreenY, frag.width() * sp, font.getSize());
                     gc.setFill(Color.BLACK);
                     gc.fillText(frag.fragment().getText(), fragX, lyricScreenY);
 

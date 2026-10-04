@@ -114,15 +114,10 @@ public class MeasureLayout {
     }
 
     public double getNominalHeight() {
-        int staffCount = staves.size();
-        if (staffCount == 0) return 0.0;
+        if (staves.isEmpty()) return 0.0;
 
-        double totalStavesHeight = 0.0;
-        for (int i = 0; i < staffCount; i++) {
-            totalStavesHeight += staves.get(i).getHeight();
-        }
-        double totalSpacing = (staffCount - 1) * style.getStaffSpacing();
-        return totalStavesHeight + totalSpacing;
+        StaffLayout lastStaff = staves.get(staves.size() - 1);
+        return lastStaff.getY() + lastStaff.getHeight();
     }
 
     public double getTopOverflow() {
@@ -151,26 +146,9 @@ public class MeasureLayout {
     }
 
     public double getBottomOverflow() {
-        double nominalHeight = getNominalHeight();
-        double maxRelY = nominalHeight;
-
-        for (SegmentLayout segment : segments) {
-            for (ElementLayout element : segment.getElements()) {
-                double elementBottomY;
-
-                if (element instanceof NoteLayout n) {
-                    elementBottomY = n.getMaxY();
-                } else {
-                    elementBottomY = element.getY() + element.getHeight();
-                }
-
-                if (elementBottomY > maxRelY) {
-                    maxRelY = elementBottomY;
-                }
-            }
-        }
-
-        return Math.max(0.0, maxRelY - nominalHeight);
+        if (staves.isEmpty()) return 0.0;
+        StaffLayout lastStaff = staves.get(staves.size() - 1);
+        return lastStaff.getBottomOverflow();
     }
 
     public double getHeight() {

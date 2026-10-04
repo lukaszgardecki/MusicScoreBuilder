@@ -14,10 +14,10 @@ public class ClefLayout extends ElementLayout {
         this.height = staff.getHeight();
         ClefType type = clef.getType();
         fontData = type.getFontData();
-        y = type.getOffsetY() * staff.getLineSpacing() + staff.getY();
+        y = type.getOffsetY();
     }
 
-    @Override public double getY() { return y; }
+    @Override public double getY() { return y * staff.getLineSpacing() + staff.getY(); }
     @Override public double getWidth() { return (fontData.getHeight() * fontData.getRatio()) * style.getStaffLineSpacing(); }
     @Override public double getHeight() { return fontData.getHeight() * style.getStaffLineSpacing(); }
     @Override public double getBoxY() { return getY() - (fontData.getNEy() * style.getStaffLineSpacing()); }

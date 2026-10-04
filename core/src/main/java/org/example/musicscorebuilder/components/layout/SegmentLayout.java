@@ -15,7 +15,7 @@ public class SegmentLayout {
     private TempoLayout tempoLayout;
     private final Map<StaffLayout, List<ElementLayout>> staffElements = new HashMap<>();
     private SegmentType type;
-    private double x, y = 0, height;
+    private double x, y = 0;
     private double extraWidth = 0.0;
     private CursorLayout cursorLayout;
     private boolean systemGenerated = false;
@@ -29,7 +29,6 @@ public class SegmentLayout {
         this.style = parent.getScoreStyle();
         this.parent = parent;
         this.type = type;
-        this.height = parent.getNominalHeight() - style.getStaffLineWidth();
         for (StaffLayout staffLayout : parent.getStaffs()) {
             staffElements.put(staffLayout, new ArrayList<>());
         }
@@ -237,7 +236,10 @@ public class SegmentLayout {
         return marginLeft + maxContentWidth + (getMarginRight() * f) + extraWidth;
     }
 
-    public double getHeight() { return height; }
+    public double getHeight() {
+        if (parent == null) return 0;
+        return parent.getNominalHeight() - style.getStaffLineWidth();
+    }
 
     public boolean hasDynamicWidth() {
         for (List<ElementLayout> elements : staffElements.values()) {

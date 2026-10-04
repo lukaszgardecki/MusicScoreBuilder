@@ -34,10 +34,10 @@ public class BarlineLayout extends ElementLayout {
     }
 
     @Override public double getX() { return x; }
-    @Override public double getY() { return y; }
+    @Override public double getY() { return  staff.getY() - 0.5 * staff.getLineWidth(); }
     @Override public double getBoxY() { return getY(); }
     @Override public double getWidth() { return width; }
-    @Override public double getHeight() { return height; }
+    @Override public double getHeight() { return staff.getHeight() + staff.getSpaceBelow(); }
     @Override public int getVoice() { return 1; }
 
     public double getLightLineWidth() { return lightLineWidth; }

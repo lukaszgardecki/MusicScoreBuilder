@@ -75,27 +75,31 @@ public class NoteLayout extends NoteRestLayout {
         return minY;
     }
 
-    public double getMaxY() {
-        double maxY = getBoxY() + getHeight();
-        if (stem != null) maxY = Math.max(maxY, Math.max(stem.getStartY(), stem.getEndY()));
-        if (singleBeam != null) maxY = Math.max(maxY, singleBeam.getBoxY() + singleBeam.getHeight());
-        if (beamGroup != null) maxY = Math.max(maxY, beamGroup.getBottomYForNote(this));
-        if (accidental != null) maxY = Math.max(maxY, accidental.getY() + accidental.getFontSize());
+    public double getBodyBottomY() {
+        double bottomY = getBoxY() + getHeight();
+        if (stem != null) bottomY = Math.max(bottomY, Math.max(stem.getStartY(), stem.getEndY()));
+        if (singleBeam != null) bottomY = Math.max(bottomY, singleBeam.getBoxY() + singleBeam.getHeight());
+        if (beamGroup != null) bottomY = Math.max(bottomY, beamGroup.getBottomYForNote(this));
+        if (accidental != null) bottomY = Math.max(bottomY, accidental.getY() + accidental.getFontSize());
 
         List<LedgerLine> lines = getLedgerLines();
         if (!lines.isEmpty()) {
             for (LedgerLine line : lines) {
-                maxY = Math.max(maxY, line.y() + (line.thickness() / 2.0));
+                bottomY = Math.max(bottomY, line.y() + (line.thickness() / 2.0));
             }
         }
+        return bottomY;
+    }
+
+    public double getBottomY() {
+        double bottomY = getBodyBottomY();
 
         if (!lyrics.isEmpty()) {
             for (LyricLayout lyric : lyrics) {
-                maxY = Math.max(maxY, lyric.getY() + lyric.getFontSize());
+                bottomY = Math.max(bottomY, lyric.getY() + lyric.getFontSize());
             }
         }
-
-        return maxY;
+        return bottomY;
     }
 
     public Note getNote() { return note; }

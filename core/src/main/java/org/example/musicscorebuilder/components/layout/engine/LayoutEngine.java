@@ -109,6 +109,7 @@ public class LayoutEngine {
         }
 
         if (!currentSystem.getMeasures().isEmpty()) {
+            applyStaffVerticalLayout(currentSystem);
             systemJustifier.justify(currentSystem);
         }
 
@@ -171,6 +172,7 @@ public class LayoutEngine {
     }
 
     private SystemLayout finalizeSystemAndCreateNext(SystemLayout currentSystem, ScoreLayout scoreLayout, BraceType systemBraceType, MeasureLayout nextMeasureLayout) {
+        applyStaffVerticalLayout(currentSystem);
         systemJustifier.justify(currentSystem);
 
         PageLayout currentPage = currentSystem.getPageLayout();
@@ -341,7 +343,8 @@ public class LayoutEngine {
         layoutLinker.linkVoiceElements(pages);
         frameBuilder.updateTextFrames(scoreMode.getVerses(), scoreMode.getFrames(), pages);
 
-        applyVerticalLayout(scoreLayout);
+        applySystemsVerticalLayout(scoreLayout);
+        applyPagesVerticalLayout(scoreLayout);
 
         tieBuilder.buildTies(pages);
         slurBuilder.buildSlurs(scoreMode.getSlurs(), pages);
@@ -350,7 +353,120 @@ public class LayoutEngine {
         tempoBuilder.buildTempos(scoreMode.getTempos());
     }
 
-    private void applyVerticalLayout(ScoreLayout scoreLayout) {
+    private void applySystemsVerticalLayout(ScoreLayout scoreLayout) {
+        for (PageLayout page : scoreLayout.getPages()) {
+            for (SystemLayout system : page.getSystems()) {
+                applyStaffVerticalLayout(system);
+            }
+        }
+    }
+
+    private void applyStaffVerticalLayout(SystemLayout system) {
+        if (system.getMeasures().isEmpty()) return;
+
+        int staffCount = system.getMeasures().get(0).getStaffs().size();
+        if (staffCount == 0) return;
+
+        double currentY = 0.0;
+        double prevNominalHeight = 0.0;
+        double prevLyricBottomOverflow = 0.0;
+
+        final double MIN_CLEARANCE = 0.0;
+
+        for (int k = 0; k < staffCount; k++) {
+            final int staffIdx = k;
+
+            double maxSystemNoteBodyOverflow = 0.0;
+            for (MeasureLayout measure : system.getMeasures()) {
+                if (staffIdx < measure.getStaffs().size()) {
+                    StaffLayout staff = measure.getStaffs().get(staffIdx);
+                    maxSystemNoteBodyOverflow = Math.max(maxSystemNoteBodyOverflow, staff.getNoteBodyBottomOverflow());
+                }
+            }
+
+            for (MeasureLayout measure : system.getMeasures()) {
+                if (staffIdx < measure.getStaffs().size()) {
+                    StaffLayout staff = measure.getStaffs().get(staffIdx);
+                    staff.setSystemNoteBodyBottomOverflow(maxSystemNoteBodyOverflow);
+                }
+            }
+
+            for (MeasureLayout measure : system.getMeasures()) {
+                if (staffIdx < measure.getStaffs().size()) {
+                    StaffLayout staff = measure.getStaffs().get(staffIdx);
+                    staff.setY(currentY);
+                }
+            }
+
+            double maxTopOverflow = 0.0;
+            double maxLyricBottomOverflow = 0.0;
+            double nominalHeight = 0.0;
+
+            for (MeasureLayout measure : system.getMeasures()) {
+                if (staffIdx < measure.getStaffs().size()) {
+                    StaffLayout staff = measure.getStaffs().get(staffIdx);
+                    maxTopOverflow = Math.max(maxTopOverflow, staff.getTopOverflow());
+                    nominalHeight = Math.max(nominalHeight, staff.getHeight());
+
+                    for (SegmentLayout segment : measure.getSegments()) {
+                        for (ElementLayout element : segment.getElements()) {
+                            if (element.getStaff() != staff) continue;
+                            if (element instanceof NoteLayout note && note.getLyrics() != null) {
+                                for (LyricLayout lyric : note.getLyrics()) {
+                                    double lyricBottomAbsY = lyric.getRelY() + (lyric.getFontSize() > 0 ? lyric.getFontSize() * 1.2 : 10.0);
+                                    double lyricRelBottom = (lyricBottomAbsY + staff.getY()) - (staff.getY() + staff.getHeight());
+                                    maxLyricBottomOverflow = Math.max(maxLyricBottomOverflow, Math.max(0.0, lyricRelBottom));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (k == 0) {
+                currentY = 0.0;
+            } else {
+                if (prevLyricBottomOverflow > 0.0 || maxTopOverflow > 0.0) {
+                    double absoluteBottomTextY = currentY + prevNominalHeight + prevLyricBottomOverflow;
+                    double targetSecondStaffTopY = absoluteBottomTextY + MIN_CLEARANCE;
+                    currentY = targetSecondStaffTopY + maxTopOverflow;
+                } else {
+                    currentY += style.getStaffSpacing();
+                }
+
+                for (MeasureLayout measure : system.getMeasures()) {
+                    if (staffIdx < measure.getStaffs().size()) {
+                        StaffLayout staff = measure.getStaffs().get(staffIdx);
+                        staff.setY(currentY);
+                    }
+                }
+            }
+
+            if (k > 0) {
+                final int prevStaffIdx = k - 1;
+                double prevStaffY = system.getMeasures().get(0).getStaffs().get(prevStaffIdx).getY();
+                double clearance = (currentY - prevStaffY) - prevNominalHeight;
+
+                for (MeasureLayout measure : system.getMeasures()) {
+                    if (prevStaffIdx < measure.getStaffs().size()) {
+                        measure.getStaffs().get(prevStaffIdx).setSpaceBelow(clearance);
+                    }
+                }
+            }
+
+            prevNominalHeight = nominalHeight;
+            prevLyricBottomOverflow = maxLyricBottomOverflow;
+        }
+
+        final int lastStaffIdx = staffCount - 1;
+        for (MeasureLayout measure : system.getMeasures()) {
+            if (lastStaffIdx < measure.getStaffs().size()) {
+                measure.getStaffs().get(lastStaffIdx).setSpaceBelow(0.0);
+            }
+        }
+    }
+
+    private void applyPagesVerticalLayout(ScoreLayout scoreLayout) {
         for (PageLayout page : scoreLayout.getPages()) {
             List<PageBlockLayout> blocks = page.getBlocks();
             if (blocks.isEmpty()) continue;
@@ -361,12 +477,14 @@ public class LayoutEngine {
                 PageBlockLayout block = blocks.get(i);
                 if (block instanceof SystemLayout system) {
                     boolean nextIsSystem = (i + 1 < blocks.size()) && (blocks.get(i + 1) instanceof SystemLayout);
+                    double bottomOverflow = system.getBottomOverflow();
                     double spacing = nextIsSystem ? style.getSystemSpacing() : 0.0;
 
                     system.setSpaceBelow(spacing);
                     currentY += system.getTopOverflow();
                     system.setY(currentY);
-                    currentY += (system.getNominalHeight() + system.getBottomOverflow() + spacing);
+                    double effectiveSpacing = (bottomOverflow > 0) ? Math.min(spacing, 10.0) : spacing;
+                    currentY += (system.getNominalHeight() + bottomOverflow + effectiveSpacing);
                 } else {
                     block.setY(currentY);
                     currentY += block.getHeight();
