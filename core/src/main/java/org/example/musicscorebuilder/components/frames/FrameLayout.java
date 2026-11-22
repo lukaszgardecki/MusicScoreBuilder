@@ -7,7 +7,7 @@ import org.example.musicscorebuilder.components.music.frames.Frame;
 public abstract class FrameLayout implements Selectable, PageBlockLayout {
     protected final Frame frameData;
     protected final ScoreStyle style;
-    protected final PageLayout parent;
+    protected PageLayout parent;
     protected double marginTop, marginBottom;
     protected double x, y;
     protected double width, height;
@@ -93,5 +93,9 @@ public abstract class FrameLayout implements Selectable, PageBlockLayout {
         this.marginBottom = Math.max(0, marginBottom);
         this.height = this.contentHeight + this.marginTop + this.marginBottom;
         this.frameData.setMarginBottom(this.marginBottom);
+    }
+
+    public void setParent(PageLayout parent) {
+        this.parent = parent;
     }
 }

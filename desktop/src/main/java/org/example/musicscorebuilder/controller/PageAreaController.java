@@ -258,8 +258,14 @@ public class PageAreaController {
             }
 
             int activeVerse = ScoreStateManager.getInstance().getSelectedVerseNumber();
+            var timeStart = System.currentTimeMillis();
             this.currentScoreLayout = layoutEngine.compute(activeScoreMode, new LayoutContext(activeVerse));
+            var timeEnd = System.currentTimeMillis();
             stateManager.applyPostRefreshAction(this.currentScoreLayout);
+            var t = System.currentTimeMillis();
+            var compute = timeEnd - timeStart;
+            var apply = t - timeEnd;
+            System.out.printf("Compute trwał: %s, apply trwał: %s\n", compute, apply);
 
             container.updateContent(this.currentScoreLayout);
         });

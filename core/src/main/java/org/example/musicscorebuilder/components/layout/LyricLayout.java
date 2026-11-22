@@ -7,6 +7,8 @@ import org.example.musicscorebuilder.components.music.SyllableType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class LyricLayout {
 
@@ -19,6 +21,12 @@ public class LyricLayout {
         record TextBounds(double width, double height) {}
     }
 
+    // Rekord do szybkiego wyszukiwania w cache bez alokacji Stringów
+    private record CacheKey(String text, float fontSize, boolean bold, boolean italic) {}
+
+    // Szybki, bezkonfliktowy cache pomiarów tekstu
+    private static final Map<CacheKey, TextMeasurer.TextBounds> MEASURE_CACHE = new ConcurrentHashMap<>(1024);
+
     private static TextMeasurer defaultMeasurer = (text, fontSize, bold, italic) -> {
         double width = (text != null) ? text.length() * fontSize * 0.55 : 0.0;
         double height = fontSize * 1.2;
@@ -28,6 +36,7 @@ public class LyricLayout {
     public static void setDefaultMeasurer(TextMeasurer measurer) {
         if (measurer != null) {
             defaultMeasurer = measurer;
+            MEASURE_CACHE.clear();
         }
     }
 
@@ -48,15 +57,13 @@ public class LyricLayout {
             double fontSizeSp
     ) {}
 
-    private record NotePos(SystemLayout system, double absX, NoteLayout noteLayout) {}
-
     private final Lyric lyric;
     private final NoteLayout noteLayout;
     private final int verse;
-    private final List<FragmentLayout> fragmentLayouts = new ArrayList<>();
+    private final List<FragmentLayout> fragmentLayouts = new ArrayList<>(2);
     private TextMeasurer textMeasurer;
     private double totalWidth = 0.0;
-    private int lastKnownHash = -1;
+    private boolean isDirty = true;
 
     public LyricLayout(Lyric lyric, NoteLayout noteLayout) {
         this(lyric, noteLayout, defaultMeasurer);
@@ -75,19 +82,22 @@ public class LyricLayout {
     public int getVerse() { return verse; }
     public SyllableType getType() { return lyric.getType(); }
 
+    public void markDirty() {
+        this.isDirty = true;
+    }
+
     public double getTotalWidth() {
-        checkAndRefreshIfStale();
+        if (isDirty) refresh();
         return totalWidth;
     }
 
     public List<FragmentLayout> getFragmentLayouts() {
-        checkAndRefreshIfStale();
+        if (isDirty) refresh();
         return fragmentLayouts;
     }
 
     public double getStartX() {
-        checkAndRefreshIfStale();
-        return getNoteCenterX() - (totalWidth / 2.0);
+        return getNoteCenterX() - (getTotalWidth() / 2.0);
     }
 
     public double getFontSize() {
@@ -118,54 +128,35 @@ public class LyricLayout {
         return noteLayout.getX() + (noteLayout.getFontWidth() / 2.0);
     }
 
-    public void checkAndRefreshIfStale() {
-        int currentHash = calculateLyricHash();
-        if (currentHash != lastKnownHash) {
-            refresh();
-        }
-    }
-
-    private int calculateLyricHash() {
-        if (lyric == null) return 0;
-        int h = 17;
-        h = 31 * h + lyric.getVerse();
-        h = 31 * h + (lyric.getType() != null ? lyric.getType().hashCode() : 0);
-        if (lyric.getFontSize() != null) {
-            h = 31 * h + Double.hashCode(lyric.getFontSize());
-        }
-        List<LyricFragment> frags = lyric.getFragments();
-        if (frags != null) {
-            for (LyricFragment f : frags) {
-                if (f != null && f.getText() != null) {
-                    h = 31 * h + f.getText().hashCode();
-                    h = 31 * h + (f.isBold() ? 1 : 0);
-                    h = 31 * h + (f.isItalic() ? 2 : 0);
-                    h = 31 * h + (f.isUnderline() ? 4 : 0);
-                }
-            }
-        }
-        return h;
-    }
-
     public void refresh() {
         fragmentLayouts.clear();
         totalWidth = 0.0;
-        lastKnownHash = calculateLyricHash();
+        isDirty = false;
         if (lyric == null) return;
 
         List<LyricFragment> fragments = lyric.getFragments();
-        if (fragments.isEmpty()) return;
+        int fragCount = fragments.size();
+        if (fragCount == 0) return;
 
         double fontSizeSp = getFontSize();
+        float fontKey = (float) fontSizeSp;
         double currentRelX = 0.0;
 
-        for (LyricFragment frag : fragments) {
+        for (int i = 0; i < fragCount; i++) {
+            LyricFragment frag = fragments.get(i);
             if (frag == null || frag.getText() == null || frag.getText().isEmpty()) continue;
 
             boolean bold = frag.isBold();
             boolean italic = frag.isItalic();
+            String text = frag.getText();
 
-            TextMeasurer.TextBounds bounds = textMeasurer.measure(frag.getText(), fontSizeSp, bold, italic);
+            CacheKey key = new CacheKey(text, fontKey, bold, italic);
+            TextMeasurer.TextBounds bounds = MEASURE_CACHE.get(key);
+
+            if (bounds == null) {
+                bounds = textMeasurer.measure(text, fontSizeSp, bold, italic);
+                MEASURE_CACHE.put(key, bounds);
+            }
 
             double fragWidthModel = bounds.width();
             double underlineRelYModel = bounds.height() * 0.8;
@@ -186,40 +177,31 @@ public class LyricLayout {
         totalWidth = currentRelX;
     }
 
-    public List<HyphenLayout> computeHyphenLayouts(ScoreLayout scoreLayout) {
+    public List<HyphenLayout> computeHyphenLayouts() {
         SyllableType type = getType();
-        if (type == SyllableType.SINGLE || scoreLayout == null || noteLayout == null || noteLayout.getNote() == null) {
+        if (type == SyllableType.SINGLE || noteLayout == null || noteLayout.getNote() == null) {
             return EMPTY_HYPHENS;
         }
 
-        List<HyphenLayout> result = new ArrayList<>();
-        NotePos currentPos = createNotePos(this.noteLayout);
-        if (currentPos == null) return EMPTY_HYPHENS;
-
+        SystemLayout currentSystem = getSystem(noteLayout);
+        double currentAbsX = getAbsX(noteLayout);
         double fontSize = getFontSize();
 
         if (type == SyllableType.BEGIN || type == SyllableType.MIDDLE) {
-            NotePos nextPos = createNotePos(noteLayout.getNextNoteInVoice());
+            NoteLayout nextNote = noteLayout.getNextNoteInVoice();
+            if (nextNote != null) {
+                SystemLayout nextSystem = getSystem(nextNote);
+                double nextAbsX = getAbsX(nextNote);
 
-            if (nextPos != null) {
-                if (currentPos.system() == nextPos.system()) {
-                    double startAbsX = currentPos.absX() + getStartX() + getTotalWidth();
-                    double endAbsX = nextPos.absX();
+                if (currentSystem == nextSystem && currentSystem != null) {
+                    double startAbsX = currentAbsX + getStartX() + getTotalWidth();
+                    double endAbsX = nextAbsX;
 
-                    LyricLayout nextLyric = null;
-                    if (nextPos.noteLayout().getLyrics() != null) {
-                        for (LyricLayout l : nextPos.noteLayout().getLyrics()) {
-                            if (l.getVerse() == getVerse()) {
-                                nextLyric = l;
-                                break;
-                            }
-                        }
-                    }
-
+                    LyricLayout nextLyric = findLyricForVerse(nextNote, getVerse());
                     if (nextLyric != null && !nextLyric.getFragmentLayouts().isEmpty()) {
                         endAbsX += nextLyric.getStartX();
                     } else {
-                        endAbsX += nextPos.noteLayout().getFontWidth() / 2.0;
+                        endAbsX += nextNote.getFontWidth() / 2.0;
                     }
 
                     double distance = endAbsX - startAbsX;
@@ -231,40 +213,71 @@ public class LyricLayout {
                         double scaleX = Math.min(1.0, Math.max(0.15, availableSpace / defaultHyphenWidth));
 
                         double hyphenAbsX = startAbsX + (distance / 2.0);
-                        double hyphenModelX = hyphenAbsX - currentPos.absX();
+                        double hyphenModelX = hyphenAbsX - currentAbsX;
+
+                        List<HyphenLayout> result = new ArrayList<>(1);
                         result.add(new HyphenLayout(hyphenModelX, getY(), scaleX, fontSize));
+                        return result;
                     }
                 } else {
                     double hyphenModelX = getStartX() + getTotalWidth() + (fontSize * 0.25);
+                    List<HyphenLayout> result = new ArrayList<>(1);
                     result.add(new HyphenLayout(hyphenModelX, getY(), 0.8, fontSize));
+                    return result;
                 }
             }
         }
 
         if (type == SyllableType.MIDDLE || type == SyllableType.END) {
-            NotePos prevPos = createNotePos(noteLayout.getPrevNoteInVoice());
-
-            if (prevPos != null && currentPos.system() != prevPos.system()) {
-                double hyphenModelX = getStartX() - (fontSize * 0.35);
-                result.add(new HyphenLayout(hyphenModelX, getY(), 0.8, fontSize));
+            NoteLayout prevNote = noteLayout.getPrevNoteInVoice();
+            if (prevNote != null) {
+                SystemLayout prevSystem = getSystem(prevNote);
+                if (currentSystem != prevSystem && currentSystem != null) {
+                    double hyphenModelX = getStartX() - (fontSize * 0.35);
+                    List<HyphenLayout> result = new ArrayList<>(1);
+                    result.add(new HyphenLayout(hyphenModelX, getY(), 0.8, fontSize));
+                    return result;
+                }
             }
         }
 
-        return result;
+        return EMPTY_HYPHENS;
     }
 
-    private NotePos createNotePos(NoteLayout target) {
-        if (target == null) return null;
+    public List<HyphenLayout> computeHyphenLayouts(ScoreLayout scoreLayout) {
+        return computeHyphenLayouts();
+    }
 
-        SystemLayout system = (target.getStaff() != null) ? target.getStaff().getParent().getParent() : null;
-
-        double absX = target.getX();
-        if (target.getSegment() != null) {
-            absX += target.getSegment().getX();
-            if (target.getSegment().getParent() != null) {
-                absX += target.getSegment().getParent().getX();
+    private static LyricLayout findLyricForVerse(NoteLayout note, int targetVerse) {
+        List<LyricLayout> lyrics = note.getLyrics();
+        if (lyrics == null) return null;
+        int count = lyrics.size();
+        for (int i = 0; i < count; i++) {
+            LyricLayout ly = lyrics.get(i);
+            if (ly.getVerse() == targetVerse) {
+                return ly;
             }
         }
-        return new NotePos(system, absX, target);
+        return null;
+    }
+
+    private static SystemLayout getSystem(NoteLayout target) {
+        if (target == null) return null;
+        StaffLayout staff = target.getStaff();
+        return (staff != null && staff.getParent() != null) ? staff.getParent().getParent() : null;
+    }
+
+    private static double getAbsX(NoteLayout target) {
+        if (target == null) return 0.0;
+        double absX = target.getX();
+        SegmentLayout segment = target.getSegment();
+        if (segment != null) {
+            absX += segment.getX();
+            MeasureLayout measure = segment.getParent();
+            if (measure != null) {
+                absX += measure.getX();
+            }
+        }
+        return absX;
     }
 }

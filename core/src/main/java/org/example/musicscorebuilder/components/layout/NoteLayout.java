@@ -8,14 +8,19 @@ import java.util.List;
 
 public class NoteLayout extends NoteRestLayout {
     private static final List<LedgerLine> EMPTY_LEDGER_LINES = Collections.emptyList();
+    private static final List<DotLayout> EMPTY_DOTS = Collections.emptyList();
+    private static final List<LyricLayout> EMPTY_LYRICS = Collections.emptyList();
+
     private final Leland fontData;
     private final Note note;
     private final StemLayout stem;
     private NoteLayout nextNoteInVoice;
     private NoteLayout prevNoteInVoice;
     private BeamSingleLayout singleBeam;
-    private final List<DotLayout> dots = new ArrayList<>();
-    private final List<LyricLayout> lyrics = new ArrayList<>();
+
+    private List<DotLayout> dots = EMPTY_DOTS;
+    private List<LyricLayout> lyrics = EMPTY_LYRICS;
+
     private BeamGroupLayout beamGroup;
     private AccidentalLayout accidental;
     private double xOffset = 0.0;
@@ -66,11 +71,12 @@ public class NoteLayout extends NoteRestLayout {
         if (singleBeam != null) minY = Math.min(minY, singleBeam.getBoxY());
         if (beamGroup != null) minY = Math.min(minY, beamGroup.getTopYForNote(this));
         if (accidental != null) minY = Math.min(minY, accidental.getY());
+
         List<LedgerLine> lines = getLedgerLines();
-        if (!lines.isEmpty()) {
-            for (LedgerLine line : lines) {
-                minY = Math.min(minY, line.y() - (line.thickness() / 2.0));
-            }
+        int lineCount = lines.size();
+        for (int i = 0; i < lineCount; i++) {
+            LedgerLine line = lines.get(i);
+            minY = Math.min(minY, line.y() - (line.thickness() / 2.0));
         }
         return minY;
     }
@@ -83,10 +89,10 @@ public class NoteLayout extends NoteRestLayout {
         if (accidental != null) bottomY = Math.max(bottomY, accidental.getY() + accidental.getFontSize());
 
         List<LedgerLine> lines = getLedgerLines();
-        if (!lines.isEmpty()) {
-            for (LedgerLine line : lines) {
-                bottomY = Math.max(bottomY, line.y() + (line.thickness() / 2.0));
-            }
+        int lineCount = lines.size();
+        for (int i = 0; i < lineCount; i++) {
+            LedgerLine line = lines.get(i);
+            bottomY = Math.max(bottomY, line.y() + (line.thickness() / 2.0));
         }
         return bottomY;
     }
@@ -94,10 +100,10 @@ public class NoteLayout extends NoteRestLayout {
     public double getBottomY() {
         double bottomY = getBodyBottomY();
 
-        if (!lyrics.isEmpty()) {
-            for (LyricLayout lyric : lyrics) {
-                bottomY = Math.max(bottomY, lyric.getY() + lyric.getFontSize());
-            }
+        int lyricCount = lyrics.size();
+        for (int i = 0; i < lyricCount; i++) {
+            LyricLayout lyric = lyrics.get(i);
+            bottomY = Math.max(bottomY, lyric.getY() + lyric.getFontSize());
         }
         return bottomY;
     }
@@ -112,8 +118,10 @@ public class NoteLayout extends NoteRestLayout {
     public String getCode() { return fontData.getCode(); }
     public List<DotLayout> getDots() { return dots; }
     public List<LyricLayout> getLyrics() { return lyrics; }
+
     public LyricLayout getLyric(int verse) {
-        for (int i = 0; i < lyrics.size(); i++) {
+        int lyricCount = lyrics.size();
+        for (int i = 0; i < lyricCount; i++) {
             LyricLayout lyricLayout = lyrics.get(i);
             if (lyricLayout.getVerse() == verse) {
                 return lyricLayout;
@@ -121,6 +129,7 @@ public class NoteLayout extends NoteRestLayout {
         }
         return null;
     }
+
     public double getXOffset() { return xOffset; }
     public int getDiatonicStep() { return note.getPitch().getAbsoluteDiatonicStep(); }
     public StemLayout getStem() { return stem; }
@@ -128,12 +137,14 @@ public class NoteLayout extends NoteRestLayout {
     public BeamGroupLayout getBeamGroup() { return beamGroup; }
     public AccidentalLayout getAccidental() { return accidental; }
 
+    // DYNAMICZNE PRZELICZANIE (zgodnie z oryginałem) – zero-alokacji jeśli nuta jest na pięciolinii
     public List<LedgerLine> getLedgerLines() {
         double spacing = style.getStaffLineSpacing();
         double topLineY = staff.getY();
         double bottomLineY = staff.getY() + (4 * spacing);
         double currentY = getY();
 
+        // Jeśli nuta mieści się w granicach pięciolinii – natychmiastowy zwrot stałej bez alokacji
         if (currentY >= topLineY - (0.25 * spacing) && currentY <= bottomLineY + (0.25 * spacing)) {
             return EMPTY_LEDGER_LINES;
         }
@@ -168,6 +179,7 @@ public class NoteLayout extends NoteRestLayout {
     public void setNextNoteInVoice(NoteLayout nextNoteInVoice) { this.nextNoteInVoice = nextNoteInVoice; }
     public void setPrevNoteInVoice(NoteLayout prevNoteInVoice) { this.prevNoteInVoice = prevNoteInVoice; }
     public void setXOffset(double xOffset) { this.xOffset = xOffset; }
+
     public void setBeamGroup(BeamGroupLayout beamGroup) {
         this.beamGroup = beamGroup;
         if (this.beamGroup != null) {
@@ -178,10 +190,12 @@ public class NoteLayout extends NoteRestLayout {
             this.singleBeam = null;
         }
     }
+
     public void setLyrics(List<LyricLayout> newLyrics) {
-        this.lyrics.clear();
-        if (newLyrics != null) {
-            this.lyrics.addAll(newLyrics);
+        if (newLyrics == null || newLyrics.isEmpty()) {
+            this.lyrics = EMPTY_LYRICS;
+        } else {
+            this.lyrics = new ArrayList<>(newLyrics);
         }
     }
 
@@ -246,8 +260,10 @@ public class NoteLayout extends NoteRestLayout {
     }
 
     private void calculateDots() {
-        dots.clear();
-        if (note.getDots() <= 0) return;
+        if (note.getDots() <= 0) {
+            this.dots = EMPTY_DOTS;
+            return;
+        }
 
         ClefType clefType = staff.getStaff().getDefaultClef().getType();
         int stepDifference = note.getPitch().getAbsoluteDiatonicStep() - clefType.getDiatonicStep();
@@ -261,9 +277,11 @@ public class NoteLayout extends NoteRestLayout {
         double headWidth = getFontWidth();
         double startRelX = headWidth + style.getNoteDotMargin();
 
+        List<DotLayout> list = new ArrayList<>(note.getDots());
         for (int i = 0; i < note.getDots(); i++) {
             double dotRelX = startRelX + (i * style.getNoteDotSpacing());
-            dots.add(new DotLayout(this, dotRelX, relY));
+            list.add(new DotLayout(this, dotRelX, relY));
         }
+        this.dots = list;
     }
 }

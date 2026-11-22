@@ -15,7 +15,7 @@ public class MeasureLayout {
     private List<BeamGroupLayout> beams = new ArrayList<>();
     private VoltaSliceLayout voltaSlice = null;
     private List<JumpMarkLayout> jumpMarks = new ArrayList<>();
-    private double x, y;
+    double x, y;
 
     public MeasureLayout(Measure measure, SystemLayout parent, ScoreStyle scoreStyle) {
         this.style = scoreStyle;
@@ -43,6 +43,7 @@ public class MeasureLayout {
         seg.setSystemGenerated(true);
         segments.add(0, seg);
     }
+
     public void addSystemStartBarline(Barline barline) {
         SegmentLayout seg = new SegmentLayout(SegmentType.START_BARLINE, this);
         seg.addStartBarline(barline);
@@ -72,7 +73,8 @@ public class MeasureLayout {
 
     public void resetLayoutState() {
         this.x = 0.0;
-        for (int i = 0; i < segments.size(); i++) {
+        int segCount = segments.size();
+        for (int i = 0; i < segCount; i++) {
             SegmentLayout segment = segments.get(i);
             segment.setExtraWidth(0.0);
             if (segment.getType() == SegmentType.END_BARLINE) {
@@ -82,7 +84,8 @@ public class MeasureLayout {
     }
 
     public MeasureStaffSelection getElementsRegionAt(double measureX, double measureY) {
-        for (int i = 0; i < staves.size(); i++) {
+        int staffCount = staves.size();
+        for (int i = 0; i < staffCount; i++) {
             StaffLayout staff = staves.get(i);
             double staffY = staff.getY();
             double staffHeight = staff.getHeight();
@@ -107,7 +110,8 @@ public class MeasureLayout {
 
     public double getWidth() {
         double totalWidth = 0.0;
-        for (int i = 0; i < segments.size(); i++) {
+        int segCount = segments.size();
+        for (int i = 0; i < segCount; i++) {
             totalWidth += segments.get(i).getWidth();
         }
         return totalWidth;
@@ -123,8 +127,13 @@ public class MeasureLayout {
     public double getTopOverflow() {
         double minRelY = 0.0;
 
-        for (SegmentLayout segment : segments) {
-            for (ElementLayout element : segment.getElements()) {
+        int segCount = segments.size();
+        for (int i = 0; i < segCount; i++) {
+            SegmentLayout segment = segments.get(i);
+            List<ElementLayout> elements = segment.getElements();
+            int elemCount = elements.size();
+            for (int j = 0; j < elemCount; j++) {
+                ElementLayout element = elements.get(j);
                 double elementTopY = element instanceof NoteLayout n ? n.getMinY() : element.getY();
                 if (elementTopY < minRelY) {
                     minRelY = elementTopY;
@@ -136,7 +145,9 @@ public class MeasureLayout {
             minRelY = -voltaSlice.getYOffset();
         }
 
-        for (JumpMarkLayout mark : jumpMarks) {
+        int markCount = jumpMarks.size();
+        for (int i = 0; i < markCount; i++) {
+            JumpMarkLayout mark = jumpMarks.get(i);
             if (mark.getBoxY() < minRelY) {
                 minRelY = mark.getBoxY();
             }
@@ -148,7 +159,7 @@ public class MeasureLayout {
     public double getBottomOverflow() {
         if (staves.isEmpty()) return 0.0;
         StaffLayout lastStaff = staves.get(staves.size() - 1);
-        return lastStaff.getBottomOverflow();
+        return lastStaff.getLyricBottomOverflow();
     }
 
     public double getHeight() {

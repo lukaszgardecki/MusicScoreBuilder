@@ -1,13 +1,11 @@
 package org.example.musicscorebuilder.components.views;
 
 import javafx.geometry.VPos;
-import javafx.scene.Parent;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
 import org.example.musicscorebuilder.components.layout.LyricLayout;
 import org.example.musicscorebuilder.components.layout.NoteLayout;
-import org.example.musicscorebuilder.components.layout.ScoreLayout;
 import org.example.musicscorebuilder.components.views.util.LyricFontUtils;
 import org.example.musicscorebuilder.managers.LyricEditorManager;
 import org.example.musicscorebuilder.managers.ScoreStateManager;
@@ -20,7 +18,7 @@ public class LyricView extends ComponentView {
         if (noteLayout == null) return;
 
         List<LyricLayout> lyrics = noteLayout.getLyrics();
-        if (lyrics.isEmpty()) return;
+        if (lyrics == null || lyrics.isEmpty()) return;
 
         LyricEditorManager editorManager = LyricEditorManager.getInstance();
         Integer selectedVerse = ScoreStateManager.getInstance().getSelectedVerseNumber();
@@ -28,48 +26,37 @@ public class LyricView extends ComponentView {
         boolean isEditing = editorManager != null && editorManager.isEditing();
         int activeVerse = isEditing ? editorManager.getCurrentVerse() : (selectedVerse != null ? selectedVerse : -1);
 
-        ScoreLayout scoreLayout = null;
-        Parent p = gc.getCanvas().getParent();
-        while (p != null) {
-            if (p instanceof BackgroundView bg && bg.getScoreView() != null) {
-                scoreLayout = bg.getScoreView().getScoreLayout();
-                break;
-            }
-            p = p.getParent();
-        }
-
         gc.save();
 
         try {
-            gc.setTextAlign(TextAlignment.LEFT);
-            gc.setTextBaseline(VPos.TOP);
-
             for (LyricLayout lyricLayout : lyrics) {
+                if (lyricLayout == null) continue;
+
                 if (isEditing) {
-                    if (lyricLayout.getVerse() != activeVerse) {
-                        continue;
-                    }
-                }
-                else if (selectedVerse != null && lyricLayout.getVerse() != selectedVerse) {
+                    if (lyricLayout.getVerse() != activeVerse) continue;
+                } else if (selectedVerse != null && lyricLayout.getVerse() != selectedVerse) {
                     continue;
                 }
+
                 if (isEditing && editorManager.isEditingNote(noteLayout, lyricLayout.getVerse())) {
                     continue;
                 }
 
-                lyricLayout.checkAndRefreshIfStale();
-                if (lyricLayout.getFragmentLayouts().isEmpty()) continue;
+                List<LyricLayout.FragmentLayout> fragments = lyricLayout.getFragmentLayouts();
+                if (fragments == null || fragments.isEmpty()) continue;
 
                 double lyricScreenY = segmentY + lyricLayout.getY() * sp;
                 double startScreenX = segmentX + lyricLayout.getStartX() * sp;
 
-                for (LyricLayout.FragmentLayout frag : lyricLayout.getFragmentLayouts()) {
+                // 1. Rysowanie tekstów sylaby
+                gc.setTextAlign(TextAlignment.LEFT);
+                gc.setTextBaseline(VPos.TOP);
+
+                for (LyricLayout.FragmentLayout frag : fragments) {
                     double fragX = startScreenX + frag.relativeX() * sp;
 
                     var font = LyricFontUtils.getFont(frag, sp);
                     gc.setFont(font);
-//                    gc.setFill(Color.color(0.9, 0.9, 0.9, 0.6));
-//                    gc.fillRect(fragX, lyricScreenY, frag.width() * sp, font.getSize());
                     gc.setFill(Color.BLACK);
                     gc.fillText(frag.fragment().getText(), fragX, lyricScreenY);
 
@@ -81,14 +68,24 @@ public class LyricView extends ComponentView {
                     }
                 }
 
-                for (LyricLayout.HyphenLayout hyphen : lyricLayout.computeHyphenLayouts(scoreLayout)) {
-                    gc.save();
-                    gc.translate(segmentX + hyphen.modelX() * sp, segmentY + hyphen.modelY() * sp);
-                    gc.scale(hyphen.scaleX(), 1.0);
-                    gc.setFont(LyricFontUtils.getFont(hyphen, sp));
+                // 2. Rysowanie łączników / myślników (bez konieczności podawania ScoreLayout)
+                List<LyricLayout.HyphenLayout> hyphens = lyricLayout.computeHyphenLayouts();
+                if (hyphens != null && !hyphens.isEmpty()) {
                     gc.setTextAlign(TextAlignment.CENTER);
-                    gc.fillText("–", 0, 0);
-                    gc.restore();
+                    gc.setTextBaseline(VPos.CENTER);
+
+                    double fontSize = lyricLayout.getFontSize();
+                    double hyphenCenterY = lyricScreenY + (fontSize * sp * 0.4);
+
+                    for (LyricLayout.HyphenLayout hyphen : hyphens) {
+                        gc.save();
+                        gc.translate(segmentX + hyphen.modelX() * sp, hyphenCenterY);
+                        gc.scale(hyphen.scaleX(), 1.0);
+                        gc.setFont(LyricFontUtils.getFont(hyphen, sp));
+                        gc.setFill(Color.BLACK);
+                        gc.fillText("–", 0, 0);
+                        gc.restore();
+                    }
                 }
             }
         } finally {

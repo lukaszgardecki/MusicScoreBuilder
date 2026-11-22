@@ -1,10 +1,8 @@
 package org.example.musicscorebuilder.components.layout.util;
 
-import org.example.musicscorebuilder.components.layout.ElementLayout;
 import org.example.musicscorebuilder.components.layout.LyricLayout;
 import org.example.musicscorebuilder.components.layout.MeasureLayout;
 import org.example.musicscorebuilder.components.layout.NoteLayout;
-import org.example.musicscorebuilder.components.layout.PageLayout;
 import org.example.musicscorebuilder.components.layout.ScoreLayout;
 import org.example.musicscorebuilder.components.layout.SegmentLayout;
 import org.example.musicscorebuilder.components.layout.SystemLayout;
@@ -20,7 +18,7 @@ public final class LyricHyphenCalculator {
 
     public static List<LyricLayout.HyphenLayout> calculateHyphens(LyricLayout lyricLayout, ScoreLayout scoreLayout) {
         List<LyricLayout.HyphenLayout> hyphens = new ArrayList<>(2);
-        if (lyricLayout == null || lyricLayout.getLyric() == null || scoreLayout == null) return hyphens;
+        if (lyricLayout == null || lyricLayout.getLyric() == null) return hyphens;
 
         Lyric lyric = lyricLayout.getLyric();
         NoteLayout noteLayout = lyricLayout.getNoteLayout();
@@ -31,27 +29,24 @@ public final class LyricHyphenCalculator {
         if (type == null || type == SyllableType.SINGLE) return hyphens;
 
         double fontSizeSp = lyricLayout.getFontSize();
+        if (fontSizeSp <= 0) fontSizeSp = 12.0;
+
         double noteCenterX = lyricLayout.getNoteCenterX();
         double textWidth = lyricLayout.getTotalWidth();
 
         double startLeftX = (textWidth > 0) ? (noteCenterX - (textWidth / 2.0)) : noteCenterX;
         double startRightX = (textWidth > 0) ? (noteCenterX + (textWidth / 2.0)) : noteCenterX;
 
-        // Odstęp od słowa dla myślnika na brzegach systemu (ok. 0.6 spacji)
+        // Odstęp od słowa dla myślnika na brzegach systemu
         double edgeOffset = Math.max(0.6, fontSizeSp * 0.5);
-
-        // KROK KRYTYCZNY: Znajdujemy instancję nuty bezpośrednio w przekazanym drzewie na podstawie niezmiennego modelu!
-        // Zapobiega to błędom związanym z odświeżaniem węzłów układu na nowych stronach/systemach.
-        NoteLayout currentInTree = findCurrentNoteInTree(scoreLayout, noteLayout);
 
         // 1. POCZĄTEK NOWEGO SYSTEMU (Myślnik z lewej strony przed sylabą MIDDLE / END)
         if (type == SyllableType.MIDDLE || type == SyllableType.END) {
-            NoteLayout prevLyricNote = findPreviousNoteWithLyric(scoreLayout, currentInTree, verse);
+            NoteLayout prevLyricNote = findPreviousNoteWithLyric(noteLayout, verse);
             if (prevLyricNote != null) {
                 Lyric prevLyric = prevLyricNote.getNote().getLyric(verse);
                 if (prevLyric != null && (prevLyric.getType() == SyllableType.BEGIN || prevLyric.getType() == SyllableType.MIDDLE)) {
-                    // Jeśli poprzednia sylaba była w INNYM systemie
-                    if (!isSameSystem(prevLyricNote, currentInTree)) {
+                    if (!isSameSystem(prevLyricNote, noteLayout)) {
                         double hyphenX = startLeftX - edgeOffset;
                         hyphens.add(new LyricLayout.HyphenLayout(hyphenX, lyricLayout.getY(), 1.0, fontSizeSp));
                     }
@@ -61,18 +56,17 @@ public final class LyricHyphenCalculator {
 
         // 2. ŁĄCZENIE DO PRZODU (Myślniki za sylabą BEGIN / MIDDLE)
         if (type == SyllableType.BEGIN || type == SyllableType.MIDDLE) {
-            NoteLayout nextLyricNote = findNextNoteWithLyric(scoreLayout, currentInTree, verse);
+            NoteLayout nextLyricNote = findNextNoteWithLyric(noteLayout, verse);
             if (nextLyricNote != null) {
                 Lyric nextLyric = nextLyricNote.getNote().getLyric(verse);
                 if (nextLyric != null && (nextLyric.getType() == SyllableType.MIDDLE || nextLyric.getType() == SyllableType.END)) {
 
-                    // Jeśli kolejna sylaba będzie w INNYM systemie
-                    if (!isSameSystem(currentInTree, nextLyricNote)) {
+                    if (!isSameSystem(noteLayout, nextLyricNote)) {
                         double hyphenX = startRightX + edgeOffset;
                         hyphens.add(new LyricLayout.HyphenLayout(hyphenX, lyricLayout.getY(), 1.0, fontSizeSp));
                     } else {
-                        // TA SAMA LINIA (Wyliczamy pełen dystans, automatycznie przeskakując przez melizmaty)
-                        double n1SystemX = getSystemRelativeX(currentInTree);
+                        // TA SAMA LINIA ($O(1)$ wyliczenie pozycji bez przeszukiwania drzewa)
+                        double n1SystemX = getSystemRelativeX(noteLayout);
                         double n2SystemX = getSystemRelativeX(nextLyricNote);
                         double diffModelX = n2SystemX - n1SystemX;
 
@@ -81,7 +75,6 @@ public final class LyricHyphenCalculator {
                         double targetLocalNoteCenterX = nextLyricNote.getX();
 
                         if (targetLyricLayout != null) {
-                            targetLyricLayout.checkAndRefreshIfStale();
                             targetTextWidth = targetLyricLayout.getTotalWidth();
                             targetLocalNoteCenterX = targetLyricLayout.getNoteCenterX();
                         }
@@ -118,104 +111,34 @@ public final class LyricHyphenCalculator {
         return hyphens;
     }
 
-    // Odnajduje fizyczną instancję w bieżącym drzewie bazując na stałym obiekcie muzycznym
-    private static NoteLayout findCurrentNoteInTree(ScoreLayout score, NoteLayout current) {
-        if (score == null || current == null || current.getNote() == null) return current;
-        int targetVoice = current.getNote().getVoice();
-        int targetStaff = current.getStaff() != null ? current.getStaff().getStaffIndex() : 0;
-
-        for (PageLayout page : score.getPages()) {
-            if (page.getSystems() == null) continue;
-            for (SystemLayout system : page.getSystems()) {
-                if (system.getMeasures() == null) continue;
-                for (MeasureLayout measure : system.getMeasures()) {
-                    if (measure.getSegments() == null) continue;
-                    for (SegmentLayout segment : measure.getSegments()) {
-                        for (ElementLayout el : segment.getElements()) {
-                            if (el instanceof NoteLayout nl && nl.getNote() != null) {
-                                int staffIdx = nl.getStaff() != null ? nl.getStaff().getStaffIndex() : 0;
-                                if (staffIdx == targetStaff && nl.getNote().getVoice() == targetVoice) {
-                                    // Zrównanie z modelem
-                                    if (nl.getNote() == current.getNote()) {
-                                        return nl;
-                                    }
-                                }
-                            }
-                        }
-                    }
+    // Bezpośrednie przechodzenie $O(1)$ do następnej nuty z tekstem w danym głosie
+    private static NoteLayout findNextNoteWithLyric(NoteLayout start, int verse) {
+        if (start == null) return null;
+        NoteLayout curr = start.getNextNoteInVoice();
+        while (curr != null) {
+            if (curr.getNote() != null) {
+                Lyric lyr = curr.getNote().getLyric(verse);
+                if (lyr != null && !isNullOrBlank(lyr.getText())) {
+                    return curr;
                 }
             }
-        }
-        return current;
-    }
-
-    // Bezpośrednie wyszukiwanie *następnej nuty z tekstem*
-    private static NoteLayout findNextNoteWithLyric(ScoreLayout score, NoteLayout currentInTree, int verse) {
-        if (score == null || currentInTree == null || currentInTree.getNote() == null) return null;
-        int targetVoice = currentInTree.getNote().getVoice();
-        int targetStaff = currentInTree.getStaff() != null ? currentInTree.getStaff().getStaffIndex() : 0;
-        boolean foundCurrent = false;
-
-        for (PageLayout page : score.getPages()) {
-            if (page.getSystems() == null) continue;
-            for (SystemLayout system : page.getSystems()) {
-                if (system.getMeasures() == null) continue;
-                for (MeasureLayout measure : system.getMeasures()) {
-                    if (measure.getSegments() == null) continue;
-                    for (SegmentLayout segment : measure.getSegments()) {
-                        for (ElementLayout el : segment.getElements()) {
-                            if (el instanceof NoteLayout nl && nl.getNote() != null) {
-                                int staffIdx = nl.getStaff() != null ? nl.getStaff().getStaffIndex() : 0;
-                                if (staffIdx == targetStaff && nl.getNote().getVoice() == targetVoice) {
-                                    if (foundCurrent) {
-                                        Lyric lyr = nl.getNote().getLyric(verse);
-                                        if (lyr != null && !isNullOrBlank(lyr.getText())) {
-                                            return nl;
-                                        }
-                                    } else if (nl == currentInTree) { // Dzięki findCurrentNoteInTree to porównanie nigdy nie chybia!
-                                        foundCurrent = true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            curr = curr.getNextNoteInVoice();
         }
         return null;
     }
 
-    // Bezpośrednie wyszukiwanie *poprzedniej nuty z tekstem*
-    private static NoteLayout findPreviousNoteWithLyric(ScoreLayout score, NoteLayout currentInTree, int verse) {
-        if (score == null || currentInTree == null || currentInTree.getNote() == null) return null;
-        int targetVoice = currentInTree.getNote().getVoice();
-        int targetStaff = currentInTree.getStaff() != null ? currentInTree.getStaff().getStaffIndex() : 0;
-        NoteLayout previousWithLyric = null;
-
-        for (PageLayout page : score.getPages()) {
-            if (page.getSystems() == null) continue;
-            for (SystemLayout system : page.getSystems()) {
-                if (system.getMeasures() == null) continue;
-                for (MeasureLayout measure : system.getMeasures()) {
-                    if (measure.getSegments() == null) continue;
-                    for (SegmentLayout segment : measure.getSegments()) {
-                        for (ElementLayout el : segment.getElements()) {
-                            if (el instanceof NoteLayout nl && nl.getNote() != null) {
-                                int staffIdx = nl.getStaff() != null ? nl.getStaff().getStaffIndex() : 0;
-                                if (staffIdx == targetStaff && nl.getNote().getVoice() == targetVoice) {
-                                    if (nl == currentInTree) {
-                                        return previousWithLyric;
-                                    }
-                                    Lyric lyr = nl.getNote().getLyric(verse);
-                                    if (lyr != null && !isNullOrBlank(lyr.getText())) {
-                                        previousWithLyric = nl;
-                                    }
-                                }
-                            }
-                        }
-                    }
+    // Bezpośrednie przechodzenie $O(1)$ do poprzedniej nuty z tekstem w danym głosie
+    private static NoteLayout findPreviousNoteWithLyric(NoteLayout start, int verse) {
+        if (start == null) return null;
+        NoteLayout curr = start.getPrevNoteInVoice();
+        while (curr != null) {
+            if (curr.getNote() != null) {
+                Lyric lyr = curr.getNote().getLyric(verse);
+                if (lyr != null && !isNullOrBlank(lyr.getText())) {
+                    return curr;
                 }
             }
+            curr = curr.getPrevNoteInVoice();
         }
         return null;
     }
@@ -235,15 +158,16 @@ public final class LyricHyphenCalculator {
     }
 
     private static double getSystemRelativeX(NoteLayout note) {
-        if (note == null || note.getSegment() == null || note.getSegment().getParent() == null) return 0.0;
+        if (note == null || note.getSegment() == null) return 0.0;
         MeasureLayout measure = note.getSegment().getParent();
-        SegmentLayout segment = note.getSegment();
-        return measure.getX() + segment.getX();
+        if (measure == null) return 0.0;
+        return measure.getX() + note.getSegment().getX();
     }
 
     private static LyricLayout findLyricLayout(NoteLayout noteLayout, int verse) {
         if (noteLayout == null) return null;
         List<LyricLayout> lyrics = noteLayout.getLyrics();
+        if (lyrics == null) return null;
         int size = lyrics.size();
         for (int i = 0; i < size; i++) {
             LyricLayout l = lyrics.get(i);
